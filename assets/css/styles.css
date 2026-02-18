@@ -34,8 +34,7 @@ header{
 .logo{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px;}
 .mark{
   width:34px; height:34px; border-radius:10px;
-  background: linear-gradient(135deg, var(--brand), var(--brand2));
-  box-shadow: 0 10px 22px rgba(110,168,255,.22);
+  background: url("/assets/img/reportmedic-48.png") no-repeat center / contain;
 }
 .spacer{flex:1}
 .btn{
