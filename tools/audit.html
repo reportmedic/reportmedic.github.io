@@ -6,8 +6,10 @@
   <title>Audit Trail Notes — ReportMedic</title>
   <link rel="stylesheet" href="/assets/css/styles.css">
 
+  <!-- PDF export (client-side). If this CDN is blocked/unavailable, PDF export will show a friendly fallback. -->
+  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
   <style>
-    /* Page-specific UI (keeps your global theme intact) */
     .layout{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;margin-top:14px;}
     @media (max-width:980px){.layout{grid-template-columns:1fr;}}
     .note{color:var(--muted);font-size:13px;line-height:1.5;margin:0;}
@@ -39,10 +41,13 @@
       outline:none;
       background:rgba(255,255,255,.04);
       color:var(--text);
+      font: inherit;
     }
+    /* Make select/input-list height match other textboxes */
+    input[type="text"], input[type="date"], select{min-height:44px;}
+    select{appearance:none;-webkit-appearance:none;-moz-appearance:none;}
     textarea{min-height:96px;resize:vertical;}
     .row{margin-bottom:10px;}
-    .btnRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
     .tiny{font-size:12px;color:var(--muted);margin:8px 0 0;}
     .hr2{height:1px;background:var(--border);margin:12px 0;}
     .pill{
@@ -77,7 +82,7 @@
       border-radius:14px;
       padding:12px;
       overflow:auto;
-      max-height:540px;
+      max-height:520px;
       white-space:pre-wrap;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       font-size:12.5px;
@@ -101,6 +106,23 @@
       background:rgba(255,255,255,.04);
       color:var(--muted);
     }
+    .btnRow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .actionBar{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-bottom:10px;
+    }
+    .exportGroup{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .mutedInline{font-size:12px;color:var(--muted);margin:0;}
+    .backRow{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;}
   </style>
 </head>
 
@@ -127,12 +149,12 @@
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
         <span class="pill">✅ Offline / client-side</span>
         <span class="pill">🔒 No uploads to servers</span>
-        <span class="pill">📄 Export to TXT / MD</span>
+        <span class="pill">📄 Export to TXT / MD / HTML / PDF</span>
         <span class="pill">🧾 CSV change-log import</span>
       </div>
       <p class="note" style="margin-top:10px;">
-        Tip: Fill the left form → preview updates instantly → export.
-        Keyboard: <span class="kbd">Cmd/Ctrl + K</span> focuses the “Summary” field.
+        Fill the form → preview updates instantly → use the actions above the preview.
+        Shortcut: <span class="kbd">Cmd/Ctrl + K</span> focuses “Summary”.
       </p>
     </div>
 
@@ -177,16 +199,18 @@
             <input id="reviewedBy" type="text" placeholder="Name" />
           </div>
           <div class="row">
-            <label for="changeType">Change type</label>
-            <select id="changeType">
-              <option value="Correction">Correction</option>
-              <option value="Restatement">Restatement</option>
-              <option value="Enhancement">Enhancement</option>
-              <option value="Policy/Logic Update">Policy/Logic Update</option>
-              <option value="Data Refresh">Data Refresh</option>
-              <option value="Backfill">Backfill</option>
-              <option value="Other">Other</option>
-            </select>
+            <label for="changeType">Change type (type your own)</label>
+            <!-- Datalist gives suggested options but still allows custom -->
+            <input id="changeType" type="text" list="changeTypeList" placeholder="e.g., Correction" />
+            <datalist id="changeTypeList">
+              <option value="Correction"></option>
+              <option value="Restatement"></option>
+              <option value="Enhancement"></option>
+              <option value="Policy/Logic Update"></option>
+              <option value="Data Refresh"></option>
+              <option value="Backfill"></option>
+              <option value="Other"></option>
+            </datalist>
           </div>
         </div>
 
@@ -219,18 +243,18 @@
         <div class="grid2">
           <div class="row">
             <label for="validation">Validation performed</label>
-            <textarea id="validation" placeholder="e.g., Totals tie-out to GL; row counts; null checks; sampling; variance thresholds."></textarea>
+            <textarea id="validation" placeholder="e.g., Totals tie-out; row counts; null checks; sampling; variance thresholds."></textarea>
           </div>
           <div class="row">
             <label for="impact">Impact assessment</label>
-            <textarea id="impact" placeholder="Describe business impact: metrics affected, magnitude, downstream consumers, known risks."></textarea>
+            <textarea id="impact" placeholder="Metrics affected, magnitude, downstream consumers, risks."></textarea>
           </div>
         </div>
 
         <div class="grid2">
           <div class="row">
             <label for="evidence">Evidence / attachments (optional)</label>
-            <textarea id="evidence" placeholder="Links or filenames (kept local): screenshots, query outputs, reconciliation files, approvals."></textarea>
+            <textarea id="evidence" placeholder="Links or filenames (kept local): screenshots, query outputs, tie-outs, approvals."></textarea>
           </div>
           <div class="row">
             <label for="signoff">Approvals / sign-off text (optional)</label>
@@ -238,25 +262,44 @@
           </div>
         </div>
 
-        <div class="btnRow">
-          <button class="btn primary" id="copyBtn" type="button">Copy Notes</button>
-          <button class="btn" id="downloadMdBtn" type="button">Download .md</button>
-          <button class="btn" id="downloadTxtBtn" type="button">Download .txt</button>
-          <button class="btn" id="sampleBtn" type="button">Load Sample</button>
-          <button class="btn" id="resetBtn" type="button">Reset</button>
+        <div class="backRow">
           <a class="btn" href="/#toolbox">Back</a>
         </div>
-
-        <div class="success" id="toast">Copied to clipboard.</div>
       </div>
 
       <!-- PREVIEW -->
       <div class="previewCard">
+        <!-- ACTIONS MOVED ABOVE PREVIEW -->
+        <div class="actionBar">
+          <div class="btnRow">
+            <button class="btn primary" id="copyBtn" type="button">Copy</button>
+
+            <div class="exportGroup">
+              <select id="exportFormat" aria-label="Export format">
+                <option value="md">MD</option>
+                <option value="txt">TXT</option>
+                <option value="html">HTML</option>
+                <option value="pdf">PDF</option>
+              </select>
+              <button class="btn" id="downloadBtn" type="button">Download</button>
+            </div>
+
+            <button class="btn" id="sampleBtn" type="button">Load Sample</button>
+            <button class="btn" id="resetBtn" type="button">Reset</button>
+          </div>
+
+          <p class="mutedInline">Actions first → then preview.</p>
+        </div>
+
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
           <div class="sectionTitle" style="margin:0;">Live preview</div>
           <div class="pill">Format: Audit memo</div>
         </div>
+
         <div class="previewBox" id="preview" aria-label="Generated audit notes preview"></div>
+
+        <div class="success" id="toast">Done.</div>
+
         <p class="tiny" style="margin-top:10px;">
           Everything here is generated locally in your browser. Nothing is uploaded.
         </p>
@@ -270,7 +313,6 @@
 
 <script>
 (function(){
-  // ----- helpers -----
   const $ = (id) => document.getElementById(id);
 
   function todayISO(){
@@ -280,13 +322,8 @@
     const dd = String(d.getDate()).padStart(2,'0');
     return `${yyyy}-${mm}-${dd}`;
   }
-
   function safe(v){ return (v || '').trim(); }
-
-  function escapeText(s){
-    // preview uses textContent (safe), but keep this for exports
-    return String(s || '').replace(/\r\n/g,"\n").trim();
-  }
+  function escapeText(s){ return String(s || '').replace(/\r\n/g,"\n").trim(); }
 
   function fileNameBase(){
     const sys = safe($("system").value) || "audit-notes";
@@ -322,7 +359,6 @@
     changeCounter += 1;
     const wrap = document.createElement("div");
     wrap.className = "changeItem";
-    wrap.dataset.idx = String(changeCounter);
 
     wrap.innerHTML = `
       <div class="changeTop">
@@ -354,45 +390,36 @@
       </div>
     `;
 
-    // remove
     wrap.querySelector("button.iconBtn").addEventListener("click", () => {
       wrap.remove();
       updatePreview();
     });
 
-    // update events
-    wrap.querySelectorAll("input").forEach(inp => {
-      inp.addEventListener("input", updatePreview);
-    });
-
+    wrap.querySelectorAll("input").forEach(inp => inp.addEventListener("input", updatePreview));
     return wrap;
   }
 
   function getChanges(){
     const items = Array.from($("changes").querySelectorAll(".changeItem"));
     return items.map(item => {
-      const field = safe(item.querySelector(".cField").value);
-      const from = safe(item.querySelector(".cFrom").value);
-      const to   = safe(item.querySelector(".cTo").value);
+      const field  = safe(item.querySelector(".cField").value);
+      const from   = safe(item.querySelector(".cFrom").value);
+      const to     = safe(item.querySelector(".cTo").value);
       const reason = safe(item.querySelector(".cReason").value);
-      // keep even partially filled rows only if something exists
       if(!(field || from || to || reason)) return null;
       return {field, from, to, reason};
     }).filter(Boolean);
   }
 
-  // ----- CSV import (simple robust parser) -----
+  // ----- CSV import -----
   function parseCSV(text){
-    // Minimal CSV parser: handles quotes, commas, newlines.
     const rows = [];
     let i = 0, field = "", row = [], inQuotes = false;
-
     const pushField = () => { row.push(field); field = ""; };
     const pushRow = () => { rows.push(row); row = []; };
 
     while(i < text.length){
       const ch = text[i];
-
       if(inQuotes){
         if(ch === '"'){
           if(text[i+1] === '"'){ field += '"'; i += 2; continue; }
@@ -402,15 +429,12 @@
       } else {
         if(ch === '"'){ inQuotes = true; i++; continue; }
         if(ch === ','){ pushField(); i++; continue; }
-        if(ch === '\n'){
-          pushField(); pushRow(); i++; continue;
-        }
+        if(ch === '\n'){ pushField(); pushRow(); i++; continue; }
         if(ch === '\r'){ i++; continue; }
         field += ch; i++; continue;
       }
     }
     pushField(); pushRow();
-    // trim empty trailing rows
     return rows.map(r => r.map(c => (c || "").trim())).filter(r => r.some(c => c.length));
   }
 
@@ -421,16 +445,13 @@
       const rows = parseCSV(text);
       if(!rows.length){ showToast("CSV appears empty."); return; }
 
-      // detect header
       const first = rows[0].map(s => s.toLowerCase());
-      let startIdx = 0;
       const looksHeader = first.includes("field") || first.includes("from") || first.includes("to") || first.includes("reason");
-      if(looksHeader) startIdx = 1;
+      let startIdx = looksHeader ? 1 : 0;
 
       const added = [];
       for(let r = startIdx; r < rows.length; r++){
         const cols = rows[r];
-        // field,from,to,reason (allow missing)
         const field = cols[0] || "";
         const from  = cols[1] || "";
         const to    = cols[2] || "";
@@ -438,10 +459,8 @@
         if((field+from+to+reason).trim().length === 0) continue;
         added.push({field, from, to, reason});
       }
-
       if(!added.length){ showToast("No usable rows found."); return; }
 
-      // append items
       added.forEach(obj => $("changes").appendChild(makeChangeItem(obj)));
       updatePreview();
       showToast(`Imported ${added.length} change(s).`);
@@ -449,7 +468,7 @@
     reader.readAsText(file);
   }
 
-  // ----- generation -----
+  // ----- generation (MD/TXT/HTML/PDF) -----
   function generateMarkdown(){
     const org = escapeText($("org").value);
     const system = escapeText($("system").value);
@@ -466,10 +485,8 @@
     const signoff = escapeText($("signoff").value);
 
     const changes = getChanges();
-
     const lines = [];
-    lines.push(`# Audit Trail Notes`);
-    lines.push(``);
+    lines.push(`# Audit Trail Notes`, ``);
     lines.push(`**Organization/Team:** ${org || "—"}`);
     lines.push(`**System/Report/Dataset:** ${system || "—"}`);
     lines.push(`**Period/Cutoff:** ${period || "—"}`);
@@ -477,25 +494,23 @@
     lines.push(`**Change Date:** ${changeDate || "—"}`);
     lines.push(`**Ticket/Reference:** ${ticket || "—"}`);
     lines.push(`**Prepared By:** ${preparedBy || "—"}`);
-    lines.push(`**Reviewed By:** ${reviewedBy || "—"}`);
-    lines.push(``);
+    lines.push(`**Reviewed By:** ${reviewedBy || "—"}`, ``);
+
     lines.push(`## Summary`);
-    lines.push(summary ? summary : "—");
-    lines.push(``);
+    lines.push(summary ? summary : "—", ``);
 
     lines.push(`## Change Log`);
     if(!changes.length){
       lines.push(`- —`);
     } else {
       changes.forEach((c, idx) => {
-        const parts = [];
         const label = c.field ? `**${c.field}**` : `**Change #${idx+1}**`;
-        parts.push(label + `:`);
+        const parts = [label + `:`];
         if(c.from || c.to){
-          const fromTo = [];
-          if(c.from) fromTo.push(`from \`${c.from}\``);
-          if(c.to) fromTo.push(`to \`${c.to}\``);
-          parts.push(fromTo.join(" "));
+          const ft = [];
+          if(c.from) ft.push(`from \`${c.from}\``);
+          if(c.to)   ft.push(`to \`${c.to}\``);
+          parts.push(ft.join(" "));
         }
         if(c.reason) parts.push(`(Reason: ${c.reason})`);
         lines.push(`- ${parts.join(" ")}`.replace(/\s+/g," ").trim());
@@ -504,33 +519,26 @@
     lines.push(``);
 
     lines.push(`## Controls / Validation`);
-    lines.push(validation ? validation : "—");
-    lines.push(``);
+    lines.push(validation ? validation : "—", ``);
 
     lines.push(`## Impact Assessment`);
-    lines.push(impact ? impact : "—");
-    lines.push(``);
+    lines.push(impact ? impact : "—", ``);
 
     if(evidence){
       lines.push(`## Evidence / Attachments`);
-      lines.push(evidence);
-      lines.push(``);
+      lines.push(evidence, ``);
     }
-
     if(signoff){
       lines.push(`## Approvals / Sign-off`);
-      lines.push(signoff);
-      lines.push(``);
+      lines.push(signoff, ``);
     }
 
     lines.push(`---`);
     lines.push(`Generated locally with ReportMedic (client-side).`);
-
     return lines.join("\n");
   }
 
   function generatePlainText(){
-    // Keep it close to Markdown but without symbols
     const md = generateMarkdown();
     return md
       .replace(/^#\s+/gm, "")
@@ -539,27 +547,146 @@
       .replace(/`([^`]+)`/g, "$1");
   }
 
+  function generateHTMLDoc(){
+    const esc = (s) => String(s || "")
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+
+    const org = esc($("org").value);
+    const system = esc($("system").value);
+    const period = esc($("period").value);
+    const changeDate = esc($("changeDate").value);
+    const ticket = esc($("ticket").value);
+    const preparedBy = esc($("preparedBy").value);
+    const reviewedBy = esc($("reviewedBy").value);
+    const changeType = esc($("changeType").value);
+    const summary = esc($("summary").value).replace(/\n/g,"<br>");
+    const validation = esc($("validation").value).replace(/\n/g,"<br>");
+    const impact = esc($("impact").value).replace(/\n/g,"<br>");
+    const evidence = esc($("evidence").value).replace(/\n/g,"<br>");
+    const signoff = esc($("signoff").value).replace(/\n/g,"<br>");
+    const changes = getChanges();
+
+    const changeLis = changes.length
+      ? changes.map(c => {
+          const bits = [];
+          if(c.field) bits.push(`<strong>${esc(c.field)}</strong>`);
+          if(c.from || c.to){
+            const ft = [];
+            if(c.from) ft.push(`from <code>${esc(c.from)}</code>`);
+            if(c.to) ft.push(`to <code>${esc(c.to)}</code>`);
+            bits.push(ft.join(" "));
+          }
+          if(c.reason) bits.push(`<em>(Reason: ${esc(c.reason)})</em>`);
+          return `<li>${bits.join(" ")}</li>`;
+        }).join("")
+      : `<li>—</li>`;
+
+    return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Audit Trail Notes</title>
+<style>
+  body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;margin:24px;line-height:1.5;color:#111;}
+  h1{margin:0 0 10px;}
+  .meta{margin:0 0 16px;font-size:14px;}
+  .meta div{margin:2px 0;}
+  .box{border:1px solid #ddd;border-radius:12px;padding:14px;margin:14px 0;}
+  code{background:#f3f3f3;padding:2px 6px;border-radius:6px;}
+</style>
+</head>
+<body>
+<h1>Audit Trail Notes</h1>
+
+<div class="meta">
+  <div><strong>Organization/Team:</strong> ${org || "—"}</div>
+  <div><strong>System/Report/Dataset:</strong> ${system || "—"}</div>
+  <div><strong>Period/Cutoff:</strong> ${period || "—"}</div>
+  <div><strong>Change Type:</strong> ${changeType || "—"}</div>
+  <div><strong>Change Date:</strong> ${changeDate || "—"}</div>
+  <div><strong>Ticket/Reference:</strong> ${ticket || "—"}</div>
+  <div><strong>Prepared By:</strong> ${preparedBy || "—"}</div>
+  <div><strong>Reviewed By:</strong> ${reviewedBy || "—"}</div>
+</div>
+
+<div class="box">
+  <h2>Summary</h2>
+  <div>${summary || "—"}</div>
+</div>
+
+<div class="box">
+  <h2>Change Log</h2>
+  <ul>${changeLis}</ul>
+</div>
+
+<div class="box">
+  <h2>Controls / Validation</h2>
+  <div>${validation || "—"}</div>
+</div>
+
+<div class="box">
+  <h2>Impact Assessment</h2>
+  <div>${impact || "—"}</div>
+</div>
+
+${evidence ? `<div class="box"><h2>Evidence / Attachments</h2><div>${evidence}</div></div>` : ""}
+${signoff ? `<div class="box"><h2>Approvals / Sign-off</h2><div>${signoff}</div></div>` : ""}
+
+<hr>
+<div style="font-size:12px;color:#666">Generated locally with ReportMedic (client-side).</div>
+</body>
+</html>`;
+  }
+
+  function downloadPDFfromText(text){
+    // jsPDF is loaded as window.jspdf.jsPDF from the UMD build
+    const api = window.jspdf && window.jspdf.jsPDF;
+    if(!api){
+      showToast("PDF export unavailable (library not loaded). Try again or export HTML.");
+      return;
+    }
+    const doc = new api({ unit: "pt", format: "letter" });
+    const margin = 48;
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const maxW = pageW - margin*2;
+
+    doc.setFont("courier", "normal");
+    doc.setFontSize(10);
+
+    const lines = doc.splitTextToSize(String(text || ""), maxW);
+    let y = margin;
+    const lineH = 14;
+
+    lines.forEach((ln) => {
+      if(y + lineH > pageH - margin){
+        doc.addPage();
+        y = margin;
+      }
+      doc.text(ln, margin, y);
+      y += lineH;
+    });
+
+    doc.save(fileNameBase() + ".pdf");
+  }
+
   function updatePreview(){
     $("preview").textContent = generateMarkdown();
   }
 
-  // ----- events -----
-  function bindLive(ids){
-    ids.forEach(id => {
+  // ----- init -----
+  $("changeDate").value = todayISO();
+  $("changeType").value = "Correction";
+  $("changes").appendChild(makeChangeItem());
+  updatePreview();
+
+  ["org","system","period","changeDate","ticket","preparedBy","reviewedBy","changeType","summary","validation","impact","evidence","signoff"]
+    .forEach(id => {
       $(id).addEventListener("input", updatePreview);
       $(id).addEventListener("change", updatePreview);
     });
-  }
-
-  // init
-  $("changeDate").value = todayISO();
-  $("changes").appendChild(makeChangeItem()); // start with 1 change row
-  updatePreview();
-
-  bindLive([
-    "org","system","period","changeDate","ticket","preparedBy","reviewedBy",
-    "changeType","summary","validation","impact","evidence","signoff"
-  ]);
 
   $("addChangeBtn").addEventListener("click", () => {
     $("changes").appendChild(makeChangeItem());
@@ -570,7 +697,7 @@
     const f = e.target.files && e.target.files[0];
     if(!f) return;
     importCSV(f);
-    e.target.value = ""; // allow re-import same file
+    e.target.value = "";
   });
 
   $("copyBtn").addEventListener("click", async () => {
@@ -579,7 +706,6 @@
       await navigator.clipboard.writeText(text);
       showToast("Copied to clipboard.");
     }catch(err){
-      // fallback
       const ta = document.createElement("textarea");
       ta.value = text;
       document.body.appendChild(ta);
@@ -590,12 +716,29 @@
     }
   });
 
-  $("downloadMdBtn").addEventListener("click", () => {
-    download(fileNameBase() + ".md", generateMarkdown(), "text/markdown");
-  });
+  $("downloadBtn").addEventListener("click", () => {
+    const fmt = $("exportFormat").value;
+    const base = fileNameBase();
 
-  $("downloadTxtBtn").addEventListener("click", () => {
-    download(fileNameBase() + ".txt", generatePlainText(), "text/plain");
+    if(fmt === "md"){
+      download(base + ".md", generateMarkdown(), "text/markdown");
+      showToast("Downloaded MD.");
+      return;
+    }
+    if(fmt === "txt"){
+      download(base + ".txt", generatePlainText(), "text/plain");
+      showToast("Downloaded TXT.");
+      return;
+    }
+    if(fmt === "html"){
+      download(base + ".html", generateHTMLDoc(), "text/html");
+      showToast("Downloaded HTML.");
+      return;
+    }
+    if(fmt === "pdf"){
+      downloadPDFfromText(generatePlainText());
+      return;
+    }
   });
 
   $("resetBtn").addEventListener("click", () => {
@@ -620,16 +763,16 @@
       "Corrected revenue classification for two product lines due to a source-system mapping issue. Updated totals were re-tied to the GL and downstream dashboards were refreshed.";
 
     $("validation").value =
-      "1) Reconciled total revenue to GL (variance = 0).\\n" +
-      "2) Row-count and null checks on key fields (passed).\\n" +
+      "1) Reconciled total revenue to GL (variance = 0).\n" +
+      "2) Row-count and null checks on key fields (passed).\n" +
       "3) Spot-sampled 25 records against source extracts (passed).";
 
     $("impact").value =
       "Impacts revenue by product-line for Jan 2026 only; overall total revenue unchanged. Downstream consumers: Finance dashboard, executive summary pack. No change to historical periods.";
 
     $("evidence").value =
-      "- rev01_gl_tieout_2026-02-18.xlsx\\n" +
-      "- mapping_fix_screenshot.png\\n" +
+      "- rev01_gl_tieout_2026-02-18.xlsx\n" +
+      "- mapping_fix_screenshot.png\n" +
       "- query_output_before_after.txt";
 
     $("signoff").value =
@@ -652,7 +795,6 @@
     showToast("Sample loaded.");
   });
 
-  // Cmd/Ctrl+K focuses Summary
   window.addEventListener("keydown", (e) => {
     const isMac = navigator.platform.toUpperCase().includes("MAC");
     const mod = isMac ? e.metaKey : e.ctrlKey;
@@ -661,7 +803,6 @@
       $("summary").focus();
     }
   });
-
 })();
 </script>
 
