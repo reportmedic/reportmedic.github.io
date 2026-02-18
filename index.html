@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ReportMedic — Home</title>
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <style>
+    .hero{margin-top:18px;display:grid;grid-template-columns:1.3fr .9fr;gap:18px;align-items:stretch;}
+    @media (max-width:900px){.hero{grid-template-columns:1fr}}
+    .searchRow{display:flex;gap:10px;margin-top:14px;align-items:center;}
+    .searchRow input{flex:1;padding:12px 12px;border-radius:12px;border:1px solid var(--border);outline:none;background:rgba(255,255,255,.04);color:var(--text);}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .chip{font-size:12px;padding:8px 10px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);cursor:pointer;user-select:none;}
+    .chip.active{color:#061021;background:linear-gradient(135deg, rgba(110,168,255,.95), rgba(124,247,212,.95));border:none;font-weight:700;}
+    .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px;}
+    .kpi{background:rgba(16,26,47,.65);border:1px solid var(--border);border-radius:14px;padding:12px;}
+    .kpi strong{display:block;font-size:14px}
+    .kpi span{color:var(--muted);font-size:12px}
+    /* Drawer */
+    .drawerOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:40;}
+    .drawer{position:fixed;right:0;top:0;width:420px;max-width:92vw;height:100vh;background:rgba(8,12,22,.96);border-left:1px solid var(--border);box-shadow:-18px 0 40px rgba(0,0,0,.55);padding:14px;transform:translateX(102%);transition:transform .18s ease;z-index:50;display:flex;flex-direction:column;}
+    .drawer.open{transform:translateX(0)}
+    .drawerHeader{display:flex;align-items:center;gap:10px;padding:8px 6px 12px;border-bottom:1px solid var(--border);}
+    .drawerHeader strong{font-size:14px}
+    .drawerList{padding:12px 4px;overflow:auto;display:flex;flex-direction:column;gap:10px;}
+    .row{display:flex;gap:10px;padding:10px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.03);cursor:pointer;text-decoration:none;}
+    .row:hover{border-color:rgba(124,247,212,.45)}
+    .row .rTitle{font-weight:800;font-size:13px}
+    .row .rDesc{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.35}
+    .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:rgba(255,255,255,.08);border:1px solid var(--border);padding:10px 12px;border-radius:12px;color:var(--text);font-size:13px;display:none;z-index:60;backdrop-filter:blur(10px);}
+  </style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <div class="logo">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn" id="openDrawerBtn">All Tools</button>
+    <a class="btn primary" href="#toolbox">Get Started</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <div class="panel">
+      <h1>Fix, compare, and explain reports — fast.</h1>
+      <p class="sub">
+        ReportMedic gives you 10 focused tools for cleaning data, validating reports, finding differences,
+        and generating quick insights — without building a giant workflow.
+      </p>
+
+      <div class="searchRow">
+        <input id="search" placeholder="Search tools… e.g., compare, validate, pivot, audit" />
+        <button class="btn" id="clearBtn">Clear</button>
+      </div>
+
+      <div class="chips" id="chips">
+        <div class="chip active" data-cat="All">All</div>
+        <div class="chip" data-cat="Compare">Compare</div>
+        <div class="chip" data-cat="Clean">Clean</div>
+        <div class="chip" data-cat="Validate">Validate</div>
+        <div class="chip" data-cat="Analyze">Analyze</div>
+        <div class="chip" data-cat="Export">Export</div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi">
+          <strong>3 ways to find tools</strong>
+          <span>Search • Categories • All Tools panel</span>
+        </div>
+        <div class="kpi">
+          <strong>Instant discovery</strong>
+          <span>Type any keyword → matching tools appear</span>
+        </div>
+        <div class="kpi">
+          <strong>Tool-first design</strong>
+          <span>Each tool does one job extremely well</span>
+        </div>
+        <div class="kpi">
+          <strong>Quick launch</strong>
+          <span>Click any card to open the tool</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <div>
+          <div style="font-weight:900; font-size:16px;">Today’s workflow</div>
+          <div style="color:var(--muted); font-size:13px; margin-top:4px; line-height:1.45;">
+            Upload your report → pick a tool → export a clean result or explanation.
+          </div>
+        </div>
+        <a class="btn" href="/docs/quickstart.html">Quickstart</a>
+      </div>
+
+      <div style="margin-top:14px; border:1px dashed var(--border); border-radius:14px; padding:14px; background:rgba(255,255,255,.02)">
+        <div style="font-weight:800; font-size:13px;">What users usually do first</div>
+        <ol style="margin:10px 0 0 18px; color:var(--muted); font-size:13px; line-height:1.6;">
+          <li>Search “compare” → open “Report Compare”</li>
+          <li>Validate totals and missing fields</li>
+          <li>Export a clean version or summary notes</li>
+        </ol>
+      </div>
+
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn" href="/tools/compare.html">Open Compare</a>
+        <a class="btn" href="/tools/validator.html">Open Validator</a>
+        <button class="btn" id="quickAll">Browse All 10</button>
+      </div>
+
+      <div class="hr"></div>
+      <div class="small">
+        <div><strong>Docs:</strong> <a href="/docs/privacy.html">Privacy</a> • <a href="/docs/terms.html">Terms</a></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="toolbox">
+    <div style="display:flex; align-items:end; justify-content:space-between; gap:10px; margin-top:18px;">
+      <div>
+        <div style="font-weight:900; font-size:16px;">Toolbox (10)</div>
+        <div style="color:var(--muted); font-size:13px; margin-top:4px;">
+          Filtered results update live as users type or select categories.
+        </div>
+      </div>
+      <div style="color:var(--muted); font-size:12px;" id="countLabel"></div>
+    </div>
+
+    <div class="grid" id="toolGrid"></div>
+  </section>
+
+  <div class="footer">GitHub Pages launch pack — wire real tool functionality later.</div>
+</div>
+
+<!-- Drawer -->
+<div class="drawerOverlay" id="overlay"></div>
+<aside class="drawer" id="drawer" aria-label="All Tools Drawer">
+  <div class="drawerHeader">
+    <button class="btn" id="closeDrawerBtn">Close</button>
+    <strong>All Tools (10)</strong>
+    <div class="spacer"></div>
+  </div>
+  <div class="drawerList" id="drawerList"></div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const tools = [
+    { id:"compare", name:"Report Compare", icon:"≋", cat:["Compare","Analyze"], desc:"Compare two reports and highlight diffs by key fields.", tags:["diff","keys","columns"] },
+    { id:"reconcile", name:"Reconciliation", icon:"✓", cat:["Compare","Validate"], desc:"Match totals, track variance, and explain gaps.", tags:["variance","totals"] },
+    { id:"cleaner", name:"Data Cleaner", icon:"✦", cat:["Clean"], desc:"Trim, normalize, dedupe, fix dates, and standardize formats.", tags:["dedupe","normalize"] },
+    { id:"validator", name:"Schema Validator", icon:"⊢", cat:["Validate"], desc:"Validate required fields, types, ranges, and null rules.", tags:["rules","nulls"] },
+    { id:"outliers", name:"Outlier Finder", icon:"⚡", cat:["Analyze","Validate"], desc:"Detect spikes, anomalies, and suspicious rows fast.", tags:["anomaly","spikes"] },
+    { id:"pivot", name:"Quick Pivot", icon:"▦", cat:["Analyze"], desc:"Instant pivot tables & group summaries (counts/sums/avg).", tags:["groupby","summary"] },
+    { id:"audit", name:"Audit Trail Notes", icon:"✎", cat:["Analyze"], desc:"Generate audit-ready explanations and change notes.", tags:["notes","explain"] },
+    { id:"mask", name:"PII Masker", icon:"◎", cat:["Clean","Export"], desc:"Mask sensitive fields for safe sharing.", tags:["pii","redact"] },
+    { id:"export", name:"Export Studio", icon:"⇣", cat:["Export"], desc:"Export cleaned/merged results as CSV/XLSX + summary.", tags:["csv","xlsx"] },
+    { id:"scheduler", name:"Run Scheduler", icon:"⏱", cat:["Export","Validate"], desc:"Save a run config and repeat it on new files.", tags:["repeat","config"] },
+  ];
+
+  const routes = {
+    compare: "/tools/compare.html",
+    reconcile: "/tools/reconcile.html",
+    cleaner: "/tools/cleaner.html",
+    validator: "/tools/validator.html",
+    outliers: "/tools/outliers.html",
+    pivot: "/tools/pivot.html",
+    audit: "/tools/audit.html",
+    mask: "/tools/mask.html",
+    export: "/tools/export.html",
+    scheduler: "/tools/scheduler.html",
+  };
+
+  const toolGrid = document.getElementById("toolGrid");
+  const drawerList = document.getElementById("drawerList");
+  const search = document.getElementById("search");
+  const clearBtn = document.getElementById("clearBtn");
+  const chips = document.getElementById("chips");
+  const countLabel = document.getElementById("countLabel");
+
+  const drawer = document.getElementById("drawer");
+  const overlay = document.getElementById("overlay");
+  const openDrawerBtn = document.getElementById("openDrawerBtn");
+  const closeDrawerBtn = document.getElementById("closeDrawerBtn");
+  const toast = document.getElementById("toast");
+
+  let activeCat = "All";
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.style.display = "block";
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=> toast.style.display = "none", 1600);
+  }
+
+  function openTool(t){
+    const url = routes[t.id] || "#";
+    if(url === "#"){ showToast("Missing route"); return; }
+    window.location.href = url;
+  }
+
+  function renderCards(list){
+    toolGrid.innerHTML = "";
+    list.forEach(t=>{
+      const el = document.createElement("a");
+      el.className = "card";
+      el.href = routes[t.id] || "#";
+      el.innerHTML = `
+        <div class="topline">
+          <div class="icon">${t.icon}</div>
+          <div class="title">${t.name}</div>
+        </div>
+        <div class="desc">${t.desc}</div>
+        <div class="meta">
+          ${t.cat.map(c=> `<span class="tag">${c}</span>`).join("")}
+          ${t.tags.slice(0,2).map(x=> `<span class="tag">${x}</span>`).join("")}
+        </div>
+      `;
+      toolGrid.appendChild(el);
+    });
+    countLabel.textContent = `Showing ${list.length} of ${tools.length}`;
+  }
+
+  function renderDrawer(){
+    drawerList.innerHTML = "";
+    tools.forEach(t=>{
+      const row = document.createElement("a");
+      row.className = "row";
+      row.href = routes[t.id] || "#";
+      row.innerHTML = `
+        <div class="icon" style="width:32px;height:32px;border-radius:12px;">${t.icon}</div>
+        <div>
+          <div class="rTitle">${t.name}</div>
+          <div class="rDesc">${t.desc}</div>
+        </div>
+      `;
+      drawerList.appendChild(row);
+    });
+  }
+
+  function matches(t, q, cat){
+    const qq = q.trim().toLowerCase();
+    const text = (t.name + " " + t.desc + " " + t.tags.join(" ") + " " + t.cat.join(" ")).toLowerCase();
+    const qok = !qq || text.includes(qq);
+    const cok = (cat === "All") || t.cat.includes(cat);
+    return qok && cok;
+  }
+
+  function applyFilters(){
+    const q = search.value || "";
+    const list = tools.filter(t => matches(t, q, activeCat));
+    renderCards(list);
+  }
+
+  chips.addEventListener("click", (e)=>{
+    const chip = e.target.closest(".chip");
+    if(!chip) return;
+    activeCat = chip.dataset.cat;
+    [...chips.querySelectorAll(".chip")].forEach(c=> c.classList.toggle("active", c.dataset.cat === activeCat));
+    applyFilters();
+  });
+
+  search.addEventListener("input", applyFilters);
+  clearBtn.onclick = ()=> { search.value=""; applyFilters(); search.focus(); };
+
+  function openDrawer(){
+    overlay.style.display = "block";
+    drawer.classList.add("open");
+  }
+  function closeDrawer(){
+    overlay.style.display = "none";
+    drawer.classList.remove("open");
+  }
+  openDrawerBtn.onclick = openDrawer;
+  closeDrawerBtn.onclick = closeDrawer;
+  overlay.onclick = closeDrawer;
+  document.getElementById("quickAll").onclick = openDrawer;
+
+  renderDrawer();
+  renderCards(tools);
+</script>
+</body>
+</html>

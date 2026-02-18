@@ -1,0 +1,5 @@
+title: ReportMedic
+description: Fast, focused tools to fix, compare, validate, and export reports.
+theme: jekyll-theme-minimal
+# Because we use custom HTML pages, Jekyll mostly stays out of the way.
+# You can later convert pages to Markdown layouts if you want.
