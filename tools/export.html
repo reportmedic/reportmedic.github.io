@@ -4,11 +4,54 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Export Studio — ReportMedic</title>
-  
+
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/reportmedic-48.png?v=1">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png">
-<link rel="stylesheet" href="/assets/css/styles.css">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+
+  <!-- GitHub Pages friendly: client-side parsing + XLSX export -->
+  <script defer src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+    @media (max-width: 980px){.grid3{grid-template-columns:1fr}}
+    @media (max-width: 880px){.grid2{grid-template-columns:1fr}}
+    .card{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;background:rgba(0,0,0,.10)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .muted{opacity:.8}
+    .tiny{font-size:12px;opacity:.78}
+    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;border:1px solid rgba(255,255,255,.12);border-bottom-color:rgba(255,255,255,.22);padding:2px 6px;border-radius:8px;opacity:.9}
+    .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px}
+    .pill b{font-size:12px}
+    .hr2{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
+    .input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.16);color:inherit}
+    .btn.small{padding:8px 10px;font-size:13px}
+    .tablewrap{overflow:auto;border:1px solid rgba(255,255,255,.10);border-radius:14px}
+    table{border-collapse:separate;border-spacing:0;width:100%;min-width:980px}
+    th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+    th{position:sticky;top:0;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);text-align:left;font-size:12px;letter-spacing:.02em;opacity:.9}
+    tr:last-child td{border-bottom:none}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;border:1px solid rgba(255,255,255,.12)}
+    .b-ok{background:rgba(46, 204, 113, .12)}
+    .b-warn{background:rgba(241, 196, 15, .12)}
+    .b-info{background:rgba(52, 152, 219, .10)}
+    .b-bad{background:rgba(231, 76, 60, .12)}
+    .chklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
+    @media (max-width: 540px){.chklist{grid-template-columns:1fr}}
+    .chk{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border:1px solid rgba(255,255,255,.10);border-radius:12px}
+    .chk input{transform:translateY(2px)}
+    .note{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
+    .mini{font-size:12px;line-height:1.35;opacity:.9}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width: 780px){.split{grid-template-columns:1fr}}
+    .list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+    .colItem{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:8px 10px}
+    .colItem input[type="text"]{padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.14);color:inherit}
+  </style>
 </head>
 <body>
 <header>
@@ -27,19 +70,986 @@
 <div class="wrap">
   <div class="panel">
     <h1>Export Studio</h1>
-    <p class="sub">Export cleaned/merged results as CSV/XLSX + summary.</p>
+    <p class="sub">Combine files, choose columns, build a summary, then export CSV/XLSX — in your browser.</p>
+
     <div class="hr"></div>
-    <p class="small">
-      This is a placeholder page for the GitHub Pages launch. Next, you can wire the actual tool UI here
-      (upload, parse, run, export) or embed your W3 Try-it prototype.
-    </p>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <div style="font-weight:700">Input</div>
+            <div class="tiny muted">Upload 1+ files (CSV/TSV/XLSX/XLS/TXT-delimited)</div>
+          </div>
+          <span id="meta" class="pill tiny"><b>Loaded:</b><span class="muted">none</span></span>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <input id="files" class="input" type="file" multiple accept=".csv,.tsv,.xlsx,.xls,.txt" />
+        </div>
+
+        <div class="hr2"></div>
+
+        <div class="row">
+          <label class="tiny muted">Mode</label>
+          <select id="mode" class="input" style="width:auto;min-width:220px">
+            <option value="single" selected>Single dataset</option>
+            <option value="append_union">Append (union columns)</option>
+            <option value="append_common">Append (common columns only)</option>
+          </select>
+
+          <label class="tiny muted">Delimiter</label>
+          <select id="delimiter" class="input" style="width:auto;min-width:190px">
+            <option value="auto" selected>Auto-detect</option>
+            <option value=",">Comma (,)</option>
+            <option value="\t">Tab (TSV)</option>
+            <option value=";">Semicolon (;)</option>
+            <option value="|">Pipe (|)</option>
+          </select>
+
+          <label class="tiny muted">Preview</label>
+          <select id="previewN" class="input" style="width:auto;min-width:150px">
+            <option value="25" selected>25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+
+        <div id="msg" class="tiny muted" style="margin-top:10px"></div>
+
+        <div class="note tiny muted">
+          TXT works when it’s actually CSV/TSV style (header row + delimiter).
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:700">Export</div>
+        <div class="tiny muted">Choose format + include a summary</div>
+
+        <div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
+          <span class="badge b-info">Rows: <b id="statRows" class="mono">—</b></span>
+          <span class="badge b-info">Cols: <b id="statCols" class="mono">—</b></span>
+          <span class="badge b-warn">Hidden cols: <b id="statHidden" class="mono">0</b></span>
+          <span class="badge b-bad">Dropped rows: <b id="statDropped" class="mono">0</b></span>
+        </div>
+
+        <div class="hr2"></div>
+
+        <div class="row">
+          <label class="tiny muted">Output</label>
+          <select id="outFmt" class="input" style="width:auto;min-width:200px">
+            <option value="csv" selected>CSV</option>
+            <option value="xlsx">XLSX</option>
+          </select>
+
+          <label class="tiny muted">Name</label>
+          <input id="outName" class="input" style="width:auto;min-width:240px" placeholder="reportmedic_export" value="reportmedic_export"/>
+        </div>
+
+        <div class="chk" style="margin-top:10px">
+          <input id="optSummary" type="checkbox" checked />
+          <div>
+            <label for="optSummary"><b>Include Summary</b></label>
+            <div class="tiny muted">adds a summary sheet (XLSX) or a separate text report (CSV)</div>
+          </div>
+        </div>
+
+        <div class="chk" style="margin-top:8px">
+          <input id="optBOM" type="checkbox" checked />
+          <div>
+            <label for="optBOM"><b>Excel-friendly CSV (UTF‑8 BOM)</b></label>
+            <div class="tiny muted">helps Excel open non-English text correctly</div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <button id="build" class="btn primary" disabled>Build export</button>
+          <button id="download" class="btn" disabled>Download</button>
+          <button id="downloadSummary" class="btn" disabled>Download summary</button>
+        </div>
+
+        <div class="note tiny muted">
+          Everything runs locally in your browser (no server upload required).
+        </div>
+      </div>
+    </div>
+
+    <div class="hr2"></div>
+
+    <div class="grid3">
+      <div class="card">
+        <div style="font-weight:700">1) Column selection</div>
+        <div class="tiny muted">Hide columns you don’t want to export</div>
+
+        <input id="colSearch" class="input" placeholder="Search columns…" style="margin-top:10px"/>
+
+        <div id="colChecks" class="chklist" aria-live="polite"></div>
+
+        <div class="row" style="margin-top:10px">
+          <button id="showAll" class="btn small">Show all</button>
+          <button id="hideAll" class="btn small">Hide all</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:700">2) Rename & reorder</div>
+        <div class="tiny muted">Optional: rename headers and control final column order</div>
+
+        <div class="row" style="margin-top:10px">
+          <button id="resetCols" class="btn small">Reset to original</button>
+          <button id="alphaCols" class="btn small">Sort A→Z</button>
+        </div>
+
+        <div id="colList" class="list" aria-live="polite"></div>
+
+        <div class="note tiny muted">
+          Reorder affects export only. Preview remains stable.
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:700">3) Rows & quality</div>
+        <div class="tiny muted">Optional: drop blank rows and dedupe by keys</div>
+
+        <div class="chk" style="margin-top:10px">
+          <input id="optDropBlank" type="checkbox" checked />
+          <div>
+            <label for="optDropBlank"><b>Drop blank rows</b></label>
+            <div class="tiny muted">remove rows where every exported cell is empty</div>
+          </div>
+        </div>
+
+        <div class="chk" style="margin-top:8px">
+          <input id="optDedupe" type="checkbox" />
+          <div>
+            <label for="optDedupe"><b>Dedupe rows</b></label>
+            <div class="tiny muted">keep first occurrence and remove duplicates by keys</div>
+          </div>
+        </div>
+
+        <div class="hr2"></div>
+
+        <div class="tiny muted">Dedupe keys (optional)</div>
+        <input id="keySearch" class="input" placeholder="Search columns for dedupe keys…" style="margin-top:10px"/>
+        <div id="keyChecks" class="chklist" aria-live="polite"></div>
+
+        <div class="note tiny muted">
+          If no keys are selected, dedupe uses the full exported row.
+        </div>
+      </div>
+    </div>
+
+    <div class="hr2"></div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <div style="font-weight:700">Preview</div>
+          <div class="tiny muted">First N rows of what will be exported</div>
+        </div>
+        <div class="row">
+          <label class="tiny muted">Sheet name (XLSX)</label>
+          <input id="sheetName" class="input" style="width:auto;min-width:220px" value="Export"/>
+        </div>
+      </div>
+
+      <div class="split" style="margin-top:12px">
+        <div class="tablewrap">
+          <table>
+            <thead><tr id="thead"></tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="card" style="margin:0">
+          <div style="font-weight:700">Summary</div>
+          <div class="tiny muted">Missing values + quick numeric stats</div>
+          <div class="hr2"></div>
+          <div id="summaryBox" class="mini muted">Load files, then build export to generate summary.</div>
+        </div>
+      </div>
+    </div>
 
     <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
       <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
       <a class="btn" href="/docs/contact.html">Contact</a>
     </div>
   </div>
+
   <div class="footer">© 2026 ReportMedic</div>
 </div>
+
+<script>
+(function(){
+  const $ = (id) => document.getElementById(id);
+
+  const el = {
+    files: $("files"),
+    meta: $("meta"),
+    msg: $("msg"),
+    mode: $("mode"),
+    delimiter: $("delimiter"),
+    previewN: $("previewN"),
+
+    // export
+    outFmt: $("outFmt"),
+    outName: $("outName"),
+    sheetName: $("sheetName"),
+    optSummary: $("optSummary"),
+    optBOM: $("optBOM"),
+    build: $("build"),
+    download: $("download"),
+    downloadSummary: $("downloadSummary"),
+
+    // stats
+    statRows: $("statRows"),
+    statCols: $("statCols"),
+    statHidden: $("statHidden"),
+    statDropped: $("statDropped"),
+
+    // columns
+    colSearch: $("colSearch"),
+    colChecks: $("colChecks"),
+    showAll: $("showAll"),
+    hideAll: $("hideAll"),
+    resetCols: $("resetCols"),
+    alphaCols: $("alphaCols"),
+    colList: $("colList"),
+
+    // row quality
+    optDropBlank: $("optDropBlank"),
+    optDedupe: $("optDedupe"),
+    keySearch: $("keySearch"),
+    keyChecks: $("keyChecks"),
+
+    // preview + summary
+    thead: $("thead"),
+    tbody: $("tbody"),
+    summaryBox: $("summaryBox"),
+  };
+
+  let state = {
+    inputs: [],   // array of {name, rows, cols}
+    dataset: null, // {rows, cols} merged/selected (raw)
+    colOrder: [],  // current column order (after rename/reorder), values are original col ids
+    colHidden: new Set(),
+    colRename: new Map(), // original->newName
+    dedupeKeys: new Set(),
+    built: null,  // {rows, cols, headerNames, summaryText, summaryObj}
+    lastSummaryText: null
+  };
+
+  function escapeHtml(s){
+    return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function setMeta(){
+    if(!state.inputs.length){
+      el.meta.innerHTML = `<b>Loaded:</b><span class="muted">none</span>`;
+      return;
+    }
+    const total = state.inputs.reduce((acc,x)=>acc + (x.rows?.length || 0), 0);
+    el.meta.innerHTML = `<b>Loaded:</b><span class="mono muted">${state.inputs.length} file(s)</span> <span class="muted">(${total} rows total)</span>`;
+  }
+
+  function parseFile(file){
+    const name = file?.name || "file";
+    const ext = name.split(".").pop().toLowerCase();
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Could not read file."));
+
+      if(ext === "xlsx" || ext === "xls"){
+        reader.onload = (e) => {
+          try{
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, {type:"array"});
+            const sheetName = wb.SheetNames[0];
+            const ws = wb.Sheets[sheetName];
+            const json = XLSX.utils.sheet_to_json(ws, {defval:""});
+            const cols = json.length ? Object.keys(json[0]) : [];
+            resolve({name, rows: json, cols});
+          }catch(err){ reject(err); }
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        reader.onload = (e) => {
+          try{
+            const text = e.target.result;
+            const delimOpt = el.delimiter.value;
+            const config = {header:true, skipEmptyLines:true, dynamicTyping:false};
+            if(delimOpt !== "auto"){
+              config.delimiter = (delimOpt === "\\t") ? "\t" : delimOpt;
+            }
+            const res = Papa.parse(text, config);
+            if(res.errors && res.errors.length){
+              console.warn("PapaParse errors", res.errors);
+            }
+            const rows = (res.data || []).filter(r => r && Object.keys(r).length);
+            const cols = rows.length ? Object.keys(rows[0]) : (res.meta?.fields || []);
+            resolve({name, rows, cols});
+          }catch(err){ reject(err); }
+        };
+        reader.readAsText(file);
+      }
+    });
+  }
+
+  function buildDatasetFromInputs(){
+    if(!state.inputs.length){ state.dataset = null; return; }
+    const mode = el.mode.value;
+
+    if(mode === "single" || state.inputs.length === 1){
+      const first = state.inputs[0];
+      state.dataset = {rows: first.rows.slice(), cols: first.cols.slice()};
+      return;
+    }
+
+    // append modes
+    const allCols = new Set();
+    state.inputs.forEach(x => x.cols.forEach(c => allCols.add(c)));
+
+    let colsUnion = Array.from(allCols);
+    // stable-ish order: columns from first file first, then new ones
+    const firstCols = state.inputs[0].cols;
+    colsUnion = firstCols.concat(colsUnion.filter(c => !firstCols.includes(c)));
+
+    let colsCommon = firstCols.slice();
+    for(const inp of state.inputs.slice(1)){
+      const s = new Set(inp.cols);
+      colsCommon = colsCommon.filter(c => s.has(c));
+    }
+
+    const finalCols = (mode === "append_common") ? colsCommon : colsUnion;
+    const outRows = [];
+
+    for(const inp of state.inputs){
+      for(const r of inp.rows){
+        const o = {};
+        for(const c of finalCols){
+          o[c] = (r && Object.prototype.hasOwnProperty.call(r, c)) ? r[c] : "";
+        }
+        outRows.push(o);
+      }
+    }
+
+    state.dataset = {rows: outRows, cols: finalCols};
+  }
+
+  function ensureColumnState(){
+    if(!state.dataset){ return; }
+    const cols = state.dataset.cols;
+
+    // init order if empty or mismatched
+    const cur = state.colOrder.filter(c => cols.includes(c));
+    const missing = cols.filter(c => !cur.includes(c));
+    state.colOrder = cur.concat(missing);
+
+    // drop hidden/renames for columns that disappeared
+    state.colHidden = new Set(Array.from(state.colHidden).filter(c => cols.includes(c)));
+    const newRename = new Map();
+    for(const [k,v] of state.colRename.entries()){
+      if(cols.includes(k)) newRename.set(k,v);
+    }
+    state.colRename = newRename;
+
+    state.dedupeKeys = new Set(Array.from(state.dedupeKeys).filter(c => cols.includes(c)));
+  }
+
+  function updateStats(dropped=0){
+    if(!state.dataset){
+      el.statRows.textContent = "—";
+      el.statCols.textContent = "—";
+      el.statHidden.textContent = "0";
+      el.statDropped.textContent = "0";
+      return;
+    }
+    el.statRows.textContent = String(state.dataset.rows.length);
+    el.statCols.textContent = String(state.dataset.cols.length);
+    el.statHidden.textContent = String(state.colHidden.size);
+    el.statDropped.textContent = String(dropped);
+  }
+
+  function renderColumnChecks(){
+    el.colChecks.innerHTML = "";
+    if(!state.dataset){
+      el.colChecks.innerHTML = `<div class="tiny muted">Load files to configure columns.</div>`;
+      return;
+    }
+    const q = (el.colSearch.value || "").toLowerCase().trim();
+    const cols = state.colOrder.slice();
+
+    const show = cols.filter(c => !q || c.toLowerCase().includes(q));
+    if(!show.length){
+      el.colChecks.innerHTML = `<div class="tiny muted">No columns found.</div>`;
+      return;
+    }
+
+    for(const c of show){
+      const id = `c_${c.replace(/[^a-zA-Z0-9_-]/g,'_')}`;
+      const checked = !state.colHidden.has(c);
+      const div = document.createElement("div");
+      div.className = "chk";
+      div.innerHTML = `
+        <input id="${id}" type="checkbox" ${checked ? "checked":""}/>
+        <div>
+          <label for="${id}" class="mono">${escapeHtml(c)}</label>
+          <div class="tiny muted">${checked ? "Included in export" : "Hidden from export"}</div>
+        </div>
+      `;
+      div.querySelector("input").addEventListener("change", (e)=>{
+        if(e.target.checked) state.colHidden.delete(c);
+        else state.colHidden.add(c);
+        updateStats();
+        state.built = null;
+        el.download.disabled = true;
+        el.downloadSummary.disabled = true;
+        el.msg.textContent = "Column selection changed — rebuild export.";
+      });
+      el.colChecks.appendChild(div);
+    }
+    updateStats();
+  }
+
+  function colDisplayName(orig){
+    return state.colRename.get(orig) || orig;
+  }
+
+  function renderColList(){
+    el.colList.innerHTML = "";
+    if(!state.dataset){
+      el.colList.innerHTML = `<div class="tiny muted">Load files to rename/reorder.</div>`;
+      return;
+    }
+    const cols = state.colOrder.slice().filter(c => !state.colHidden.has(c));
+    if(!cols.length){
+      el.colList.innerHTML = `<div class="tiny muted">No columns selected for export.</div>`;
+      return;
+    }
+
+    cols.slice(0, 80).forEach((c, idx)=>{
+      const div = document.createElement("div");
+      div.className = "colItem";
+      div.innerHTML = `
+        <div class="mono tiny muted">${idx+1}</div>
+        <div>
+          <div class="mono">${escapeHtml(c)}</div>
+          <div class="tiny muted">Export name</div>
+          <input type="text" value="${escapeHtml(colDisplayName(c))}" data-col="${escapeHtml(c)}"/>
+        </div>
+        <div class="row" style="gap:6px;justify-content:flex-end">
+          <button class="btn small" data-act="up" data-col="${escapeHtml(c)}">↑</button>
+          <button class="btn small" data-act="down" data-col="${escapeHtml(c)}">↓</button>
+        </div>
+      `;
+      div.querySelector("input").addEventListener("input", (e)=>{
+        const v = e.target.value || "";
+        if(v.trim() === "" || v === c){
+          state.colRename.delete(c);
+        }else{
+          state.colRename.set(c, v);
+        }
+        state.built = null;
+        el.download.disabled = true;
+        el.downloadSummary.disabled = true;
+      });
+      div.querySelectorAll("button").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const act = btn.getAttribute("data-act");
+          moveColumn(c, act === "up" ? -1 : 1);
+        });
+      });
+      el.colList.appendChild(div);
+    });
+
+    if(cols.length > 80){
+      const more = document.createElement("div");
+      more.className = "tiny muted";
+      more.textContent = `Showing first 80 columns in reorder list (export will still include all selected columns).`;
+      el.colList.appendChild(more);
+    }
+  }
+
+  function moveColumn(col, delta){
+    const i = state.colOrder.indexOf(col);
+    if(i < 0) return;
+    const j = i + delta;
+    if(j < 0 || j >= state.colOrder.length) return;
+    const arr = state.colOrder.slice();
+    const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    state.colOrder = arr;
+    renderColumnChecks();
+    renderColList();
+    state.built = null;
+    el.download.disabled = true;
+    el.downloadSummary.disabled = true;
+    el.msg.textContent = "Column order changed — rebuild export.";
+  }
+
+  function renderKeyChecks(){
+    el.keyChecks.innerHTML = "";
+    if(!state.dataset){
+      el.keyChecks.innerHTML = `<div class="tiny muted">Load files to pick dedupe keys.</div>`;
+      return;
+    }
+    const q = (el.keySearch.value || "").toLowerCase().trim();
+    const cols = state.dataset.cols.slice();
+    const show = cols.filter(c => !q || c.toLowerCase().includes(q));
+
+    if(!show.length){
+      el.keyChecks.innerHTML = `<div class="tiny muted">No columns found.</div>`;
+      return;
+    }
+
+    for(const c of show){
+      const id = `k_${c.replace(/[^a-zA-Z0-9_-]/g,'_')}`;
+      const checked = state.dedupeKeys.has(c);
+      const div = document.createElement("div");
+      div.className = "chk";
+      div.innerHTML = `
+        <input id="${id}" type="checkbox" ${checked ? "checked":""}/>
+        <div>
+          <label for="${id}" class="mono">${escapeHtml(c)}</label>
+          <div class="tiny muted">Use as dedupe identity (when dedupe is enabled)</div>
+        </div>
+      `;
+      div.querySelector("input").addEventListener("change", (e)=>{
+        if(e.target.checked) state.dedupeKeys.add(c);
+        else state.dedupeKeys.delete(c);
+        state.built = null;
+        el.download.disabled = true;
+        el.downloadSummary.disabled = true;
+        el.msg.textContent = "Dedupe keys changed — rebuild export.";
+      });
+      el.keyChecks.appendChild(div);
+    }
+  }
+
+  function exportedCols(){
+    if(!state.dataset) return [];
+    return state.colOrder.filter(c => !state.colHidden.has(c));
+  }
+
+  function isRowBlank(row, cols){
+    for(const c of cols){
+      const v = row[c];
+      if(String(v ?? "").trim() !== "") return false;
+    }
+    return true;
+  }
+
+  function buildSummary(rows, cols, headerNames){
+    // Missing counts + quick numeric stats (min/max/avg) for numeric-like columns
+    const missing = {};
+    const numeric = {};
+    cols.forEach((c,i)=>{
+      missing[c] = 0;
+      numeric[c] = {count:0, sum:0, min:null, max:null};
+    });
+
+    for(const r of rows){
+      cols.forEach((c)=>{
+        const v = r[c];
+        const s = String(v ?? "").trim();
+        if(s === ""){
+          missing[c] += 1;
+          return;
+        }
+        // numeric-ish: allow commas
+        const t = s.replace(/,/g,"");
+        if(/^[-]?\d+(\.\d+)?$/.test(t)){
+          const n = Number(t);
+          if(Number.isFinite(n)){
+            const st = numeric[c];
+            st.count += 1;
+            st.sum += n;
+            st.min = (st.min === null) ? n : Math.min(st.min, n);
+            st.max = (st.max === null) ? n : Math.max(st.max, n);
+          }
+        }
+      });
+    }
+
+    const lines = [];
+    lines.push("EXPORT STUDIO SUMMARY");
+    lines.push(`Rows: ${rows.length}`);
+    lines.push(`Columns: ${cols.length}`);
+    lines.push("");
+    lines.push("Missing values (top 15):");
+    const missList = cols.map(c=>({c, n: missing[c]})).sort((a,b)=>b.n-a.n).slice(0,15);
+    missList.forEach(x=>{
+      const pct = rows.length ? ((x.n/rows.length)*100).toFixed(1) : "0.0";
+      lines.push(`- ${headerNames.get(x.c) || x.c}: ${x.n} (${pct}%)`);
+    });
+
+    lines.push("");
+    lines.push("Numeric stats (top 12 by numeric count):");
+    const numList = cols
+      .map(c=>({c, ...numeric[c]}))
+      .filter(x=>x.count>0)
+      .sort((a,b)=>b.count-a.count)
+      .slice(0,12);
+
+    if(!numList.length){
+      lines.push("- (no numeric columns detected)");
+    }else{
+      numList.forEach(x=>{
+        const avg = x.count ? (x.sum/x.count) : 0;
+        lines.push(`- ${headerNames.get(x.c) || x.c}: count=${x.count}, min=${x.min}, max=${x.max}, avg=${avg.toFixed(4)}`);
+      });
+    }
+
+    return {
+      text: lines.join("\n"),
+      obj: {rows: rows.length, cols: cols.length, missing, numeric}
+    };
+  }
+
+  function renderSummaryBox(summaryText){
+    if(!summaryText){
+      el.summaryBox.textContent = "Load files, then build export to generate summary.";
+      return;
+    }
+    const parts = summaryText.split("\n");
+    // Keep it compact on-screen
+    el.summaryBox.innerHTML = `
+      <div class="mini mono" style="white-space:pre-wrap">${escapeHtml(parts.slice(0, 40).join("\n"))}${parts.length>40 ? "\n…" : ""}</div>
+      <div class="hr2"></div>
+      <div class="tiny muted">Use “Download summary” for the full report.</div>
+    `;
+  }
+
+  function renderPreview(rows, cols, headerNames){
+    const n = parseInt(el.previewN.value, 10) || 25;
+    const viewRows = rows.slice(0, n);
+
+    const head = cols.slice(0, 60).map(c => `<th>${escapeHtml(headerNames.get(c) || c)}</th>`).join("");
+    el.thead.innerHTML = head || `<th>—</th>`;
+
+    const body = viewRows.map(r=>{
+      const tds = cols.slice(0, 60).map(c => `<td class="mono">${escapeHtml(r[c])}</td>`).join("");
+      return `<tr>${tds}</tr>`;
+    }).join("");
+
+    el.tbody.innerHTML = body || `<tr><td class="muted">No rows to preview.</td></tr>`;
+  }
+
+  function buildExport(){
+    if(!state.dataset) return;
+
+    const cols = exportedCols();
+    if(!cols.length){
+      el.msg.textContent = "No columns selected for export.";
+      return;
+    }
+
+    // Header names map
+    const headerNames = new Map();
+    cols.forEach(c => headerNames.set(c, (state.colRename.get(c) || c)));
+
+    // Copy rows and apply row options
+    let out = state.dataset.rows.map(r=>{
+      const o = {};
+      cols.forEach(c => o[c] = (r && Object.prototype.hasOwnProperty.call(r,c)) ? r[c] : "");
+      return o;
+    });
+
+    let dropped = 0;
+
+    // Drop blank rows
+    if(el.optDropBlank.checked){
+      const kept = [];
+      for(const r of out){
+        if(isRowBlank(r, cols)){
+          dropped++;
+          continue;
+        }
+        kept.push(r);
+      }
+      out = kept;
+    }
+
+    // Dedupe
+    if(el.optDedupe.checked){
+      const keyCols = Array.from(state.dedupeKeys);
+      const seen = new Set();
+      const kept = [];
+      for(const r of out){
+        const key = (keyCols.length ? keyCols : cols).map(k => `${k}=${String(r[k] ?? "")}`).join("|");
+        if(seen.has(key)){
+          dropped++;
+          continue;
+        }
+        seen.add(key);
+        kept.push(r);
+      }
+      out = kept;
+    }
+
+    // Summary
+    let summaryText = null;
+    let summaryObj = null;
+    if(el.optSummary.checked){
+      const s = buildSummary(out, cols, headerNames);
+      summaryText = s.text;
+      summaryObj = s.obj;
+    }
+
+    state.built = {rows: out, cols, headerNames, summaryText, summaryObj};
+    state.lastSummaryText = summaryText || null;
+
+    updateStats(dropped);
+    renderPreview(out, cols, headerNames);
+    renderSummaryBox(summaryText);
+    el.download.disabled = false;
+    el.downloadSummary.disabled = !summaryText;
+    el.msg.textContent = "Export built. Download when ready.";
+  }
+
+  function csvValue(v){
+    const s = String(v ?? "");
+    if(/[",\n\r]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
+    return s;
+  }
+
+  function downloadCsv(){
+    const b = state.built;
+    if(!b) return;
+    const cols = b.cols;
+    const rows = b.rows;
+    const headerNames = b.headerNames;
+
+    const lines = [];
+    lines.push(cols.map(c => csvValue(headerNames.get(c) || c)).join(","));
+    for(const r of rows){
+      lines.push(cols.map(c => csvValue(r[c])).join(","));
+    }
+
+    const bom = el.optBOM.checked ? "\ufeff" : "";
+    const blob = new Blob([bom + lines.join("\n")], {type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    const name = (el.outName.value || "reportmedic_export").trim() || "reportmedic_export";
+    a.download = `${name}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function downloadXlsx(){
+    const b = state.built;
+    if(!b) return;
+    const cols = b.cols;
+    const rows = b.rows;
+    const headerNames = b.headerNames;
+
+    const sheet = [];
+    // header row
+    sheet.push(cols.map(c => headerNames.get(c) || c));
+    // data rows
+    for(const r of rows){
+      sheet.push(cols.map(c => r[c]));
+    }
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(sheet);
+
+    // basic column widths
+    const widths = cols.map(c=>{
+      const hn = headerNames.get(c) || c;
+      const w = Math.min(40, Math.max(10, String(hn).length + 2));
+      return {wch:w};
+    });
+    ws["!cols"] = widths;
+
+    const dataSheetName = (el.sheetName.value || "Export").trim().slice(0, 31) || "Export";
+    XLSX.utils.book_append_sheet(wb, ws, dataSheetName);
+
+    if(el.optSummary.checked && b.summaryText){
+      const summaryLines = b.summaryText.split("\n").map(x=>[x]);
+      const ws2 = XLSX.utils.aoa_to_sheet(summaryLines);
+      ws2["!cols"] = [{wch: 80}];
+      XLSX.utils.book_append_sheet(wb, ws2, "Summary");
+    }
+
+    const name = (el.outName.value || "reportmedic_export").trim() || "reportmedic_export";
+    XLSX.writeFile(wb, `${name}.xlsx`);
+  }
+
+  function downloadSummary(){
+    const b = state.built;
+    if(!b || !b.summaryText) return;
+    const blob = new Blob([b.summaryText], {type:"text/plain;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    const name = (el.outName.value || "reportmedic_export").trim() || "reportmedic_export";
+    a.download = `${name}_summary.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function download(){
+    if(!state.built) return;
+    if(el.outFmt.value === "xlsx") downloadXlsx();
+    else downloadCsv();
+  }
+
+  function resetColumnState(){
+    if(!state.dataset) return;
+    state.colOrder = state.dataset.cols.slice();
+    state.colHidden.clear();
+    state.colRename.clear();
+    renderColumnChecks();
+    renderColList();
+    state.built = null;
+    el.download.disabled = true;
+    el.downloadSummary.disabled = true;
+    el.msg.textContent = "Reset done — rebuild export.";
+  }
+
+  function sortColsAZ(){
+    if(!state.dataset) return;
+    const cols = state.colOrder.slice().sort((a,b)=>a.localeCompare(b));
+    state.colOrder = cols;
+    renderColumnChecks();
+    renderColList();
+    state.built = null;
+    el.download.disabled = true;
+    el.downloadSummary.disabled = true;
+    el.msg.textContent = "Columns sorted — rebuild export.";
+  }
+
+  // Events
+  el.files.addEventListener("change", async (e)=>{
+    const files = Array.from(e.target.files || []);
+    if(!files.length) return;
+
+    el.msg.textContent = "Loading files…";
+    state.inputs = [];
+    state.dataset = null;
+    state.built = null;
+
+    try{
+      for(const f of files){
+        const obj = await parseFile(f);
+        state.inputs.push(obj);
+      }
+
+      setMeta();
+      buildDatasetFromInputs();
+      ensureColumnState();
+
+      // Update UI
+      renderColumnChecks();
+      renderColList();
+      renderKeyChecks();
+
+      updateStats(0);
+      el.msg.textContent = "Loaded. Configure columns/options, then click Build export.";
+      el.build.disabled = false;
+      el.download.disabled = true;
+      el.downloadSummary.disabled = true;
+
+      el.summaryBox.textContent = "Ready. Click Build export to generate summary.";
+      el.thead.innerHTML = "";
+      el.tbody.innerHTML = `<tr><td class="muted">Click Build export to preview exported rows.</td></tr>`;
+    }catch(err){
+      console.error(err);
+      el.msg.textContent = "Could not parse one of the files. Try exporting as CSV.";
+      state.inputs = [];
+      state.dataset = null;
+      state.built = null;
+      setMeta();
+      updateStats(0);
+      renderColumnChecks();
+      renderColList();
+      renderKeyChecks();
+    }
+  });
+
+  el.mode.addEventListener("change", ()=>{
+    if(!state.inputs.length) return;
+    buildDatasetFromInputs();
+    ensureColumnState();
+    renderColumnChecks();
+    renderColList();
+    renderKeyChecks();
+    state.built = null;
+    el.download.disabled = true;
+    el.downloadSummary.disabled = true;
+    el.msg.textContent = "Mode changed — rebuild export.";
+  });
+
+  el.delimiter.addEventListener("change", ()=>{
+    if(state.inputs.length){
+      el.msg.textContent = "Delimiter changed — re-upload files to apply.";
+    }
+  });
+
+  el.previewN.addEventListener("change", ()=>{
+    if(state.built){
+      renderPreview(state.built.rows, state.built.cols, state.built.headerNames);
+    }
+  });
+
+  el.colSearch.addEventListener("input", renderColumnChecks);
+  el.keySearch.addEventListener("input", renderKeyChecks);
+
+  el.showAll.addEventListener("click", ()=>{
+    state.colHidden.clear();
+    renderColumnChecks();
+    renderColList();
+    state.built = null;
+    el.download.disabled = true;
+    el.downloadSummary.disabled = true;
+    el.msg.textContent = "All columns shown — rebuild export.";
+  });
+
+  el.hideAll.addEventListener("click", ()=>{
+    if(!state.dataset) return;
+    state.colHidden = new Set(state.dataset.cols);
+    renderColumnChecks();
+    renderColList();
+    state.built = null;
+    el.download.disabled = true;
+    el.downloadSummary.disabled = true;
+    el.msg.textContent = "All columns hidden — select columns to export.";
+  });
+
+  el.resetCols.addEventListener("click", resetColumnState);
+  el.alphaCols.addEventListener("click", sortColsAZ);
+
+  el.optDropBlank.addEventListener("change", ()=>{ if(state.built){ el.msg.textContent="Options changed — rebuild export."; }});
+  el.optDedupe.addEventListener("change", ()=>{ if(state.built){ el.msg.textContent="Options changed — rebuild export."; }});
+
+  el.build.addEventListener("click", ()=>{
+    if(!state.dataset) return;
+    el.msg.textContent = "Building export…";
+    setTimeout(()=>{
+      try{
+        buildExport();
+      }catch(err){
+        console.error(err);
+        el.msg.textContent = "Build failed. Check file format and try again.";
+      }
+    }, 0);
+  });
+
+  el.download.addEventListener("click", download);
+  el.downloadSummary.addEventListener("click", downloadSummary);
+
+  // Init
+  setMeta();
+  updateStats(0);
+  renderColumnChecks();
+  renderColList();
+  renderKeyChecks();
+  el.build.disabled = true;
+})();
+</script>
 </body>
 </html>
