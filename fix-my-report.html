@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Fix My Report — ReportMedic</title>
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/reportmedic-48.png?v=1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+
+  <style>
+    /* Light page-level tweaks while keeping your global theme */
+    .wrap{max-width:980px;margin:0 auto;padding:18px 14px 36px}
+    .hero{margin-top:18px}
+    .hero h1{margin:0 0 8px}
+    .sub{opacity:.9;max-width:72ch;line-height:1.45}
+    .grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}
+    @media (max-width: 960px){.grid{grid-template-columns:1fr}}
+    .card{background:var(--card,#0f1522);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px}
+    .card h2{margin:0 0 10px;font-size:16px}
+    label{display:block;font-size:12px;opacity:.9;margin:10px 0 6px}
+    input[type="text"], input[type="email"], select, textarea{
+      width:100%;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      padding:10px 10px;
+      color:inherit;
+      outline:none;
+    }
+    textarea{min-height:120px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width: 640px){.row{grid-template-columns:1fr}}
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+    .muted{font-size:12px;opacity:.8;line-height:1.35}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03);margin:6px 0}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    .preview{min-height:170px}
+    .k{opacity:.8}
+    .list a{display:flex;gap:10px;align-items:center;justify-content:space-between;text-decoration:none;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px;margin:8px 0;background:rgba(255,255,255,.03)}
+    .list a:hover{border-color:rgba(255,255,255,.18)}
+    .mini{font-size:12px;opacity:.85}
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:rgba(10,14,22,.92);border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:12px;display:none;max-width:92vw}
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="nav">
+    <div class="logo" onclick="location.href='/'" style="cursor:pointer">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </div>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <a class="btn" href="/#toolbox">Tools</a>
+    <a class="btn primary" href="/fix-my-report.html">Fix My Report</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>Fix My Report</h1>
+    <p class="sub">
+      Tell me what’s wrong, what you expected, and what you’re seeing. This page generates a clean, copy‑paste “case summary”
+      you can send for consulting help — no uploads required.
+    </p>
+    <div class="pill">
+      <span class="k">Privacy:</span>
+      <span class="mini">Avoid secrets/PII. Share sample rows instead of full data when possible.</span>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h2>1) Describe the issue</h2>
+
+      <div class="row">
+        <div>
+          <label for="problemType">Problem type</label>
+          <select id="problemType">
+            <option value="compare">Two reports don’t match (diff / reconcile)</option>
+            <option value="schema">Schema/validation errors (required fields, types)</option>
+            <option value="clean">Duplicates / formatting / data cleanup</option>
+            <option value="outlier">Spikes / anomalies / outliers</option>
+            <option value="schedule">Scheduler / automation / batch run issue</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="system">System / source</label>
+          <input id="system" type="text" placeholder="e.g., Excel, CSV export, Oracle report, Databricks output, PDF statement"/>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="expected">Expected outcome</label>
+          <input id="expected" type="text" placeholder="e.g., Totals should match, 12 rows expected, same columns, etc."/>
+        </div>
+        <div>
+          <label for="actual">Actual outcome</label>
+          <input id="actual" type="text" placeholder="e.g., Totals off by 1.25%, missing rows, wrong dates, etc."/>
+        </div>
+      </div>
+
+      <label for="errorText">Error message / symptom (paste)</label>
+      <textarea id="errorText" placeholder="Paste the error message, mismatch description, or what you’re seeing..."></textarea>
+
+      <label for="context">Context (what changed recently?)</label>
+      <textarea id="context" placeholder="New extract? new filters? different date range? timezone? file encoding? manual edits?"></textarea>
+
+      <div class="row">
+        <div>
+          <label for="keys">Key fields (if comparing)</label>
+          <input id="keys" type="text" placeholder="e.g., store_id, week, invoice_id, employee_id"/>
+        </div>
+        <div>
+          <label for="files">Files involved (names only)</label>
+          <input id="files" type="text" placeholder="e.g., report_A.csv vs report_B.csv (no full paths needed)"/>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="deadline">Deadline / urgency</label>
+          <input id="deadline" type="text" placeholder="e.g., today 5pm, this week, low urgency"/>
+        </div>
+        <div>
+          <label for="contact">Contact (optional)</label>
+          <input id="contact" type="email" placeholder="you@example.com (only if you want a reply path)"/>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="genBtn">Generate Case Summary</button>
+        <button class="btn" id="copyBtn">Copy Summary</button>
+        <button class="btn" id="downloadBtn">Download .txt</button>
+        <a class="btn" id="mailtoBtn" href="#">Email Summary</a>
+        <button class="btn" id="resetBtn">Reset</button>
+      </div>
+
+      <p class="muted">
+        Tip: If you can, include <b>2–5 sample rows</b> (masked) that reproduce the issue.
+        Never paste passwords, tokens, SSNs, bank account numbers, or full personal details.
+      </p>
+    </div>
+
+    <aside class="card">
+      <h2>2) Recommended tool</h2>
+      <div id="recommend" class="muted">Pick a problem type to see the best tool(s).</div>
+
+      <div style="height:10px"></div>
+      <h2>3) Case summary</h2>
+      <div class="pill">
+        <span class="k">Case ID:</span> <span id="caseId" class="mono">—</span>
+      </div>
+      <textarea id="summary" class="preview mono" placeholder="Click “Generate Case Summary”..."></textarea>
+      <p class="muted" id="summaryHint">
+        This text is designed to be copy‑pasted into a message when requesting help.
+      </p>
+
+      <div style="height:10px"></div>
+      <h2>Quick links</h2>
+      <div class="list">
+        <a href="/tools/compare.html"><span>Report Compare</span><span class="mini">diff by keys</span></a>
+        <a href="/tools/reconcile.html"><span>Reconciliation</span><span class="mini">variance & totals</span></a>
+        <a href="/tools/validator.html"><span>Schema Validator</span><span class="mini">rules & types</span></a>
+        <a href="/tools/cleaner.html"><span>Data Cleaner</span><span class="mini">dedupe & normalize</span></a>
+        <a href="/tools/outliers.html"><span>Outlier Finder</span><span class="mini">anomalies</span></a>
+        <a href="/tools/scheduler.html"><span>Scheduler</span><span class="mini">batch runs</span></a>
+      </div>
+    </aside>
+  </section>
+
+  <section class="card" style="margin-top:14px">
+    <h2>How consulting works (simple)</h2>
+    <div class="row">
+      <div class="muted">
+        <b>Step A:</b> Generate a case summary above.<br/>
+        <b>Step B:</b> Run the recommended tool (right side) and capture the output screenshot or exported file.<br/>
+        <b>Step C:</b> Share only what’s needed: a few rows + results + what you expected.
+      </div>
+      <div class="muted">
+        Common root causes:
+        <ul style="margin:8px 0 0 18px;line-height:1.4">
+          <li>Different filters/date ranges/timezones</li>
+          <li>Hidden duplicates / whitespace / casing</li>
+          <li>Schema drift (new columns / type changes)</li>
+          <li>Encoding issues (UTF‑8 vs ANSI), delimiter differences</li>
+          <li>Rounding rules / aggregation mismatch</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const toast = (msg) => {
+    const t = $("toast");
+    t.textContent = msg;
+    t.style.display = "block";
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(()=> t.style.display="none", 2000);
+  };
+
+  function makeCaseId(){
+    const d = new Date();
+    const pad = (n)=> String(n).padStart(2,"0");
+    return "RM-" + d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + "-" + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+  }
+
+  function recommendation(pt){
+    const map = {
+      compare: [
+        {name:"Report Compare", href:"/tools/compare.html", why:"Find row/column diffs by key fields."},
+        {name:"Reconciliation", href:"/tools/reconcile.html", why:"Explain variances in totals and aggregates."}
+      ],
+      schema: [
+        {name:"Schema Validator", href:"/tools/validator.html", why:"Catch missing fields, type/range violations."}
+      ],
+      clean: [
+        {name:"Data Cleaner", href:"/tools/cleaner.html", why:"Trim/normalize, fix dates, remove duplicates."}
+      ],
+      outlier: [
+        {name:"Outlier Finder", href:"/tools/outliers.html", why:"Spot spikes/anomalies quickly."}
+      ],
+      schedule: [
+        {name:"Scheduler", href:"/tools/scheduler.html", why:"Diagnose batch timing/runs and automation issues."}
+      ],
+      other: [
+        {name:"Report Compare", href:"/tools/compare.html", why:"Start here if unsure; compare outputs and narrow down."}
+      ]
+    };
+    const items = map[pt] || map.other;
+    const html = items.map(x =>
+      `<div class="list">
+         <a href="${x.href}"><span>${x.name}</span><span class="mini">open</span></a>
+       </div>
+       <div class="muted" style="margin-top:6px">${x.why}</div>`
+    ).join('<div style="height:10px"></div>');
+    $("recommend").innerHTML = html;
+  }
+
+  function buildSummary(caseId){
+    const safe = (v)=> (v||"").trim();
+    const pt = $("problemType").value;
+    const ptLabel = $("problemType").selectedOptions[0]?.textContent || pt;
+
+    const lines = [
+      `Case ID: ${caseId}`,
+      `Problem Type: ${ptLabel}`,
+      `System/Source: ${safe($("system").value) || "—"}`,
+      `Files: ${safe($("files").value) || "—"}`,
+      `Key Fields: ${safe($("keys").value) || "—"}`,
+      ``,
+      `Expected: ${safe($("expected").value) || "—"}`,
+      `Actual: ${safe($("actual").value) || "—"}`,
+      ``,
+      `Error / Symptom:`,
+      `${safe($("errorText").value) || "—"}`,
+      ``,
+      `Context / Recent Changes:`,
+      `${safe($("context").value) || "—"}`,
+      ``,
+      `Deadline/Urgency: ${safe($("deadline").value) || "—"}`,
+      `Contact (optional): ${safe($("contact").value) || "—"}`,
+      ``,
+      `What I need help with:`,
+      `1) Identify likely root cause(s)`,
+      `2) Confirm the fastest fix and prevention steps`,
+      `3) If needed, provide a small checklist to validate the final output`
+    ];
+
+    return lines.join("\n");
+  }
+
+  function downloadText(filename, text){
+    const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  }
+
+  function updateMailto(summary){
+    const subject = encodeURIComponent("ReportMedic Case: " + ($("caseId").textContent || "New"));
+    const body = encodeURIComponent(summary);
+    $("mailtoBtn").href = `mailto:?subject=${subject}&body=${body}`;
+  }
+
+  // events
+  $("problemType").addEventListener("change", (e)=> recommendation(e.target.value));
+  recommendation($("problemType").value);
+
+  $("genBtn").addEventListener("click", ()=>{
+    const id = makeCaseId();
+    $("caseId").textContent = id;
+    const s = buildSummary(id);
+    $("summary").value = s;
+    updateMailto(s);
+    toast("Case summary generated.");
+  });
+
+  $("copyBtn").addEventListener("click", async ()=>{
+    const text = $("summary").value.trim();
+    if(!text){ toast("Generate summary first."); return; }
+    try{
+      await navigator.clipboard.writeText(text);
+      toast("Copied to clipboard.");
+    }catch(e){
+      $("summary").focus();
+      $("summary").select();
+      toast("Select + copy (clipboard blocked).");
+    }
+  });
+
+  $("downloadBtn").addEventListener("click", ()=>{
+    const text = $("summary").value.trim();
+    if(!text){ toast("Generate summary first."); return; }
+    const id = ($("caseId").textContent || "RM-case").replace(/[^A-Za-z0-9\-]/g,"");
+    downloadText(`${id}.txt`, text);
+    toast("Downloaded.");
+  });
+
+  $("resetBtn").addEventListener("click", ()=>{
+    ["system","expected","actual","errorText","context","keys","files","deadline","contact"].forEach(id=> $(id).value="");
+    $("caseId").textContent="—";
+    $("summary").value="";
+    updateMailto("");
+    toast("Reset.");
+  });
+</script>
+</body>
+</html>
