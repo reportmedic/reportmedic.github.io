@@ -20,26 +20,32 @@
       bottom:18px; padding:10px 12px;border-radius:12px;
       display:none; max-width:92vw
     }
-</style>
-<style>
-  .ctaMsg{
-    margin-top:12px;
-    padding:12px 14px;
-    border-radius:14px;
-    border:1px solid rgba(59,130,246,.35);
-    background:rgba(59,130,246,.10);
-    color:var(--text);
-    font-size:0.95rem;
-    opacity:0;
-    transform:translateY(-6px);
-    pointer-events:none;
-    transition:opacity .25s ease, transform .25s ease;
-  }
-  .ctaMsg.show{
-    opacity:1;
-    transform:translateY(0);
-    pointer-events:auto;
-  }
+
+/* Fix My Report CTA hint */
+.ctaWrap{ position:relative; display:inline-block; }
+.ctaHint{
+  position:absolute;
+  top:calc(100% + 10px);
+  right:0;
+  width:300px;
+  max-width:76vw;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(15,18,28,.96);
+  box-shadow:0 16px 40px rgba(0,0,0,.35);
+  color:var(--text);
+  font-size:13px;
+  line-height:1.25;
+  opacity:0;
+  transform:translateY(-4px);
+  pointer-events:none;
+  transition:opacity .22s ease, transform .22s ease;
+}
+.ctaHint.show{ opacity:1; transform:translateY(0); }
+@media (max-width:700px){
+  .ctaHint{ right:auto; left:0; }
+}
 </style>
 </head>
 <body>
@@ -51,8 +57,13 @@
 </div>
 <div class="spacer"></div>
 <a class="btn" href="/">Home</a>
-<a class="btn" href="#" id="openDrawerBtn">All Tools</a>
-<button class="btn primary" id="fixCtaBtn" type="button">Fix My Report</button>
+<button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+<div class="ctaWrap">
+  <a class="btn primary" href="/fix-my-report.html" id="fixMyReportBtn">Fix My Report</a>
+  <div class="ctaHint" id="fixMyReportHint" role="status" aria-live="polite">
+    Choose a contact option below (Telegram, Email, SMS, or Large files).
+  </div>
+</div>
 </div>
 </header>
 <main class="wrap">
@@ -61,9 +72,6 @@
 <div class="human-touch">
 <div style="font-weight:700">Human help (no pressure, practical fixes)</div>
 <p>When numbers don’t match or validation errors won’t go away, you shouldn’t have to guess. Send a clear case summary and I’ll help you reach a submission‑ready answer.</p><div class="note" id="serviceReassurance">No full-file uploads required. Use the case builder below to describe “expected vs actual” and share only minimal samples if needed.</div>
-<div id="chooseContactMsg" class="ctaMsg" role="status" aria-live="polite" aria-atomic="true">
-  Choose a contact option below to send your case summary.
-</div>
 <div class="contact-grid">
   <a class="contact-card" href="https://t.me/ReportMedic" rel="noopener" target="_blank">
     <div class="contact-title">✈️ Telegram</div>
@@ -355,29 +363,27 @@
     toast("Reset.");
   });
 </script>
-  <script src="assets/js/rm-tools-drawer.js" defer></script>
+<script src="/assets/js/rm-tools-drawer.js"></script>
 <script>
   (function(){
-    function showChooseContact(){
-      var msg = document.getElementById('chooseContactMsg');
-      if(!msg) return;
-      msg.classList.add('show');
-      msg.scrollIntoView({behavior:'smooth', block:'center'});
-    }
-    function init(){
-      var btn = document.getElementById('fixCtaBtn');
-      if(btn){
-        btn.addEventListener('click', function(e){
-          e.preventDefault();
-          showChooseContact();
-        });
-      }
-    }
-    if(document.readyState === 'loading'){
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
+    const btn = document.getElementById("fixMyReportBtn");
+    const hint = document.getElementById("fixMyReportHint");
+    if(!btn || !hint) return;
+
+    const showHint = ()=>{
+      hint.classList.add("show");
+      clearTimeout(window.__fixHintTimer);
+      window.__fixHintTimer = setTimeout(()=> hint.classList.remove("show"), 5000);
+
+      // gently guide the user toward the contact options
+      const grid = document.querySelector(".contact-grid");
+      if(grid) grid.scrollIntoView({behavior:"smooth", block:"start"});
+    };
+
+    btn.addEventListener("click", (e)=>{
+      e.preventDefault();
+      showHint();
+    });
   })();
 </script>
 </body>
