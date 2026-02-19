@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<meta name="description" content="Redact or mask sensitive fields (PII/PHI/financial) before sending files for review. Keep structure while protecting values."/>
+<meta content="Redact or mask sensitive fields (PII/PHI/financial) before sending files for review. Keep structure while protecting values." name="description"/>
 <title>Mask Sensitive Data — Redact PII before sharing — ReportMedic</title>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
 <link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
@@ -46,9 +46,20 @@
     @media (max-width: 820px){.split{grid-template-columns:1fr}}
     .mini{font-size:12px;line-height:1.35;opacity:.9}
   </style>
-  <script defer src="/assets/js/rm-dropzone.js"></script>
-  <script defer src="/assets/js/rm-tools-drawer.js"></script>
-</head>
+<script defer="" src="/assets/js/rm-dropzone.js"></script>
+<script defer="" src="/assets/js/rm-tools-drawer.js"></script>
+<style id="rm-learnmore-style">.rm-learnmore{font-size:.85em;font-weight:500;margin-left:.5rem;text-decoration:underline;opacity:.85}
+.rm-learnmore:hover{opacity:1}
+.rm-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px}
+.rm-modal-overlay.is-open{display:flex}
+.rm-modal{background:#fff;border-radius:14px;max-width:560px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.25);overflow:hidden}
+.rm-modal header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(0,0,0,.08)}
+.rm-modal header h3{margin:0;font-size:1.05rem}
+.rm-modal .rm-close{border:0;background:transparent;font-size:1.2rem;line-height:1;cursor:pointer;opacity:.7}
+.rm-modal .rm-close:hover{opacity:1}
+.rm-modal .rm-body{padding:14px 16px}
+.rm-modal h4{margin:10px 0 6px;font-size:.95rem}
+.rm-modal ul{margin:0 0 6px 18px}</style></head>
 <body class="tools-page">
 <header>
 <div class="nav">
@@ -63,38 +74,35 @@
 </div></header>
 <div class="wrap">
 <div class="panel">
-<h1>PII Masker</h1>
-<section class="rm-explain" aria-label="How this helps">
-  <div class="rm-explain-grid">
-    <div class="rm-explain-card">
-      <h2>What this helps with</h2>
-      <ul>
-        <li>Redact sensitive columns</li><li>Mask values while preserving shape</li><li>Prepare files for sharing safely</li><li>Reduce compliance risk</li>
-      </ul>
-    </div>
-    <div class="rm-explain-card">
-      <h2>Common causes</h2>
-      <ul>
-        <li>Need external review but data is confidential</li><li>PII/PHI/financial fields in exports</li><li>Policies require redaction before sharing</li>
-      </ul>
-    </div>
-    <div class="rm-explain-card">
-      <h2>What to do next</h2>
-      <ol>
-        <li>Mask before you upload/share</li><li>Then run Compare/Reconcile on masked copies if needed</li><li>If you need guidance, use Fix My Report</li>
-      </ol>
-      <div class="rm-explain-cta">
-        <a class="btn primary" href="/fix-my-report.html">Fix My Report</a>
-        <a class="btn ghost" href="/">All tools</a>
-      </div>
-    </div>
-  </div>
+<h1>PII Masker <a class="rm-learnmore" data-rm-modal="rmPiiLearn" href="#">Learn more</a></h1>
+<section aria-label="How this helps" class="rm-explain">
+<div class="rm-explain-grid">
+<div class="rm-explain-card">
+<h2>What this helps with</h2>
+<ul>
+<li>Redact sensitive columns</li><li>Mask values while preserving shape</li><li>Prepare files for sharing safely</li><li>Reduce compliance risk</li>
+</ul>
+</div>
+<div class="rm-explain-card">
+<h2>Common causes</h2>
+<ul>
+<li>Need external review but data is confidential</li><li>PII/PHI/financial fields in exports</li><li>Policies require redaction before sharing</li>
+</ul>
+</div>
+<div class="rm-explain-card">
+<h2>What to do next</h2>
+<ol>
+<li>Mask before you upload/share</li><li>Then run Compare/Reconcile on masked copies if needed</li><li>If you need guidance, use Fix My Report</li>
+</ol>
+<div class="rm-explain-cta">
+<a class="btn primary" href="/fix-my-report.html">Fix My Report</a>
+<a class="btn ghost" href="/">All tools</a>
+</div>
+</div>
+</div>
 </section>
-
 <p class="sub">Mask sensitive fields before sharing samples — reduce risk while still getting help. Runs locally in your browser.</p>
 <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
-
-
 <div class="hr"></div>
 <div class="grid2">
 <div class="card">
@@ -789,20 +797,56 @@
 })();
 </script>
 <footer class="rm-footer">
-  <div class="rm-footer-inner">
-    <div class="rm-footer-brand">
-      <div class="rm-footer-name">ReportMedic</div>
-      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
-    </div>
-    <div class="rm-footer-links">
-      <a href="/fix-my-report.html">Fix My Report</a>
-      <a href="/#tools">Tools</a>
-      <a href="/docs/">Docs</a>
-      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
-    </div>
-    <div class="rm-footer-meta">© 2026 ReportMedic</div>
-  </div>
+<div class="rm-footer-inner">
+<div class="rm-footer-brand">
+<div class="rm-footer-name">ReportMedic</div>
+<div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+</div>
+<div class="rm-footer-links">
+<a href="/fix-my-report.html">Fix My Report</a>
+<a href="/#tools">Tools</a>
+<a href="/docs/">Docs</a>
+<a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+</div>
+<div class="rm-footer-meta">© 2026 ReportMedic</div>
+</div>
 </footer>
-
-</body>
+<div aria-label="PII Masker help" aria-modal="true" class="rm-modal-overlay" id="rmPiiLearn" role="dialog"><div class="rm-modal"><header><h3>PII Masker</h3><button aria-label="Close" class="rm-close" data-rm-close="1" type="button">×</button></header><div class="rm-body"><h4>What this helps with</h4><ul><li>Redact sensitive columns</li><li>Mask values while preserving shape</li><li>Prepare files for sharing safely</li><li>Reduce compliance risk</li></ul><h4>Common causes</h4><ul><li>Need external review but data is confidential</li><li>PII/PHI/financial fields in exports</li><li>Policies require redaction before sharing</li></ul><h4>What to do next</h4><ul><li>Mask before you upload/share</li><li>Then run Compare/Reconcile on masked copies if needed</li><li>If you need guidance, use Fix My Report</li></ul></div></div></div><script id="rm-learnmore-script">(function(){
+  function openModal(id){
+    var el=document.getElementById(id);
+    if(!el) return;
+    el.classList.add('is-open');
+    document.body.style.overflow='hidden';
+    var focusable=el.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if(focusable) focusable.focus();
+  }
+  function closeModal(el){
+    el.classList.remove('is-open');
+    document.body.style.overflow='';
+  }
+  document.addEventListener('click', function(e){
+    var a=e.target.closest && e.target.closest('.rm-learnmore');
+    if(a){
+      e.preventDefault();
+      openModal(a.getAttribute('data-rm-modal'));
+      return;
+    }
+    var closeBtn=e.target.closest && e.target.closest('[data-rm-close]');
+    if(closeBtn){
+      e.preventDefault();
+      var overlay=closeBtn.closest('.rm-modal-overlay');
+      if(overlay) closeModal(overlay);
+      return;
+    }
+    if(e.target.classList && e.target.classList.contains('rm-modal-overlay')){
+      closeModal(e.target);
+    }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key==='Escape'){
+      var open=document.querySelector('.rm-modal-overlay.is-open');
+      if(open) closeModal(open);
+    }
+  });
+})();</script></body>
 </html>
