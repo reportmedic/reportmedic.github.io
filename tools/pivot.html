@@ -1,20 +1,18 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Quick Pivot — ReportMedic</title>
-
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/reportmedic-48.png?v=1">
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png">
-  <link rel="stylesheet" href="/assets/css/styles.css">
-
-  <!-- GitHub Pages friendly: client-side parsing + export -->
-  <script defer src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Quick Pivot — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+<!-- GitHub Pages friendly: client-side parsing + export -->
+<script defer="" src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
     @media (max-width: 980px){.grid3{grid-template-columns:1fr}}
@@ -54,242 +52,203 @@
 </head>
 <body>
 <header>
-  <div class="nav">
-    <a class="logo" href="/" style="text-decoration:none;">
-      <div class="mark"></div>
-      <div>ReportMedic</div>
-    </a>
-    <div class="spacer"></div>
-    <a class="btn" href="/">Home</a>
-    <a class="btn" href="/#toolbox">Toolbox</a>
-    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
-    
-  </div>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<a class="btn" href="/#toolbox">Toolbox</a>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div><div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
 </header>
-
 <div class="wrap">
-  <div class="panel">
-    <h1>Quick Pivot</h1>
-    <p class="sub">Instant pivot tables & group summaries — counts, sums, averages, and more (runs locally in your browser).</p>
-
-    <div class="hr"></div>
-
-    <div class="grid2">
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <div style="font-weight:700">Upload</div>
-            <div class="tiny muted">CSV / TSV / XLSX / XLS / delimiter-style TXT</div>
-          </div>
-          <span id="meta" class="pill tiny"><b>File:</b><span class="muted">not loaded</span></span>
-        </div>
-
-        <div style="margin-top:10px">
-          <input id="file" class="input" type="file" accept=".csv,.tsv,.xlsx,.xls,.txt" />
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <label class="tiny muted">Delimiter</label>
-          <select id="delimiter" class="input" style="width:auto;min-width:190px">
-            <option value="auto" selected>Auto-detect</option>
-            <option value=",">Comma (,)</option>
-            <option value="\t">Tab (TSV)</option>
-            <option value=";">Semicolon (;)</option>
-            <option value="|">Pipe (|)</option>
-          </select>
-
-          <label class="tiny muted">Preview rows</label>
-          <select id="previewN" class="input" style="width:auto;min-width:150px">
-            <option value="25" selected>25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
-        </div>
-
-        <div id="msg" class="tiny muted" style="margin-top:10px"></div>
-
-        <div class="note tiny muted">
-          Privacy: processing stays on your device. For best results, keep headers clean (no duplicates).
-        </div>
-      </div>
-
-      <div class="card">
-        <div style="font-weight:700">Run summary</div>
-        <div class="tiny muted">What your pivot produced</div>
-
-        <div class="pillset" style="margin-top:10px">
-          <span class="badge b-info">Rows: <b id="statRows" class="mono">—</b></span>
-          <span class="badge b-info">Cols: <b id="statCols" class="mono">—</b></span>
-          <span class="badge b-ok">Groups: <b id="statGroups" class="mono">—</b></span>
-          <span class="badge b-warn">Cells: <b id="statCells" class="mono">—</b></span>
-        </div>
-
-        <div class="hr2"></div>
-
-        <div class="row">
-          <button id="run" class="btn primary" disabled>Build pivot</button>
-          <button id="downloadCsv" class="btn" disabled>Download pivot CSV</button>
-          <button id="downloadXlsx" class="btn" disabled>Download pivot XLSX</button>
-          <button id="audit" class="btn" disabled>Download audit</button>
-        </div>
-
-        <div class="note tiny muted">
+<div class="panel">
+<h1>Quick Pivot</h1>
+<p class="sub">Turn raw rows into a quick summary you can trust — pivot/group, spot gaps, and export a shareable table. Runs locally in your browser.</p>
+<div class="hr"></div>
+<div class="grid2">
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Upload</div>
+<div class="tiny muted">CSV / TSV / XLSX / XLS / delimiter-style TXT</div>
+</div>
+<span class="pill tiny" id="meta"><b>File:</b><span class="muted">not loaded</span></span>
+</div>
+<div style="margin-top:10px">
+<input accept=".csv,.tsv,.xlsx,.xls,.txt" class="input" id="file" type="file"/>
+</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Delimiter</label>
+<select class="input" id="delimiter" style="width:auto;min-width:190px">
+<option selected="" value="auto">Auto-detect</option>
+<option value=",">Comma (,)</option>
+<option value="\t">Tab (TSV)</option>
+<option value=";">Semicolon (;)</option>
+<option value="|">Pipe (|)</option>
+</select>
+<label class="tiny muted">Preview rows</label>
+<select class="input" id="previewN" style="width:auto;min-width:150px">
+<option selected="" value="25">25</option>
+<option value="50">50</option>
+<option value="100">100</option>
+</select>
+</div>
+<div class="tiny muted" id="safetyNote">Safety: your file is read locally in your browser. Use Masker if you need to share samples.</div><div class="tiny muted" id="msg" style="margin-top:10px"></div>
+<div class="note tiny muted">Privacy: processed locally in your browser. Nothing is uploaded unless you choose to share details for help.</div>
+</div>
+<div class="card">
+<div style="font-weight:700">Run summary</div>
+<div class="tiny muted">What your pivot produced</div>
+<div class="pillset" style="margin-top:10px">
+<span class="badge b-info">Rows: <b class="mono" id="statRows">—</b></span>
+<span class="badge b-info">Cols: <b class="mono" id="statCols">—</b></span>
+<span class="badge b-ok">Groups: <b class="mono" id="statGroups">—</b></span>
+<span class="badge b-warn">Cells: <b class="mono" id="statCells">—</b></span>
+</div>
+<div class="hr2"></div>
+<div class="row">
+<button class="btn primary" disabled="" id="run">Build pivot</button>
+<button class="btn" disabled="" id="downloadCsv">Download pivot CSV</button>
+<button class="btn" disabled="" id="downloadXlsx">Download pivot XLSX</button>
+<button class="btn" disabled="" id="audit">Download audit</button>
+</div>
+<div class="note tiny muted">
           Tip: If you only choose a Row field and no Column field, you’ll get a clean grouped summary list.
         </div>
-      </div>
-    </div>
-
-    <div class="hr2"></div>
-
-    <div class="grid3">
-      <div class="card">
-        <div style="font-weight:700">1) Layout</div>
-        <div class="tiny muted">Pick how to group and pivot</div>
-
-        <div class="row" style="margin-top:10px">
-          <label class="tiny muted">Row field</label>
-          <select id="rowField" class="input" style="width:auto;min-width:260px" disabled></select>
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <label class="tiny muted">Column field (optional)</label>
-          <select id="colField" class="input" style="width:auto;min-width:260px" disabled></select>
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <label class="tiny muted">Value field</label>
-          <select id="valField" class="input" style="width:auto;min-width:260px" disabled></select>
-        </div>
-
-        <div class="note tiny muted">
+</div>
+</div>
+<div class="hr2"></div>
+<div class="grid3">
+<div class="card">
+<div style="font-weight:700">1) Layout</div>
+<div class="tiny muted">Pick how to group and pivot</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Row field</label>
+<select class="input" disabled="" id="rowField" style="width:auto;min-width:260px"></select>
+</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Column field (optional)</label>
+<select class="input" disabled="" id="colField" style="width:auto;min-width:260px"></select>
+</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Value field</label>
+<select class="input" disabled="" id="valField" style="width:auto;min-width:260px"></select>
+</div>
+<div class="note tiny muted">
           Row/Column fields can be text (Store, Region, Category). Value field can be numeric (Sales, Qty, Hours).
         </div>
-      </div>
-
-      <div class="card">
-        <div style="font-weight:700">2) Metric</div>
-        <div class="tiny muted">Choose aggregation and formatting</div>
-
-        <div class="row" style="margin-top:10px">
-          <label class="tiny muted">Aggregation</label>
-          <select id="agg" class="input" style="width:auto;min-width:260px">
-            <option value="count" selected>Count</option>
-            <option value="sum">Sum</option>
-            <option value="avg">Average</option>
-            <option value="min">Min</option>
-            <option value="max">Max</option>
-            <option value="distinct">Distinct count</option>
-          </select>
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <label class="tiny muted">Number format</label>
-          <select id="fmt" class="input" style="width:auto;min-width:260px">
-            <option value="auto" selected>Auto</option>
-            <option value="0">0 decimals</option>
-            <option value="2">2 decimals</option>
-            <option value="4">4 decimals</option>
-          </select>
-        </div>
-
-        <div class="chk" style="margin-top:10px">
-          <input id="showTotals" type="checkbox" checked />
-          <div>
-            <label for="showTotals"><b>Show totals</b></label>
-            <div class="tiny muted">add row totals and column totals</div>
-          </div>
-        </div>
-
-        <div class="chk" style="margin-top:8px">
-          <input id="asPercent" type="checkbox" />
-          <div>
-            <label for="asPercent"><b>Show as % of grand total</b></label>
-            <div class="tiny muted">useful for share breakdowns</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div style="font-weight:700">3) Filters</div>
-        <div class="tiny muted">Narrow data before pivot</div>
-
-        <div class="twoCol" style="margin-top:10px">
-          <div>
-            <div class="tiny muted">Filter column</div>
-            <select id="fCol" class="input" disabled></select>
-          </div>
-          <div>
-            <div class="tiny muted">Match type</div>
-            <select id="fMode" class="input">
-              <option value="contains" selected>Contains</option>
-              <option value="equals">Equals</option>
-              <option value="starts">Starts with</option>
-              <option value="ends">Ends with</option>
-              <option value="regex">Regex</option>
-            </select>
-          </div>
-        </div>
-
-        <div style="margin-top:10px">
-          <div class="tiny muted">Value</div>
-          <input id="fVal" class="input" placeholder="Example: chicago, CA, 2026-02, etc." />
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <button id="applyFilter" class="btn small" disabled>Apply filter</button>
-          <button id="clearFilter" class="btn small" disabled>Clear filter</button>
-          <span id="filterBadge" class="tiny muted"></span>
-        </div>
-
-        <div class="note tiny muted">
+</div>
+<div class="card">
+<div style="font-weight:700">2) Metric</div>
+<div class="tiny muted">Choose aggregation and formatting</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Aggregation</label>
+<select class="input" id="agg" style="width:auto;min-width:260px">
+<option selected="" value="count">Count</option>
+<option value="sum">Sum</option>
+<option value="avg">Average</option>
+<option value="min">Min</option>
+<option value="max">Max</option>
+<option value="distinct">Distinct count</option>
+</select>
+</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Number format</label>
+<select class="input" id="fmt" style="width:auto;min-width:260px">
+<option selected="" value="auto">Auto</option>
+<option value="0">0 decimals</option>
+<option value="2">2 decimals</option>
+<option value="4">4 decimals</option>
+</select>
+</div>
+<div class="chk" style="margin-top:10px">
+<input checked="" id="showTotals" type="checkbox"/>
+<div>
+<label for="showTotals"><b>Show totals</b></label>
+<div class="tiny muted">add row totals and column totals</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input id="asPercent" type="checkbox"/>
+<div>
+<label for="asPercent"><b>Show as % of grand total</b></label>
+<div class="tiny muted">useful for share breakdowns</div>
+</div>
+</div>
+</div>
+<div class="card">
+<div style="font-weight:700">3) Filters</div>
+<div class="tiny muted">Narrow data before pivot</div>
+<div class="twoCol" style="margin-top:10px">
+<div>
+<div class="tiny muted">Filter column</div>
+<select class="input" disabled="" id="fCol"></select>
+</div>
+<div>
+<div class="tiny muted">Match type</div>
+<select class="input" id="fMode">
+<option selected="" value="contains">Contains</option>
+<option value="equals">Equals</option>
+<option value="starts">Starts with</option>
+<option value="ends">Ends with</option>
+<option value="regex">Regex</option>
+</select>
+</div>
+</div>
+<div style="margin-top:10px">
+<div class="tiny muted">Value</div>
+<input class="input" id="fVal" placeholder="Example: chicago, CA, 2026-02, etc."/>
+</div>
+<div class="row" style="margin-top:10px">
+<button class="btn small" disabled="" id="applyFilter">Apply filter</button>
+<button class="btn small" disabled="" id="clearFilter">Clear filter</button>
+<span class="tiny muted" id="filterBadge"></span>
+</div>
+<div class="note tiny muted">
           Filters are optional. If you leave filter blank, all rows are included.
         </div>
-      </div>
-    </div>
-
-    <div class="hr2"></div>
-
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <div>
-          <div style="font-weight:700">Preview</div>
-          <div class="tiny muted">Raw sample + pivot output</div>
-        </div>
-        <div class="row">
-          <label class="tiny muted">View</label>
-          <select id="view" class="input" style="width:auto;min-width:240px" disabled>
-            <option value="pivot" selected>Pivot</option>
-            <option value="raw">Raw (sample)</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="split" style="margin-top:12px">
-        <div class="tablewrap">
-          <table>
-            <thead><tr id="thead"></tr></thead>
-            <tbody id="tbody"></tbody>
-          </table>
-        </div>
-
-        <div class="card" style="margin:0">
-          <div style="font-weight:700">Audit</div>
-          <div class="tiny muted">What was run (settings + counts)</div>
-          <div class="hr2"></div>
-          <div id="auditBox" class="mini muted">Load a file to begin.</div>
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-      <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
-      <a class="btn" href="/docs/contact.html">Contact</a>
-    </div>
-  </div>
-
-  <div class="footer">© 2026 ReportMedic</div>
 </div>
-
+</div>
+<div class="hr2"></div>
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Preview</div>
+<div class="tiny muted">Raw sample + pivot output</div>
+</div>
+<div class="row">
+<label class="tiny muted">View</label>
+<select class="input" disabled="" id="view" style="width:auto;min-width:240px">
+<option selected="" value="pivot">Pivot</option>
+<option value="raw">Raw (sample)</option>
+</select>
+</div>
+</div>
+<div class="split" style="margin-top:12px">
+<div class="tablewrap">
+<table>
+<thead><tr id="thead"></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+<div class="card" style="margin:0">
+<div style="font-weight:700">Audit</div>
+<div class="tiny muted">What was run (settings + counts)</div>
+<div class="hr2"></div>
+<div class="mini muted" id="auditBox">Load a file to begin.</div>
+</div>
+</div>
+</div>
+<div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+<a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+<a class="btn" href="/docs/contact.html">Contact</a>
+</div>
+</div>
+<div class="footer">© 2026 ReportMedic</div>
+</div>
 <script>
 (function(){
   const $ = (id)=>document.getElementById(id);

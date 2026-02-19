@@ -1,20 +1,18 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Reconciliation — ReportMedic</title>
-
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/reportmedic-48.png?v=1">
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png">
-  <link rel="stylesheet" href="/assets/css/styles.css">
-
-  <!-- Client-side parsing libraries (GitHub Pages friendly). Vendor later if you want fully-offline. -->
-  <script defer src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Reconciliation — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+<!-- Client-side parsing libraries (GitHub Pages friendly). Vendor later if you want fully-offline. -->
+<script defer="" src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     @media (max-width: 880px){.grid2{grid-template-columns:1fr}}
     .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
@@ -62,293 +60,263 @@
 </head>
 <body>
 <header>
-  <div class="nav">
-    <a class="logo" href="/" style="text-decoration:none;">
-      <div class="mark"></div>
-      <div>ReportMedic</div>
-    </a>
-    <div class="spacer"></div>
-    <a class="btn" href="/">Home</a>
-    <a class="btn" href="/#toolbox">Toolbox</a>
-    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
-    
-  </div>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<a class="btn" href="/#toolbox">Toolbox</a>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div><div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
 </header>
-
 <div class="wrap">
-  <div class="panel">
-    <h1>Reconciliation</h1>
-    <p class="sub">Match totals, track variance, and explain gaps — by keys, groups, and tolerances.</p>
-
-    <div class="hr"></div>
-
-    <div class="grid3">
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <div style="font-weight:700">Source A</div>
-            <div class="tiny muted">Example: POS / system-of-record</div>
-          </div>
-          <span id="aMeta" class="pill tiny"><b>A:</b><span class="muted">not loaded</span></span>
-        </div>
-        <div style="margin-top:10px">
-          <input id="fileA" class="input" type="file" accept=".csv,.tsv,.txt,.xlsx,.xls" />
-        </div>
-        <div class="row" style="margin-top:8px">
-          <label class="tiny muted">Amount column</label>
-          <select id="aAmt" class="input" style="width:auto;min-width:240px" disabled></select>
-          <label class="chk tiny muted" style="margin:0">
-            <input id="aFlip" type="checkbox" />
-            <span><b>Flip sign</b></span>
-          </label>
-        </div>
-        <div class="hint tiny muted">
+<div class="panel">
+<h1>Reconciliation</h1>
+<p class="sub">Reconcile totals with clear explanations — match by keys, track variance, and produce a defensible summary you can send to stakeholders.</p>
+<div class="hr"></div>
+<div class="grid3">
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Source A</div>
+<div class="tiny muted">Example: POS / system-of-record</div>
+</div>
+<span class="pill tiny" id="aMeta"><b>A:</b><span class="muted">not loaded</span></span>
+</div>
+<div style="margin-top:10px">
+<input accept=".csv,.tsv,.txt,.xlsx,.xls" class="input" id="fileA" type="file"/>
+</div>
+<div class="row" style="margin-top:8px">
+<label class="tiny muted">Amount column</label>
+<select class="input" disabled="" id="aAmt" style="width:auto;min-width:240px"></select>
+<label class="chk tiny muted" style="margin:0">
+<input id="aFlip" type="checkbox"/>
+<span><b>Flip sign</b></span>
+</label>
+</div>
+<div class="hint tiny muted">
           TXT is supported when it is a delimited export (CSV/TSV-style) with a header row.
         </div>
-      </div>
-
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <div style="font-weight:700">Source B</div>
-            <div class="tiny muted">Example: bank / GL / downstream system</div>
-          </div>
-          <span id="bMeta" class="pill tiny"><b>B:</b><span class="muted">not loaded</span></span>
-        </div>
-        <div style="margin-top:10px">
-          <input id="fileB" class="input" type="file" accept=".csv,.tsv,.txt,.xlsx,.xls" />
-        </div>
-        <div class="row" style="margin-top:8px">
-          <label class="tiny muted">Amount column</label>
-          <select id="bAmt" class="input" style="width:auto;min-width:240px" disabled></select>
-          <label class="chk tiny muted" style="margin:0">
-            <input id="bFlip" type="checkbox" />
-            <span><b>Flip sign</b></span>
-          </label>
-        </div>
-        <div class="hint tiny muted">
+</div>
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Source B</div>
+<div class="tiny muted">Example: bank / GL / downstream system</div>
+</div>
+<span class="pill tiny" id="bMeta"><b>B:</b><span class="muted">not loaded</span></span>
+</div>
+<div style="margin-top:10px">
+<input accept=".csv,.tsv,.txt,.xlsx,.xls" class="input" id="fileB" type="file"/>
+</div>
+<div class="row" style="margin-top:8px">
+<label class="tiny muted">Amount column</label>
+<select class="input" disabled="" id="bAmt" style="width:auto;min-width:240px"></select>
+<label class="chk tiny muted" style="margin:0">
+<input id="bFlip" type="checkbox"/>
+<span><b>Flip sign</b></span>
+</label>
+</div>
+<div class="hint tiny muted">
           Privacy: everything runs locally in your browser (GitHub Pages friendly).
         </div>
-      </div>
-
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <div style="font-weight:700">Adjustments (optional)</div>
-            <div class="tiny muted">Example: manual journals / exceptions</div>
-          </div>
-          <span id="jMeta" class="pill tiny"><b>Adj:</b><span class="muted">none</span></span>
-        </div>
-        <div style="margin-top:10px">
-          <input id="fileJ" class="input" type="file" accept=".csv,.tsv,.txt,.xlsx,.xls" />
-        </div>
-        <div class="row" style="margin-top:8px">
-          <label class="tiny muted">Adj amount</label>
-          <select id="jAmt" class="input" style="width:auto;min-width:240px" disabled></select>
-          <select id="jApply" class="input" style="width:auto;min-width:200px">
-            <option value="none">Apply: none</option>
-            <option value="toA">Apply: add to A</option>
-            <option value="toB">Apply: add to B</option>
-          </select>
-        </div>
-        <div class="tiny muted" style="margin-top:8px">
+</div>
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Adjustments (optional)</div>
+<div class="tiny muted">Example: manual journals / exceptions</div>
+</div>
+<span class="pill tiny" id="jMeta"><b>Adj:</b><span class="muted">none</span></span>
+</div>
+<div style="margin-top:10px">
+<input accept=".csv,.tsv,.txt,.xlsx,.xls" class="input" id="fileJ" type="file"/>
+</div>
+<div class="row" style="margin-top:8px">
+<label class="tiny muted">Adj amount</label>
+<select class="input" disabled="" id="jAmt" style="width:auto;min-width:240px"></select>
+<select class="input" id="jApply" style="width:auto;min-width:200px">
+<option value="none">Apply: none</option>
+<option value="toA">Apply: add to A</option>
+<option value="toB">Apply: add to B</option>
+</select>
+</div>
+<div class="tiny muted" style="margin-top:8px">
           Use the same group keys so adjustments roll up to the right bucket.
         </div>
-      </div>
-    </div>
-
-    <div class="hr2"></div>
-
-    <div class="grid2">
-      <div class="card">
-        <div style="font-weight:700">1) Group keys (dimensions)</div>
-        <div class="tiny muted">Reconcile totals by these columns (leave empty to compare grand totals only).</div>
-
-        <div class="row" style="margin-top:10px">
-          <input id="keySearch" class="input" placeholder="Search columns…" />
-        </div>
-        <div id="keyList" class="chklist" aria-live="polite"></div>
-
-        <div class="row" style="margin-top:10px">
-          <button id="autoKey" class="btn" disabled>Auto-pick</button>
-          <button id="clearKey" class="btn" disabled>Clear</button>
-        </div>
-
-        <div class="callout tiny muted" style="margin-top:10px">
+</div>
+</div>
+<div class="hr2"></div>
+<div class="grid2">
+<div class="card">
+<div style="font-weight:700">1) Group keys (dimensions)</div>
+<div class="tiny muted">Reconcile totals by these columns (leave empty to compare grand totals only).</div>
+<div class="row" style="margin-top:10px">
+<input class="input" id="keySearch" placeholder="Search columns…"/>
+</div>
+<div aria-live="polite" class="chklist" id="keyList"></div>
+<div class="row" style="margin-top:10px">
+<button class="btn" disabled="" id="autoKey">Auto-pick</button>
+<button class="btn" disabled="" id="clearKey">Clear</button>
+</div>
+<div class="callout tiny muted" style="margin-top:10px">
           Tip: For finance-style reconciliations try <span class="kbd">Account</span>, <span class="kbd">CostCenter</span>, <span class="kbd">Date/Week</span>.
           For retail try <span class="kbd">StoreId</span> + <span class="kbd">Week</span>.
         </div>
-      </div>
-
-      <div class="card">
-        <div style="font-weight:700">2) Compare rules</div>
-
-        <div class="chk" style="margin-top:10px">
-          <input id="optTrim" type="checkbox" checked />
-          <label for="optTrim"><b>Trim whitespace</b> <span class="tiny muted">(" abc " → "abc")</span></label>
-        </div>
-
-        <div class="chk" style="margin-top:8px">
-          <input id="optCase" type="checkbox" />
-          <label for="optCase"><b>Case-insensitive keys</b> <span class="tiny muted">(store001 == STORE001)</span></label>
-        </div>
-
-        <div class="chk" style="margin-top:8px">
-          <input id="optNum" type="checkbox" checked />
-          <label for="optNum"><b>Normalize numbers</b> <span class="tiny muted">($1,234.00 == 1234)</span></label>
-        </div>
-
-        <div class="chk" style="margin-top:8px">
-          <input id="optParenNeg" type="checkbox" checked />
-          <label for="optParenNeg"><b>Parentheses as negative</b> <span class="tiny muted">((123) → -123)</span></label>
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <div style="flex:1;min-width:220px">
-            <label class="tiny muted">Absolute tolerance</label>
-            <input id="tolAbs" class="input" type="number" step="0.0001" value="0.01" />
-          </div>
-          <div style="flex:1;min-width:220px">
-            <label class="tiny muted">Percent tolerance</label>
-            <input id="tolPct" class="input" type="number" step="0.0001" value="0" />
-            <div class="tiny muted" style="margin-top:6px">Set to 0 to disable percent tolerance.</div>
-          </div>
-        </div>
-
-        <div class="row" style="margin-top:12px">
-          <button id="run" class="btn primary" disabled>Run reconciliation</button>
-          <button id="swap" class="btn" disabled>Swap A↔B</button>
-        </div>
-
-        <div id="runMsg" class="tiny muted" style="margin-top:10px"></div>
-      </div>
-    </div>
-
-    <div class="hr2"></div>
-
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <div>
-          <div style="font-weight:700">Results</div>
-          <div class="tiny muted">Matched groups, missing groups, and variances</div>
-        </div>
-        <div class="row">
-          <select id="filterStatus" class="input" style="width:auto;min-width:220px">
-            <option value="all">Show: All</option>
-            <option value="match">Show: Matched</option>
-            <option value="variance">Show: Out of tolerance</option>
-            <option value="aonly">Show: A only</option>
-            <option value="bonly">Show: B only</option>
-          </select>
-          <input id="searchGroup" class="input" style="width:auto;min-width:240px" placeholder="Search group key…" />
-          <button id="dlSummary" class="btn" disabled>Download summary CSV</button>
-          <button id="dlUnmatched" class="btn" disabled>Download unmatched CSV</button>
-        </div>
-      </div>
-
-      <div class="statbar">
-        <span class="stat"><b>Grand A</b><span id="sGrandA" class="v mono">—</span></span>
-        <span class="stat"><b>Grand B</b><span id="sGrandB" class="v mono">—</span></span>
-        <span class="stat"><b>Adj</b><span id="sGrandJ" class="v mono">—</span></span>
-        <span class="stat"><b>Variance</b><span id="sGrandV" class="v mono">—</span></span>
-        <span class="stat"><b>Groups</b><span id="sGroups" class="v mono">—</span></span>
-        <span class="stat"><b>Matched</b><span id="sMatch" class="v mono">—</span></span>
-        <span class="stat"><b>Out tol</b><span id="sVar" class="v mono">—</span></span>
-        <span class="stat"><b>A only</b><span id="sAOnly" class="v mono">—</span></span>
-        <span class="stat"><b>B only</b><span id="sBOnly" class="v mono">—</span></span>
-        <span class="pill tiny"><b>Keys:</b><span id="sKeys" class="mono muted">—</span></span>
-        <span class="pill tiny"><b>Amounts:</b><span id="sAmts" class="mono muted">—</span></span>
-      </div>
-
-      <div class="hr2"></div>
-
-      <div class="tablewrap">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:140px">Status</th>
-              <th style="width:320px">Group key</th>
-              <th style="width:140px">A total</th>
-              <th style="width:140px">B total</th>
-              <th style="width:140px">Adj</th>
-              <th style="width:140px">Variance</th>
-              <th style="width:120px">Var %</th>
-              <th style="width:120px">Rows A</th>
-              <th style="width:120px">Rows B</th>
-              <th>Notes</th>
-            </tr>
-          </thead>
-          <tbody id="rows"></tbody>
-        </table>
-      </div>
-
-      <div class="tiny muted" style="margin-top:10px">
+</div>
+<div class="card">
+<div style="font-weight:700">2) Compare rules</div>
+<div class="chk" style="margin-top:10px">
+<input checked="" id="optTrim" type="checkbox"/>
+<label for="optTrim"><b>Trim whitespace</b> <span class="tiny muted">(" abc " → "abc")</span></label>
+</div>
+<div class="chk" style="margin-top:8px">
+<input id="optCase" type="checkbox"/>
+<label for="optCase"><b>Case-insensitive keys</b> <span class="tiny muted">(store001 == STORE001)</span></label>
+</div>
+<div class="chk" style="margin-top:8px">
+<input checked="" id="optNum" type="checkbox"/>
+<label for="optNum"><b>Normalize numbers</b> <span class="tiny muted">($1,234.00 == 1234)</span></label>
+</div>
+<div class="chk" style="margin-top:8px">
+<input checked="" id="optParenNeg" type="checkbox"/>
+<label for="optParenNeg"><b>Parentheses as negative</b> <span class="tiny muted">((123) → -123)</span></label>
+</div>
+<div class="row" style="margin-top:10px">
+<div style="flex:1;min-width:220px">
+<label class="tiny muted">Absolute tolerance</label>
+<input class="input" id="tolAbs" step="0.0001" type="number" value="0.01"/>
+</div>
+<div style="flex:1;min-width:220px">
+<label class="tiny muted">Percent tolerance</label>
+<input class="input" id="tolPct" step="0.0001" type="number" value="0"/>
+<div class="tiny muted" style="margin-top:6px">Set to 0 to disable percent tolerance.</div>
+</div>
+</div>
+<div class="row" style="margin-top:12px">
+<button class="btn primary" disabled="" id="run">Run reconciliation</button>
+<button class="btn" disabled="" id="swap">Swap A↔B</button>
+</div>
+<div class="tiny muted" id="runMsg" style="margin-top:10px"></div>
+</div>
+</div>
+<div class="hr2"></div>
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Results</div>
+<div class="tiny muted">Matched groups, missing groups, and variances</div>
+</div>
+<div class="row">
+<select class="input" id="filterStatus" style="width:auto;min-width:220px">
+<option value="all">Show: All</option>
+<option value="match">Show: Matched</option>
+<option value="variance">Show: Out of tolerance</option>
+<option value="aonly">Show: A only</option>
+<option value="bonly">Show: B only</option>
+</select>
+<input class="input" id="searchGroup" placeholder="Search group key…" style="width:auto;min-width:240px"/>
+<button class="btn" disabled="" id="dlSummary">Download summary CSV</button>
+<button class="btn" disabled="" id="dlUnmatched">Download unmatched CSV</button>
+</div>
+</div>
+<div class="statbar">
+<span class="stat"><b>Grand A</b><span class="v mono" id="sGrandA">—</span></span>
+<span class="stat"><b>Grand B</b><span class="v mono" id="sGrandB">—</span></span>
+<span class="stat"><b>Adj</b><span class="v mono" id="sGrandJ">—</span></span>
+<span class="stat"><b>Variance</b><span class="v mono" id="sGrandV">—</span></span>
+<span class="stat"><b>Groups</b><span class="v mono" id="sGroups">—</span></span>
+<span class="stat"><b>Matched</b><span class="v mono" id="sMatch">—</span></span>
+<span class="stat"><b>Out tol</b><span class="v mono" id="sVar">—</span></span>
+<span class="stat"><b>A only</b><span class="v mono" id="sAOnly">—</span></span>
+<span class="stat"><b>B only</b><span class="v mono" id="sBOnly">—</span></span>
+<span class="pill tiny"><b>Keys:</b><span class="mono muted" id="sKeys">—</span></span>
+<span class="pill tiny"><b>Amounts:</b><span class="mono muted" id="sAmts">—</span></span>
+</div>
+<div class="hr2"></div>
+<div class="tablewrap">
+<table>
+<thead>
+<tr>
+<th style="width:140px">Status</th>
+<th style="width:320px">Group key</th>
+<th style="width:140px">A total</th>
+<th style="width:140px">B total</th>
+<th style="width:140px">Adj</th>
+<th style="width:140px">Variance</th>
+<th style="width:120px">Var %</th>
+<th style="width:120px">Rows A</th>
+<th style="width:120px">Rows B</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody id="rows"></tbody>
+</table>
+</div>
+<div class="tiny muted" style="margin-top:10px">
         Tip: Click any row to drill into the underlying Source A / Source B records for that group.
       </div>
-    </div>
-
-    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-      <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
-      <a class="btn" href="/docs/contact.html">Contact</a>
-    </div>
-  </div>
-
-  <div class="footer">© 2026 ReportMedic</div>
 </div>
-
+<div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+<a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+<a class="btn" href="/docs/contact.html">Contact</a>
+</div>
+</div>
+<div class="footer">© 2026 ReportMedic</div>
+</div>
 <!-- Drilldown modal -->
-<div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true">
-  <div class="modal">
-    <header>
-      <div>
-        <div style="font-weight:800">Group drilldown</div>
-        <div id="mKey" class="tiny muted mono">—</div>
-      </div>
-      <div class="btnrow">
-        <button id="mDlA" class="btn">Download A rows</button>
-        <button id="mDlB" class="btn">Download B rows</button>
-        <button id="mClose" class="btn close">Close</button>
-      </div>
-    </header>
-    <div class="body">
-      <div class="grid2">
-        <div class="card">
-          <div class="row" style="justify-content:space-between">
-            <div style="font-weight:700">Source A rows</div>
-            <span class="pill tiny"><b>Sum:</b><span id="mSumA" class="mono muted">—</span></span>
-          </div>
-          <div class="tablewrap" style="margin-top:10px">
-            <table class="miniTable">
-              <thead><tr id="mHeadA"></tr></thead>
-              <tbody id="mBodyA"></tbody>
-            </table>
-          </div>
-          <div id="mMoreA" class="tiny muted" style="margin-top:8px"></div>
-        </div>
-        <div class="card">
-          <div class="row" style="justify-content:space-between">
-            <div style="font-weight:700">Source B rows</div>
-            <span class="pill tiny"><b>Sum:</b><span id="mSumB" class="mono muted">—</span></span>
-          </div>
-          <div class="tablewrap" style="margin-top:10px">
-            <table class="miniTable">
-              <thead><tr id="mHeadB"></tr></thead>
-              <tbody id="mBodyB"></tbody>
-            </table>
-          </div>
-          <div id="mMoreB" class="tiny muted" style="margin-top:8px"></div>
-        </div>
-      </div>
-
-      <div class="hr2"></div>
-      <div class="card">
-        <div style="font-weight:700">Quick explanation helpers</div>
-        <div id="mExplain" class="tiny muted" style="margin-top:8px">—</div>
-      </div>
-    </div>
-  </div>
+<div aria-modal="true" class="modal-backdrop" id="modalBackdrop" role="dialog">
+<div class="modal">
+<header>
+<div>
+<div style="font-weight:800">Group drilldown</div>
+<div class="tiny muted mono" id="mKey">—</div>
 </div>
-
+<div class="btnrow">
+<button class="btn" id="mDlA">Download A rows</button>
+<button class="btn" id="mDlB">Download B rows</button>
+<button class="btn close" id="mClose">Close</button>
+</div>
+</header>
+<div class="body">
+<div class="grid2">
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div style="font-weight:700">Source A rows</div>
+<span class="pill tiny"><b>Sum:</b><span class="mono muted" id="mSumA">—</span></span>
+</div>
+<div class="tablewrap" style="margin-top:10px">
+<table class="miniTable">
+<thead><tr id="mHeadA"></tr></thead>
+<tbody id="mBodyA"></tbody>
+</table>
+</div>
+<div class="tiny muted" id="mMoreA" style="margin-top:8px"></div>
+</div>
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div style="font-weight:700">Source B rows</div>
+<span class="pill tiny"><b>Sum:</b><span class="mono muted" id="mSumB">—</span></span>
+</div>
+<div class="tablewrap" style="margin-top:10px">
+<table class="miniTable">
+<thead><tr id="mHeadB"></tr></thead>
+<tbody id="mBodyB"></tbody>
+</table>
+</div>
+<div class="tiny muted" id="mMoreB" style="margin-top:8px"></div>
+</div>
+</div>
+<div class="hr2"></div>
+<div class="card">
+<div style="font-weight:700">Quick explanation helpers</div>
+<div class="tiny muted" id="mExplain" style="margin-top:8px">—</div>
+</div>
+</div>
+</div>
+</div>
 <script>
 (function(){
   const $ = (id) => document.getElementById(id);

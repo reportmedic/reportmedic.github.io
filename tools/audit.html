@@ -1,19 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Audit Trail Notes — ReportMedic</title>
-
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/reportmedic-48.png?v=1">
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png">
-<link rel="stylesheet" href="/assets/css/styles.css">
-
-  <!-- PDF export (client-side). If this CDN is blocked/unavailable, PDF export will show a friendly fallback. -->
-  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Audit Trail Notes — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+<!-- PDF export (client-side). If this CDN is blocked/unavailable, PDF export will show a friendly fallback. -->
+<script defer="" src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<style>
     .layout{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;margin-top:14px;}
     @media (max-width:980px){.layout{grid-template-columns:1fr;}}
     .note{color:var(--muted);font-size:13px;line-height:1.5;margin:0;}
@@ -143,193 +141,166 @@
     .backRow{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;}
   </style>
 </head>
-
 <body>
 <header>
-  <div class="nav">
-    <a class="logo" href="/" style="text-decoration:none;">
-      <div class="mark"></div>
-      <div>ReportMedic</div>
-    </a>
-    <div class="spacer"></div>
-    <a class="btn" href="/">Home</a>
-    <a class="btn" href="/#toolbox">Toolbox</a>
-    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
-    
-  </div>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<a class="btn" href="/#toolbox">Toolbox</a>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div><div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
 </header>
-
 <div class="wrap">
-  <div class="panel">
-    <h1>Audit Trail Notes</h1>
-    <p class="sub">Generate audit-ready explanations, change notes, and sign-off text — all in your browser.</p>
-
-    <div class="callout">
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-        <span class="pill">✅ Offline / client-side</span>
-        <span class="pill">🔒 No uploads to servers</span>
-        <span class="pill">📄 Export to TXT / MD / HTML / PDF</span>
-        <span class="pill">🧾 CSV change-log import</span>
-      </div>
-      <p class="note" style="margin-top:10px;">
+<div class="panel">
+<h1>Audit Trail Notes</h1>
+<p class="sub">Generate audit-ready change notes and sign‑off text — so your report has a clear explanation, not just numbers.</p>
+<div class="callout">
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+<span class="pill">✅ Offline / client-side</span>
+<span class="pill">🔒 No uploads to servers</span>
+<span class="pill">📄 Export to TXT / MD / HTML / PDF</span>
+<span class="pill">🧾 CSV change-log import</span>
+</div>
+<p class="note" style="margin-top:10px;">
         Fill the form → preview updates instantly → use the actions above the preview.
         Shortcut: <span class="kbd">Cmd/Ctrl + K</span> focuses “Summary”.
       </p>
-    </div>
-
-    <div class="layout">
-      <!-- FORM -->
-      <div class="formCard">
-        <div class="sectionTitle">1) Header details</div>
-
-        <div class="grid2">
-          <div class="row">
-            <label for="org">Organization / Team</label>
-            <input id="org" type="text" placeholder="e.g., Finance Analytics" />
-          </div>
-          <div class="row">
-            <label for="system">System / Report / Dataset</label>
-            <input id="system" type="text" placeholder="e.g., Monthly Revenue Report (REV-01)" />
-          </div>
-        </div>
-
-        <div class="grid3">
-          <div class="row">
-            <label for="period">Period / Cutoff</label>
-            <input id="period" type="text" placeholder="e.g., Jan 2026 close" />
-          </div>
-          <div class="row">
-            <label for="changeDate">Change date</label>
-            <input id="changeDate" type="date" />
-          </div>
-          <div class="row">
-            <label for="ticket">Ticket / Reference</label>
-            <input id="ticket" type="text" placeholder="e.g., JIRA-1234 / INC0007" />
-          </div>
-        </div>
-
-        <div class="grid3">
-          <div class="row">
-            <label for="preparedBy">Prepared by</label>
-            <input id="preparedBy" type="text" placeholder="Name" />
-          </div>
-          <div class="row">
-            <label for="reviewedBy">Reviewed by</label>
-            <input id="reviewedBy" type="text" placeholder="Name" />
-          </div>
-          <div class="row">
-            <label for="changeType">Change type</label>
-            <!-- Datalist gives suggested options but still allows custom -->
-            <input id="changeType" type="text" list="changeTypeList" placeholder="e.g., Correction" />
-            <datalist id="changeTypeList">
-              <option value="Correction"></option>
-              <option value="Restatement"></option>
-              <option value="Enhancement"></option>
-              <option value="Policy/Logic Update"></option>
-              <option value="Data Refresh"></option>
-              <option value="Backfill"></option>
-              <option value="Other"></option>
-            </datalist>
-          </div>
-        </div>
-
-        <div class="row">
-          <label for="summary">Summary (1–2 sentences)</label>
-          <textarea id="summary" placeholder="What changed, why, and what it impacts — in plain language."></textarea>
-        </div>
-
-        <div class="hr2"></div>
-
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
-          <div class="sectionTitle" style="margin:0;">2) Change log (bullet-ready)</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="iconBtn" id="addChangeBtn" type="button">+ Add change</button>
-            <label class="iconBtn" style="cursor:pointer;">
+</div>
+<div class="layout">
+<!-- FORM -->
+<div class="formCard">
+<div class="sectionTitle">1) Header details</div>
+<div class="grid2">
+<div class="row">
+<label for="org">Organization / Team</label>
+<input id="org" placeholder="e.g., Finance Analytics" type="text"/>
+</div>
+<div class="row">
+<label for="system">System / Report / Dataset</label>
+<input id="system" placeholder="e.g., Monthly Revenue Report (REV-01)" type="text"/>
+</div>
+</div>
+<div class="grid3">
+<div class="row">
+<label for="period">Period / Cutoff</label>
+<input id="period" placeholder="e.g., Jan 2026 close" type="text"/>
+</div>
+<div class="row">
+<label for="changeDate">Change date</label>
+<input id="changeDate" type="date"/>
+</div>
+<div class="row">
+<label for="ticket">Ticket / Reference</label>
+<input id="ticket" placeholder="e.g., JIRA-1234 / INC0007" type="text"/>
+</div>
+</div>
+<div class="grid3">
+<div class="row">
+<label for="preparedBy">Prepared by</label>
+<input id="preparedBy" placeholder="Name" type="text"/>
+</div>
+<div class="row">
+<label for="reviewedBy">Reviewed by</label>
+<input id="reviewedBy" placeholder="Name" type="text"/>
+</div>
+<div class="row">
+<label for="changeType">Change type</label>
+<!-- Datalist gives suggested options but still allows custom -->
+<input id="changeType" list="changeTypeList" placeholder="e.g., Correction" type="text"/>
+<datalist id="changeTypeList">
+<option value="Correction"></option>
+<option value="Restatement"></option>
+<option value="Enhancement"></option>
+<option value="Policy/Logic Update"></option>
+<option value="Data Refresh"></option>
+<option value="Backfill"></option>
+<option value="Other"></option>
+</datalist>
+</div>
+</div>
+<div class="row">
+<label for="summary">Summary (1–2 sentences)</label>
+<textarea id="summary" placeholder="What changed, why, and what it impacts — in plain language."></textarea>
+</div>
+<div class="hr2"></div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+<div class="sectionTitle" style="margin:0;">2) Change log (bullet-ready)</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;">
+<button class="iconBtn" id="addChangeBtn" type="button">+ Add change</button>
+<label class="iconBtn" style="cursor:pointer;">
               Import CSV
-              <input id="csvFile" type="file" accept=".csv,text/csv" style="display:none;" />
-            </label>
-          </div>
-        </div>
-        <p class="tiny" style="margin-top:6px;">
+              <input accept=".csv,text/csv" id="csvFile" style="display:none;" type="file"/>
+</label>
+</div>
+</div>
+<p class="tiny" style="margin-top:6px;">
           CSV format: <span class="kbd">field,from,to,reason</span> (header row optional). Example: Region,APAC,APJ,Standardized naming
         </p>
-
-        <div class="changes" id="changes"></div>
-
-        <div class="hr2"></div>
-
-        <div class="sectionTitle">3) Controls / validation</div>
-        <div class="grid2">
-          <div class="row">
-            <label for="validation">Validation performed</label>
-            <textarea id="validation" placeholder="e.g., Totals tie-out; row counts; null checks; sampling; variance thresholds."></textarea>
-          </div>
-          <div class="row">
-            <label for="impact">Impact assessment</label>
-            <textarea id="impact" placeholder="Metrics affected, magnitude, downstream consumers, risks."></textarea>
-          </div>
-        </div>
-
-        <div class="grid2">
-          <div class="row">
-            <label for="evidence">Evidence / attachments (optional)</label>
-            <textarea id="evidence" placeholder="Links or filenames (kept local): screenshots, query outputs, tie-outs, approvals."></textarea>
-          </div>
-          <div class="row">
-            <label for="signoff">Approvals / sign-off text (optional)</label>
-            <textarea id="signoff" placeholder="Who approved and when. Add any mandatory wording required by your audit team."></textarea>
-          </div>
-        </div>
-
-        <div class="backRow">
-          <a class="btn" href="/#toolbox">Back</a>
-        </div>
-      </div>
-
-      <!-- PREVIEW -->
-      <div class="previewCard">
-        <!-- ACTIONS MOVED ABOVE PREVIEW -->
-        <div class="actionBar">
-          <div class="btnRow">
-            <button class="btn primary" id="copyBtn" type="button">Copy</button>
-
-            <div class="exportGroup">
-              <select id="exportFormat" aria-label="Export format">
-                <option value="md">MD</option>
-                <option value="txt">TXT</option>
-                <option value="html">HTML</option>
-                <option value="pdf">PDF</option>
-              </select>
-              <button class="btn" id="downloadBtn" type="button">Download</button>
-            </div>
-
-            <button class="btn" id="sampleBtn" type="button">Load Sample</button>
-            <button class="btn" id="resetBtn" type="button">Reset</button>
-          </div>
-
-          <p class="mutedInline">Actions first → then preview.</p>
-        </div>
-
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
-          <div class="sectionTitle" style="margin:0;">Live preview</div>
-          <div class="pill">Format: Audit memo</div>
-        </div>
-
-        <div class="success" id="toast">Done.</div>
-        
-        <div class="previewBox" id="preview" aria-label="Generated audit notes preview"></div>        
-
-        <p class="tiny" style="margin-top:10px;">
+<div class="changes" id="changes"></div>
+<div class="hr2"></div>
+<div class="sectionTitle">3) Controls / validation</div>
+<div class="grid2">
+<div class="row">
+<label for="validation">Validation performed</label>
+<textarea id="validation" placeholder="e.g., Totals tie-out; row counts; null checks; sampling; variance thresholds."></textarea>
+</div>
+<div class="row">
+<label for="impact">Impact assessment</label>
+<textarea id="impact" placeholder="Metrics affected, magnitude, downstream consumers, risks."></textarea>
+</div>
+</div>
+<div class="grid2">
+<div class="row">
+<label for="evidence">Evidence / attachments (optional)</label>
+<textarea id="evidence" placeholder="Links or filenames (kept local): screenshots, query outputs, tie-outs, approvals."></textarea>
+</div>
+<div class="row">
+<label for="signoff">Approvals / sign-off text (optional)</label>
+<textarea id="signoff" placeholder="Who approved and when. Add any mandatory wording required by your audit team."></textarea>
+</div>
+</div>
+<div class="backRow">
+<a class="btn" href="/#toolbox">Back</a>
+</div>
+</div>
+<!-- PREVIEW -->
+<div class="previewCard">
+<!-- ACTIONS MOVED ABOVE PREVIEW -->
+<div class="actionBar">
+<div class="btnRow">
+<button class="btn primary" id="copyBtn" type="button">Copy</button>
+<div class="exportGroup">
+<select aria-label="Export format" id="exportFormat">
+<option value="md">MD</option>
+<option value="txt">TXT</option>
+<option value="html">HTML</option>
+<option value="pdf">PDF</option>
+</select>
+<button class="btn" id="downloadBtn" type="button">Download</button>
+</div>
+<button class="btn" id="sampleBtn" type="button">Load Sample</button>
+<button class="btn" id="resetBtn" type="button">Reset</button>
+</div>
+<p class="mutedInline">Actions first → then preview.</p>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+<div class="sectionTitle" style="margin:0;">Live preview</div>
+<div class="pill">Format: Audit memo</div>
+</div>
+<div class="success" id="toast">Done.</div>
+<div aria-label="Generated audit notes preview" class="previewBox" id="preview"></div>
+<p class="tiny" style="margin-top:10px;">
           Everything here is generated locally in your browser. Nothing is uploaded.
         </p>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="footer">© 2026 ReportMedic</div>
 </div>
-
+</div>
+</div>
+<div class="footer">© 2026 ReportMedic</div>
+</div>
 <script>
 (function(){
   const $ = (id) => document.getElementById(id);
@@ -824,6 +795,5 @@ ${signoff ? `<div class="box"><h2>Approvals / Sign-off</h2><div>${signoff}</div>
   });
 })();
 </script>
-
 </body>
 </html>

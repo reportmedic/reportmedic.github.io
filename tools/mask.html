@@ -1,19 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>PII Masker — ReportMedic</title>
-
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/reportmedic-48.png?v=1">
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png">
-  <link rel="stylesheet" href="/assets/css/styles.css">
-
-  <script defer src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>PII Masker — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
     @media (max-width: 980px){.grid3{grid-template-columns:1fr}}
@@ -50,248 +48,207 @@
 </head>
 <body>
 <header>
-  <div class="nav">
-    <a class="logo" href="/" style="text-decoration:none;">
-      <div class="mark"></div>
-      <div>ReportMedic</div>
-    </a>
-    <div class="spacer"></div>
-    <a class="btn" href="/">Home</a>
-    <a class="btn" href="/#toolbox">Toolbox</a>
-    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
-    
-  </div>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<a class="btn" href="/#toolbox">Toolbox</a>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div><div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
 </header>
-
 <div class="wrap">
-  <div class="panel">
-    <h1>PII Masker</h1>
-    <p class="sub">Mask sensitive fields for safe sharing — locally in your browser.</p>
-
-    <div class="hr"></div>
-
-    <div class="grid2">
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <div style="font-weight:700">Upload</div>
-            <div class="tiny muted">CSV / TSV / XLSX / XLS (first sheet used)</div>
-          </div>
-          <span id="meta" class="pill tiny"><b>File:</b><span class="muted">not loaded</span></span>
-        </div>
-
-        <div style="margin-top:10px">
-          <input id="file" class="input" type="file" accept=".csv,.tsv,.xlsx,.xls,.txt" />
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <label class="tiny muted">Delimiter</label>
-          <select id="delimiter" class="input" style="width:auto;min-width:190px">
-            <option value="auto" selected>Auto-detect</option>
-            <option value=",">Comma (,)</option>
-            <option value="\t">Tab (TSV)</option>
-            <option value=";">Semicolon (;)</option>
-            <option value="|">Pipe (|)</option>
-          </select>
-
-          <label class="tiny muted">Preview rows</label>
-          <select id="previewN" class="input" style="width:auto;min-width:150px">
-            <option value="25" selected>25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
-        </div>
-
-        <div id="msg" class="tiny muted" style="margin-top:10px"></div>
-
-        <div class="note tiny muted">
-          Privacy: everything runs locally. TXT works when it’s delimiter-based (CSV/TSV style).
-        </div>
-      </div>
-
-      <div class="card">
-        <div style="font-weight:700">Run summary</div>
-        <div class="tiny muted">How many fields were masked</div>
-
-        <div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
-          <span class="badge b-info">Rows: <b id="statRows" class="mono">—</b></span>
-          <span class="badge b-info">Cols: <b id="statCols" class="mono">—</b></span>
-          <span class="badge b-warn">Masked cells: <b id="statMasked" class="mono">0</b></span>
-          <span class="badge b-bad">Rule hits: <b id="statHits" class="mono">0</b></span>
-          <span class="pill tiny"><b>Salt:</b><span id="statSalt" class="mono muted">—</span></span>
-        </div>
-
-        <div class="hr2"></div>
-
-        <div class="row">
-          <button id="run" class="btn primary" disabled>Run masking</button>
-          <button id="download" class="btn" disabled>Download masked CSV</button>
-          <button id="audit" class="btn" disabled>Download audit report</button>
-        </div>
-
-        <div class="note tiny muted">
+<div class="panel">
+<h1>PII Masker</h1>
+<p class="sub">Mask sensitive fields before sharing samples — reduce risk while still getting help. Runs locally in your browser.</p>
+<div class="hr"></div>
+<div class="grid2">
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Upload</div>
+<div class="tiny muted">CSV / TSV / XLSX / XLS (first sheet used)</div>
+</div>
+<span class="pill tiny" id="meta"><b>File:</b><span class="muted">not loaded</span></span>
+</div>
+<div style="margin-top:10px">
+<input accept=".csv,.tsv,.xlsx,.xls,.txt" class="input" id="file" type="file"/>
+</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Delimiter</label>
+<select class="input" id="delimiter" style="width:auto;min-width:190px">
+<option selected="" value="auto">Auto-detect</option>
+<option value=",">Comma (,)</option>
+<option value="\t">Tab (TSV)</option>
+<option value=";">Semicolon (;)</option>
+<option value="|">Pipe (|)</option>
+</select>
+<label class="tiny muted">Preview rows</label>
+<select class="input" id="previewN" style="width:auto;min-width:150px">
+<option selected="" value="25">25</option>
+<option value="50">50</option>
+<option value="100">100</option>
+</select>
+</div>
+<div class="tiny muted" id="safetyNote">Safety: your file is read locally in your browser. Use Masker if you need to share samples.</div><div class="tiny muted" id="msg" style="margin-top:10px"></div>
+<div class="note tiny muted">Privacy: processed locally in your browser. Nothing is uploaded unless you choose to share details for help.</div>
+</div>
+<div class="card">
+<div style="font-weight:700">Run summary</div>
+<div class="tiny muted">How many fields were masked</div>
+<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
+<span class="badge b-info">Rows: <b class="mono" id="statRows">—</b></span>
+<span class="badge b-info">Cols: <b class="mono" id="statCols">—</b></span>
+<span class="badge b-warn">Masked cells: <b class="mono" id="statMasked">0</b></span>
+<span class="badge b-bad">Rule hits: <b class="mono" id="statHits">0</b></span>
+<span class="pill tiny"><b>Salt:</b><span class="mono muted" id="statSalt">—</span></span>
+</div>
+<div class="hr2"></div>
+<div class="row">
+<button class="btn primary" disabled="" id="run">Run masking</button>
+<button class="btn" disabled="" id="download">Download masked CSV</button>
+<button class="btn" disabled="" id="audit">Download audit report</button>
+</div>
+<div class="note tiny muted">
           Tip: Use a salt for stable tokens (same email → same token) across exports.
         </div>
-      </div>
-    </div>
-
-    <div class="hr2"></div>
-
-    <div class="grid3">
-      <div class="card">
-        <div style="font-weight:700">1) Quick rules</div>
-        <div class="tiny muted">Auto-detect common PII patterns</div>
-
-        <div class="chk" style="margin-top:10px">
-          <input id="rEmail" type="checkbox" checked />
-          <div>
-            <label for="rEmail"><b>Email</b></label>
-            <div class="tiny muted">mask anything that looks like user@domain</div>
-          </div>
-        </div>
-
-        <div class="chk" style="margin-top:8px">
-          <input id="rPhone" type="checkbox" checked />
-          <div>
-            <label for="rPhone"><b>Phone</b></label>
-            <div class="tiny muted">mask common phone formats (best-effort)</div>
-          </div>
-        </div>
-
-        <div class="chk" style="margin-top:8px">
-          <input id="rSSN" type="checkbox" />
-          <div>
-            <label for="rSSN"><b>SSN</b></label>
-            <div class="tiny muted">mask patterns like 123-45-6789</div>
-          </div>
-        </div>
-
-        <div class="chk" style="margin-top:8px">
-          <input id="rCard" type="checkbox" checked />
-          <div>
-            <label for="rCard"><b>Card numbers</b></label>
-            <div class="tiny muted">mask 13–19 digit sequences (validated by Luhn)</div>
-          </div>
-        </div>
-
-        <div class="chk" style="margin-top:8px">
-          <input id="rAddress" type="checkbox" />
-          <div>
-            <label for="rAddress"><b>Address-like</b></label>
-            <div class="tiny muted">mask lines that look like street addresses</div>
-          </div>
-        </div>
-
-        <div class="chk" style="margin-top:8px">
-          <input id="rFreeText" type="checkbox" checked />
-          <div>
-            <label for="rFreeText"><b>Scan free-text columns</b></label>
-            <div class="tiny muted">apply rules inside any text field</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div style="font-weight:700">2) Column controls</div>
-        <div class="tiny muted">Force mask specific columns (even if patterns aren’t detected)</div>
-
-        <input id="colSearch" class="input" placeholder="Search columns…" style="margin-top:10px"/>
-        <div id="colList" class="chklist" aria-live="polite"></div>
-
-        <div class="row" style="margin-top:10px">
-          <button id="autoCols" class="btn small">Auto-pick</button>
-          <button id="clearCols" class="btn small">Clear</button>
-        </div>
-
-        <div class="note tiny muted">
+</div>
+</div>
+<div class="hr2"></div>
+<div class="grid3">
+<div class="card">
+<div style="font-weight:700">1) Quick rules</div>
+<div class="tiny muted">Auto-detect common PII patterns</div>
+<div class="chk" style="margin-top:10px">
+<input checked="" id="rEmail" type="checkbox"/>
+<div>
+<label for="rEmail"><b>Email</b></label>
+<div class="tiny muted">mask anything that looks like user@domain</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input checked="" id="rPhone" type="checkbox"/>
+<div>
+<label for="rPhone"><b>Phone</b></label>
+<div class="tiny muted">mask common phone formats (best-effort)</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input id="rSSN" type="checkbox"/>
+<div>
+<label for="rSSN"><b>SSN</b></label>
+<div class="tiny muted">mask patterns like 123-45-6789</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input checked="" id="rCard" type="checkbox"/>
+<div>
+<label for="rCard"><b>Card numbers</b></label>
+<div class="tiny muted">mask 13–19 digit sequences (validated by Luhn)</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input id="rAddress" type="checkbox"/>
+<div>
+<label for="rAddress"><b>Address-like</b></label>
+<div class="tiny muted">mask lines that look like street addresses</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input checked="" id="rFreeText" type="checkbox"/>
+<div>
+<label for="rFreeText"><b>Scan free-text columns</b></label>
+<div class="tiny muted">apply rules inside any text field</div>
+</div>
+</div>
+</div>
+<div class="card">
+<div style="font-weight:700">2) Column controls</div>
+<div class="tiny muted">Force mask specific columns (even if patterns aren’t detected)</div>
+<input class="input" id="colSearch" placeholder="Search columns…" style="margin-top:10px"/>
+<div aria-live="polite" class="chklist" id="colList"></div>
+<div class="row" style="margin-top:10px">
+<button class="btn small" id="autoCols">Auto-pick</button>
+<button class="btn small" id="clearCols">Clear</button>
+</div>
+<div class="note tiny muted">
           Auto-pick tries common names: email, phone, mobile, ssn, dob, address, card, account, member, patient, etc.
         </div>
-      </div>
-
-      <div class="card">
-        <div style="font-weight:700">3) Masking style</div>
-        <div class="tiny muted">Choose how masked values appear</div>
-
-        <div class="row" style="margin-top:10px">
-          <label class="tiny muted">Strategy</label>
-          <select id="strategy" class="input" style="width:auto;min-width:230px">
-            <option value="redact" selected>Redact (████)</option>
-            <option value="partial">Partial keep (keep last 4)</option>
-            <option value="token">Tokenize (stable token)</option>
-          </select>
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <label class="tiny muted">Token prefix</label>
-          <input id="tokenPrefix" class="input" style="width:auto;min-width:230px" value="RMK_" />
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <label class="tiny muted">Salt (optional)</label>
-          <input id="salt" class="input" placeholder="leave blank to auto-generate" />
-        </div>
-
-        <div class="chk" style="margin-top:10px">
-          <input id="keepEmpty" type="checkbox" checked />
-          <div>
-            <label for="keepEmpty"><b>Keep empty values unchanged</b></label>
-            <div class="tiny muted">blank stays blank</div>
-          </div>
-        </div>
-
-        <div class="chk" style="margin-top:8px">
-          <input id="trim" type="checkbox" checked />
-          <div>
-            <label for="trim"><b>Trim whitespace</b></label>
-            <div class="tiny muted">helps prevent missed matches</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="hr2"></div>
-
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <div>
-          <div style="font-weight:700">Preview</div>
-          <div class="tiny muted">Before vs after (first N rows)</div>
-        </div>
-        <div class="row">
-          <select id="previewMode" class="input" style="width:auto;min-width:220px">
-            <option value="before" selected>Show: Before</option>
-            <option value="after">Show: After</option>
-            <option value="diff">Show: Only changed cells</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="split" style="margin-top:12px">
-        <div class="tablewrap">
-          <table>
-            <thead><tr id="thead"></tr></thead>
-            <tbody id="tbody"></tbody>
-          </table>
-        </div>
-
-        <div class="card" style="margin:0">
-          <div style="font-weight:700">Audit notes</div>
-          <div class="tiny muted">What rules matched</div>
-          <div class="hr2"></div>
-          <div id="auditBox" class="mini muted">Load a file, pick rules, then run masking to generate an audit.</div>
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-      <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
-      <a class="btn" href="/docs/contact.html">Contact</a>
-    </div>
-  </div>
-
-  <div class="footer">© 2026 ReportMedic</div>
 </div>
-
+<div class="card">
+<div style="font-weight:700">3) Masking style</div>
+<div class="tiny muted">Choose how masked values appear</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Strategy</label>
+<select class="input" id="strategy" style="width:auto;min-width:230px">
+<option selected="" value="redact">Redact (████)</option>
+<option value="partial">Partial keep (keep last 4)</option>
+<option value="token">Tokenize (stable token)</option>
+</select>
+</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Token prefix</label>
+<input class="input" id="tokenPrefix" style="width:auto;min-width:230px" value="RMK_"/>
+</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Salt (optional)</label>
+<input class="input" id="salt" placeholder="leave blank to auto-generate"/>
+</div>
+<div class="chk" style="margin-top:10px">
+<input checked="" id="keepEmpty" type="checkbox"/>
+<div>
+<label for="keepEmpty"><b>Keep empty values unchanged</b></label>
+<div class="tiny muted">blank stays blank</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input checked="" id="trim" type="checkbox"/>
+<div>
+<label for="trim"><b>Trim whitespace</b></label>
+<div class="tiny muted">helps prevent missed matches</div>
+</div>
+</div>
+</div>
+</div>
+<div class="hr2"></div>
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Preview</div>
+<div class="tiny muted">Before vs after (first N rows)</div>
+</div>
+<div class="row">
+<select class="input" id="previewMode" style="width:auto;min-width:220px">
+<option selected="" value="before">Show: Before</option>
+<option value="after">Show: After</option>
+<option value="diff">Show: Only changed cells</option>
+</select>
+</div>
+</div>
+<div class="split" style="margin-top:12px">
+<div class="tablewrap">
+<table>
+<thead><tr id="thead"></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+<div class="card" style="margin:0">
+<div style="font-weight:700">Audit notes</div>
+<div class="tiny muted">What rules matched</div>
+<div class="hr2"></div>
+<div class="mini muted" id="auditBox">Load a file, pick rules, then run masking to generate an audit.</div>
+</div>
+</div>
+</div>
+<div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+<a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+<a class="btn" href="/docs/contact.html">Contact</a>
+</div>
+</div>
+<div class="footer">© 2026 ReportMedic</div>
+</div>
 <script>
 (function(){
   const $ = (id)=>document.getElementById(id);

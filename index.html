@@ -1,15 +1,15 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>ReportMedic — Home</title>
-
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/reportmedic-48.png?v=1">
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png">
-<link rel="stylesheet" href="/assets/css/styles.css">
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>ReportMedic — Home</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+<style>
     .hero{margin-top:18px;display:grid;grid-template-columns:1.3fr .9fr;gap:18px;align-items:stretch;}
     @media (max-width:900px){.hero{grid-template-columns:1fr}}
     .searchRow{display:flex;gap:10px;margin-top:14px;align-items:center;}
@@ -37,124 +37,105 @@
 </head>
 <body>
 <header>
-  <div class="nav">
-    <div class="logo">
-      <div class="mark"></div>
-      <div>ReportMedic</div>
-    </div>
-    <div class="spacer"></div>
-    <button class="btn" id="openDrawerBtn">All Tools</button>
-    <a class="btn primary" href="#toolbox">Get Started</a>
-  
-    <a class="btn primary" href="/fix-my-report.html">Live Agent</a></div>
+<div class="nav">
+<div class="logo">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</div>
+<div class="spacer"></div>
+<button class="btn" id="openDrawerBtn">All Tools</button>
+<a class="btn primary" href="#toolbox">Start with a report</a>
+<a class="btn primary" href="/fix-my-report.html">Get human help</a></div>
 </header>
-
 <div class="wrap">
-  <section class="hero">
-    <div class="panel">
-      <h1>Fix, compare, and explain reports — fast.</h1>
-      <p class="sub">
-        ReportMedic gives you 10 focused tools for cleaning data, validating reports, finding differences,
-        and generating quick insights — without building a giant workflow.
-      </p>
-
-      <div class="searchRow">
-        <input id="search" placeholder="Search tools… e.g., compare, validate, pivot, audit" />
-        <button class="btn" id="clearBtn">Clear</button>
-      </div>
-
-      <div class="chips" id="chips">
-        <div class="chip active" data-cat="All">All</div>
-        <div class="chip" data-cat="Compare">Compare</div>
-        <div class="chip" data-cat="Clean">Clean</div>
-        <div class="chip" data-cat="Validate">Validate</div>
-        <div class="chip" data-cat="Analyze">Analyze</div>
-        <div class="chip" data-cat="Export">Export</div>
-      </div>
-
-      <div class="kpis">
-        <div class="kpi">
-          <strong>3 ways to find tools</strong>
-          <span>Search • Categories • All Tools panel</span>
-        </div>
-        <div class="kpi">
-          <strong>Instant discovery</strong>
-          <span>Type any keyword → matching tools appear</span>
-        </div>
-        <div class="kpi">
-          <strong>Tool-first design</strong>
-          <span>Each tool does one job extremely well</span>
-        </div>
-        <div class="kpi">
-          <strong>Quick launch</strong>
-          <span>Click any card to open the tool</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-        <div>
-          <div style="font-weight:900; font-size:16px;">Today’s workflow</div>
-          <div style="color:var(--muted); font-size:13px; margin-top:4px; line-height:1.45;">
+<section class="hero">
+<div class="panel">
+<h1>Make reports safe to share — in minutes.</h1>
+<p class="sub">Clean, validate, compare, and explain reports with focused tools you can trust — without building a workflow. Everything runs locally in your browser.</p>
+<div class="searchRow">
+<input id="search" placeholder="Search tools… e.g., validate, compare, clean, reconcile"/>
+<button class="btn" id="clearBtn">Clear</button>
+</div>
+<div class="chips" id="chips">
+<div class="chip active" data-cat="All">All</div>
+<div class="chip" data-cat="Compare">Compare</div>
+<div class="chip" data-cat="Clean">Clean</div>
+<div class="chip" data-cat="Validate">Validate</div>
+<div class="chip" data-cat="Analyze">Analyze</div>
+<div class="chip" data-cat="Export">Export</div>
+</div>
+<div class="kpis">
+<div class="kpi">
+<strong>3 ways to find tools</strong>
+<span>Search • Categories • All Tools panel</span>
+</div>
+<div class="kpi">
+<strong>Instant discovery</strong>
+<span>Type any keyword → matching tools appear</span>
+</div>
+<div class="kpi">
+<strong>Tool-first design</strong>
+<span>Each tool does one job extremely well</span>
+</div>
+<div class="kpi">
+<strong>Quick launch</strong>
+<span>Click any card to open the tool</span>
+</div>
+</div>
+</div>
+<div class="panel">
+<div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+<div>
+<div style="font-weight:900; font-size:16px;">Today’s workflow</div>
+<div style="color:var(--muted); font-size:13px; margin-top:4px; line-height:1.45;">
             Upload your report → pick a tool → export a clean result or explanation.
           </div>
-        </div>
-        
-      </div>
-
-      <div style="margin-top:14px; border:1px dashed var(--border); border-radius:14px; padding:14px; background:rgba(255,255,255,.02)">
-        <div style="font-weight:800; font-size:13px;">What users usually do first</div>
-        <ol style="margin:10px 0 0 18px; color:var(--muted); font-size:13px; line-height:1.6;">
-          <li>Search “compare” → open “Report Compare”</li>
-          <li>Validate totals and missing fields</li>
-          <li>Export a clean version or summary notes</li>
-        </ol>
-      </div>
-
-      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-        <a class="btn" href="/tools/compare.html">Open Compare</a>
-        <a class="btn" href="/tools/validator.html">Open Validator</a>
-        <button class="btn" id="quickAll">Browse All 10</button>
-      </div>
-
-      <div class="hr"></div>
-      <div class="small">
-        <div><strong>Docs:</strong> <a href="/docs/privacy.html">Privacy</a> • <a href="/docs/terms.html">Terms</a></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="toolbox">
-    <div style="display:flex; align-items:end; justify-content:space-between; gap:10px; margin-top:18px;">
-      <div>
-        <div style="font-weight:900; font-size:16px;">Toolbox (10)</div>
-        <div style="color:var(--muted); font-size:13px; margin-top:4px;">
+</div>
+</div>
+<div style="margin-top:14px; border:1px dashed var(--border); border-radius:14px; padding:14px; background:rgba(255,255,255,.02)">
+<div style="font-weight:800; font-size:13px;">What users usually do first</div>
+<ol style="margin:10px 0 0 18px; color:var(--muted); font-size:13px; line-height:1.6;">
+<li>Search “compare” → open “Report Compare”</li>
+<li>Validate totals and missing fields</li>
+<li>Export a clean version or summary notes</li>
+</ol>
+</div>
+<div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+<a class="btn" href="/tools/compare.html">Open Compare</a>
+<a class="btn" href="/tools/validator.html">Open Validator</a>
+<button class="btn" id="quickAll">Browse All 10</button>
+</div>
+<div class="hr"></div>
+<div class="small">
+<div><strong>Docs:</strong> <a href="/docs/privacy.html">Privacy</a> • <a href="/docs/terms.html">Terms</a></div>
+</div>
+</div>
+</section>
+<section id="toolbox">
+<div style="display:flex; align-items:end; justify-content:space-between; gap:10px; margin-top:18px;">
+<div>
+<div style="font-weight:900; font-size:16px;">Toolbox (10)</div>
+<div style="color:var(--muted); font-size:13px; margin-top:4px;">
           Filtered results update live as users type or select categories.
         </div>
-      </div>
-      <div style="color:var(--muted); font-size:12px;" id="countLabel"></div>
-    </div>
-
-    <div class="grid" id="toolGrid"></div>
-  </section>
-
-  <div class="footer">GitHub Pages launch pack — wire real tool functionality later.</div>
 </div>
-
+<div id="countLabel" style="color:var(--muted); font-size:12px;"></div>
+</div>
+<div class="grid" id="toolGrid"></div>
+</section>
+<div class="footer">GitHub Pages launch pack — wire real tool functionality later.</div>
+</div>
 <!-- Drawer -->
 <div class="drawerOverlay" id="overlay"></div>
-<aside class="drawer" id="drawer" aria-label="All Tools Drawer">
-  <div class="drawerHeader">
-    <button class="btn" id="closeDrawerBtn">Close</button>
-    <strong>All Tools (10)</strong>
-    <div class="spacer"></div>
-  </div>
-  <div class="drawerList" id="drawerList"></div>
+<aside aria-label="All Tools Drawer" class="drawer" id="drawer">
+<div class="drawerHeader">
+<button class="btn" id="closeDrawerBtn">Close</button>
+<strong>All Tools (10)</strong>
+<div class="spacer"></div>
+</div>
+<div class="drawerList" id="drawerList"></div>
 </aside>
-
 <div class="toast" id="toast"></div>
-
 <script>
   const tools = [
     { id:"compare", name:"Report Compare", icon:"≋", cat:["Compare","Analyze"], desc:"Compare two reports and highlight diffs by key fields.", tags:["diff","keys","columns"] },

@@ -1,20 +1,18 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Report Compare — ReportMedic</title>
-
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/reportmedic-48.png?v=1">
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png">
-  <link rel="stylesheet" href="/assets/css/styles.css">
-
-  <!-- Client-side parsing libraries (safe for GitHub Pages). If you prefer fully-offline, vendor these files later. -->
-  <script defer src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Report Compare — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+<!-- Client-side parsing libraries (safe for GitHub Pages). If you prefer fully-offline, vendor these files later. -->
+<script defer="" src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
     /* Minimal page-specific styling; keeps your global /assets/css/styles.css as the source of truth. */
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     @media (max-width: 880px){.grid2{grid-template-columns:1fr}}
@@ -51,170 +49,145 @@
 </head>
 <body>
 <header>
-  <div class="nav">
-    <a class="logo" href="/" style="text-decoration:none;">
-      <div class="mark"></div>
-      <div>ReportMedic</div>
-    </a>
-    <div class="spacer"></div>
-    <a class="btn" href="/">Home</a>
-    <a class="btn" href="/#toolbox">Toolbox</a>
-    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
-    
-  </div>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<a class="btn" href="/#toolbox">Toolbox</a>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div><div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
 </header>
-
 <div class="wrap">
-  <div class="panel">
-    <h1>Report Compare</h1>
-    <p class="sub">Compare two files (CSV/TSV/XLSX) in your browser and highlight diffs by key fields.</p>
-
-    <div class="hr"></div>
-
-    <div class="grid2">
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <div style="font-weight:700">Report A (baseline)</div>
-            <div class="tiny muted">This is the “old / before” version</div>
-          </div>
-          <span id="aMeta" class="pill tiny"><b>A:</b><span class="muted">not loaded</span></span>
-        </div>
-        <div style="margin-top:10px">
-          <input id="fileA" class="input" type="file" accept=".csv,.tsv,.xlsx,.xls" />
-        </div>
-        <div class="hint tiny muted">
+<div class="panel">
+<h1>Report Compare</h1>
+<p class="sub">Compare two reports and pinpoint exactly what changed — so mismatches don’t turn into long debug sessions. Runs locally in your browser.</p>
+<div class="hr"></div>
+<div class="grid2">
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Report A (baseline)</div>
+<div class="tiny muted">This is the “old / before” version</div>
+</div>
+<span class="pill tiny" id="aMeta"><b>A:</b><span class="muted">not loaded</span></span>
+</div>
+<div style="margin-top:10px">
+<input accept=".csv,.tsv,.xlsx,.xls" class="input" id="fileA" type="file"/>
+</div>
+<div class="hint tiny muted">
           Tip: Export your report as <span class="kbd">CSV</span> if possible. XLSX works too (first sheet is used).
         </div>
-      </div>
-
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <div style="font-weight:700">Report B (new)</div>
-            <div class="tiny muted">This is the “new / after” version</div>
-          </div>
-          <span id="bMeta" class="pill tiny"><b>B:</b><span class="muted">not loaded</span></span>
-        </div>
-        <div style="margin-top:10px">
-          <input id="fileB" class="input" type="file" accept=".csv,.tsv,.xlsx,.xls" />
-        </div>
-        <div class="hint tiny muted">
+</div>
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Report B (new)</div>
+<div class="tiny muted">This is the “new / after” version</div>
+</div>
+<span class="pill tiny" id="bMeta"><b>B:</b><span class="muted">not loaded</span></span>
+</div>
+<div style="margin-top:10px">
+<input accept=".csv,.tsv,.xlsx,.xls" class="input" id="fileB" type="file"/>
+</div>
+<div class="hint tiny muted">
           Privacy: files are processed locally in your browser — nothing is uploaded to a server.
         </div>
-      </div>
-    </div>
-
-    <div class="hr2"></div>
-
-    <div class="grid2">
-      <div class="card">
-        <div style="font-weight:700">1) Choose key fields</div>
-        <div class="tiny muted">Keys uniquely identify a row (example: <span class="kbd">StoreId</span> + <span class="kbd">Week</span>)</div>
-
-        <div class="row" style="margin-top:10px">
-          <input id="keySearch" class="input" placeholder="Search columns…" />
-        </div>
-        <div id="keyList" class="chklist" aria-live="polite"></div>
-
-        <div class="row" style="margin-top:10px">
-          <button id="autoKey" class="btn">Auto-pick</button>
-          <button id="clearKey" class="btn">Clear</button>
-        </div>
-
-        <div class="tiny muted" style="margin-top:8px">
+</div>
+</div>
+<div class="hr2"></div>
+<div class="grid2">
+<div class="card">
+<div style="font-weight:700">1) Choose key fields</div>
+<div class="tiny muted">Keys uniquely identify a row (example: <span class="kbd">StoreId</span> + <span class="kbd">Week</span>)</div>
+<div class="row" style="margin-top:10px">
+<input class="input" id="keySearch" placeholder="Search columns…"/>
+</div>
+<div aria-live="polite" class="chklist" id="keyList"></div>
+<div class="row" style="margin-top:10px">
+<button class="btn" id="autoKey">Auto-pick</button>
+<button class="btn" id="clearKey">Clear</button>
+</div>
+<div class="tiny muted" style="margin-top:8px">
           Auto-pick tries common names: id, key, code, name, date, week, etc.
         </div>
-      </div>
-
-      <div class="card">
-        <div style="font-weight:700">2) Compare options</div>
-
-        <div class="chk" style="margin-top:10px">
-          <input id="optTrim" type="checkbox" checked />
-          <label for="optTrim"><b>Trim whitespace</b> <span class="tiny muted">(" abc " → "abc")</span></label>
-        </div>
-
-        <div class="chk" style="margin-top:8px">
-          <input id="optCase" type="checkbox" />
-          <label for="optCase"><b>Case-insensitive</b> <span class="tiny muted">("ABC" == "abc")</span></label>
-        </div>
-
-        <div class="chk" style="margin-top:8px">
-          <input id="optEmptyEq" type="checkbox" checked />
-          <label for="optEmptyEq"><b>Treat empty as equal</b> <span class="tiny muted">(blank == blank)</span></label>
-        </div>
-
-        <div class="chk" style="margin-top:8px">
-          <input id="optNumeric" type="checkbox" checked />
-          <label for="optNumeric"><b>Normalize numbers</b> <span class="tiny muted">(1, 1.0, "1" treated similarly)</span></label>
-        </div>
-
-        <div class="row" style="margin-top:12px">
-          <button id="run" class="btn primary" disabled>Run compare</button>
-          <button id="swap" class="btn" disabled>Swap A↔B</button>
-        </div>
-
-        <div id="runMsg" class="tiny muted" style="margin-top:10px"></div>
-      </div>
-    </div>
-
-    <div class="hr2"></div>
-
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <div>
-          <div style="font-weight:700">Results</div>
-          <div class="tiny muted">Added / removed / changed / unchanged rows</div>
-        </div>
-        <div class="row">
-          <select id="filterStatus" class="input" style="width:auto;min-width:190px">
-            <option value="all">Show: All</option>
-            <option value="changed">Show: Changed</option>
-            <option value="added">Show: Added</option>
-            <option value="removed">Show: Removed</option>
-            <option value="same">Show: Same</option>
-          </select>
-          <button id="download" class="btn" disabled>Download diff CSV</button>
-        </div>
-      </div>
-
-      <div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
-        <span id="statAdded" class="badge b-added">Added: <b class="mono">0</b></span>
-        <span id="statRemoved" class="badge b-removed">Removed: <b class="mono">0</b></span>
-        <span id="statChanged" class="badge b-changed">Changed: <b class="mono">0</b></span>
-        <span id="statSame" class="badge b-same">Same: <b class="mono">0</b></span>
-        <span id="statCols" class="pill tiny"><b>Columns:</b><span class="mono muted">—</span></span>
-        <span id="statKeys" class="pill tiny"><b>Keys:</b><span class="mono muted">—</span></span>
-      </div>
-
-      <div style="margin-top:12px" class="tablewrap">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:130px">Status</th>
-              <th style="width:260px">Row key</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody id="rows"></tbody>
-        </table>
-      </div>
-
-      <div class="tiny muted" style="margin-top:10px">
+</div>
+<div class="card">
+<div style="font-weight:700">2) Compare options</div>
+<div class="chk" style="margin-top:10px">
+<input checked="" id="optTrim" type="checkbox"/>
+<label for="optTrim"><b>Trim whitespace</b> <span class="tiny muted">(" abc " → "abc")</span></label>
+</div>
+<div class="chk" style="margin-top:8px">
+<input id="optCase" type="checkbox"/>
+<label for="optCase"><b>Case-insensitive</b> <span class="tiny muted">("ABC" == "abc")</span></label>
+</div>
+<div class="chk" style="margin-top:8px">
+<input checked="" id="optEmptyEq" type="checkbox"/>
+<label for="optEmptyEq"><b>Treat empty as equal</b> <span class="tiny muted">(blank == blank)</span></label>
+</div>
+<div class="chk" style="margin-top:8px">
+<input checked="" id="optNumeric" type="checkbox"/>
+<label for="optNumeric"><b>Normalize numbers</b> <span class="tiny muted">(1, 1.0, "1" treated similarly)</span></label>
+</div>
+<div class="row" style="margin-top:12px">
+<button class="btn primary" disabled="" id="run">Run compare</button>
+<button class="btn" disabled="" id="swap">Swap A↔B</button>
+</div>
+<div class="tiny muted" id="runMsg" style="margin-top:10px"></div>
+</div>
+</div>
+<div class="hr2"></div>
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Results</div>
+<div class="tiny muted">Added / removed / changed / unchanged rows</div>
+</div>
+<div class="row">
+<select class="input" id="filterStatus" style="width:auto;min-width:190px">
+<option value="all">Show: All</option>
+<option value="changed">Show: Changed</option>
+<option value="added">Show: Added</option>
+<option value="removed">Show: Removed</option>
+<option value="same">Show: Same</option>
+</select>
+<button class="btn" disabled="" id="download">Download diff CSV</button>
+</div>
+</div>
+<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
+<span class="badge b-added" id="statAdded">Added: <b class="mono">0</b></span>
+<span class="badge b-removed" id="statRemoved">Removed: <b class="mono">0</b></span>
+<span class="badge b-changed" id="statChanged">Changed: <b class="mono">0</b></span>
+<span class="badge b-same" id="statSame">Same: <b class="mono">0</b></span>
+<span class="pill tiny" id="statCols"><b>Columns:</b><span class="mono muted">—</span></span>
+<span class="pill tiny" id="statKeys"><b>Keys:</b><span class="mono muted">—</span></span>
+</div>
+<div class="tablewrap" style="margin-top:12px">
+<table>
+<thead>
+<tr>
+<th style="width:130px">Status</th>
+<th style="width:260px">Row key</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody id="rows"></tbody>
+</table>
+</div>
+<div class="tiny muted" style="margin-top:10px">
         “Row key” is generated from the key fields you selected. If nothing matches correctly, re-check keys.
       </div>
-    </div>
-
-    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-      <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
-      <a class="btn" href="/docs/contact.html">Contact</a>
-    </div>
-  </div>
-
-  <div class="footer">© 2026 ReportMedic</div>
 </div>
-
+<div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+<a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+<a class="btn" href="/docs/contact.html">Contact</a>
+</div>
+</div>
+<div class="footer">© 2026 ReportMedic</div>
+</div>
 <script>
 (function(){
   const $ = (id) => document.getElementById(id);

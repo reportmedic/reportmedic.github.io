@@ -1,20 +1,18 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Schema Validator — ReportMedic</title>
-
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/reportmedic-48.png?v=1">
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png">
-  <link rel="stylesheet" href="/assets/css/styles.css">
-
-  <!-- GitHub Pages friendly: client-side parsing + export -->
-  <script defer src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Schema Validator — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+<!-- GitHub Pages friendly: client-side parsing + export -->
+<script defer="" src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .grid3{display:grid;grid-template-columns:1.1fr .95fr .95fr;gap:14px}
     @media (max-width: 980px){.grid3{grid-template-columns:1fr}}
@@ -65,235 +63,200 @@
 </head>
 <body>
 <header>
-  <div class="nav">
-    <a class="logo" href="/" style="text-decoration:none;">
-      <div class="mark"></div>
-      <div>ReportMedic</div>
-    </a>
-    <div class="spacer"></div>
-    <a class="btn" href="/">Home</a>
-    <a class="btn" href="/#toolbox">Toolbox</a>
-    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
-    
-  </div>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<a class="btn" href="/#toolbox">Toolbox</a>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div><div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
 </header>
-
 <div class="wrap">
-  <div class="panel">
-    <h1>Schema Validator</h1>
-    <p class="sub">Validate required fields, types, ranges, uniqueness, regex rules, and null policies — locally in your browser.</p>
-
-    <div class="hr"></div>
-
-    <div class="grid2">
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <div style="font-weight:700">Upload</div>
-            <div class="tiny muted">CSV / TSV / Excel (XLSX/XLS) / delimiter-style TXT</div>
-          </div>
-          <span id="meta" class="pill tiny"><b>File:</b><span class="muted">not loaded</span></span>
-        </div>
-
-        <div style="margin-top:10px">
-          <input id="file" class="input" type="file" accept=".csv,.tsv,.xlsx,.xls,.txt" />
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <label class="tiny muted">Delimiter</label>
-          <select id="delimiter" class="input" style="width:auto;min-width:190px">
-            <option value="auto" selected>Auto-detect</option>
-            <option value=",">Comma (,)</option>
-            <option value="\t">Tab (TSV)</option>
-            <option value=";">Semicolon (;)</option>
-            <option value="|">Pipe (|)</option>
-          </select>
-
-          <label class="tiny muted">Preview rows</label>
-          <select id="previewN" class="input" style="width:auto;min-width:150px">
-            <option value="25" selected>25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
-
-          <label class="tiny muted">Max invalid rows export</label>
-          <select id="maxBad" class="input" style="width:auto;min-width:220px">
-            <option value="100" selected>100</option>
-            <option value="250">250</option>
-            <option value="500">500</option>
-            <option value="1000">1000</option>
-          </select>
-        </div>
-
-        <div id="msg" class="tiny muted" style="margin-top:10px"></div>
-
-        <div class="note tiny muted">
-          Privacy: runs in your browser (GitHub Pages friendly). Great for QA checks before you publish or share reports.
-        </div>
-      </div>
-
-      <div class="card">
-        <div style="font-weight:700">Validation summary</div>
-        <div class="tiny muted">What passed, what failed</div>
-
-        <div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
-          <span class="badge b-info">Rows: <b id="statRows" class="mono">—</b></span>
-          <span class="badge b-info">Cols: <b id="statCols" class="mono">—</b></span>
-          <span class="badge b-ok">Rules: <b id="statRules" class="mono">0</b></span>
-          <span class="badge b-warn">Invalid rows: <b id="statBad" class="mono">0</b></span>
-          <span class="badge b-bad">Total errors: <b id="statErr" class="mono">0</b></span>
-        </div>
-
-        <div class="hr2"></div>
-
-        <div class="row">
-          <button id="run" class="btn primary" disabled>Validate</button>
-          <button id="downloadBad" class="btn" disabled>Download invalid rows CSV</button>
-          <button id="downloadReport" class="btn" disabled>Download report</button>
-          <button id="downloadSchema" class="btn" disabled>Download schema JSON</button>
-        </div>
-
-        <div class="note tiny muted">
+<div class="panel">
+<h1>Schema Validator</h1>
+<p class="sub">Validate schema and data rules before you share — catch missing fields, type issues, ranges, duplicates, and regex problems. Runs locally in your browser.</p>
+<div class="hr"></div>
+<div class="grid2">
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Upload</div>
+<div class="tiny muted">CSV / TSV / Excel (XLSX/XLS) / delimiter-style TXT</div>
+</div>
+<span class="pill tiny" id="meta"><b>File:</b><span class="muted">not loaded</span></span>
+</div>
+<div style="margin-top:10px">
+<input accept=".csv,.tsv,.xlsx,.xls,.txt" class="input" id="file" type="file"/>
+</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Delimiter</label>
+<select class="input" id="delimiter" style="width:auto;min-width:190px">
+<option selected="" value="auto">Auto-detect</option>
+<option value=",">Comma (,)</option>
+<option value="\t">Tab (TSV)</option>
+<option value=";">Semicolon (;)</option>
+<option value="|">Pipe (|)</option>
+</select>
+<label class="tiny muted">Preview rows</label>
+<select class="input" id="previewN" style="width:auto;min-width:150px">
+<option selected="" value="25">25</option>
+<option value="50">50</option>
+<option value="100">100</option>
+</select>
+<label class="tiny muted">Max invalid rows export</label>
+<select class="input" id="maxBad" style="width:auto;min-width:220px">
+<option selected="" value="100">100</option>
+<option value="250">250</option>
+<option value="500">500</option>
+<option value="1000">1000</option>
+</select>
+</div>
+<div class="tiny muted" id="safetyNote">Safety: your file is read locally in your browser. Use Masker if you need to share samples.</div><div class="tiny muted" id="msg" style="margin-top:10px"></div>
+<div class="note tiny muted">Privacy: processed locally in your browser. Nothing is uploaded unless you choose to share details for help.</div>
+</div>
+<div class="card">
+<div style="font-weight:700">Validation summary</div>
+<div class="tiny muted">What passed, what failed</div>
+<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
+<span class="badge b-info">Rows: <b class="mono" id="statRows">—</b></span>
+<span class="badge b-info">Cols: <b class="mono" id="statCols">—</b></span>
+<span class="badge b-ok">Rules: <b class="mono" id="statRules">0</b></span>
+<span class="badge b-warn">Invalid rows: <b class="mono" id="statBad">0</b></span>
+<span class="badge b-bad">Total errors: <b class="mono" id="statErr">0</b></span>
+</div><div class="note tiny" id="decisionText">Upload a file to get a clear pass/fail decision you can rely on.</div>
+<div class="hr2"></div>
+<div class="row">
+<button class="btn primary" disabled="" id="run">Validate</button>
+<button class="btn" disabled="" id="downloadBad">Download invalid rows CSV</button>
+<button class="btn" disabled="" id="downloadReport">Download report</button>
+<button class="btn" disabled="" id="downloadSchema">Download schema JSON</button>
+</div>
+<div class="note tiny muted">
           Tip: Add a Unique rule on your primary key (like <span class="mono">id</span>) to catch duplicates quickly.
         </div>
-      </div>
-    </div>
-
-    <div class="hr2"></div>
-
-    <div class="grid3">
-      <div class="card">
-        <div style="font-weight:700">1) Build rules</div>
-        <div class="tiny muted">Add checks column-by-column</div>
-
-        <div class="ruleRow" style="margin-top:10px">
-          <div>
-            <div class="tiny muted">Column</div>
-            <select id="col" class="input" disabled></select>
-          </div>
-          <div>
-            <div class="tiny muted">Rule</div>
-            <select id="type" class="input">
-              <option value="required" selected>Required (not blank)</option>
-              <option value="type">Type check</option>
-              <option value="range">Numeric range</option>
-              <option value="len">Text length</option>
-              <option value="regex">Regex pattern</option>
-              <option value="enum">Allowed values (enum)</option>
-              <option value="unique">Unique (no duplicates)</option>
-              <option value="date">Date parse</option>
-              <option value="nonnull_if">Non-null if (conditional)</option>
-            </select>
-          </div>
-          <div>
-            <div class="tiny muted">Severity</div>
-            <select id="sev" class="input">
-              <option value="error" selected>Error</option>
-              <option value="warn">Warn</option>
-            </select>
-          </div>
-          <div>
-            <div class="tiny muted">Param A</div>
-            <input id="a" class="input" placeholder="ex: number / 0 / 3 / ^[A-Z]+$ / A|B|C" />
-          </div>
-          <div>
-            <div class="tiny muted">Param B</div>
-            <input id="b" class="input" placeholder="ex: 100 / 12 / YYYY-MM-DD / otherCol=Y" />
-          </div>
-          <div>
-            <button id="addRule" class="btn primary small" disabled>Add</button>
-          </div>
-        </div>
-
-        <div id="ruleHelp" class="hint muted" style="margin-top:10px"></div>
-
-        <div class="hr2"></div>
-
-        <div class="row">
-          <button id="autoBasic" class="btn small" disabled>Auto rules</button>
-          <button id="clearRules" class="btn small danger" disabled>Clear rules</button>
-        </div>
-
-        <div class="note tiny muted">
+</div>
+</div>
+<div class="hr2"></div>
+<div class="grid3">
+<div class="card">
+<div style="font-weight:700">1) Build rules</div>
+<div class="tiny muted">Add checks column-by-column</div>
+<div class="ruleRow" style="margin-top:10px">
+<div>
+<div class="tiny muted">Column</div>
+<select class="input" disabled="" id="col"></select>
+</div>
+<div>
+<div class="tiny muted">Rule</div>
+<select class="input" id="type">
+<option selected="" value="required">Required (not blank)</option>
+<option value="type">Type check</option>
+<option value="range">Numeric range</option>
+<option value="len">Text length</option>
+<option value="regex">Regex pattern</option>
+<option value="enum">Allowed values (enum)</option>
+<option value="unique">Unique (no duplicates)</option>
+<option value="date">Date parse</option>
+<option value="nonnull_if">Non-null if (conditional)</option>
+</select>
+</div>
+<div>
+<div class="tiny muted">Severity</div>
+<select class="input" id="sev">
+<option selected="" value="error">Error</option>
+<option value="warn">Warn</option>
+</select>
+</div>
+<div>
+<div class="tiny muted">Param A</div>
+<input class="input" id="a" placeholder="ex: number / 0 / 3 / ^[A-Z]+$ / A|B|C"/>
+</div>
+<div>
+<div class="tiny muted">Param B</div>
+<input class="input" id="b" placeholder="ex: 100 / 12 / YYYY-MM-DD / otherCol=Y"/>
+</div>
+<div>
+<button class="btn primary small" disabled="" id="addRule">Add</button>
+</div>
+</div>
+<div class="hint muted" id="ruleHelp" style="margin-top:10px"></div>
+<div class="hr2"></div>
+<div class="row">
+<button class="btn small" disabled="" id="autoBasic">Auto rules</button>
+<button class="btn small danger" disabled="" id="clearRules">Clear rules</button>
+</div>
+<div class="note tiny muted">
           Auto rules will add: Required for “id-like” columns, Type=number for numeric-looking columns, and Date parse if it sees date-like strings.
         </div>
-      </div>
-
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <div style="font-weight:700">2) Rules list</div>
-            <div class="tiny muted">Edit by deleting and re-adding</div>
-          </div>
-          <span class="tag">Active <b class="mono" id="ruleCount">0</b></span>
-        </div>
-
-        <div id="rules" class="mini muted" style="margin-top:10px">Load a file to build rules.</div>
-      </div>
-
-      <div class="card">
-        <div style="font-weight:700">3) Audit</div>
-        <div class="tiny muted">Schema + thresholds + counts</div>
-        <div class="hr2"></div>
-        <div id="audit" class="mini muted">Load a file, add rules, then click Validate.</div>
-
-        <div class="note tiny muted">
+</div>
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">2) Rules list</div>
+<div class="tiny muted">Edit by deleting and re-adding</div>
+</div>
+<span class="tag">Active <b class="mono" id="ruleCount">0</b></span>
+</div>
+<div class="mini muted" id="rules" style="margin-top:10px">Load a file to build rules.</div>
+</div>
+<div class="card">
+<div style="font-weight:700">3) Audit</div>
+<div class="tiny muted">Schema + thresholds + counts</div>
+<div class="hr2"></div>
+<div class="mini muted" id="audit">Load a file, add rules, then click Validate.</div>
+<div class="note tiny muted">
           Download the Report to keep a permanent record of checks run (useful for QA sign-off).
         </div>
-      </div>
-    </div>
-
-    <div class="hr2"></div>
-
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <div>
-          <div style="font-weight:700">Preview</div>
-          <div class="tiny muted">Rows with error details (top findings)</div>
-        </div>
-        <div class="row">
-          <label class="tiny muted">View</label>
-          <select id="view" class="input" style="width:auto;min-width:260px" disabled>
-            <option value="bad" selected>Invalid rows only</option>
-            <option value="all">All rows (sample)</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="split" style="margin-top:12px">
-        <div class="tablewrap">
-          <table>
-            <thead><tr id="thead"></tr></thead>
-            <tbody id="tbody"></tbody>
-          </table>
-        </div>
-
-        <div class="card" style="margin:0">
-          <div style="font-weight:700">How to read results</div>
-          <div class="hr2"></div>
-          <div class="mini muted">
-            <div><span class="badge b-bad">Error</span> breaks the schema (row should be rejected).</div>
-            <div style="margin-top:6px"><span class="badge b-warn">Warn</span> might be acceptable, but should be reviewed.</div>
-            <div style="margin-top:6px">Each failing row gets:</div>
-            <ul style="margin:8px 0 0 18px" class="muted">
-              <li><span class="mono">_errors</span>: count of error-level issues</li>
-              <li><span class="mono">_warns</span>: count of warning-level issues</li>
-              <li><span class="mono">_issues</span>: human-readable list of what failed</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-      <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
-      <a class="btn" href="/docs/contact.html">Contact</a>
-    </div>
-  </div>
-
-  <div class="footer">© 2026 ReportMedic</div>
 </div>
-
+</div>
+<div class="hr2"></div>
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Preview</div>
+<div class="tiny muted">Rows with error details (top findings)</div>
+</div>
+<div class="row">
+<label class="tiny muted">View</label>
+<select class="input" disabled="" id="view" style="width:auto;min-width:260px">
+<option selected="" value="bad">Invalid rows only</option>
+<option value="all">All rows (sample)</option>
+</select>
+</div>
+</div>
+<div class="split" style="margin-top:12px">
+<div class="tablewrap">
+<table>
+<thead><tr id="thead"></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+<div class="card" style="margin:0">
+<div style="font-weight:700">How to read results</div>
+<div class="hr2"></div>
+<div class="mini muted">
+<div><span class="badge b-bad">Error</span> breaks the schema (row should be rejected).</div>
+<div style="margin-top:6px"><span class="badge b-warn">Warn</span> might be acceptable, but should be reviewed.</div>
+<div style="margin-top:6px">Each failing row gets:</div>
+<ul class="muted" style="margin:8px 0 0 18px">
+<li><span class="mono">_errors</span>: count of error-level issues</li>
+<li><span class="mono">_warns</span>: count of warning-level issues</li>
+<li><span class="mono">_issues</span>: human-readable list of what failed</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+<a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+<a class="btn" href="/docs/contact.html">Contact</a>
+</div>
+</div>
+<div class="footer">© 2026 ReportMedic</div>
+</div>
 <script>
 (function(){
   const $ = (id)=>document.getElementById(id);
@@ -303,6 +266,7 @@
     delimiter: $("delimiter"), previewN: $("previewN"), maxBad: $("maxBad"),
     statRows: $("statRows"), statCols: $("statCols"), statRules: $("statRules"),
     statBad: $("statBad"), statErr: $("statErr"),
+    decisionText: $(\"decisionText\"),
     run: $("run"), downloadBad: $("downloadBad"), downloadReport: $("downloadReport"), downloadSchema: $("downloadSchema"),
     col: $("col"), type: $("type"), sev: $("sev"), a: $("a"), b: $("b"), addRule: $("addRule"),
     ruleHelp: $("ruleHelp"), autoBasic: $("autoBasic"), clearRules: $("clearRules"),
@@ -768,6 +732,15 @@
 
     el.statBad.textContent = String(bad.length);
     el.statErr.textContent = String(totalErrors);
+    // Decision-style interpretation (trust cue)
+    if (el.decisionText) {
+      if (totalErrors===0 && bad.length===0) {
+        el.decisionText.textContent = "✅ No issues detected — safe to share.";
+      } else {
+        const badCount = bad.length || 0;
+        el.decisionText.textContent = `⚠️ Found issues that may affect accuracy: ${badCount} invalid row(s), ${totalErrors} total error(s). Review before sharing.`;
+      }
+    }
     el.downloadBad.disabled = badOut.length===0;
     el.downloadReport.disabled = false;
     el.downloadSchema.disabled = false;

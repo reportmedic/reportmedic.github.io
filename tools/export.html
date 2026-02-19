@@ -1,20 +1,18 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Export Studio — ReportMedic</title>
-
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/reportmedic-48.png?v=1">
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png">
-  <link rel="stylesheet" href="/assets/css/styles.css">
-
-  <!-- GitHub Pages friendly: client-side parsing + XLSX export -->
-  <script defer src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Export Studio — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+<!-- GitHub Pages friendly: client-side parsing + XLSX export -->
+<script defer="" src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
     @media (max-width: 980px){.grid3{grid-template-columns:1fr}}
@@ -55,231 +53,189 @@
 </head>
 <body>
 <header>
-  <div class="nav">
-    <a class="logo" href="/" style="text-decoration:none;">
-      <div class="mark"></div>
-      <div>ReportMedic</div>
-    </a>
-    <div class="spacer"></div>
-    <a class="btn" href="/">Home</a>
-    <a class="btn" href="/#toolbox">Toolbox</a>
-    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
-    
-  </div>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<a class="btn" href="/#toolbox">Toolbox</a>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div><div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
 </header>
-
 <div class="wrap">
-  <div class="panel">
-    <h1>Export Studio</h1>
-    <p class="sub">Combine files, choose columns, build a summary, then export CSV/XLSX — in your browser.</p>
-
-    <div class="hr"></div>
-
-    <div class="grid2">
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <div style="font-weight:700">Input</div>
-            <div class="tiny muted">Upload 1+ files (CSV/TSV/XLSX/XLS/TXT-delimited)</div>
-          </div>
-          <span id="meta" class="pill tiny"><b>Loaded:</b><span class="muted">none</span></span>
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <input id="files" class="input" type="file" multiple accept=".csv,.tsv,.xlsx,.xls,.txt" />
-        </div>
-
-        <div class="hr2"></div>
-
-        <div class="row">
-          <label class="tiny muted">Mode</label>
-          <select id="mode" class="input" style="width:auto;min-width:220px">
-            <option value="single" selected>Single dataset</option>
-            <option value="append_union">Append (union columns)</option>
-            <option value="append_common">Append (common columns only)</option>
-          </select>
-
-          <label class="tiny muted">Delimiter</label>
-          <select id="delimiter" class="input" style="width:auto;min-width:190px">
-            <option value="auto" selected>Auto-detect</option>
-            <option value=",">Comma (,)</option>
-            <option value="\t">Tab (TSV)</option>
-            <option value=";">Semicolon (;)</option>
-            <option value="|">Pipe (|)</option>
-          </select>
-
-          <label class="tiny muted">Preview</label>
-          <select id="previewN" class="input" style="width:auto;min-width:150px">
-            <option value="25" selected>25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
-        </div>
-
-        <div id="msg" class="tiny muted" style="margin-top:10px"></div>
-
-        <div class="note tiny muted">
+<div class="panel">
+<h1>Export Studio</h1>
+<p class="sub">Build a clean export (select columns, combine files, summarize) — so the version you share is consistent and repeatable.</p>
+<div class="hr"></div>
+<div class="grid2">
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Input</div>
+<div class="tiny muted">Upload 1+ files (CSV/TSV/XLSX/XLS/TXT-delimited)</div>
+</div>
+<span class="pill tiny" id="meta"><b>Loaded:</b><span class="muted">none</span></span>
+</div>
+<div class="row" style="margin-top:10px">
+<input accept=".csv,.tsv,.xlsx,.xls,.txt" class="input" id="files" multiple="" type="file"/>
+</div>
+<div class="hr2"></div>
+<div class="row">
+<label class="tiny muted">Mode</label>
+<select class="input" id="mode" style="width:auto;min-width:220px">
+<option selected="" value="single">Single dataset</option>
+<option value="append_union">Append (union columns)</option>
+<option value="append_common">Append (common columns only)</option>
+</select>
+<label class="tiny muted">Delimiter</label>
+<select class="input" id="delimiter" style="width:auto;min-width:190px">
+<option selected="" value="auto">Auto-detect</option>
+<option value=",">Comma (,)</option>
+<option value="\t">Tab (TSV)</option>
+<option value=";">Semicolon (;)</option>
+<option value="|">Pipe (|)</option>
+</select>
+<label class="tiny muted">Preview</label>
+<select class="input" id="previewN" style="width:auto;min-width:150px">
+<option selected="" value="25">25</option>
+<option value="50">50</option>
+<option value="100">100</option>
+</select>
+</div>
+<div class="tiny muted" id="safetyNote">Safety: your file is read locally in your browser. Use Masker if you need to share samples.</div><div class="tiny muted" id="msg" style="margin-top:10px"></div>
+<div class="note tiny muted">
           TXT works when it’s actually CSV/TSV style (header row + delimiter).
         </div>
-      </div>
-
-      <div class="card">
-        <div style="font-weight:700">Export</div>
-        <div class="tiny muted">Choose format + include a summary</div>
-
-        <div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
-          <span class="badge b-info">Rows: <b id="statRows" class="mono">—</b></span>
-          <span class="badge b-info">Cols: <b id="statCols" class="mono">—</b></span>
-          <span class="badge b-warn">Hidden cols: <b id="statHidden" class="mono">0</b></span>
-          <span class="badge b-bad">Dropped rows: <b id="statDropped" class="mono">0</b></span>
-        </div>
-
-        <div class="hr2"></div>
-
-        <div class="row">
-          <label class="tiny muted">Output</label>
-          <select id="outFmt" class="input" style="width:auto;min-width:200px">
-            <option value="csv" selected>CSV</option>
-            <option value="xlsx">XLSX</option>
-          </select>
-
-          <label class="tiny muted">Name</label>
-          <input id="outName" class="input" style="width:auto;min-width:240px" placeholder="reportmedic_export" value="reportmedic_export"/>
-        </div>
-
-        <div class="chk" style="margin-top:10px">
-          <input id="optSummary" type="checkbox" checked />
-          <div>
-            <label for="optSummary"><b>Include Summary</b></label>
-            <div class="tiny muted">adds a summary sheet (XLSX) or a separate text report (CSV)</div>
-          </div>
-        </div>
-
-        <div class="chk" style="margin-top:8px">
-          <input id="optBOM" type="checkbox" checked />
-          <div>
-            <label for="optBOM"><b>Excel-friendly CSV (UTF‑8 BOM)</b></label>
-            <div class="tiny muted">helps Excel open non-English text correctly</div>
-          </div>
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <button id="build" class="btn primary" disabled>Build export</button>
-          <button id="download" class="btn" disabled>Download</button>
-          <button id="downloadSummary" class="btn" disabled>Download summary</button>
-        </div>
-
-        <div class="note tiny muted">
+</div>
+<div class="card">
+<div style="font-weight:700">Export</div>
+<div class="tiny muted">Choose format + include a summary</div>
+<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
+<span class="badge b-info">Rows: <b class="mono" id="statRows">—</b></span>
+<span class="badge b-info">Cols: <b class="mono" id="statCols">—</b></span>
+<span class="badge b-warn">Hidden cols: <b class="mono" id="statHidden">0</b></span>
+<span class="badge b-bad">Dropped rows: <b class="mono" id="statDropped">0</b></span>
+</div>
+<div class="hr2"></div>
+<div class="row">
+<label class="tiny muted">Output</label>
+<select class="input" id="outFmt" style="width:auto;min-width:200px">
+<option selected="" value="csv">CSV</option>
+<option value="xlsx">XLSX</option>
+</select>
+<label class="tiny muted">Name</label>
+<input class="input" id="outName" placeholder="reportmedic_export" style="width:auto;min-width:240px" value="reportmedic_export"/>
+</div>
+<div class="chk" style="margin-top:10px">
+<input checked="" id="optSummary" type="checkbox"/>
+<div>
+<label for="optSummary"><b>Include Summary</b></label>
+<div class="tiny muted">adds a summary sheet (XLSX) or a separate text report (CSV)</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input checked="" id="optBOM" type="checkbox"/>
+<div>
+<label for="optBOM"><b>Excel-friendly CSV (UTF‑8 BOM)</b></label>
+<div class="tiny muted">helps Excel open non-English text correctly</div>
+</div>
+</div>
+<div class="row" style="margin-top:10px">
+<button class="btn primary" disabled="" id="build">Build export</button>
+<button class="btn" disabled="" id="download">Download</button>
+<button class="btn" disabled="" id="downloadSummary">Download summary</button>
+</div>
+<div class="note tiny muted">
           Everything runs locally in your browser (no server upload required).
         </div>
-      </div>
-    </div>
-
-    <div class="hr2"></div>
-
-    <div class="grid3">
-      <div class="card">
-        <div style="font-weight:700">1) Column selection</div>
-        <div class="tiny muted">Hide columns you don’t want to export</div>
-
-        <input id="colSearch" class="input" placeholder="Search columns…" style="margin-top:10px"/>
-
-        <div id="colChecks" class="chklist" aria-live="polite"></div>
-
-        <div class="row" style="margin-top:10px">
-          <button id="showAll" class="btn small">Show all</button>
-          <button id="hideAll" class="btn small">Hide all</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div style="font-weight:700">2) Rename & reorder</div>
-        <div class="tiny muted">Optional: rename headers and control final column order</div>
-
-        <div class="row" style="margin-top:10px">
-          <button id="resetCols" class="btn small">Reset to original</button>
-          <button id="alphaCols" class="btn small">Sort A→Z</button>
-        </div>
-
-        <div id="colList" class="list" aria-live="polite"></div>
-
-        <div class="note tiny muted">
+</div>
+</div>
+<div class="hr2"></div>
+<div class="grid3">
+<div class="card">
+<div style="font-weight:700">1) Column selection</div>
+<div class="tiny muted">Hide columns you don’t want to export</div>
+<input class="input" id="colSearch" placeholder="Search columns…" style="margin-top:10px"/>
+<div aria-live="polite" class="chklist" id="colChecks"></div>
+<div class="row" style="margin-top:10px">
+<button class="btn small" id="showAll">Show all</button>
+<button class="btn small" id="hideAll">Hide all</button>
+</div>
+</div>
+<div class="card">
+<div style="font-weight:700">2) Rename &amp; reorder</div>
+<div class="tiny muted">Optional: rename headers and control final column order</div>
+<div class="row" style="margin-top:10px">
+<button class="btn small" id="resetCols">Reset to original</button>
+<button class="btn small" id="alphaCols">Sort A→Z</button>
+</div>
+<div aria-live="polite" class="list" id="colList"></div>
+<div class="note tiny muted">
           Reorder affects export only. Preview remains stable.
         </div>
-      </div>
-
-      <div class="card">
-        <div style="font-weight:700">3) Rows & quality</div>
-        <div class="tiny muted">Optional: drop blank rows and dedupe by keys</div>
-
-        <div class="chk" style="margin-top:10px">
-          <input id="optDropBlank" type="checkbox" checked />
-          <div>
-            <label for="optDropBlank"><b>Drop blank rows</b></label>
-            <div class="tiny muted">remove rows where every exported cell is empty</div>
-          </div>
-        </div>
-
-        <div class="chk" style="margin-top:8px">
-          <input id="optDedupe" type="checkbox" />
-          <div>
-            <label for="optDedupe"><b>Dedupe rows</b></label>
-            <div class="tiny muted">keep first occurrence and remove duplicates by keys</div>
-          </div>
-        </div>
-
-        <div class="hr2"></div>
-
-        <div class="tiny muted">Dedupe keys (optional)</div>
-        <input id="keySearch" class="input" placeholder="Search columns for dedupe keys…" style="margin-top:10px"/>
-        <div id="keyChecks" class="chklist" aria-live="polite"></div>
-
-        <div class="note tiny muted">
+</div>
+<div class="card">
+<div style="font-weight:700">3) Rows &amp; quality</div>
+<div class="tiny muted">Optional: drop blank rows and dedupe by keys</div>
+<div class="chk" style="margin-top:10px">
+<input checked="" id="optDropBlank" type="checkbox"/>
+<div>
+<label for="optDropBlank"><b>Drop blank rows</b></label>
+<div class="tiny muted">remove rows where every exported cell is empty</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input id="optDedupe" type="checkbox"/>
+<div>
+<label for="optDedupe"><b>Dedupe rows</b></label>
+<div class="tiny muted">keep first occurrence and remove duplicates by keys</div>
+</div>
+</div>
+<div class="hr2"></div>
+<div class="tiny muted">Dedupe keys (optional)</div>
+<input class="input" id="keySearch" placeholder="Search columns for dedupe keys…" style="margin-top:10px"/>
+<div aria-live="polite" class="chklist" id="keyChecks"></div>
+<div class="note tiny muted">
           If no keys are selected, dedupe uses the full exported row.
         </div>
-      </div>
-    </div>
-
-    <div class="hr2"></div>
-
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <div>
-          <div style="font-weight:700">Preview</div>
-          <div class="tiny muted">First N rows of what will be exported</div>
-        </div>
-        <div class="row">
-          <label class="tiny muted">Sheet name (XLSX)</label>
-          <input id="sheetName" class="input" style="width:auto;min-width:220px" value="Export"/>
-        </div>
-      </div>
-
-      <div class="split" style="margin-top:12px">
-        <div class="tablewrap">
-          <table>
-            <thead><tr id="thead"></tr></thead>
-            <tbody id="tbody"></tbody>
-          </table>
-        </div>
-
-        <div class="card" style="margin:0">
-          <div style="font-weight:700">Summary</div>
-          <div class="tiny muted">Missing values + quick numeric stats</div>
-          <div class="hr2"></div>
-          <div id="summaryBox" class="mini muted">Load files, then build export to generate summary.</div>
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-      <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
-      <a class="btn" href="/docs/contact.html">Contact</a>
-    </div>
-  </div>
-
-  <div class="footer">© 2026 ReportMedic</div>
 </div>
-
+</div>
+<div class="hr2"></div>
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Preview</div>
+<div class="tiny muted">First N rows of what will be exported</div>
+</div>
+<div class="row">
+<label class="tiny muted">Sheet name (XLSX)</label>
+<input class="input" id="sheetName" style="width:auto;min-width:220px" value="Export"/>
+</div>
+</div>
+<div class="split" style="margin-top:12px">
+<div class="tablewrap">
+<table>
+<thead><tr id="thead"></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+<div class="card" style="margin:0">
+<div style="font-weight:700">Summary</div>
+<div class="tiny muted">Missing values + quick numeric stats</div>
+<div class="hr2"></div>
+<div class="mini muted" id="summaryBox">Load files, then build export to generate summary.</div>
+</div>
+</div>
+</div>
+<div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+<a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+<a class="btn" href="/docs/contact.html">Contact</a>
+</div>
+</div>
+<div class="footer">© 2026 ReportMedic</div>
+</div>
 <script>
 (function(){
   const $ = (id) => document.getElementById(id);
