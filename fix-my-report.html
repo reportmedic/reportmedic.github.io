@@ -11,7 +11,8 @@
 <link href="/assets/css/styles.css" rel="stylesheet"/>
 <style>
     /* Minimal page-specific layout; theme + typography come from /assets/css/styles.css */
-.grid2{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}
+    .wrap{max-width:980px;margin:0 auto;padding:18px 14px 36px}
+    .grid2{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}
     @media (max-width: 960px){.grid2{grid-template-columns:1fr}}
     .preview{min-height:170px}
     .toast{
@@ -19,25 +20,6 @@
       bottom:18px; padding:10px 12px;border-radius:12px;
       display:none; max-width:92vw
     }
-
-    /* Align with site-wide container sizing */
-    #contactOptions{scroll-margin-top:88px}
-
-    /* Fix My Report CTA hint */
-    #fixHint{
-      max-height:0;
-      overflow:hidden;
-      opacity:0;
-      transform:translateY(-4px);
-      transition:max-height .25s ease, opacity .25s ease, transform .25s ease;
-      margin-top:10px;
-    }
-    #fixHint.show{
-      max-height:220px;
-      opacity:1;
-      transform:none;
-    }
-
 </style>
 </head>
 <body>
@@ -49,24 +31,17 @@
 </div>
 <div class="spacer"></div>
 <a class="btn" href="/">Home</a>
-<button class="btn" id="openDrawerBtn" type="button">All Tools</button>
-<a class="btn primary" href="/fix-my-report.html">Fix My Report</a>
+<a class="btn" href="/#toolbox">Tools</a>
+<a class="btn primary" href="/fix-my-report.html" id="navFixMyReport">Fix My Report</a>
 </div>
 </header>
-<div class="wrap">
-<div class="panel">
+<main class="wrap">
 <section class="hero">
 <h1>Get a human review when a report feels risky.</h1>
 <div class="human-touch">
 <div style="font-weight:700">Human help (no pressure, practical fixes)</div>
-<p style="font-size:14px; line-height:1.75">When numbers don’t match, exports drift, or a validation error refuses to clear, you shouldn’t be left guessing — or worried you’ll ship the wrong story. Share a crisp “expected vs actual” summary and I’ll respond with practical next steps: what to check first, which tool to run, and how to explain the outcome with confidence. No pressure, no judgment — just a calm path to a submission‑ready answer.</p><div class="note" id="serviceReassurance">No full-file uploads required. Use the case builder below to describe “expected vs actual” and share only minimal samples if needed.</div>
-<div class="row" style="gap:10px; align-items:flex-start; flex-wrap:wrap; margin-top:12px">
-  <button class="btn primary" id="fixMyReportBtn" type="button">Fix my report</button>
-  <div class="note" id="fixHint" role="status" aria-live="polite">
-    Choose one of the contact options below to send your case summary. Telegram is best for screenshots and large exports, Email is great for longer context, and SMS works for quick questions.
-  </div>
-</div>
-<div class="contact-grid" id="contactOptions">
+<p>When numbers don’t match or validation errors won’t go away, you shouldn’t have to guess. Send a clear case summary and I’ll help you reach a submission‑ready answer.</p><div class="note" id="serviceReassurance">No full-file uploads required. Use the case builder below to describe “expected vs actual” and share only minimal samples if needed.</div>
+<div class="contact-grid">
   <a class="contact-card" href="https://t.me/ReportMedic" rel="noopener" target="_blank">
     <div class="contact-title">✈️ Telegram</div>
     <div class="contact-desc">Message me: <span class="mono">t.me/ReportMedic</span></div>
@@ -214,10 +189,8 @@
 </div>
 </div>
 </section>
-</div>
-</div>
+</main>
 <div class="toast" id="toast"></div>
-<script src="/assets/js/rm-tools-drawer.js"></script>
 <script>
   const $ = (id) => document.getElementById(id);
   const toast = (msg) => {
@@ -227,26 +200,6 @@
     clearTimeout(window.__toastTimer);
     window.__toastTimer = setTimeout(()=> t.style.display="none", 2000);
   };
-
-// Fix My Report CTA: show a calm prompt + bring contact options into view
-(function(){
-  const btn = document.getElementById("fixMyReportBtn");
-  const hint = document.getElementById("fixHint");
-  const target = document.getElementById("contactOptions");
-  if(!btn || !hint || !target) return;
-
-  let t = null;
-  btn.addEventListener("click", ()=>{
-    hint.classList.add("show");
-    clearTimeout(t);
-    t = setTimeout(()=> hint.classList.remove("show"), 5000);
-
-    // Scroll to the top of the contact cards (not the bottom CTA link)
-    target.scrollIntoView({ behavior:"smooth", block:"start" });
-  });
-})();
-
-
 
   function makeCaseId(){
     const d = new Date();
@@ -378,6 +331,42 @@
     updateMailto("");
     toast("Reset.");
   });
+</script>
+<!-- Fix My Report hint bubble -->
+<div id="fixHintBubble" class="fix-hint-bubble" role="status" aria-live="polite" aria-atomic="true">
+  Choose a contact option below (Telegram, Email, SMS, or Send large files) to get help fast.
+</div>
+<script>
+(function(){
+  var btn = document.getElementById('navFixMyReport');
+  var bubble = document.getElementById('fixHintBubble');
+  var target = document.getElementById('contactOptionsTop');
+  if(!btn || !bubble || !target) return;
+
+  var hideTimer = null;
+
+  function showBubble(){
+    bubble.classList.add('show');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(function(){
+      bubble.classList.remove('show');
+    }, 5000);
+  }
+
+  function scrollToTarget(){
+    // Offset for fixed header/nav
+    var y = target.getBoundingClientRect().top + window.pageYOffset - 90;
+    if (y < 0) y = 0;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  }
+
+  btn.addEventListener('click', function(e){
+    // If it's a link, prevent jumping away / to hash
+    e.preventDefault();
+    showBubble();
+    scrollToTarget();
+  });
+})();
 </script>
 </body>
 </html>
