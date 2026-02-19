@@ -1,235 +1,187 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Fix My Report — ReportMedic</title>
-
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/reportmedic-48.png?v=1">
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png">
-  <link rel="stylesheet" href="/assets/css/styles.css">
-
-    <style>
-    /* Page-specific layout only (theme + typography come from /assets/css/styles.css) */
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Fix My Report — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+<style>
+    /* Minimal page-specific layout; theme + typography come from /assets/css/styles.css */
     .wrap{max-width:980px;margin:0 auto;padding:18px 14px 36px}
-    .hero{margin-top:18px}
-    .hero h1{margin:0 0 8px}
-    .sub{max-width:74ch}
-
-    .grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}
-    @media (max-width: 960px){.grid{grid-template-columns:1fr}}
-
-    .human-touch{margin:10px 0 12px;padding:14px;border-radius:16px}
-    .human-touch h2{margin:0 0 8px}
-    .human-touch p{margin:0 0 10px}
-    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
-    @media (max-width: 720px){.contact-grid{grid-template-columns:1fr}}
-    .contact-card{display:block;text-decoration:none;color:inherit;border-radius:14px;padding:12px 12px 10px}
-    .contact-title{font-weight:800;margin-bottom:4px}
-    .contact-desc{margin-bottom:8px}
-    .contact-cta{font-weight:800}
-
-    label{display:block;font-size:12px;margin:10px 0 6px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    @media (max-width: 640px){.row{grid-template-columns:1fr}}
-    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
-
-    .mini{font-size:12px}
-    .muted{font-size:12px;line-height:1.4}
-    .tiny{font-size:.95rem;margin:0}
-
-    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;margin:6px 0}
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
-
-    .list a{display:flex;gap:10px;align-items:center;justify-content:space-between;text-decoration:none;border-radius:12px;padding:10px;margin:8px 0}
+    .grid2{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}
+    @media (max-width: 960px){.grid2{grid-template-columns:1fr}}
     .preview{min-height:170px}
-
     .toast{
       position:fixed;left:50%;transform:translateX(-50%);
       bottom:18px; padding:10px 12px;border-radius:12px;
       display:none; max-width:92vw
     }
-  </style>
+</style>
 </head>
-
 <body>
 <header>
-  <div class="nav">
-    <div class="logo" onclick="location.href='/'" style="cursor:pointer">
-      <div class="mark"></div>
-      <div>ReportMedic</div>
-    </div>
-    <div class="spacer"></div>
-    <a class="btn" href="/">Home</a>
-    <a class="btn" href="/#toolbox">Tools</a>
-    <a class="btn primary" href="/fix-my-report.html">Fix My Report</a>
-  </div>
+<div class="nav">
+<div class="logo" onclick="location.href='/'" style="cursor:pointer">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</div>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<a class="btn" href="/#toolbox">Tools</a>
+<a class="btn primary" href="/fix-my-report.html">Fix My Report</a>
+</div>
 </header>
-
 <main class="wrap">
-  <section class="hero">
-    <h1>Fix My Report</h1>
-    
-    <div class="human-touch">
-      <h2>Talk to a real ReportMedic (fast consulting help)</h2>
-      <p>
+<section class="hero">
+<h1>Fix My Report</h1>
+<div class="human-touch">
+<div style="font-weight:700">Talk to a real ReportMedic (fast consulting help)</div>
+<p>
         If you’re stuck with a <strong>report mismatch</strong>, <strong>totals not matching</strong>, <strong>CSV/Excel/PDF differences</strong>,
         or confusing <strong>data validation</strong> errors, you don’t have to debug alone. Send a quick message and I’ll help you
         pinpoint the cause (filters, joins, rounding, duplicates, encoding, hidden rows/columns) and suggest the cleanest fix.
       </p>
-      <div class="contact-grid">
-        <a class="contact-card" href="https://t.me/ReportMedic" target="_blank" rel="noopener">
-          <div class="contact-title">Telegram</div>
-          <div class="contact-desc">Message me: <span class="mono">t.me/ReportMedic</span></div>
-          <div class="contact-cta">Open Telegram →</div>
-        </a>
-        <a class="contact-card" href="https://www.emailmeform.com/builder/form/damueNPp7fSz" target="_blank" rel="noopener">
-          <div class="contact-title">Email</div>
-          <div class="contact-desc">Send your case details via secure form</div>
-          <div class="contact-cta">Open email form →</div>
-        </a>
-      </div>
-      <p class="tiny">
+<div class="contact-grid">
+<a class="contact-card" href="https://t.me/ReportMedic" rel="noopener" target="_blank">
+<div class="contact-title">Telegram</div>
+<div class="contact-desc">Message me: <span class="mono">t.me/ReportMedic</span></div>
+<div class="contact-cta">Open Telegram →</div>
+</a>
+<a class="contact-card" href="https://www.emailmeform.com/builder/form/damueNPp7fSz" rel="noopener" target="_blank">
+<div class="contact-title">Email</div>
+<div class="contact-desc">Send your case details via secure form</div>
+<div class="contact-cta">Open email form →</div>
+</a>
+</div>
+<p class="tiny">
         Tip: Use the case builder below to create a clear “expected vs actual” summary — it speeds up report troubleshooting and consulting replies.
       </p>
-    </div>
+</div>
 <p class="sub">
       Tell me what’s wrong, what you expected, and what you’re seeing. This page generates a clean, copy‑paste “case summary”
       you can send for consulting help — no uploads required.
     </p>
-    <div class="pill">
-      <span class="k">Privacy:</span>
-      <span class="mini">Avoid secrets/PII. Share sample rows instead of full data when possible.</span>
-    </div>
-  </section>
-
-  <section class="grid">
-    <div class="card">
-      <h2>1) Describe the issue</h2>
-
-      <div class="row">
-        <div>
-          <label for="problemType">Problem type</label>
-          <select id="problemType">
-            <option value="compare">Two reports don’t match (diff / reconcile)</option>
-            <option value="schema">Schema/validation errors (required fields, types)</option>
-            <option value="clean">Duplicates / formatting / data cleanup</option>
-            <option value="outlier">Spikes / anomalies / outliers</option>
-            <option value="schedule">Scheduler / automation / batch run issue</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <div>
-          <label for="system">System / source</label>
-          <input id="system" type="text" placeholder="e.g., Excel, CSV export, Oracle report, Databricks output, PDF statement"/>
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label for="expected">Expected outcome</label>
-          <input id="expected" type="text" placeholder="e.g., Totals should match, 12 rows expected, same columns, etc."/>
-        </div>
-        <div>
-          <label for="actual">Actual outcome</label>
-          <input id="actual" type="text" placeholder="e.g., Totals off by 1.25%, missing rows, wrong dates, etc."/>
-        </div>
-      </div>
-
-      <label for="errorText">Error message / symptom (paste)</label>
-      <textarea id="errorText" placeholder="Paste the error message, mismatch description, or what you’re seeing..."></textarea>
-
-      <label for="context">Context (what changed recently?)</label>
-      <textarea id="context" placeholder="New extract? new filters? different date range? timezone? file encoding? manual edits?"></textarea>
-
-      <div class="row">
-        <div>
-          <label for="keys">Key fields (if comparing)</label>
-          <input id="keys" type="text" placeholder="e.g., store_id, week, invoice_id, employee_id"/>
-        </div>
-        <div>
-          <label for="files">Files involved (names only)</label>
-          <input id="files" type="text" placeholder="e.g., report_A.csv vs report_B.csv (no full paths needed)"/>
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label for="deadline">Deadline / urgency</label>
-          <input id="deadline" type="text" placeholder="e.g., today 5pm, this week, low urgency"/>
-        </div>
-        <div>
-          <label for="contact">Contact (optional)</label>
-          <input id="contact" type="email" placeholder="you@example.com (only if you want a reply path)"/>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="btn primary" id="genBtn">Generate Case Summary</button>
-        <button class="btn" id="copyBtn">Copy Summary</button>
-        <button class="btn" id="downloadBtn">Download .txt</button>
-        <a class="btn" id="mailtoBtn" href="#">Email Summary</a>
-        <button class="btn" id="resetBtn">Reset</button>
-      </div>
-
-      <p class="muted">
+<div class="pill">
+<span class="k">Privacy:</span>
+<span class="mini">Avoid secrets/PII. Share sample rows instead of full data when possible.</span>
+</div>
+</section>
+<section class="grid2">
+<div class="card">
+<div style="font-weight:700">1) Describe the issue</div>
+<div class="row">
+<div>
+<label for="problemType">Problem type</label>
+<select id="problemType">
+<option value="compare">Two reports don’t match (diff / reconcile)</option>
+<option value="schema">Schema/validation errors (required fields, types)</option>
+<option value="clean">Duplicates / formatting / data cleanup</option>
+<option value="outlier">Spikes / anomalies / outliers</option>
+<option value="schedule">Scheduler / automation / batch run issue</option>
+<option value="other">Other</option>
+</select>
+</div>
+<div>
+<label for="system">System / source</label>
+<input id="system" placeholder="e.g., Excel, CSV export, Oracle report, Databricks output, PDF statement" type="text"/>
+</div>
+</div>
+<div class="row">
+<div>
+<label for="expected">Expected outcome</label>
+<input id="expected" placeholder="e.g., Totals should match, 12 rows expected, same columns, etc." type="text"/>
+</div>
+<div>
+<label for="actual">Actual outcome</label>
+<input id="actual" placeholder="e.g., Totals off by 1.25%, missing rows, wrong dates, etc." type="text"/>
+</div>
+</div>
+<label for="errorText">Error message / symptom (paste)</label>
+<textarea id="errorText" placeholder="Paste the error message, mismatch description, or what you’re seeing..."></textarea>
+<label for="context">Context (what changed recently?)</label>
+<textarea id="context" placeholder="New extract? new filters? different date range? timezone? file encoding? manual edits?"></textarea>
+<div class="row">
+<div>
+<label for="keys">Key fields (if comparing)</label>
+<input id="keys" placeholder="e.g., store_id, week, invoice_id, employee_id" type="text"/>
+</div>
+<div>
+<label for="files">Files involved (names only)</label>
+<input id="files" placeholder="e.g., report_A.csv vs report_B.csv (no full paths needed)" type="text"/>
+</div>
+</div>
+<div class="row">
+<div>
+<label for="deadline">Deadline / urgency</label>
+<input id="deadline" placeholder="e.g., today 5pm, this week, low urgency" type="text"/>
+</div>
+<div>
+<label for="contact">Contact (optional)</label>
+<input id="contact" placeholder="you@example.com (only if you want a reply path)" type="email"/>
+</div>
+</div>
+<div class="actions">
+<button class="btn primary" id="genBtn">Generate Case Summary</button>
+<button class="btn" id="copyBtn">Copy Summary</button>
+<button class="btn" id="downloadBtn">Download .txt</button>
+<a class="btn" href="#" id="mailtoBtn">Email Summary</a>
+<button class="btn" id="resetBtn">Reset</button>
+</div>
+<p class="muted">
         Tip: If you can, include <b>2–5 sample rows</b> (masked) that reproduce the issue.
         Never paste passwords, tokens, SSNs, bank account numbers, or full personal details.
       </p>
-    </div>
-
-    <aside class="card">
-      <h2>2) Recommended tool</h2>
-      <div id="recommend" class="muted">Pick a problem type to see the best tool(s).</div>
-
-      <div style="height:10px"></div>
-      <h2>3) Case summary</h2>
-      <div class="pill">
-        <span class="k">Case ID:</span> <span id="caseId" class="mono">—</span>
-      </div>
-      <textarea id="summary" class="preview mono" placeholder="Click “Generate Case Summary”..."></textarea>
-      <p class="muted" id="summaryHint">
+</div>
+<aside class="card">
+<div style="font-weight:700">2) Recommended tool</div>
+<div class="muted" id="recommend">Pick a problem type to see the best tool(s).</div>
+<div style="height:10px"></div>
+<div style="font-weight:700">3) Case summary</div>
+<div class="pill">
+<span class="k">Case ID:</span> <span class="mono" id="caseId">—</span>
+</div>
+<textarea class="preview mono" id="summary" placeholder="Click “Generate Case Summary”..."></textarea>
+<p class="muted" id="summaryHint">
         This text is designed to be copy‑pasted into a message when requesting help.
       </p>
-
-      <div style="height:10px"></div>
-      <h2>Quick links</h2>
-      <div class="list">
-        <a href="/tools/compare.html"><span>Report Compare</span><span class="mini">diff by keys</span></a>
-        <a href="/tools/reconcile.html"><span>Reconciliation</span><span class="mini">variance & totals</span></a>
-        <a href="/tools/validator.html"><span>Schema Validator</span><span class="mini">rules & types</span></a>
-        <a href="/tools/cleaner.html"><span>Data Cleaner</span><span class="mini">dedupe & normalize</span></a>
-        <a href="/tools/outliers.html"><span>Outlier Finder</span><span class="mini">anomalies</span></a>
-        <a href="/tools/scheduler.html"><span>Scheduler</span><span class="mini">batch runs</span></a>
+<div style="height:10px"></div>
+<div style="font-weight:700">Quick links</div>
+<div class="list">
+<a href="/tools/compare.html"><span>Report Compare</span><span class="mini">diff by keys</span></a>
+<a href="/tools/reconcile.html"><span>Reconciliation</span><span class="mini">variance &amp; totals</span></a>
+<a href="/tools/validator.html"><span>Schema Validator</span><span class="mini">rules &amp; types</span></a>
+<a href="/tools/cleaner.html"><span>Data Cleaner</span><span class="mini">dedupe &amp; normalize</span></a>
+<a href="/tools/outliers.html"><span>Outlier Finder</span><span class="mini">anomalies</span></a>
+<a href="/tools/scheduler.html"><span>Scheduler</span><span class="mini">batch runs</span></a>
+</div>
+</aside>
+</section>
+<section class="card" style="margin-top:14px">
+<div style="font-weight:700">How consulting works (simple)</div>
+<div class="row">
+<div class="muted">
+<b>Step A:</b> Generate a case summary above.<br/>
+<b>Step B:</b> Run the recommended tool (right side) and capture the output screenshot or exported file.<br/>
+<b>Step C:</b> Share only what’s needed: a few rows + results + what you expected.
       </div>
-    </aside>
-  </section>
-
-  <section class="card" style="margin-top:14px">
-    <h2>How consulting works (simple)</h2>
-    <div class="row">
-      <div class="muted">
-        <b>Step A:</b> Generate a case summary above.<br/>
-        <b>Step B:</b> Run the recommended tool (right side) and capture the output screenshot or exported file.<br/>
-        <b>Step C:</b> Share only what’s needed: a few rows + results + what you expected.
-      </div>
-      <div class="muted">
+<div class="muted">
         Common root causes:
         <ul style="margin:8px 0 0 18px;line-height:1.4">
-          <li>Different filters/date ranges/timezones</li>
-          <li>Hidden duplicates / whitespace / casing</li>
-          <li>Schema drift (new columns / type changes)</li>
-          <li>Encoding issues (UTF‑8 vs ANSI), delimiter differences</li>
-          <li>Rounding rules / aggregation mismatch</li>
-        </ul>
-      </div>
-    </div>
-  </section>
+<li>Different filters/date ranges/timezones</li>
+<li>Hidden duplicates / whitespace / casing</li>
+<li>Schema drift (new columns / type changes)</li>
+<li>Encoding issues (UTF‑8 vs ANSI), delimiter differences</li>
+<li>Rounding rules / aggregation mismatch</li>
+</ul>
+</div>
+</div>
+</section>
 </main>
-
 <div class="toast" id="toast"></div>
-
 <script>
   const $ = (id) => document.getElementById(id);
   const toast = (msg) => {
