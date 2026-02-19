@@ -11,97 +11,176 @@
   <link rel="stylesheet" href="/assets/css/styles.css">
 
   <style>
-    /* Light page-level tweaks while keeping your global theme */
+/* Page-specific LIGHT theme overrides (keeps global layout, fixes "too dark") */
+:root{
+  --bg:#f6f8ff;
+  --card:#ffffff;
+  --text:#0b1220;
+  --muted:#475569;
+  --brand:#2563eb;
+  --brand2:#14b8a6;
+  --border:rgba(15,23,42,.14);
+  --shadow:0 14px 34px rgba(2,6,23,.10);
+  --radius:16px;
+}
 
-    /* Improved contrast + more professional sizing */
-    body{
-      background:
-        radial-gradient(1200px 600px at 18% 0%, rgba(59,130,246,.18), transparent 55%),
-        radial-gradient(900px 520px at 82% 10%, rgba(45,212,191,.14), transparent 52%),
-        linear-gradient(180deg, #0f172a 0%, #111c33 55%, #0b1220 100%);
-      color: rgba(235,244,255,.96);
-    }
-    .wrap{font-size:15px; line-height:1.45}
-    .hero h1{font-size:26px; letter-spacing:-.2px}
-    .sub{font-size:.98rem}
-    .card{
-      background:rgba(255,255,255,.055);
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow:0 10px 28px rgba(0,0,0,.28);
-    }
-    .card h2{font-size:15px}
-    .human-touch{
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.035)),
-        linear-gradient(180deg, rgba(45,212,191,.12), rgba(59,130,246,.06));
-      border:1px solid rgba(255,255,255,.12);
-      box-shadow:0 10px 26px rgba(0,0,0,.22);
-    }
-    .human-touch h2{font-size:15px}
-    .contact-card{
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.12);
-    }
-    .contact-card:hover{box-shadow:0 10px 22px rgba(0,0,0,.18)}
-    label{font-size:11.5px}
-    input[type="text"], input[type="email"], select, textarea{
-      padding:9px 10px;
-      font-size:13.5px;
-      background:rgba(255,255,255,.045);
-      border:1px solid rgba(255,255,255,.12);
-    }
-    .pill{background:rgba(255,255,255,.035); border-color:rgba(255,255,255,.12)}
-    .mini{font-size:11.5px}
-    .muted{font-size:11.5px}
-    .tiny{font-size:.90rem}
+body{
+  margin:0;
+  color:var(--text);
+  background:
+    radial-gradient(1100px 560px at 12% 0%, rgba(37,99,235,.14), transparent 55%),
+    radial-gradient(980px 540px at 88% 10%, rgba(20,184,166,.12), transparent 52%),
+    linear-gradient(180deg, #fbfcff 0%, #f3f6ff 50%, #eef2ff 100%);
+  min-height:100vh;
+}
 
-    .wrap{max-width:980px;margin:0 auto;padding:18px 14px 36px}
-    .hero{margin-top:18px}
-    .hero h1{margin:0 0 8px}
-    .sub{opacity:.9;max-width:72ch;line-height:1.45}
-    .grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}
-    @media (max-width: 960px){.grid{grid-template-columns:1fr}}
-    .card{background:var(--card,#0f1522);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px}
-    .card h2{margin:0 0 10px;font-size:16px}
-    label{display:block;font-size:12px;opacity:.9;margin:10px 0 6px}
-    input[type="text"], input[type="email"], select, textarea{
-      width:100%;
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:12px;
-      padding:10px 10px;
-      color:inherit;
-      outline:none;
-    }
-    textarea{min-height:120px;resize:vertical}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    @media (max-width: 640px){.row{grid-template-columns:1fr}}
-    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
-    .muted{font-size:12px;opacity:.8;line-height:1.35}
-    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03);margin:6px 0}
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
-    .preview{min-height:170px}
-    .k{opacity:.8}
-    .list a{display:flex;gap:10px;align-items:center;justify-content:space-between;text-decoration:none;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px;margin:8px 0;background:rgba(255,255,255,.03)}
-    .list a:hover{border-color:rgba(255,255,255,.18)}
-    .mini{font-size:12px;opacity:.85}
-    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:rgba(10,14,22,.92);border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:12px;display:none;max-width:92vw}
-  
-    .human-touch{margin:10px 0 12px;padding:14px;border-radius:16px;
-      background:linear-gradient(180deg, rgba(45,212,191,.12), rgba(59,130,246,.06));
-      border:1px solid rgba(255,255,255,.10)}
-    .human-touch h2{margin:0 0 8px;font-size:1.05rem}
-    .human-touch p{margin:0 0 10px;line-height:1.5;opacity:.95}
-    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
-    @media (max-width: 720px){.contact-grid{grid-template-columns:1fr}}
-    .contact-card{display:block;text-decoration:none;color:inherit;border-radius:14px;padding:12px 12px 10px;
-      background:rgba(15,21,34,.65);border:1px solid rgba(255,255,255,.10)}
-    .contact-card:hover{border-color:rgba(255,255,255,.22);transform:translateY(-1px)}
-    .contact-title{font-weight:700;margin-bottom:4px}
-    .contact-desc{opacity:.9;margin-bottom:8px}
-    .contact-cta{font-weight:700}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
-    .tiny{font-size:.92rem;opacity:.85;margin:0}
+header{
+  background: rgba(255,255,255,.78);
+  border-bottom:1px solid var(--border);
+  backdrop-filter: blur(10px);
+}
+
+/* Typography: smaller, more "product" */
+.wrap{max-width:980px;margin:0 auto;padding:18px 14px 40px; font-size:14.5px; line-height:1.5}
+.hero{margin-top:16px}
+.hero h1{margin:0 0 8px; font-size:30px; letter-spacing:-.2px}
+.sub{opacity:.95; max-width:74ch; line-height:1.55; color:var(--muted); font-size:14px; margin:0 0 12px}
+
+/* Buttons in header */
+.btn{
+  border:1px solid var(--border);
+  background: rgba(2,6,23,.02);
+  color:var(--text);
+  padding:9px 12px;
+  border-radius:12px;
+  font-weight:650;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+.btn.primary{
+  border:none;
+  background: linear-gradient(135deg, rgba(37,99,235,1), rgba(20,184,166,1));
+  color:white;
+  box-shadow: 0 10px 22px rgba(37,99,235,.18);
+}
+
+/* Layout */
+.grid{display:grid; grid-template-columns:1.25fr .75fr; gap:14px; margin-top:14px}
+@media (max-width: 960px){.grid{grid-template-columns:1fr}}
+.row{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+@media (max-width: 640px){.row{grid-template-columns:1fr}}
+.actions{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px}
+
+/* Cards: clearly distinct */
+.card{
+  background: rgba(255,255,255,.92);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:14px;
+  box-shadow: var(--shadow);
+}
+.card h2{margin:0 0 10px; font-size:15px}
+
+.human-touch{
+  margin:10px 0 12px;
+  padding:14px;
+  border-radius:16px;
+  background:
+    linear-gradient(180deg, rgba(37,99,235,.08), rgba(20,184,166,.06)),
+    linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.90));
+  border:1px solid rgba(37,99,235,.18);
+  box-shadow: 0 14px 34px rgba(2,6,23,.08);
+}
+.human-touch h2{margin:0 0 8px; font-size:15px}
+.human-touch p{margin:0 0 10px; color:rgba(15,23,42,.86)}
+
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 10px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background: rgba(2,6,23,.02);
+  margin:6px 0;
+  color:rgba(15,23,42,.78);
+}
+
+.contact-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0}
+@media (max-width: 720px){.contact-grid{grid-template-columns:1fr}}
+.contact-card{
+  display:block;
+  text-decoration:none;
+  color:inherit;
+  border-radius:14px;
+  padding:12px 12px 10px;
+  background: rgba(255,255,255,.94);
+  border:1px solid rgba(15,23,42,.14);
+  box-shadow: 0 10px 22px rgba(2,6,23,.06);
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.contact-card:hover{
+  transform: translateY(-1px);
+  border-color: rgba(37,99,235,.28);
+  box-shadow: 0 16px 30px rgba(2,6,23,.10);
+}
+.contact-title{font-weight:800; margin-bottom:4px}
+.contact-desc{opacity:.88; margin-bottom:8px; color:rgba(15,23,42,.78)}
+.contact-cta{font-weight:800; color:rgba(37,99,235,.92)}
+
+/* Form controls */
+label{display:block; font-size:11.5px; opacity:.95; margin:10px 0 6px; color:rgba(15,23,42,.80)}
+input[type="text"], input[type="email"], select, textarea{
+  width:100%;
+  background: rgba(255,255,255,.98);
+  border:1px solid rgba(15,23,42,.14);
+  border-radius:12px;
+  padding:9px 10px;
+  font-size:13.5px;
+  color:rgba(2,6,23,.92);
+  outline:none;
+  box-shadow: 0 6px 16px rgba(2,6,23,.04);
+}
+textarea{min-height:120px; resize:vertical}
+select{appearance:auto}
+
+.muted{font-size:11.5px; color:rgba(71,85,105,.95); line-height:1.45}
+.mini{font-size:11.5px}
+.tiny{font-size:.92rem; opacity:.9; margin:0; color:rgba(71,85,105,.98)}
+.mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+
+/* Sidebar quick links list */
+.list a{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:space-between;
+  text-decoration:none;
+  border:1px solid rgba(15,23,42,.14);
+  border-radius:12px;
+  padding:10px;
+  margin:8px 0;
+  background: rgba(248,250,252,.95);
+  box-shadow: 0 10px 22px rgba(2,6,23,.05);
+}
+.list a:hover{border-color: rgba(37,99,235,.26)}
+.toast{
+  position:fixed;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:18px;
+  background: rgba(255,255,255,.96);
+  color:rgba(2,6,23,.92);
+  border:1px solid rgba(15,23,42,.14);
+  padding:10px 12px;
+  border-radius:12px;
+  display:none;
+  max-width:92vw;
+  box-shadow: 0 18px 40px rgba(2,6,23,.14);
+}
 </style>
 </head>
 
@@ -122,31 +201,7 @@
 <main class="wrap">
   <section class="hero">
     <h1>Fix My Report</h1>
-    
-    <div class="human-touch">
-      <h2>Talk to a real ReportMedic (fast consulting help)</h2>
-      <p>
-        If you’re stuck with a <strong>report mismatch</strong>, <strong>totals not matching</strong>, <strong>CSV/Excel/PDF differences</strong>,
-        or confusing <strong>data validation</strong> errors, you don’t have to debug alone. Send a quick message and I’ll help you
-        pinpoint the cause (filters, joins, rounding, duplicates, encoding, hidden rows/columns) and suggest the cleanest fix.
-      </p>
-      <div class="contact-grid">
-        <a class="contact-card" href="https://t.me/ReportMedic" target="_blank" rel="noopener">
-          <div class="contact-title">Telegram</div>
-          <div class="contact-desc">Message me: <span class="mono">t.me/ReportMedic</span></div>
-          <div class="contact-cta">Open Telegram →</div>
-        </a>
-        <a class="contact-card" href="https://www.emailmeform.com/builder/form/damueNPp7fSz" target="_blank" rel="noopener">
-          <div class="contact-title">Email</div>
-          <div class="contact-desc">Send your case details via secure form</div>
-          <div class="contact-cta">Open email form →</div>
-        </a>
-      </div>
-      <p class="tiny">
-        Tip: Use the case builder below to create a clear “expected vs actual” summary — it speeds up report troubleshooting and consulting replies.
-      </p>
-    </div>
-<p class="sub">
+    <p class="sub">
       Tell me what’s wrong, what you expected, and what you’re seeing. This page generates a clean, copy‑paste “case summary”
       you can send for consulting help — no uploads required.
     </p>
