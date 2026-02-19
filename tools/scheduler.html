@@ -59,6 +59,7 @@
     .drop{border:1px dashed rgba(255,255,255,.20);border-radius:16px;padding:14px;background:rgba(0,0,0,.08)}
     .drop.drag{background:rgba(52,152,219,.10);border-color:rgba(52,152,219,.35)}
   </style>
+  <script defer src="/assets/js/rm-dropzone.js"></script>
 </head>
 <body>
 <header>
@@ -101,9 +102,12 @@
 <div class="row">
 <button class="btn" id="exportAll">Export all presets</button>
 <button class="btn" id="importAll">Import presets</button>
-<input accept=".json" id="importFile" style="display:none" type="file"/>
 <button class="btn danger" id="wipe">Reset local presets</button>
 </div>
+<div style="margin-top:10px;max-width:520px">
+  <input accept=".json" id="importFile" style="display:none" type="file" data-rm-dropzone-size="compact"/>
+</div>
+
 <div class="tiny muted" id="safetyNote">Safety: your file is read locally in your browser. Use Masker if you need to share samples.</div><div class="tiny muted" id="msg" style="margin-top:10px"></div>
 </div>
 <div class="card">

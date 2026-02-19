@@ -140,6 +140,7 @@
     .mutedInline{font-size:12px;color:var(--muted);margin:0;}
     .backRow{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;}
   </style>
+  <script defer src="/assets/js/rm-dropzone.js"></script>
 </head>
 <body>
 <header>
@@ -231,10 +232,9 @@
 <div class="sectionTitle" style="margin:0;">2) Change log (bullet-ready)</div>
 <div style="display:flex;gap:8px;flex-wrap:wrap;">
 <button class="iconBtn" id="addChangeBtn" type="button">+ Add change</button>
-<label class="iconBtn" style="cursor:pointer;">
-              Import CSV
-              <input accept=".csv,text/csv" id="csvFile" style="display:none;" type="file"/>
-</label>
+<div class="rm-import-dz" style="min-width:260px;flex:1;">
+              <input accept=".csv,text/csv" id="csvFile" style="display:none;" type="file" data-rm-dropzone-size="compact">
+            </div>
 </div>
 </div>
 <p class="tiny" style="margin-top:6px;">
