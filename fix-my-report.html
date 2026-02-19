@@ -43,7 +43,23 @@
     .list a:hover{border-color:rgba(255,255,255,.18)}
     .mini{font-size:12px;opacity:.85}
     .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:rgba(10,14,22,.92);border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:12px;display:none;max-width:92vw}
-  </style>
+  
+    .human-touch{margin:10px 0 12px;padding:14px;border-radius:16px;
+      background:linear-gradient(180deg, rgba(45,212,191,.12), rgba(59,130,246,.06));
+      border:1px solid rgba(255,255,255,.10)}
+    .human-touch h2{margin:0 0 8px;font-size:1.05rem}
+    .human-touch p{margin:0 0 10px;line-height:1.5;opacity:.95}
+    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+    @media (max-width: 720px){.contact-grid{grid-template-columns:1fr}}
+    .contact-card{display:block;text-decoration:none;color:inherit;border-radius:14px;padding:12px 12px 10px;
+      background:rgba(15,21,34,.65);border:1px solid rgba(255,255,255,.10)}
+    .contact-card:hover{border-color:rgba(255,255,255,.22);transform:translateY(-1px)}
+    .contact-title{font-weight:700;margin-bottom:4px}
+    .contact-desc{opacity:.9;margin-bottom:8px}
+    .contact-cta{font-weight:700}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .tiny{font-size:.92rem;opacity:.85;margin:0}
+</style>
 </head>
 
 <body>
@@ -63,7 +79,31 @@
 <main class="wrap">
   <section class="hero">
     <h1>Fix My Report</h1>
-    <p class="sub">
+    
+    <div class="human-touch">
+      <h2>Talk to a real ReportMedic (fast consulting help)</h2>
+      <p>
+        If you’re stuck with a <strong>report mismatch</strong>, <strong>totals not matching</strong>, <strong>CSV/Excel/PDF differences</strong>,
+        or confusing <strong>data validation</strong> errors, you don’t have to debug alone. Send a quick message and I’ll help you
+        pinpoint the cause (filters, joins, rounding, duplicates, encoding, hidden rows/columns) and suggest the cleanest fix.
+      </p>
+      <div class="contact-grid">
+        <a class="contact-card" href="https://t.me/ReportMedic" target="_blank" rel="noopener">
+          <div class="contact-title">Telegram</div>
+          <div class="contact-desc">Message me: <span class="mono">t.me/ReportMedic</span></div>
+          <div class="contact-cta">Open Telegram →</div>
+        </a>
+        <a class="contact-card" href="https://www.emailmeform.com/builder/form/damueNPp7fSz" target="_blank" rel="noopener">
+          <div class="contact-title">Email</div>
+          <div class="contact-desc">Send your case details via secure form</div>
+          <div class="contact-cta">Open email form →</div>
+        </a>
+      </div>
+      <p class="tiny">
+        Tip: Use the case builder below to create a clear “expected vs actual” summary — it speeds up report troubleshooting and consulting replies.
+      </p>
+    </div>
+<p class="sub">
       Tell me what’s wrong, what you expected, and what you’re seeing. This page generates a clean, copy‑paste “case summary”
       you can send for consulting help — no uploads required.
     </p>
