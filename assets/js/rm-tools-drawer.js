@@ -2,16 +2,17 @@
    Keeps navigation lightweight and consistent with the home page. */
 (function(){
   const tools = [
-    { id:"compare",   name:"Report Compare",       desc:"Compare two reports and highlight diffs by key fields." },
-    { id:"reconcile", name:"Reconciliation",       desc:"Match totals, track variance, and explain gaps." },
-    { id:"cleaner",   name:"Data Cleaner",         desc:"Trim, normalize, dedupe, fix dates, and standardize formats." },
-    { id:"validator", name:"Schema Validator",     desc:"Validate required fields, types, ranges, and null rules." },
-    { id:"outliers",  name:"Outlier Finder",       desc:"Detect spikes, anomalies, and suspicious rows fast." },
-    { id:"pivot",     name:"Quick Pivot",          desc:"Instant pivot tables & group summaries (counts/sums/avg)." },
-    { id:"audit",     name:"Audit Trail Notes",    desc:"Generate audit-ready explanations and change notes." },
-    { id:"mask",      name:"PII Masker",           desc:"Mask sensitive fields for safe sharing." },
-    { id:"export",    name:"Export Studio",        desc:"Export cleaned/merged results as CSV/XLSX + summary." },
-    { id:"scheduler", name:"Run Scheduler",        desc:"Save a run config and repeat it on new files." },
+    // Icons match the home page drawer for consistency.
+    { id:"compare",   name:"Report Compare",    icon:"≋", desc:"Compare two reports and highlight diffs by key fields." },
+    { id:"reconcile", name:"Reconciliation",    icon:"✓", desc:"Match totals, track variance, and explain gaps." },
+    { id:"cleaner",   name:"Data Cleaner",      icon:"✦", desc:"Trim, normalize, dedupe, fix dates, and standardize formats." },
+    { id:"validator", name:"Schema Validator",  icon:"⊢", desc:"Validate required fields, types, ranges, and null rules." },
+    { id:"outliers",  name:"Outlier Finder",    icon:"⚡", desc:"Detect spikes, anomalies, and suspicious rows fast." },
+    { id:"pivot",     name:"Quick Pivot",       icon:"▦", desc:"Instant pivot tables & group summaries (counts/sums/avg)." },
+    { id:"audit",     name:"Audit Trail Notes", icon:"✎", desc:"Generate audit-ready explanations and change notes." },
+    { id:"mask",      name:"PII Masker",        icon:"◎", desc:"Mask sensitive fields for safe sharing." },
+    { id:"export",    name:"Export Studio",     icon:"⇣", desc:"Export cleaned/merged results as CSV/XLSX + summary." },
+    { id:"scheduler", name:"Run Scheduler",     icon:"⏱", desc:"Save a run config and repeat it on new files." },
   ];
 
   const routes = {
@@ -75,6 +76,7 @@
     tools.forEach(t=>{
       const a = el("a", { class:"drawerRow", href: routes[t.id] || "#", "data-tool": t.id });
       a.innerHTML = `
+        <div class="drawerIcon" aria-hidden="true">${t.icon || ""}</div>
         <div style="min-width:0">
           <div class="rTitle">${t.name}</div>
           <div class="rDesc">${t.desc}</div>
