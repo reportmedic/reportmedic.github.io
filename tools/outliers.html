@@ -50,6 +50,24 @@
   </style>
   <script defer src="/assets/js/rm-dropzone.js"></script>
   <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+<style>
+/* ReportMedic Learn-more modal (lightweight, page-local) */
+.rm-lm-link{font-size:.9rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+.rm-lm-link:hover{opacity:1;}
+.rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;}
+.rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+.rm-lm-dialog{max-width:560px; width:100%; background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.25); overflow:hidden;}
+.rm-lm-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08);}
+.rm-lm-title{margin:0; font-size:1.05rem;}
+.rm-lm-close{border:0; background:transparent; font-size:1.25rem; line-height:1; padding:6px 10px; cursor:pointer; opacity:.7;}
+.rm-lm-close:hover{opacity:1;}
+.rm-lm-body{padding:14px 16px;}
+.rm-lm-body h3{margin:12px 0 6px; font-size:.95rem;}
+.rm-lm-body ul{margin:0 0 6px 18px;}
+.rm-lm-body li{margin:4px 0;}
+</style>
+
 </head>
 <body class="tools-page">
 <header>
@@ -65,33 +83,8 @@
 </div></header>
 <div class="wrap">
 <div class="panel">
-<h1>Outlier Finder</h1>
-<section class="rm-explain" aria-label="How this helps">
-  <div class="rm-explain-grid">
-    <div class="rm-explain-card">
-      <h2>What this helps with</h2>
-      <ul>
-        <li>Detect unusual values or spikes</li><li>Spot anomalies by column</li><li>Flag extreme or unexpected records</li><li>Support metric swing investigations</li>
-      </ul>
-    </div>
-    <div class="rm-explain-card">
-      <h2>Common causes</h2>
-      <ul>
-        <li>Bad joins or duplicate records</li><li>Partial loads or missing partitions</li><li>Unit/scale issues (cents vs dollars)</li>
-      </ul>
-    </div>
-    <div class="rm-explain-card">
-      <h2>What to do next</h2>
-      <ol>
-        <li>Use this when totals swing unexpectedly</li><li>Validate schema + required fields too</li><li>Reconcile to isolate mismatching records</li>
-      </ol>
-      <div class="rm-explain-cta">
-        <a class="btn primary" href="/fix-my-report.html">Fix My Report</a>
-        <a class="btn ghost" href="/">All tools</a>
-      </div>
-    </div>
-  </div>
-</section>
+<h1>Outlier Finder <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+
 
 <p class="sub">Detect anomalies that create work anxiety — spikes, duplicates, and suspicious rows you can investigate before anyone else does.</p>
 <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
@@ -738,6 +731,80 @@
     <div class="rm-footer-meta">© 2026 ReportMedic</div>
   </div>
 </footer>
+
+
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Outlier Finder &lt;a href=&quot;#&quot; class=&quot;rm-lm-link&quot; data-rm-lm-open=&quot;rmLM&quot;&gt;&lt;/a&gt; details">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Outlier Finder &lt;a href=&quot;#&quot; class=&quot;rm-lm-link&quot; data-rm-lm-open=&quot;rmLM&quot;&gt;&lt;/a&gt;</h2>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Detect spikes, drops, and unusual values</li>
+<li>Find rows that break expected ranges</li>
+<li>Spot data quality anomalies quickly</li>
+<li>Prioritize where to investigate first</li>
+      </ul>
+
+      <h3>Common causes</h3>
+      <ul>
+        <li>Upstream load issues or partial refresh</li>
+<li>Bad joins creating inflated counts</li>
+<li>Unit/scale changes (%, dollars, decimals)</li>
+      </ul>
+
+      <h3>What to do next</h3>
+      <ul>
+        <li>Validate outliers against source system</li>
+<li>Use Audit notes to record findings</li>
+<li>Run Schema Validator if columns look wrong</li>
+<li>If you need guidance, use Fix My Report</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<script>
+(function(){
+  function openLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','false');
+    const btn=bd.querySelector('.rm-lm-close');
+    if(btn) btn.focus();
+  }
+  function closeLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','true');
+  }
+  document.addEventListener('click', function(e){
+    const a=e.target.closest('[data-rm-lm-open]');
+    if(a){
+      e.preventDefault();
+      openLM(a.getAttribute('data-rm-lm-open'));
+      return;
+    }
+    const close=e.target.closest('[data-rm-lm-close]');
+    if(close){
+      e.preventDefault();
+      closeLM(close.getAttribute('data-rm-lm-close'));
+      return;
+    }
+    const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+    if(bd){
+      closeLM(bd.id);
+    }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute('aria-hidden','true'));
+  });
+})();
+</script>
 
 </body>
 </html>
