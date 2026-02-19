@@ -34,6 +34,14 @@
     @media (max-width:620px){.grid2{grid-template-columns:1fr;}}
     .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
     @media (max-width:820px){.grid3{grid-template-columns:1fr;}}
+
+    /* Cleaner, predictable layout for section 1 + 2 */
+    .auditGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+    @media (max-width:820px){.auditGrid{grid-template-columns:1fr;}}
+    .auditSpan2{grid-column:1 / -1;}
+    .changeHeader{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;}
+    @media (max-width:720px){.changeHeader{grid-template-columns:1fr;}}
+    .rm-import-dz{width:100%;}
     label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px;}
     input[type="text"], input[type="date"], input[type="time"], textarea, select{
       width:100%;
@@ -175,67 +183,66 @@
 <!-- FORM -->
 <div class="formCard">
 <div class="sectionTitle">1) Header details</div>
-<div class="grid2">
-<div class="row">
-<label for="org">Organization / Team</label>
-<input id="org" placeholder="e.g., Finance Analytics" type="text"/>
-</div>
-<div class="row">
-<label for="system">System / Report / Dataset</label>
-<input id="system" placeholder="e.g., Monthly Revenue Report (REV-01)" type="text"/>
-</div>
-</div>
-<div class="grid3">
-<div class="row">
-<label for="period">Period / Cutoff</label>
-<input id="period" placeholder="e.g., Jan 2026 close" type="text"/>
-</div>
-<div class="row">
-<label for="changeDate">Change date</label>
-<input id="changeDate" type="date"/>
-</div>
-<div class="row">
-<label for="ticket">Ticket / Reference</label>
-<input id="ticket" placeholder="e.g., JIRA-1234 / INC0007" type="text"/>
-</div>
-</div>
-<div class="grid3">
-<div class="row">
-<label for="preparedBy">Prepared by</label>
-<input id="preparedBy" placeholder="Name" type="text"/>
-</div>
-<div class="row">
-<label for="reviewedBy">Reviewed by</label>
-<input id="reviewedBy" placeholder="Name" type="text"/>
-</div>
-<div class="row">
-<label for="changeType">Change type</label>
-<!-- Datalist gives suggested options but still allows custom -->
-<input id="changeType" list="changeTypeList" placeholder="e.g., Correction" type="text"/>
-<datalist id="changeTypeList">
-<option value="Correction"></option>
-<option value="Restatement"></option>
-<option value="Enhancement"></option>
-<option value="Policy/Logic Update"></option>
-<option value="Data Refresh"></option>
-<option value="Backfill"></option>
-<option value="Other"></option>
-</datalist>
-</div>
-</div>
-<div class="row">
-<label for="summary">Summary (1–2 sentences)</label>
-<textarea id="summary" placeholder="What changed, why, and what it impacts — in plain language."></textarea>
+<div class="auditGrid">
+  <div class="row">
+    <label for="org">Organization / Team</label>
+    <input id="org" placeholder="e.g., Finance Analytics" type="text"/>
+  </div>
+  <div class="row">
+    <label for="system">System / Report / Dataset</label>
+    <input id="system" placeholder="e.g., Monthly Revenue Report (REV-01)" type="text"/>
+  </div>
+
+  <div class="row">
+    <label for="period">Period / Cutoff</label>
+    <input id="period" placeholder="e.g., Jan 2026 close" type="text"/>
+  </div>
+  <div class="row">
+    <label for="changeDate">Change date</label>
+    <input id="changeDate" type="date"/>
+  </div>
+
+  <div class="row">
+    <label for="ticket">Ticket / Reference</label>
+    <input id="ticket" placeholder="e.g., JIRA-1234 / INC0007" type="text"/>
+  </div>
+  <div class="row">
+    <label for="changeType">Change type</label>
+    <input id="changeType" list="changeTypeList" placeholder="e.g., Correction" type="text"/>
+    <datalist id="changeTypeList">
+      <option value="Correction"></option>
+      <option value="Restatement"></option>
+      <option value="Enhancement"></option>
+      <option value="Policy/Logic Update"></option>
+      <option value="Data Refresh"></option>
+      <option value="Backfill"></option>
+      <option value="Other"></option>
+    </datalist>
+  </div>
+
+  <div class="row">
+    <label for="preparedBy">Prepared by</label>
+    <input id="preparedBy" placeholder="Name" type="text"/>
+  </div>
+  <div class="row">
+    <label for="reviewedBy">Reviewed by</label>
+    <input id="reviewedBy" placeholder="Name" type="text"/>
+  </div>
+
+  <div class="row auditSpan2">
+    <label for="summary">Summary (1–2 sentences)</label>
+    <textarea id="summary" placeholder="What changed, why, and what it impacts — in plain language."></textarea>
+  </div>
 </div>
 <div class="hr2"></div>
-<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
-<div class="sectionTitle" style="margin:0;">2) Change log (bullet-ready)</div>
-<div style="display:flex;gap:8px;flex-wrap:wrap;">
-<button class="iconBtn" id="addChangeBtn" type="button">+ Add change</button>
-<div class="rm-import-dz" style="min-width:260px;flex:1;">
-              <input accept=".csv,text/csv" id="csvFile" style="display:none;" type="file" data-rm-dropzone-size="compact">
-            </div>
+<div class="changeHeader">
+  <div class="sectionTitle" style="margin:0;">2) Change log (bullet-ready)</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+    <button class="iconBtn" id="addChangeBtn" type="button">+ Add change</button>
+  </div>
 </div>
+<div class="rm-import-dz" style="margin-top:10px;">
+  <input accept=".csv,text/csv" data-rm-dropzone-size="compact" id="csvFile" style="display:none;" type="file"/>
 </div>
 <p class="tiny" style="margin-top:6px;">
           CSV format: <span class="kbd">field,from,to,reason</span> (header row optional). Example: Region,APAC,APJ,Standardized naming
