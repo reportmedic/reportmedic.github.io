@@ -370,3 +370,16 @@ textarea{min-height:120px; resize:vertical;}
 .drawerRow .rDesc{ color:var(--muted); font-size:12px; margin-top:3px; line-height:1.35; }
 .drawerRow.active{ border-color:rgba(110,168,255,.45); background:rgba(110,168,255,.06); }
 .rmNoScroll{ overflow:hidden; }
+
+
+/* Mobile nav button visibility tweaks */
+@media (max-width:640px){
+  /* Home page: hide Start with a report on very small screens */
+  #navStartReport{ display:none !important; }
+
+  /* Tools pages: hide Home button in top nav */
+  body.tools-page .nav a.btn[href="/"]{ display:none !important; }
+
+  /* Fix-my-report page: hide its self-link button on mobile */
+  #navFixMyReport{ display:none !important; }
+}
