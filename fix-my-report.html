@@ -10,163 +10,47 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/css/styles.css">
 
-  <style>
-    /* Dark (not gloomy) consulting page tweaks while keeping your global theme */
-
-    :root{
-      --rm-bg-top:#152238;      /* deep slate */
-      --rm-bg-mid:#0f1a2b;      /* navy slate */
-      --rm-bg-bot:#0b1220;      /* near-black */
-      --rm-card:rgba(255,255,255,.08);
-      --rm-card-2:rgba(255,255,255,.06);
-      --rm-border:rgba(255,255,255,.14);
-      --rm-border-2:rgba(255,255,255,.18);
-      --rm-text:rgba(238,246,255,.96);
-      --rm-muted:rgba(238,246,255,.78);
-    }
-
-    body{
-      background:
-        radial-gradient(1200px 640px at 18% 0%, rgba(96,165,250,.22), transparent 60%),
-        radial-gradient(980px 560px at 85% 12%, rgba(94,234,212,.18), transparent 58%),
-        radial-gradient(760px 520px at 55% 95%, rgba(167,139,250,.14), transparent 60%),
-        linear-gradient(180deg, var(--rm-bg-top) 0%, var(--rm-bg-mid) 55%, var(--rm-bg-bot) 100%);
-      color: var(--rm-text);
-    }
-
-    /* More professional sizing */
-    .wrap{font-size:14.5px; line-height:1.5; max-width:980px;margin:0 auto;padding:18px 14px 36px}
+    <style>
+    /* Page-specific layout only (theme + typography come from /assets/css/styles.css) */
+    .wrap{max-width:980px;margin:0 auto;padding:18px 14px 36px}
     .hero{margin-top:18px}
-    .hero h1{margin:0 0 8px; font-size:25px; letter-spacing:-.2px}
-    .sub{font-size:.96rem; opacity:.92; max-width:74ch; line-height:1.5}
+    .hero h1{margin:0 0 8px}
+    .sub{max-width:74ch}
 
-    /* Card system with clear separation */
     .grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}
     @media (max-width: 960px){.grid{grid-template-columns:1fr}}
 
-    .card{
-      background:var(--rm-card);
-      border:1px solid var(--rm-border);
-      border-radius:16px;
-      padding:14px;
-      box-shadow:0 10px 26px rgba(0,0,0,.24);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-    }
-    /* Make the right sidebar feel distinct */
-    aside.card{
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.05)),
-        radial-gradient(520px 320px at 30% 0%, rgba(96,165,250,.14), transparent 60%);
-      border-color: var(--rm-border-2);
-    }
-    /* Make the bottom consulting section distinct */
-    main .card[style*="margin-top"]{
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.045)),
-        radial-gradient(700px 280px at 20% 0%, rgba(94,234,212,.12), transparent 65%);
-      border-color: var(--rm-border-2);
-    }
-
-    .card h2{margin:0 0 10px; font-size:15px; color: rgba(246,250,255,.98)}
-
-    /* Human-touch block: brighter + clearly separate */
-    .human-touch{
-      margin:10px 0 12px;
-      padding:14px;
-      border-radius:16px;
-      background:
-        linear-gradient(180deg, rgba(94,234,212,.18), rgba(96,165,250,.10)),
-        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.04));
-      border:1px solid rgba(255,255,255,.20);
-      box-shadow:0 10px 24px rgba(0,0,0,.18);
-    }
-    .human-touch h2{margin:0 0 8px; font-size:15px}
-    .human-touch p{margin:0 0 10px; line-height:1.55; color: var(--rm-muted)}
-
-    /* Contact cards: lighter + distinct hover */
+    .human-touch{margin:10px 0 12px;padding:14px;border-radius:16px}
+    .human-touch h2{margin:0 0 8px}
+    .human-touch p{margin:0 0 10px}
     .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
     @media (max-width: 720px){.contact-grid{grid-template-columns:1fr}}
-    .contact-card{
-      display:block;
-      text-decoration:none;
-      color:inherit;
-      border-radius:14px;
-      padding:12px 12px 10px;
-      background: rgba(15, 24, 40, .55);
-      border:1px solid rgba(255,255,255,.16);
-      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
-    }
-    .contact-card:hover{
-      border-color: rgba(255,255,255,.28);
-      box-shadow:0 12px 26px rgba(0,0,0,.20);
-      transform: translateY(-1px);
-    }
+    .contact-card{display:block;text-decoration:none;color:inherit;border-radius:14px;padding:12px 12px 10px}
     .contact-title{font-weight:800;margin-bottom:4px}
-    .contact-desc{opacity:.9;margin-bottom:8px}
+    .contact-desc{margin-bottom:8px}
     .contact-cta{font-weight:800}
 
-    /* Form controls */
-    label{display:block;font-size:11.5px;opacity:.9;margin:10px 0 6px}
-    input[type="text"], input[type="email"], select, textarea{
-      width:100%;
-      padding:9px 10px;
-      font-size:13.25px;
-      background: rgba(255,255,255,.07);
-      border:1px solid rgba(255,255,255,.16);
-      border-radius:12px;
-      color:inherit;
-      outline:none;
-    }
-    input[type="text"]:focus, input[type="email"]:focus, select:focus, textarea:focus{
-      border-color: rgba(96,165,250,.55);
-      box-shadow: 0 0 0 3px rgba(96,165,250,.16);
-    }
-    textarea{min-height:120px;resize:vertical}
-
+    label{display:block;font-size:12px;margin:10px 0 6px}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     @media (max-width: 640px){.row{grid-template-columns:1fr}}
-
     .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
 
-    /* Small text */
-    .mini{font-size:11.5px}
-    .muted{font-size:11.5px;opacity:.82;line-height:1.4}
-    .tiny{font-size:.92rem;opacity:.88;margin:0}
+    .mini{font-size:12px}
+    .muted{font-size:12px;line-height:1.4}
+    .tiny{font-size:.95rem;margin:0}
 
-    /* Pills + lists */
-    .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 10px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.16);
-      background:rgba(255,255,255,.06);
-      margin:6px 0
-    }
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;margin:6px 0}
     .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
 
-    .list a{
-      display:flex;gap:10px;align-items:center;justify-content:space-between;
-      text-decoration:none;
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:12px;
-      padding:10px;
-      margin:8px 0;
-      background:rgba(255,255,255,.05);
-      transition: border-color .12s ease, transform .12s ease;
-    }
-    .list a:hover{border-color:rgba(255,255,255,.26); transform: translateY(-1px)}
-
+    .list a{display:flex;gap:10px;align-items:center;justify-content:space-between;text-decoration:none;border-radius:12px;padding:10px;margin:8px 0}
     .preview{min-height:170px}
-    .k{opacity:.86}
 
     .toast{
       position:fixed;left:50%;transform:translateX(-50%);
-      bottom:18px; background:rgba(12,18,30,.92);
-      border:1px solid rgba(255,255,255,.16);
-      padding:10px 12px;border-radius:12px;
+      bottom:18px; padding:10px 12px;border-radius:12px;
       display:none; max-width:92vw
     }
-</style>
+  </style>
 </head>
 
 <body>
