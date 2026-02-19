@@ -354,8 +354,11 @@ textarea{min-height:120px; resize:vertical;}
   width:32px;
   height:32px;
   border-radius:12px;
-  border:1px solid var(--border);
-  background:rgba(255,255,255,.04);
+  /* Match home page icon styling (blue accent) */
+  background: rgba(110,168,255,.12);
+  border:1px solid rgba(110,168,255,.24);
+  color: var(--brand);
+  font-weight:800;
   display:flex;
   align-items:center;
   justify-content:center;
