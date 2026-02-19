@@ -11,176 +11,161 @@
   <link rel="stylesheet" href="/assets/css/styles.css">
 
   <style>
-/* Page-specific LIGHT theme overrides (keeps global layout, fixes "too dark") */
-:root{
-  --bg:#f6f8ff;
-  --card:#ffffff;
-  --text:#0b1220;
-  --muted:#475569;
-  --brand:#2563eb;
-  --brand2:#14b8a6;
-  --border:rgba(15,23,42,.14);
-  --shadow:0 14px 34px rgba(2,6,23,.10);
-  --radius:16px;
-}
+    /* Dark (not gloomy) consulting page tweaks while keeping your global theme */
 
-body{
-  margin:0;
-  color:var(--text);
-  background:
-    radial-gradient(1100px 560px at 12% 0%, rgba(37,99,235,.14), transparent 55%),
-    radial-gradient(980px 540px at 88% 10%, rgba(20,184,166,.12), transparent 52%),
-    linear-gradient(180deg, #fbfcff 0%, #f3f6ff 50%, #eef2ff 100%);
-  min-height:100vh;
-}
+    :root{
+      --rm-bg-top:#152238;      /* deep slate */
+      --rm-bg-mid:#0f1a2b;      /* navy slate */
+      --rm-bg-bot:#0b1220;      /* near-black */
+      --rm-card:rgba(255,255,255,.08);
+      --rm-card-2:rgba(255,255,255,.06);
+      --rm-border:rgba(255,255,255,.14);
+      --rm-border-2:rgba(255,255,255,.18);
+      --rm-text:rgba(238,246,255,.96);
+      --rm-muted:rgba(238,246,255,.78);
+    }
 
-header{
-  background: rgba(255,255,255,.78);
-  border-bottom:1px solid var(--border);
-  backdrop-filter: blur(10px);
-}
+    body{
+      background:
+        radial-gradient(1200px 640px at 18% 0%, rgba(96,165,250,.22), transparent 60%),
+        radial-gradient(980px 560px at 85% 12%, rgba(94,234,212,.18), transparent 58%),
+        radial-gradient(760px 520px at 55% 95%, rgba(167,139,250,.14), transparent 60%),
+        linear-gradient(180deg, var(--rm-bg-top) 0%, var(--rm-bg-mid) 55%, var(--rm-bg-bot) 100%);
+      color: var(--rm-text);
+    }
 
-/* Typography: smaller, more "product" */
-.wrap{max-width:980px;margin:0 auto;padding:18px 14px 40px; font-size:14.5px; line-height:1.5}
-.hero{margin-top:16px}
-.hero h1{margin:0 0 8px; font-size:30px; letter-spacing:-.2px}
-.sub{opacity:.95; max-width:74ch; line-height:1.55; color:var(--muted); font-size:14px; margin:0 0 12px}
+    /* More professional sizing */
+    .wrap{font-size:14.5px; line-height:1.5; max-width:980px;margin:0 auto;padding:18px 14px 36px}
+    .hero{margin-top:18px}
+    .hero h1{margin:0 0 8px; font-size:25px; letter-spacing:-.2px}
+    .sub{font-size:.96rem; opacity:.92; max-width:74ch; line-height:1.5}
 
-/* Buttons in header */
-.btn{
-  border:1px solid var(--border);
-  background: rgba(2,6,23,.02);
-  color:var(--text);
-  padding:9px 12px;
-  border-radius:12px;
-  font-weight:650;
-  text-decoration:none;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-}
-.btn.primary{
-  border:none;
-  background: linear-gradient(135deg, rgba(37,99,235,1), rgba(20,184,166,1));
-  color:white;
-  box-shadow: 0 10px 22px rgba(37,99,235,.18);
-}
+    /* Card system with clear separation */
+    .grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}
+    @media (max-width: 960px){.grid{grid-template-columns:1fr}}
 
-/* Layout */
-.grid{display:grid; grid-template-columns:1.25fr .75fr; gap:14px; margin-top:14px}
-@media (max-width: 960px){.grid{grid-template-columns:1fr}}
-.row{display:grid; grid-template-columns:1fr 1fr; gap:10px}
-@media (max-width: 640px){.row{grid-template-columns:1fr}}
-.actions{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px}
+    .card{
+      background:var(--rm-card);
+      border:1px solid var(--rm-border);
+      border-radius:16px;
+      padding:14px;
+      box-shadow:0 10px 26px rgba(0,0,0,.24);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    /* Make the right sidebar feel distinct */
+    aside.card{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.05)),
+        radial-gradient(520px 320px at 30% 0%, rgba(96,165,250,.14), transparent 60%);
+      border-color: var(--rm-border-2);
+    }
+    /* Make the bottom consulting section distinct */
+    main .card[style*="margin-top"]{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.045)),
+        radial-gradient(700px 280px at 20% 0%, rgba(94,234,212,.12), transparent 65%);
+      border-color: var(--rm-border-2);
+    }
 
-/* Cards: clearly distinct */
-.card{
-  background: rgba(255,255,255,.92);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:14px;
-  box-shadow: var(--shadow);
-}
-.card h2{margin:0 0 10px; font-size:15px}
+    .card h2{margin:0 0 10px; font-size:15px; color: rgba(246,250,255,.98)}
 
-.human-touch{
-  margin:10px 0 12px;
-  padding:14px;
-  border-radius:16px;
-  background:
-    linear-gradient(180deg, rgba(37,99,235,.08), rgba(20,184,166,.06)),
-    linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.90));
-  border:1px solid rgba(37,99,235,.18);
-  box-shadow: 0 14px 34px rgba(2,6,23,.08);
-}
-.human-touch h2{margin:0 0 8px; font-size:15px}
-.human-touch p{margin:0 0 10px; color:rgba(15,23,42,.86)}
+    /* Human-touch block: brighter + clearly separate */
+    .human-touch{
+      margin:10px 0 12px;
+      padding:14px;
+      border-radius:16px;
+      background:
+        linear-gradient(180deg, rgba(94,234,212,.18), rgba(96,165,250,.10)),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.04));
+      border:1px solid rgba(255,255,255,.20);
+      box-shadow:0 10px 24px rgba(0,0,0,.18);
+    }
+    .human-touch h2{margin:0 0 8px; font-size:15px}
+    .human-touch p{margin:0 0 10px; line-height:1.55; color: var(--rm-muted)}
 
-.pill{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 10px;
-  border-radius:999px;
-  border:1px solid var(--border);
-  background: rgba(2,6,23,.02);
-  margin:6px 0;
-  color:rgba(15,23,42,.78);
-}
+    /* Contact cards: lighter + distinct hover */
+    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+    @media (max-width: 720px){.contact-grid{grid-template-columns:1fr}}
+    .contact-card{
+      display:block;
+      text-decoration:none;
+      color:inherit;
+      border-radius:14px;
+      padding:12px 12px 10px;
+      background: rgba(15, 24, 40, .55);
+      border:1px solid rgba(255,255,255,.16);
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+    .contact-card:hover{
+      border-color: rgba(255,255,255,.28);
+      box-shadow:0 12px 26px rgba(0,0,0,.20);
+      transform: translateY(-1px);
+    }
+    .contact-title{font-weight:800;margin-bottom:4px}
+    .contact-desc{opacity:.9;margin-bottom:8px}
+    .contact-cta{font-weight:800}
 
-.contact-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0}
-@media (max-width: 720px){.contact-grid{grid-template-columns:1fr}}
-.contact-card{
-  display:block;
-  text-decoration:none;
-  color:inherit;
-  border-radius:14px;
-  padding:12px 12px 10px;
-  background: rgba(255,255,255,.94);
-  border:1px solid rgba(15,23,42,.14);
-  box-shadow: 0 10px 22px rgba(2,6,23,.06);
-  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
-}
-.contact-card:hover{
-  transform: translateY(-1px);
-  border-color: rgba(37,99,235,.28);
-  box-shadow: 0 16px 30px rgba(2,6,23,.10);
-}
-.contact-title{font-weight:800; margin-bottom:4px}
-.contact-desc{opacity:.88; margin-bottom:8px; color:rgba(15,23,42,.78)}
-.contact-cta{font-weight:800; color:rgba(37,99,235,.92)}
+    /* Form controls */
+    label{display:block;font-size:11.5px;opacity:.9;margin:10px 0 6px}
+    input[type="text"], input[type="email"], select, textarea{
+      width:100%;
+      padding:9px 10px;
+      font-size:13.25px;
+      background: rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:12px;
+      color:inherit;
+      outline:none;
+    }
+    input[type="text"]:focus, input[type="email"]:focus, select:focus, textarea:focus{
+      border-color: rgba(96,165,250,.55);
+      box-shadow: 0 0 0 3px rgba(96,165,250,.16);
+    }
+    textarea{min-height:120px;resize:vertical}
 
-/* Form controls */
-label{display:block; font-size:11.5px; opacity:.95; margin:10px 0 6px; color:rgba(15,23,42,.80)}
-input[type="text"], input[type="email"], select, textarea{
-  width:100%;
-  background: rgba(255,255,255,.98);
-  border:1px solid rgba(15,23,42,.14);
-  border-radius:12px;
-  padding:9px 10px;
-  font-size:13.5px;
-  color:rgba(2,6,23,.92);
-  outline:none;
-  box-shadow: 0 6px 16px rgba(2,6,23,.04);
-}
-textarea{min-height:120px; resize:vertical}
-select{appearance:auto}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width: 640px){.row{grid-template-columns:1fr}}
 
-.muted{font-size:11.5px; color:rgba(71,85,105,.95); line-height:1.45}
-.mini{font-size:11.5px}
-.tiny{font-size:.92rem; opacity:.9; margin:0; color:rgba(71,85,105,.98)}
-.mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
 
-/* Sidebar quick links list */
-.list a{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  justify-content:space-between;
-  text-decoration:none;
-  border:1px solid rgba(15,23,42,.14);
-  border-radius:12px;
-  padding:10px;
-  margin:8px 0;
-  background: rgba(248,250,252,.95);
-  box-shadow: 0 10px 22px rgba(2,6,23,.05);
-}
-.list a:hover{border-color: rgba(37,99,235,.26)}
-.toast{
-  position:fixed;
-  left:50%;
-  transform:translateX(-50%);
-  bottom:18px;
-  background: rgba(255,255,255,.96);
-  color:rgba(2,6,23,.92);
-  border:1px solid rgba(15,23,42,.14);
-  padding:10px 12px;
-  border-radius:12px;
-  display:none;
-  max-width:92vw;
-  box-shadow: 0 18px 40px rgba(2,6,23,.14);
-}
+    /* Small text */
+    .mini{font-size:11.5px}
+    .muted{font-size:11.5px;opacity:.82;line-height:1.4}
+    .tiny{font-size:.92rem;opacity:.88;margin:0}
+
+    /* Pills + lists */
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.06);
+      margin:6px 0
+    }
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+
+    .list a{
+      display:flex;gap:10px;align-items:center;justify-content:space-between;
+      text-decoration:none;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:12px;
+      padding:10px;
+      margin:8px 0;
+      background:rgba(255,255,255,.05);
+      transition: border-color .12s ease, transform .12s ease;
+    }
+    .list a:hover{border-color:rgba(255,255,255,.26); transform: translateY(-1px)}
+
+    .preview{min-height:170px}
+    .k{opacity:.86}
+
+    .toast{
+      position:fixed;left:50%;transform:translateX(-50%);
+      bottom:18px; background:rgba(12,18,30,.92);
+      border:1px solid rgba(255,255,255,.16);
+      padding:10px 12px;border-radius:12px;
+      display:none; max-width:92vw
+    }
 </style>
 </head>
 
@@ -201,7 +186,31 @@ select{appearance:auto}
 <main class="wrap">
   <section class="hero">
     <h1>Fix My Report</h1>
-    <p class="sub">
+    
+    <div class="human-touch">
+      <h2>Talk to a real ReportMedic (fast consulting help)</h2>
+      <p>
+        If you’re stuck with a <strong>report mismatch</strong>, <strong>totals not matching</strong>, <strong>CSV/Excel/PDF differences</strong>,
+        or confusing <strong>data validation</strong> errors, you don’t have to debug alone. Send a quick message and I’ll help you
+        pinpoint the cause (filters, joins, rounding, duplicates, encoding, hidden rows/columns) and suggest the cleanest fix.
+      </p>
+      <div class="contact-grid">
+        <a class="contact-card" href="https://t.me/ReportMedic" target="_blank" rel="noopener">
+          <div class="contact-title">Telegram</div>
+          <div class="contact-desc">Message me: <span class="mono">t.me/ReportMedic</span></div>
+          <div class="contact-cta">Open Telegram →</div>
+        </a>
+        <a class="contact-card" href="https://www.emailmeform.com/builder/form/damueNPp7fSz" target="_blank" rel="noopener">
+          <div class="contact-title">Email</div>
+          <div class="contact-desc">Send your case details via secure form</div>
+          <div class="contact-cta">Open email form →</div>
+        </a>
+      </div>
+      <p class="tiny">
+        Tip: Use the case builder below to create a clear “expected vs actual” summary — it speeds up report troubleshooting and consulting replies.
+      </p>
+    </div>
+<p class="sub">
       Tell me what’s wrong, what you expected, and what you’re seeing. This page generates a clean, copy‑paste “case summary”
       you can send for consulting help — no uploads required.
     </p>
