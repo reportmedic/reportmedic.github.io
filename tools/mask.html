@@ -4,7 +4,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>PII Masker — ReportMedic</title>
+<meta name="description" content="Redact or mask sensitive fields (PII/PHI/financial) before sending files for review. Keep structure while protecting values."/>
+<title>Mask Sensitive Data — Redact PII before sharing — ReportMedic</title>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
 <link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
 <link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
@@ -63,6 +64,33 @@
 <div class="wrap">
 <div class="panel">
 <h1>PII Masker</h1>
+<section class="rm-explain" aria-label="How this helps">
+  <div class="rm-explain-grid">
+    <div class="rm-explain-card">
+      <h2>What this helps with</h2>
+      <ul>
+        <li>Redact sensitive columns</li><li>Mask values while preserving shape</li><li>Prepare files for sharing safely</li><li>Reduce compliance risk</li>
+      </ul>
+    </div>
+    <div class="rm-explain-card">
+      <h2>Common causes</h2>
+      <ul>
+        <li>Need external review but data is confidential</li><li>PII/PHI/financial fields in exports</li><li>Policies require redaction before sharing</li>
+      </ul>
+    </div>
+    <div class="rm-explain-card">
+      <h2>What to do next</h2>
+      <ol>
+        <li>Mask before you upload/share</li><li>Then run Compare/Reconcile on masked copies if needed</li><li>If you need guidance, use Fix My Report</li>
+      </ol>
+      <div class="rm-explain-cta">
+        <a class="btn primary" href="/fix-my-report.html">Fix My Report</a>
+        <a class="btn ghost" href="/">All tools</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <p class="sub">Mask sensitive fields before sharing samples — reduce risk while still getting help. Runs locally in your browser.</p>
 <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
 
@@ -760,5 +788,21 @@
   renderPreview();
 })();
 </script>
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
 </body>
 </html>

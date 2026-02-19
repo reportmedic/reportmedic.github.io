@@ -4,7 +4,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Schema Validator — ReportMedic</title>
+<meta name="description" content="Validate files against basic rules: required columns, formats, dates, numeric ranges, and common data quality problems that break reports."/>
+<title>Validate Files & Rules — Schema, columns, types — ReportMedic</title>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
 <link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
 <link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
@@ -78,6 +79,33 @@
 <div class="wrap">
 <div class="panel">
 <h1>Schema Validator</h1>
+<section class="rm-explain" aria-label="How this helps">
+  <div class="rm-explain-grid">
+    <div class="rm-explain-card">
+      <h2>What this helps with</h2>
+      <ul>
+        <li>Check required columns</li><li>Validate types and formats</li><li>Catch missing/invalid dates</li><li>Flag basic rule violations</li>
+      </ul>
+    </div>
+    <div class="rm-explain-card">
+      <h2>Common causes</h2>
+      <ul>
+        <li>Schema drift between exports</li><li>Bad data types after transformations</li><li>Unexpected nulls or delimiter issues</li>
+      </ul>
+    </div>
+    <div class="rm-explain-card">
+      <h2>What to do next</h2>
+      <ol>
+        <li>Validate first before deeper comparisons</li><li>Then Compare/Reconcile once structure is clean</li><li>If failures are confusing, use Fix My Report</li>
+      </ol>
+      <div class="rm-explain-cta">
+        <a class="btn primary" href="/fix-my-report.html">Fix My Report</a>
+        <a class="btn ghost" href="/">All tools</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <p class="sub">Validate schema and data rules before you share — catch missing fields, type issues, ranges, duplicates, and regex problems. Runs locally in your browser.</p>
 <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
 
@@ -939,5 +967,21 @@
   renderTable();
 })();
 </script>
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
 </body>
 </html>

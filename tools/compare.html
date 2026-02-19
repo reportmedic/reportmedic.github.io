@@ -4,7 +4,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Report Compare — ReportMedic</title>
+<meta name="description" content="Compare two files or report extracts to find row/column differences, missing values, and drift—ideal for validating reruns and troubleshooting mismatches."/>
+<title>Compare Two Files/Reports — Find differences fast — ReportMedic</title>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
 <link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
 <link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
@@ -64,6 +65,33 @@
 <div class="wrap">
 <div class="panel">
 <h1>Report Compare</h1>
+<section class="rm-explain" aria-label="How this helps">
+  <div class="rm-explain-grid">
+    <div class="rm-explain-card">
+      <h2>What this helps with</h2>
+      <ul>
+        <li>Find added/removed/changed rows</li><li>Highlight column-level differences</li><li>Spot header/format drift</li><li>Generate a clear diff summary</li>
+      </ul>
+    </div>
+    <div class="rm-explain-card">
+      <h2>Common causes</h2>
+      <ul>
+        <li>Source refresh timing differences</li><li>Filter/parameter changes</li><li>Schema drift or missing joins</li>
+      </ul>
+    </div>
+    <div class="rm-explain-card">
+      <h2>What to do next</h2>
+      <ol>
+        <li>Start here when “yesterday vs today” doesn’t match</li><li>Use Cleaner if diffs look noisy</li><li>Use Reconcile to quantify variances</li>
+      </ol>
+      <div class="rm-explain-cta">
+        <a class="btn primary" href="/fix-my-report.html">Fix My Report</a>
+        <a class="btn ghost" href="/">All tools</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <p class="sub">Compare two reports and pinpoint exactly what changed — so mismatches don’t turn into long debug sessions. Runs locally in your browser.</p>
 <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
 
@@ -665,5 +693,21 @@
   updateRunEnabled();
 })();
 </script>
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
 </body>
 </html>

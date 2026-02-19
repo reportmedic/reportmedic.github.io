@@ -4,7 +4,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Run Scheduler — ReportMedic</title>
+<meta name="description" content="Run repeat checks on your report process: reminders, recurring validation runs, and a simple schedule to prevent surprises."/>
+<title>Schedule Report Checks — Recurring validations — ReportMedic</title>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
 <link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
 <link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
@@ -77,6 +78,33 @@
 <div class="wrap">
 <div class="panel">
 <h1>Run Scheduler</h1>
+<section class="rm-explain" aria-label="How this helps">
+  <div class="rm-explain-grid">
+    <div class="rm-explain-card">
+      <h2>What this helps with</h2>
+      <ul>
+        <li>Set reminders for recurring checks</li><li>Track repeat validations</li><li>Reduce surprises before deadlines</li><li>Create a lightweight QA routine</li>
+      </ul>
+    </div>
+    <div class="rm-explain-card">
+      <h2>Common causes</h2>
+      <ul>
+        <li>Issues only caught at month-end</li><li>Manual checks get forgotten</li><li>No consistent cadence for QA</li>
+      </ul>
+    </div>
+    <div class="rm-explain-card">
+      <h2>What to do next</h2>
+      <ol>
+        <li>Schedule checks before key reporting cutoffs</li><li>Combine with Validator/Compare steps</li><li>Request help to design a QA flow via Fix My Report</li>
+      </ol>
+      <div class="rm-explain-cta">
+        <a class="btn primary" href="/fix-my-report.html">Fix My Report</a>
+        <a class="btn ghost" href="/">All tools</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <p class="sub">Save a run preset you can repeat — reduce “did I do the same steps?” uncertainty with reproducible settings and manifests.</p>
 <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
 
@@ -1000,5 +1028,21 @@
   setStatus("Ready. Create a preset, select it, then drop files to generate a manifest.", "info");
 })();
 </script>
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
 </body>
 </html>

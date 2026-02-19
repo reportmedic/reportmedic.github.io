@@ -4,7 +4,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Audit Trail Notes — ReportMedic</title>
+<meta name="description" content="Keep an audit trail while diagnosing report mismatches—capture findings, evidence, actions taken, and export notes for sharing."/>
+<title>Audit Trail Notes & Evidence Log for Report Issues — ReportMedic</title>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
 <link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
 <link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
@@ -166,6 +167,33 @@
 <div class="wrap">
 <div class="panel">
 <h1>Audit Trail Notes</h1>
+<section class="rm-explain" aria-label="How this helps">
+  <div class="rm-explain-grid">
+    <div class="rm-explain-card">
+      <h2>What this helps with</h2>
+      <ul>
+        <li>Log investigation notes with timestamps</li><li>Attach evidence (snippets, screenshots, links)</li><li>Track decisions and next actions</li><li>Export notes for handoff or escalation</li>
+      </ul>
+    </div>
+    <div class="rm-explain-card">
+      <h2>Common causes</h2>
+      <ul>
+        <li>No clear trail of what changed between runs</li><li>Multiple stakeholders making edits</li><li>Need defensible documentation for audit/QA</li>
+      </ul>
+    </div>
+    <div class="rm-explain-card">
+      <h2>What to do next</h2>
+      <ol>
+        <li>Record findings as you test comparisons and validations</li><li>Export your notes when you request help</li><li>If you’re stuck, use Fix My Report</li>
+      </ol>
+      <div class="rm-explain-cta">
+        <a class="btn primary" href="/fix-my-report.html">Fix My Report</a>
+        <a class="btn ghost" href="/">All tools</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <p class="sub">Generate audit-ready change notes and sign‑off text — so your report has a clear explanation, not just numbers.</p>
 <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
 
@@ -587,7 +615,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Audit Trail Notes</title>
+<title>Audit Trail Notes & Evidence Log for Report Issues — ReportMedic</title>
 <style>
   body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;margin:24px;line-height:1.5;color:#111;}
   h1{margin:0 0 10px;}
@@ -636,6 +664,22 @@ ${signoff ? `<div class="box"><h2>Approvals / Sign-off</h2><div>${signoff}</div>
 
 <hr>
 <div style="font-size:12px;color:#666">Generated locally with ReportMedic (client-side).</div>
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
 </body>
 </html>`;
   }
