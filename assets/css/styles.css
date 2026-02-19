@@ -262,9 +262,10 @@ textarea{min-height:120px; resize:vertical;}
 
 .rm-dz-inner{
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:14px;
+  gap:10px;
   text-align:center;
 }
 .rm-dz-icon{

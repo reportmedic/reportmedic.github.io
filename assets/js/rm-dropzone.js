@@ -28,16 +28,22 @@
   }
 
   function buildIcon() {
-    var svg = el('svg', {
-      class: 'rm-dz-svg',
-      viewBox: '0 0 486.3 486.3',
-      width: '34',
-      height: '34',
-      'aria-hidden': 'true',
-      focusable: 'false'
-    });
+    // NOTE: Use SVG namespace (Safari won't reliably render SVG created via createElement()).
+    var NS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('class', 'rm-dz-svg');
+    svg.setAttribute('viewBox', '0 0 486.3 486.3');
+    svg.setAttribute('width', '34');
+    svg.setAttribute('height', '34');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    svg.setAttribute('xmlns', NS);
+
     for (var i = 0; i < ICON_PATHS.length; i++) {
-      svg.appendChild(el('path', { d: ICON_PATHS[i], fill: 'currentColor' }));
+      var p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', ICON_PATHS[i]);
+      p.setAttribute('fill', 'currentColor');
+      svg.appendChild(p);
     }
     return svg;
   }
