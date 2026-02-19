@@ -11,8 +11,7 @@
 <link href="/assets/css/styles.css" rel="stylesheet"/>
 <style>
     /* Minimal page-specific layout; theme + typography come from /assets/css/styles.css */
-    .wrap{max-width:980px;margin:0 auto;padding:18px 14px 36px}
-    .grid2{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}
+.grid2{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}
     @media (max-width: 960px){.grid2{grid-template-columns:1fr}}
     .preview{min-height:170px}
     .toast{
@@ -21,31 +20,24 @@
       display:none; max-width:92vw
     }
 
-/* Fix My Report CTA hint */
-.ctaWrap{ position:relative; display:inline-block; }
-.ctaHint{
-  position:absolute;
-  top:calc(100% + 10px);
-  right:0;
-  width:300px;
-  max-width:76vw;
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(15,18,28,.96);
-  box-shadow:0 16px 40px rgba(0,0,0,.35);
-  color:var(--text);
-  font-size:13px;
-  line-height:1.25;
-  opacity:0;
-  transform:translateY(-4px);
-  pointer-events:none;
-  transition:opacity .22s ease, transform .22s ease;
-}
-.ctaHint.show{ opacity:1; transform:translateY(0); }
-@media (max-width:700px){
-  .ctaHint{ right:auto; left:0; }
-}
+    /* Align with site-wide container sizing */
+    #contactOptions{scroll-margin-top:88px}
+
+    /* Fix My Report CTA hint */
+    #fixHint{
+      max-height:0;
+      overflow:hidden;
+      opacity:0;
+      transform:translateY(-4px);
+      transition:max-height .25s ease, opacity .25s ease, transform .25s ease;
+      margin-top:10px;
+    }
+    #fixHint.show{
+      max-height:220px;
+      opacity:1;
+      transform:none;
+    }
+
 </style>
 </head>
 <body>
@@ -58,21 +50,23 @@
 <div class="spacer"></div>
 <a class="btn" href="/">Home</a>
 <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
-<div class="ctaWrap">
-  <a class="btn primary" href="/fix-my-report.html" id="fixMyReportBtn">Fix My Report</a>
-  <div class="ctaHint" id="fixMyReportHint" role="status" aria-live="polite">
-    Choose a contact option below (Telegram, Email, SMS, or Large files).
-  </div>
-</div>
+<a class="btn primary" href="/fix-my-report.html">Fix My Report</a>
 </div>
 </header>
-<main class="wrap">
+<div class="wrap">
+<div class="panel">
 <section class="hero">
 <h1>Get a human review when a report feels risky.</h1>
 <div class="human-touch">
 <div style="font-weight:700">Human help (no pressure, practical fixes)</div>
-<p>When numbers don’t match or validation errors won’t go away, you shouldn’t have to guess. Send a clear case summary and I’ll help you reach a submission‑ready answer.</p><div class="note" id="serviceReassurance">No full-file uploads required. Use the case builder below to describe “expected vs actual” and share only minimal samples if needed.</div>
-<div class="contact-grid">
+<p style="font-size:14px; line-height:1.75">When numbers don’t match, exports drift, or a validation error refuses to clear, you shouldn’t be left guessing — or worried you’ll ship the wrong story. Share a crisp “expected vs actual” summary and I’ll respond with practical next steps: what to check first, which tool to run, and how to explain the outcome with confidence. No pressure, no judgment — just a calm path to a submission‑ready answer.</p><div class="note" id="serviceReassurance">No full-file uploads required. Use the case builder below to describe “expected vs actual” and share only minimal samples if needed.</div>
+<div class="row" style="gap:10px; align-items:flex-start; flex-wrap:wrap; margin-top:12px">
+  <button class="btn primary" id="fixMyReportBtn" type="button">Fix my report</button>
+  <div class="note" id="fixHint" role="status" aria-live="polite">
+    Choose one of the contact options below to send your case summary. Telegram is best for screenshots and large exports, Email is great for longer context, and SMS works for quick questions.
+  </div>
+</div>
+<div class="contact-grid" id="contactOptions">
   <a class="contact-card" href="https://t.me/ReportMedic" rel="noopener" target="_blank">
     <div class="contact-title">✈️ Telegram</div>
     <div class="contact-desc">Message me: <span class="mono">t.me/ReportMedic</span></div>
@@ -220,8 +214,10 @@
 </div>
 </div>
 </section>
-</main>
+</div>
+</div>
 <div class="toast" id="toast"></div>
+<script src="/assets/js/rm-tools-drawer.js"></script>
 <script>
   const $ = (id) => document.getElementById(id);
   const toast = (msg) => {
@@ -231,6 +227,26 @@
     clearTimeout(window.__toastTimer);
     window.__toastTimer = setTimeout(()=> t.style.display="none", 2000);
   };
+
+// Fix My Report CTA: show a calm prompt + bring contact options into view
+(function(){
+  const btn = document.getElementById("fixMyReportBtn");
+  const hint = document.getElementById("fixHint");
+  const target = document.getElementById("contactOptions");
+  if(!btn || !hint || !target) return;
+
+  let t = null;
+  btn.addEventListener("click", ()=>{
+    hint.classList.add("show");
+    clearTimeout(t);
+    t = setTimeout(()=> hint.classList.remove("show"), 5000);
+
+    // Scroll to the top of the contact cards (not the bottom CTA link)
+    target.scrollIntoView({ behavior:"smooth", block:"start" });
+  });
+})();
+
+
 
   function makeCaseId(){
     const d = new Date();
@@ -362,29 +378,6 @@
     updateMailto("");
     toast("Reset.");
   });
-</script>
-<script src="/assets/js/rm-tools-drawer.js"></script>
-<script>
-  (function(){
-    const btn = document.getElementById("fixMyReportBtn");
-    const hint = document.getElementById("fixMyReportHint");
-    if(!btn || !hint) return;
-
-    const showHint = ()=>{
-      hint.classList.add("show");
-      clearTimeout(window.__fixHintTimer);
-      window.__fixHintTimer = setTimeout(()=> hint.classList.remove("show"), 5000);
-
-      // gently guide the user toward the contact options
-      const grid = document.querySelector(".contact-grid");
-      if(grid) grid.scrollIntoView({behavior:"smooth", block:"start"});
-    };
-
-    btn.addEventListener("click", (e)=>{
-      e.preventDefault();
-      showHint();
-    });
-  })();
 </script>
 </body>
 </html>
