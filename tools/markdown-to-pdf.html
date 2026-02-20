@@ -315,37 +315,14 @@
     sandbox.style.color = '#111111';
     sandbox.style.overflow = 'visible';
     sandbox.style.pointerEvents = 'none';
-    // Keep sandbox renderable for html2canvas: avoid opacity 0 (can make text faint).
-    sandbox.style.zIndex = '-1';
+    sandbox.style.opacity = '1'; // keep fully opaque for capture (prevents washed-out text)
+    sandbox.style.zIndex = '-9999'; // keep it behind the UI so it won't be visible
 
     const style = document.createElement('style');
     style.textContent = `
-      #__rm_pdf_sandbox{
-        font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
-        background:#ffffff !important;
-        color:#111111 !important;
-        --text:#111111; --muted:#444444; --subtle:#666666;
-      }
-
-      /* Hard override any dark-theme / muted / opacity styles during export */
-      #__rm_pdf_sandbox, #__rm_pdf_sandbox *{
-        color:#111111 !important;
-        -webkit-text-fill-color:#111111 !important;
-        opacity:1 !important;
-        text-shadow:none !important;
-        filter:none !important;
-        mix-blend-mode:normal !important;
-      }
-      #__rm_pdf_sandbox .muted, #__rm_pdf_sandbox .tiny.muted, #__rm_pdf_sandbox .sub, #__rm_pdf_sandbox .hint{
-        color:#444444 !important;
-        -webkit-text-fill-color:#444444 !important;
-      }
-      #__rm_pdf_sandbox a, #__rm_pdf_sandbox a *{
-        color:#1a56db !important;
-        -webkit-text-fill-color:#1a56db !important;
-        text-decoration:underline !important;
-      }
-
+      #__rm_pdf_sandbox { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
+      /* Force readable colors even if the site is in dark theme */
+      #__rm_pdf_sandbox, #__rm_pdf_sandbox *{ color:#111111 !important; opacity:1 !important; -webkit-text-fill-color:#111111 !important; text-shadow:none !important; filter:none !important; mix-blend-mode:normal !important; }
       #__rm_pdf_sandbox .__rm_pdf_content{
         box-sizing:border-box;
         width:100%;
@@ -353,25 +330,26 @@
         overflow:visible !important;
         height:auto !important;
         background:#ffffff !important;
+        color:#111111 !important;
         font-size:13px;
         line-height:1.55;
       }
-
-      #__rm_pdf_sandbox h1{font-size:20px;margin:0 0 10px;font-weight:800;}
-      #__rm_pdf_sandbox h2{font-size:16px;margin:16px 0 8px;font-weight:800;}
-      #__rm_pdf_sandbox h3{font-size:14px;margin:14px 0 6px;font-weight:800;}
+      #__rm_pdf_sandbox h1{font-size:20px;margin:0 0 10px;}
+      #__rm_pdf_sandbox h2{font-size:16px;margin:16px 0 8px;}
+      #__rm_pdf_sandbox h3{font-size:14px;margin:14px 0 6px;}
       #__rm_pdf_sandbox p{margin:0 0 10px;}
       #__rm_pdf_sandbox ul, #__rm_pdf_sandbox ol{margin:0 0 10px 22px;}
       #__rm_pdf_sandbox li{margin:4px 0;}
+      #__rm_pdf_sandbox a, #__rm_pdf_sandbox a *{color:#1a56db !important;text-decoration:underline;}
+      #__rm_pdf_sandbox .muted, #__rm_pdf_sandbox .muted *{ color:#555555 !important; -webkit-text-fill-color:#555555 !important; opacity:1 !important; }
       #__rm_pdf_sandbox hr{border:0;border-top:1px solid #dddddd;margin:14px 0;}
-
       #__rm_pdf_sandbox blockquote{
         margin:10px 0;
         padding:8px 12px;
         border-left:3px solid #bbbbbb;
+        color:#444444 !important;
         background:#f7f7f7;
       }
-
       #__rm_pdf_sandbox pre{
         margin:10px 0;
         padding:10px 12px;
@@ -388,7 +366,6 @@
         border-radius:6px;
       }
       #__rm_pdf_sandbox pre code{padding:0;background:transparent;}
-
       #__rm_pdf_sandbox table{
         width:100%;
         border-collapse:collapse;
@@ -403,13 +380,6 @@
       }
       #__rm_pdf_sandbox th{background:#f0f0f0;}
       #__rm_pdf_sandbox img{max-width:100%;height:auto;}
-
-      /* Don't force opacity for media (keep as authored) */
-      #__rm_pdf_sandbox img, #__rm_pdf_sandbox svg, #__rm_pdf_sandbox video, #__rm_pdf_sandbox canvas{
-        opacity:initial !important;
-        filter:none !important;
-        mix-blend-mode:normal !important;
-      }
     `;
     sandbox.appendChild(style);
 
