@@ -256,11 +256,16 @@
     clone.style.padding = "14px";
     clone.style.fontFamily = "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
 
-    // container offscreen
+    // IMPORTANT: html2canvas/html2pdf can render a blank page if the node is far off-screen.
+    // Keep it in the DOM flow (top-left) but invisible.
     const holder = document.createElement("div");
-    holder.style.position="fixed";
-    holder.style.left="-99999px";
-    holder.style.top="0";
+    holder.style.position = "fixed";
+    holder.style.left = "0";
+    holder.style.top = "0";
+    holder.style.opacity = "0";
+    holder.style.pointerEvents = "none";
+    holder.style.zIndex = "-1";
+    holder.style.background = "#fff";
     holder.appendChild(clone);
     document.body.appendChild(holder);
 
@@ -268,22 +273,54 @@
     const format = $("paperSel").value;
     const scale = parseFloat($("scaleSel").value || "1");
 
-    const opt = {
-      margin: 10,
-      filename: outName,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
-      jsPDF: { unit: "mm", format, orientation }
-    };
-
-    // scale via CSS transform (keeps text crisp enough due to html2canvas scale)
+    // scale via CSS transform (keeps text crisp due to higher canvas scale)
     clone.style.transformOrigin = "top left";
     clone.style.transform = `scale(${scale})`;
 
+    // Let layout settle (prevents 0x0 canvas / blank capture in some browsers)
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
     try{
-      const worker = html2pdf().set(opt).from(clone);
-      const pdf = await worker.outputPdf("blob");
-      lastPdfBlob = pdf;
+      if(typeof window.html2canvas !== 'function'){
+        throw new Error('html2canvas missing');
+      }
+      const canvas = await window.html2canvas(clone, {
+        backgroundColor: "#ffffff",
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
+
+      // Create PDF via jsPDF (available through html2pdf.bundle)
+      const JSPDF = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : null;
+      if(!JSPDF) throw new Error('jsPDF missing');
+
+      const pdf = new JSPDF({
+        orientation,
+        unit: "mm",
+        format
+      });
+
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+
+      const imgW = pageW - margin * 2;
+      const imgH = (canvas.height * imgW) / canvas.width;
+
+      // Multi-page support by reusing the same tall image with vertical offsets
+      let remaining = imgH;
+      let page = 0;
+      while (remaining > 0) {
+        const y = margin - page * (pageH - margin * 2);
+        pdf.addImage(imgData, "JPEG", margin, y, imgW, imgH);
+        remaining -= (pageH - margin * 2);
+        page += 1;
+        if (remaining > 0) pdf.addPage();
+      }
+
+      lastPdfBlob = pdf.output("blob");
       $("downloadBtn").disabled = false;
       setStatus("done — ready to download");
     } catch(err){
