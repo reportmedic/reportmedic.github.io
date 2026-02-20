@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="Merge PDFs, split/extract page ranges, and reorder pages. Fast, private, and runs locally in your browser."/>
+<title>PDF Organizer (Merge, Split, Reorder) — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+
+<style>
+  .rm-modebar{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+  .rm-modebar .btn{border:1px solid rgba(255,255,255,.14)}
+  .rm-modebar .btn.is-active{outline:2px solid rgba(124,247,212,.35)}
+  .rm-mini{font-size:12px}
+  .rm-list{list-style:none; padding:0; margin:10px 0 0;}
+  .rm-item{display:flex; gap:10px; align-items:center; padding:10px; border:1px solid rgba(255,255,255,.12); border-radius:14px; margin:8px 0; background:rgba(255,255,255,.03)}
+  .rm-handle{cursor:grab; user-select:none; font-size:14px; padding:6px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18)}
+  .rm-thumb{width:64px; height:64px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.10); display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.22)}
+  .rm-thumb img,.rm-thumb canvas{max-width:100%; max-height:100%; display:block}
+  .rm-item .rm-grow{flex:1; min-width:0}
+  .rm-k{font-weight:700}
+  .rm-v{color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .rm-gridThumbs{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-top:12px}
+  .rm-pageCard{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.03)}
+  .rm-pageCard .rm-pageTop{display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .rm-pageCard .rm-pageNo{font-weight:700; font-size:12px; color:var(--muted)}
+  .rm-dropHint{font-size:12px; color:var(--muted); margin-top:8px}
+  .rm-status{min-height:20px}
+  .rm-bad{color:#ffb4b4}
+  .rm-good{color:#b7ffd7}
+  .rm-warn{color:#ffe7a8}
+  .rm-hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div>
+</header>
+<div class="wrap">
+  <div class="panel">
+    <h1>PDF Organizer <a class="rm-lm-link" data-rm-lm-open="rmLM" href="#">Learn more</a></h1>
+    <p class="sub">Merge PDFs, split/extract page ranges, and reorder pages — all locally in your browser.</p>
+    <div class="hr"></div>
+<div class="rm-modebar" role="tablist" aria-label="PDF organizer modes">
+  <button class="btn small is-active" id="modeMerge" type="button">Merge PDFs</button>
+  <button class="btn small" id="modeSplit" type="button">Split / Extract</button>
+  <button class="btn small" id="modeReorder" type="button">Reorder pages</button>
+</div>
+
+<div class="grid2" style="margin-top:12px">
+  <div class="card" id="paneMerge">
+    <div class="row" style="justify-content:space-between; align-items:flex-start">
+      <div>
+        <div style="font-weight:700">Input PDFs</div>
+        <div class="tiny muted">Drop multiple PDFs, then drag to set the merge order. Runs locally in your browser.</div>
+      </div>
+      <span class="pill tiny" id="mergeMeta"><b>Loaded:</b><span class="muted">none</span></span>
+    </div>
+
+    <div style="margin-top:10px">
+      <input accept=".pdf" class="input" id="mergeFiles" multiple type="file"/>
+    </div>
+
+    <div class="rm-dropHint">Tip: If the order matters, put the “cover” first, then append exhibits/attachments.</div>
+
+    <ul class="rm-list" id="mergeList" aria-label="PDF merge order"></ul>
+
+    <div class="hr2"></div>
+    <div class="row" style="gap:10px; flex-wrap:wrap">
+      <button class="btn primary" id="mergeBtn" type="button">Merge PDFs</button>
+      <button class="btn" id="mergeClear" type="button">Clear</button>
+      <span class="tiny muted rm-status" id="mergeStatus"></span>
+    </div>
+  </div>
+
+  <div class="card rm-hidden" id="paneSplit">
+    <div class="row" style="justify-content:space-between; align-items:flex-start">
+      <div>
+        <div style="font-weight:700">Split / Extract</div>
+        <div class="tiny muted">Upload one PDF. Extract ranges or split into single pages.</div>
+      </div>
+      <span class="pill tiny" id="splitMeta"><b>PDF:</b><span class="muted">not loaded</span></span>
+    </div>
+
+    <div style="margin-top:10px">
+      <input accept=".pdf" class="input" id="splitFile" type="file"/>
+    </div>
+
+    <div class="hr2"></div>
+
+    <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+      <label class="tiny muted">Mode</label>
+      <select class="input" id="splitMode" style="width:auto; min-width:240px">
+        <option value="ranges" selected>Extract page ranges (one PDF)</option>
+        <option value="single">Split into single-page PDFs (ZIP)</option>
+        <option value="chunks">Split into chunks of N pages (ZIP)</option>
+      </select>
+      <div id="rangeBox" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+        <input class="input" id="ranges" placeholder="Ranges e.g. 1-3,5,8-10" style="min-width:260px" />
+      </div>
+      <div id="chunkBox" class="rm-hidden" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+        <input class="input" id="chunkN" type="number" min="1" value="5" style="width:110px" />
+        <span class="tiny muted">pages per chunk</span>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:10px; gap:10px; flex-wrap:wrap">
+      <button class="btn primary" id="splitBtn" type="button">Create output</button>
+      <button class="btn" id="splitClear" type="button">Clear</button>
+      <span class="tiny muted rm-status" id="splitStatus"></span>
+    </div>
+
+    <div class="tiny muted" style="margin-top:10px">
+      Page ranges are 1-based. Example: <span class="pill tiny">2,4-6</span>
+    </div>
+  </div>
+
+  <div class="card rm-hidden" id="paneReorder">
+    <div class="row" style="justify-content:space-between; align-items:flex-start">
+      <div>
+        <div style="font-weight:700">Reorder pages</div>
+        <div class="tiny muted">Upload one PDF. Drag page cards to reorder, then download the new PDF.</div>
+      </div>
+      <span class="pill tiny" id="reMeta"><b>Pages:</b><span class="muted">0</span></span>
+    </div>
+
+    <div style="margin-top:10px">
+      <input accept=".pdf" class="input" id="reFile" type="file"/>
+    </div>
+
+    <div class="rm-gridThumbs" id="pageGrid" aria-label="PDF pages"></div>
+
+    <div class="hr2"></div>
+    <div class="row" style="gap:10px; flex-wrap:wrap">
+      <button class="btn primary" id="reBuild" type="button">Download reordered PDF</button>
+      <button class="btn" id="reClear" type="button">Clear</button>
+      <span class="tiny muted rm-status" id="reStatus"></span>
+    </div>
+
+    <div class="rm-dropHint">Tip: This preserves the original pages (no re-render), so text stays crisp.</div>
+  </div>
+</div>
+  </div>
+</div>
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+<div class="rm-footer-brand">
+<div class="rm-footer-name">ReportMedic</div>
+<div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+</div>
+<div class="rm-footer-links">
+<a href="/fix-my-report.html">Fix My Report</a>
+<a href="/#tools">Tools</a>
+<a href="/docs/">Docs</a>
+<a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+</div>
+<div class="rm-footer-meta">© 2026 ReportMedic</div>
+</div>
+</footer>
+<div aria-hidden="true" aria-label="PDF Organizer details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">PDF Organizer</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+<ul>
+  <li>Combine multiple PDFs into one file (in the right order)</li>
+  <li>Extract only the pages you need for upload portals</li>
+  <li>Reorder pages before you send or archive</li>
+</ul>
+<h3>Good to know</h3>
+<ul>
+  <li>Everything runs locally in your browser — files are not uploaded.</li>
+  <li>Reorder keeps the original pages (no quality loss).</li>
+  <li>Splitting can export a single PDF or a ZIP of multiple PDFs.</li>
+</ul>
+<h3>What to do next</h3>
+<ul>
+  <li>If you’re working with scans or huge files, try “Compress PDF” afterwards.</li>
+  <li>If a portal rejects your document, split to isolate the failing pages.</li>
+</ul>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  const { PDFDocument } = window.PDFLib;
+
+  // PDF.js worker
+  if (window['pdfjsLib']) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js';
+  }
+
+  const $ = (id) => document.getElementById(id);
+  const humanBytes = (n) => {
+    if (!Number.isFinite(n)) return '';
+    const u=['B','KB','MB','GB']; let i=0; let v=n;
+    while(v>=1024 && i<u.length-1){ v/=1024; i++; }
+    const s = i===0 ? String(Math.round(v)) : String(Math.round(v*10)/10);
+    return s+' '+u[i];
+  };
+  const downloadBlob = (blob, name) => {
+    const a=document.createElement('a');
+    const url=URL.createObjectURL(blob);
+    a.href=url; a.download=name;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 250);
+  };
+
+  // Mode switching
+  const modeBtns = { merge:$('modeMerge'), split:$('modeSplit'), reorder:$('modeReorder') };
+  const panes = { merge:$('paneMerge'), split:$('paneSplit'), reorder:$('paneReorder') };
+
+  function setMode(m){
+    Object.keys(modeBtns).forEach(k => modeBtns[k].classList.toggle('is-active', k===m));
+    Object.keys(panes).forEach(k => panes[k].classList.toggle('rm-hidden', k!==m));
+  }
+  modeBtns.merge.addEventListener('click', ()=>setMode('merge'));
+  modeBtns.split.addEventListener('click', ()=>setMode('split'));
+  modeBtns.reorder.addEventListener('click', ()=>setMode('reorder'));
+
+  // ---------- MERGE ----------
+  let mergeFiles = [];
+  const mergeInput = $('mergeFiles');
+  const mergeList = $('mergeList');
+  const mergeMeta = $('mergeMeta');
+  const mergeStatus = $('mergeStatus');
+
+  function renderMergeList(){
+    mergeList.innerHTML='';
+    if(!mergeFiles.length){
+      mergeMeta.innerHTML = '<b>Loaded:</b><span class="muted">none</span>';
+      return;
+    }
+    mergeMeta.innerHTML = '<b>Loaded:</b><span class="muted">'+mergeFiles.length+' file(s)</span>';
+    mergeFiles.forEach((f, idx) => {
+      const li=document.createElement('li');
+      li.className='rm-item';
+      li.draggable=true;
+      li.dataset.idx=String(idx);
+
+      const handle=document.createElement('div');
+      handle.className='rm-handle';
+      handle.textContent='↕';
+
+      const thumb=document.createElement('div');
+      thumb.className='rm-thumb';
+      thumb.innerHTML='<span class="tiny muted">PDF</span>';
+
+      const grow=document.createElement('div');
+      grow.className='rm-grow';
+      grow.innerHTML = '<div class="rm-k">'+escapeHtml(f.name)+'</div><div class="rm-v">'+humanBytes(f.size)+'</div>';
+
+      const del=document.createElement('button');
+      del.className='btn small';
+      del.type='button';
+      del.textContent='Remove';
+      del.addEventListener('click', ()=>{
+        mergeFiles.splice(idx,1);
+        renderMergeList();
+      });
+
+      li.appendChild(handle);
+      li.appendChild(thumb);
+      li.appendChild(grow);
+      li.appendChild(del);
+
+      // Drag reorder
+      li.addEventListener('dragstart', (e)=>{
+        e.dataTransfer.setData('text/plain', li.dataset.idx);
+        e.dataTransfer.effectAllowed='move';
+      });
+      li.addEventListener('dragover', (e)=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; });
+      li.addEventListener('drop', (e)=>{
+        e.preventDefault();
+        const from = Number(e.dataTransfer.getData('text/plain'));
+        const to = Number(li.dataset.idx);
+        if(Number.isNaN(from)||Number.isNaN(to)||from===to) return;
+        const item=mergeFiles.splice(from,1)[0];
+        mergeFiles.splice(to,0,item);
+        renderMergeList();
+      });
+
+      mergeList.appendChild(li);
+    });
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, (c)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  mergeInput.addEventListener('change', ()=>{
+    mergeFiles = Array.from(mergeInput.files || []);
+    mergeStatus.textContent='';
+    renderMergeList();
+  });
+
+  $('mergeClear').addEventListener('click', ()=>{
+    mergeInput.value='';
+    mergeFiles=[];
+    mergeStatus.textContent='';
+    renderMergeList();
+  });
+
+  $('mergeBtn').addEventListener('click', async ()=>{
+    mergeStatus.textContent='';
+    if(!mergeFiles.length){
+      mergeStatus.innerHTML='<span class="rm-warn">Add at least 1 PDF.</span>';
+      return;
+    }
+    try{
+      mergeStatus.textContent='Merging…';
+      const out = await PDFDocument.create();
+      for(const f of mergeFiles){
+        const bytes = await f.arrayBuffer();
+        const src = await PDFDocument.load(bytes);
+        const pages = await out.copyPages(src, src.getPageIndices());
+        pages.forEach(p => out.addPage(p));
+      }
+      const outBytes = await out.save();
+      downloadBlob(new Blob([outBytes], {type:'application/pdf'}), 'merged.pdf');
+      mergeStatus.innerHTML='<span class="rm-good">Done.</span>';
+    }catch(err){
+      console.error(err);
+      mergeStatus.innerHTML='<span class="rm-bad">Error: '+escapeHtml(err && err.message ? err.message : String(err))+'</span>';
+    }
+  });
+
+  // ---------- SPLIT ----------
+  const splitInput = $('splitFile');
+  const splitMode = $('splitMode');
+  const rangesInput = $('ranges');
+  const chunkBox = $('chunkBox');
+  const rangeBox = $('rangeBox');
+  const chunkN = $('chunkN');
+  const splitMeta = $('splitMeta');
+  const splitStatus = $('splitStatus');
+
+  let splitFile = null;
+  splitInput.addEventListener('change', ()=>{
+    splitFile = (splitInput.files && splitInput.files[0]) ? splitInput.files[0] : null;
+    splitStatus.textContent='';
+    splitMeta.innerHTML = '<b>PDF:</b><span class="muted">'+(splitFile ? escapeHtml(splitFile.name) : 'not loaded')+'</span>';
+  });
+
+  splitMode.addEventListener('change', ()=>{
+    const v=splitMode.value;
+    rangeBox.classList.toggle('rm-hidden', v!=='ranges');
+    chunkBox.classList.toggle('rm-hidden', v!=='chunks');
+  });
+
+  function parseRanges(text, maxPages){
+    const t=(text||'').trim();
+    if(!t) return [];
+    const parts = t.split(',').map(s=>s.trim()).filter(Boolean);
+    const pages = [];
+    for(const p of parts){
+      if(/^\d+$/.test(p)){
+        const n=Number(p);
+        if(n>=1 && n<=maxPages) pages.push(n);
+      }else{
+        const m=p.match(/^(\d+)\s*-\s*(\d+)$/);
+        if(m){
+          let a=Number(m[1]), b=Number(m[2]);
+          if(a>b){ const tmp=a; a=b; b=tmp; }
+          a=Math.max(1,a); b=Math.min(maxPages,b);
+          for(let i=a;i<=b;i++) pages.push(i);
+        }
+      }
+    }
+    // unique preserving order
+    const seen=new Set();
+    return pages.filter(n => (seen.has(n)?false:(seen.add(n),true)));
+  }
+
+  $('splitClear').addEventListener('click', ()=>{
+    splitInput.value='';
+    splitFile=null;
+    splitStatus.textContent='';
+    splitMeta.innerHTML = '<b>PDF:</b><span class="muted">not loaded</span>';
+  });
+
+  $('splitBtn').addEventListener('click', async ()=>{
+    splitStatus.textContent='';
+    if(!splitFile){
+      splitStatus.innerHTML='<span class="rm-warn">Upload a PDF first.</span>';
+      return;
+    }
+    try{
+      splitStatus.textContent='Working…';
+      const bytes = await splitFile.arrayBuffer();
+      const src = await PDFDocument.load(bytes);
+      const total = src.getPageCount();
+
+      const mode = splitMode.value;
+
+      if(mode==='ranges'){
+        const nums = parseRanges(rangesInput.value, total);
+        if(!nums.length){
+          splitStatus.innerHTML='<span class="rm-warn">Enter a valid page range (e.g. 1-3,5).</span>';
+          return;
+        }
+        const out = await PDFDocument.create();
+        const pages = await out.copyPages(src, nums.map(n=>n-1));
+        pages.forEach(p=>out.addPage(p));
+        const outBytes = await out.save();
+        downloadBlob(new Blob([outBytes], {type:'application/pdf'}), 'extracted_pages.pdf');
+        splitStatus.innerHTML='<span class="rm-good">Done.</span>';
+        return;
+      }
+
+      // ZIP modes
+      const zip = new JSZip();
+      if(mode==='single'){
+        for(let i=0;i<total;i++){
+          const out = await PDFDocument.create();
+          const [p] = await out.copyPages(src, [i]);
+          out.addPage(p);
+          const outBytes = await out.save();
+          const name = 'page_'+String(i+1).padStart(3,'0')+'.pdf';
+          zip.file(name, outBytes);
+        }
+      }else if(mode==='chunks'){
+        const n = Math.max(1, Number(chunkN.value||5));
+        let chunkIndex=1;
+        for(let start=0; start<total; start+=n){
+          const out = await PDFDocument.create();
+          const idxs=[];
+          for(let i=start; i<Math.min(total,start+n); i++) idxs.push(i);
+          const pages = await out.copyPages(src, idxs);
+          pages.forEach(p=>out.addPage(p));
+          const outBytes = await out.save();
+          const name = 'chunk_'+String(chunkIndex).padStart(2,'0')+'_pages_'+(start+1)+'-'+(start+idxs.length)+'.pdf';
+          zip.file(name, outBytes);
+          chunkIndex++;
+        }
+      }
+      const zipBlob = await zip.generateAsync({type:'blob'});
+      downloadBlob(zipBlob, 'pdf_split_output.zip');
+      splitStatus.innerHTML='<span class="rm-good">Done.</span>';
+    }catch(err){
+      console.error(err);
+      splitStatus.innerHTML='<span class="rm-bad">Error: '+escapeHtml(err && err.message ? err.message : String(err))+'</span>';
+    }
+  });
+
+  // ---------- REORDER ----------
+  const reInput = $('reFile');
+  const pageGrid = $('pageGrid');
+  const reMeta = $('reMeta');
+  const reStatus = $('reStatus');
+
+  let reBytes = null;
+  let reOrder = []; // array of page indices (0-based)
+  let reTotal = 0;
+
+  reInput.addEventListener('change', async ()=>{
+    reStatus.textContent='';
+    pageGrid.innerHTML='';
+    reBytes = null;
+    reOrder = [];
+    reTotal = 0;
+
+    const f = (reInput.files && reInput.files[0]) ? reInput.files[0] : null;
+    if(!f){
+      reMeta.innerHTML = '<b>Pages:</b><span class="muted">0</span>';
+      return;
+    }
+    try{
+      reStatus.textContent='Loading…';
+      reBytes = await f.arrayBuffer();
+      const src = await PDFDocument.load(reBytes);
+      reTotal = src.getPageCount();
+      reOrder = Array.from({length: reTotal}, (_,i)=>i);
+      reMeta.innerHTML = '<b>Pages:</b><span class="muted">'+reTotal+'</span>';
+      await renderPageThumbs(reBytes, reTotal);
+      reStatus.innerHTML='<span class="rm-good">Ready — drag pages to reorder.</span>';
+    }catch(err){
+      console.error(err);
+      reStatus.innerHTML='<span class="rm-bad">Error: '+escapeHtml(err && err.message ? err.message : String(err))+'</span>';
+    }
+  });
+
+  async function renderPageThumbs(bytes, total){
+    const pdf = await pdfjsLib.getDocument({data: bytes}).promise;
+    for(let i=1;i<=total;i++){
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({scale: 0.35});
+      const canvas=document.createElement('canvas');
+      canvas.width = Math.max(1, Math.floor(viewport.width));
+      canvas.height = Math.max(1, Math.floor(viewport.height));
+      const ctx = canvas.getContext('2d', {alpha:false});
+      await page.render({canvasContext: ctx, viewport}).promise;
+
+      const card=document.createElement('div');
+      card.className='rm-pageCard';
+      card.draggable=true;
+      card.dataset.pageIndex=String(i-1);
+
+      const top=document.createElement('div');
+      top.className='rm-pageTop';
+
+      const left=document.createElement('div');
+      left.className='rm-pageNo';
+      left.textContent='Page '+i;
+
+      const handle=document.createElement('div');
+      handle.className='rm-handle';
+      handle.textContent='↕';
+
+      top.appendChild(left);
+      top.appendChild(handle);
+
+      const thumb=document.createElement('div');
+      thumb.className='rm-thumb';
+      thumb.style.width='100%';
+      thumb.style.height='auto';
+      thumb.style.padding='8px';
+      thumb.appendChild(canvas);
+
+      card.appendChild(top);
+      card.appendChild(thumb);
+
+      card.addEventListener('dragstart', (e)=>{
+        e.dataTransfer.setData('text/plain', card.dataset.pageIndex);
+        e.dataTransfer.effectAllowed='move';
+      });
+      card.addEventListener('dragover', (e)=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; });
+      card.addEventListener('drop', (e)=>{
+        e.preventDefault();
+        const from = Number(e.dataTransfer.getData('text/plain'));
+        const to = Number(card.dataset.pageIndex);
+        if(Number.isNaN(from)||Number.isNaN(to)||from===to) return;
+
+        // reorder in DOM
+        const cards = Array.from(pageGrid.children);
+        const fromEl = cards.find(el=>Number(el.dataset.pageIndex)===from);
+        const toEl = cards.find(el=>Number(el.dataset.pageIndex)===to);
+        if(!fromEl || !toEl) return;
+        if(fromEl===toEl) return;
+
+        // insert before/after depending on direction
+        if(fromEl.compareDocumentPosition(toEl) & Node.DOCUMENT_POSITION_FOLLOWING){
+          pageGrid.insertBefore(fromEl, toEl);
+        }else{
+          pageGrid.insertBefore(fromEl, toEl.nextSibling);
+        }
+      });
+
+      pageGrid.appendChild(card);
+    }
+  }
+
+  $('reClear').addEventListener('click', ()=>{
+    reInput.value='';
+    reBytes=null;
+    reOrder=[];
+    reTotal=0;
+    pageGrid.innerHTML='';
+    reStatus.textContent='';
+    reMeta.innerHTML = '<b>Pages:</b><span class="muted">0</span>';
+  });
+
+  $('reBuild').addEventListener('click', async ()=>{
+    reStatus.textContent='';
+    if(!reBytes){
+      reStatus.innerHTML='<span class="rm-warn">Upload a PDF first.</span>';
+      return;
+    }
+    try{
+      reStatus.textContent='Building…';
+      const src = await PDFDocument.load(reBytes);
+      const out = await PDFDocument.create();
+
+      const order = Array.from(pageGrid.children).map(el => Number(el.dataset.pageIndex)).filter(n => Number.isFinite(n));
+      const pages = await out.copyPages(src, order);
+      pages.forEach(p=>out.addPage(p));
+
+      const outBytes = await out.save();
+      downloadBlob(new Blob([outBytes], {type:'application/pdf'}), 'reordered.pdf');
+      reStatus.innerHTML='<span class="rm-good">Done.</span>';
+    }catch(err){
+      console.error(err);
+      reStatus.innerHTML='<span class="rm-bad">Error: '+escapeHtml(err && err.message ? err.message : String(err))+'</span>';
+    }
+  });
+
+})();
+</script>
+<script>
+  (function(){
+    function openLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','false');
+      const btn=bd.querySelector('.rm-lm-close');
+      if(btn) btn.focus();
+    }
+    function closeLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','true');
+    }
+    document.addEventListener('click', function(e){
+      const a=e.target.closest('[data-rm-lm-open]');
+      if(a){
+        e.preventDefault();
+        openLM(a.getAttribute('data-rm-lm-open'));
+        return;
+      }
+      const close=e.target.closest('[data-rm-lm-close]');
+      if(close){
+        e.preventDefault();
+        closeLM(close.getAttribute('data-rm-lm-close'));
+        return;
+      }
+      const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+      if(bd){
+        e.preventDefault();
+        closeLM(bd.id);
+      }
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Escape'){
+        const open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        if(open) open.setAttribute('aria-hidden','true');
+      }
+    });
+  })();
+</script>
+<script src="/assets/js/rm-dropzone.js"></script>
+<script src="/assets/js/rm-tools-drawer.js"></script>
+</body>
+</html>
