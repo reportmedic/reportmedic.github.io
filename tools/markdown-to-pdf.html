@@ -315,14 +315,16 @@
     sandbox.style.color = '#111111';
     sandbox.style.overflow = 'visible';
     sandbox.style.pointerEvents = 'none';
-    sandbox.style.opacity = '0';
+    // IMPORTANT: keep opacity at 1 so html2canvas doesn't capture faint text.
+    sandbox.style.opacity = '1';
     sandbox.style.zIndex = '-1';
+    sandbox.style.mixBlendMode = 'normal';
 
     const style = document.createElement('style');
     style.textContent = `
       #__rm_pdf_sandbox { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
       /* Force readable colors even if the site is in dark theme */
-      #__rm_pdf_sandbox, #__rm_pdf_sandbox *{ color:#111111 !important; }
+      #__rm_pdf_sandbox, #__rm_pdf_sandbox *{ color:#111111 !important; opacity:1 !important; text-shadow:none !important; filter:none !important; }
       #__rm_pdf_sandbox .__rm_pdf_content{
         box-sizing:border-box;
         width:100%;
