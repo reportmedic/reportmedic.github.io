@@ -187,7 +187,7 @@
 
     let currentName = 'document.pdf';
     let currentBytes = 0;
-    let currentPdfData = null;
+    let currentPdfBytes = null;
 
     function setStatus(msg){ status.textContent = msg || ''; }
     function bytes(n){
@@ -325,14 +325,14 @@
       return out;
     }
 
-    async function extractMarkdownFromPdf(arrayBuffer){
+    async function extractMarkdownFromPdf(bytes){
       if(!window.pdfjsLib) throw new Error('PDF library not loaded');
       // Worker (Safari-safe)
       try{
         window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
       } catch(e) {}
 
-      const loadingTask = window.pdfjsLib.getDocument({ data: arrayBuffer });
+      const loadingTask = window.pdfjsLib.getDocument({ data: bytes });
       const pdf = await loadingTask.promise;
       const pageCount = pdf.numPages || 0;
       let parts = [];
@@ -360,23 +360,26 @@
 
     fileInput.addEventListener('change', async function(){
       const f = fileInput.files && fileInput.files[0];
-      if(!f){ currentPdfData = null; setStatus(''); setInMeta('not loaded', 0); return; }
+      if(!f){ currentPdfBytes = null; setStatus(''); setInMeta('not loaded', 0); return; }
       currentName = f.name || 'document.pdf';
       currentBytes = f.size || 0;
       setInMeta(currentName, currentBytes);
       setStatus('Ready to convert');
-      currentPdfData = await f.arrayBuffer();
+      const _ab = await f.arrayBuffer();
+      // Keep an in-memory copy so PDF.js can safely transfer/detach its own buffer
+      currentPdfBytes = new Uint8Array(_ab);
+      currentPdfBytes = new Uint8Array(currentPdfBytes);
     });
 
     convertBtn.addEventListener('click', async function(){
       try{
-        if(!currentPdfData){
+        if(!currentPdfBytes){
           setStatus('Choose a PDF first');
           return;
         }
         convertBtn.disabled = true;
         setStatus('Loading PDF…');
-        const md = await extractMarkdownFromPdf(currentPdfData);
+        const md = await extractMarkdownFromPdf(new Uint8Array(currentPdfBytes));
         outputText.value = md;
         renderPreview(md);
         setOutMeta(md ? ('generated • ' + md.length.toLocaleString() + ' chars') : 'empty (likely scanned PDF)');
@@ -393,7 +396,7 @@
 
     clearBtn.addEventListener('click', function(){
       fileInput.value = '';
-      currentPdfData = null;
+      currentPdfBytes = null;
       currentName = 'document.pdf';
       currentBytes = 0;
       inMeta.innerHTML = '<b>IN:</b><span class="muted"> not loaded</span>';
