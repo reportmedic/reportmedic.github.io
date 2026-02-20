@@ -281,18 +281,67 @@
 
   $('#downloadBtn').addEventListener('click', ()=>{
     if(!preview.innerHTML.trim()){ setStatus('Convert first to build the preview.'); return; }
+
+    // Build an isolated off-screen container with explicit light-mode styles so
+    // that html2canvas never inherits dark-theme colours from the page CSS,
+    // regardless of whether styles.css is loaded (online vs local).
+    const shell = document.createElement('div');
+    shell.setAttribute('aria-hidden', 'true');
+    Object.assign(shell.style, {
+      position:   'fixed',
+      left:       '-9999px',
+      top:        '0',
+      width:      '794px',   // ~A4 width at 96 dpi
+      padding:    '32px',
+      boxSizing:  'border-box',
+      background: '#ffffff',
+      color:      '#111111',
+      fontFamily: 'Georgia, "Times New Roman", serif',
+      fontSize:   '15px',
+      lineHeight: '1.6',
+      zIndex:     '-1'
+    });
+
+    // Inject reset CSS so inherited dark-theme rules cannot leak in
+    const resetStyle = document.createElement('style');
+    resetStyle.textContent = `
+      * { box-sizing: border-box; color: #111111 !important; background: transparent !important;
+          border-color: #cccccc !important; }
+      a { color: #1a56db !important; }
+      h1,h2,h3,h4,h5,h6 { color: #111111 !important; margin: .75em 0 .4em; }
+      p  { margin: 0 0 .75em; }
+      pre,code { background: #f4f4f4 !important; color: #111111 !important;
+                 border-radius: 4px; padding: 2px 5px; font-size: .9em; }
+      pre { padding: 10px 14px; overflow-x: auto; }
+      blockquote { border-left: 3px solid #aaaaaa !important; margin: 0 0 .75em 0;
+                   padding-left: 14px; color: #444444 !important; }
+      table { border-collapse: collapse; width: 100%; }
+      th,td { border: 1px solid #cccccc !important; padding: 6px 10px; }
+      th { background: #f0f0f0 !important; }
+      img { max-width: 100%; }
+      hr { border: none; border-top: 1px solid #cccccc !important; }
+    `;
+    shell.appendChild(resetStyle);
+
+    const content = document.createElement('div');
+    content.innerHTML = preview.innerHTML;
+    shell.appendChild(content);
+    document.body.appendChild(shell);
+
     const opt = {
       margin:       10,
       filename:     lastOutName,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
+      html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
     setStatus('Generating PDF…');
-    window.html2pdf().set(opt).from(preview).save().then(()=>{
+    window.html2pdf().set(opt).from(shell).save().then(()=>{
+      document.body.removeChild(shell);
       setStatus('Downloaded.');
       setTimeout(()=>setStatus(''), 1000);
     }).catch(()=>{
+      document.body.removeChild(shell);
       setStatus('Could not generate PDF. Try shorter content.');
     });
   });
