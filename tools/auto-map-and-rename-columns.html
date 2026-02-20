@@ -326,7 +326,11 @@
   }
 
   function normalize(s){
-    return String(s ?? '')
+    // normalize headers while preserving camelCase word boundaries
+    let raw = String(s ?? '');
+    raw = raw.replace(/([a-z0-9])([A-Z])/g, '$1 $2');
+    raw = raw.replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
+    return raw
       .toLowerCase()
       .replace(/[\u200B-\u200D\uFEFF]/g,'')
       .replace(/\([^\)]*\)/g,'')
@@ -361,16 +365,31 @@
   }
 
 const STOP_TOKENS = new Set(['is','the','a','an','of','to','and','or','for','in','on','by','with','at','as']);
+const UNIT_TOKENS = new Set([
+  'usd','eur','gbp','inr','cad','aud','jpy','cny','mxn','sgd','chf',
+  'pct','percent','percentage','qty','quantity'
+]);
+
+function normTokens(s){
+  const n = normalize(s);
+  return n ? n.split(' ').filter(Boolean) : [];
+}
+
+function stripUnits(tokens){
+  // remove unit/currency suffix tokens that often pollute abbreviations (e.g., LTV_USD)
+  return (tokens || []).filter(t => !(t && UNIT_TOKENS.has(t)));
+}
 
 function compactNorm(s){
-  return normalize(s).replace(/\s+/g,'');
+  const t = stripUnits(normTokens(s));
+  return t.join('');
 }
 
 function tokenSet(s){
-  const n = normalize(s);
-  const parts = n ? n.split(' ') : [];
-  const set = new Set();
+  const parts0 = normTokens(s);
+  const parts = stripUnits(parts0);
 
+  const set = new Set();
   for(const t0 of parts){
     const t = String(t0||'').trim();
     if(!t) continue;
@@ -385,7 +404,7 @@ function tokenSet(s){
   }
 
   // add compact form to enable overlap inside a single word (phone vs phonenumber)
-  const c = n.replace(/\s+/g,'');
+  const c = parts.join('');
   if(c) set.add(c);
 
   // add acronym for multi-word headers (e.g., "life time value" -> "ltv")
@@ -397,16 +416,56 @@ function tokenSet(s){
   return set;
 }
 
-function isSubsequence(shorter, longer){
+function subseqMatchRatio(shorter, longer){
   const s = String(shorter||'');
   const l = String(longer||'');
-  if(!s || !l) return false;
+  if(!s || !l) return 0;
   let i=0, j=0;
   while(i<s.length && j<l.length){
     if(s[i] === l[j]) i++;
     j++;
   }
-  return i === s.length;
+  return i / s.length;
+}
+
+function lcsLen(a, b){
+  a = String(a||'');
+  b = String(b||'');
+  const m=a.length, n=b.length;
+  if(!m || !n) return 0;
+  const dp = new Array(n+1).fill(0);
+  for(let i=1;i<=m;i++){
+    let prev = 0;
+    for(let j=1;j<=n;j++){
+      const tmp = dp[j];
+      if(a[i-1] === b[j-1]) dp[j] = prev + 1;
+      else dp[j] = Math.max(dp[j], dp[j-1]);
+      prev = tmp;
+    }
+  }
+  return dp[n];
+}
+
+function bigramDice(a, b){
+  a = String(a||''); b = String(b||'');
+  if(a.length < 2 || b.length < 2) return 0;
+  const grams = (s)=>{
+    const m = new Map();
+    for(let i=0;i<s.length-1;i++){
+      const g = s.slice(i,i+2);
+      m.set(g, (m.get(g)||0)+1);
+    }
+    return m;
+  };
+  const ga = grams(a), gb = grams(b);
+  let inter=0, total=0;
+  for(const v of ga.values()) total += v;
+  for(const v of gb.values()) total += v;
+  for(const [g,va] of ga.entries()){
+    const vb = gb.get(g)||0;
+    inter += Math.min(va, vb);
+  }
+  return total ? (2*inter)/total : 0;
 }
 
 function jaccardScore(setA, setB){
@@ -452,10 +511,20 @@ function abbreviationScore(a, b){
   const long  = ca.length <= cb.length ? cb : ca;
 
   // substring for cases like phone/phonenumber, customerid/custid
-  if(short.length >= 3 && long.includes(short)) return 1;
+  if(short.length >= 2 && long.includes(short)) return 1;
 
-  // subsequence helps abbreviations like ltv vs lifetimevalue
-  if(short.length >= 3 && isSubsequence(short, long)) return 1;
+  // subsequence helps abbreviations like ltv vs lifetimevalue, lifv vs lifetimevalue
+  if(short.length >= 2){
+    const r = subseqMatchRatio(short, long);
+    if(r >= 0.90) return r;
+  }
+
+  // LCS ratio catches "ltimev" style partial abbreviations
+  if(short.length >= 3){
+    const lcs = lcsLen(short, long);
+    const r = lcs / short.length;
+    if(r >= 0.80) return r;
+  }
 
   return 0;
 }
@@ -472,7 +541,7 @@ function similarity(a, b){
   const ta = tokenSet(a);
   const tb = tokenSet(b);
 
-  // token overlap (including derived tokens/acronyms)
+  // token overlap (including derived tokens/acronyms/compact)
   const j = jaccardScore(ta, tb);
 
   // edit similarity on compact strings
@@ -484,93 +553,193 @@ function similarity(a, b){
   const sub = substringTokenScore(ta, tb);
   const ab = abbreviationScore(a, b);
 
-  // weighted blend
-  const blended = (0.45*e) + (0.35*j) + (0.20*Math.max(sub, ab));
+  // character n-gram similarity helps "near miss" headers
+  const ngram = bigramDice(ca, cb);
+
+  // weighted blend (abbrev/subseq gets meaningful weight)
+  const blended = (0.35*e) + (0.25*j) + (0.25*Math.max(sub, ab)) + (0.15*ngram);
   return Math.max(0, Math.min(1, blended));
 }
 
-  function download(filename, blob){
-    const a = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 300);
+// -------------------- value-based matching (no hardcoding) --------------------
+function cleanMissing(v){
+  if(v === null || v === undefined) return null;
+  const s = String(v).trim();
+  if(!s) return null;
+  if(/^(null|na|n\/a|none|undefined)$/i.test(s)) return null;
+  return s;
+}
+
+function parseNumber(v){
+  const s = cleanMissing(v);
+  if(!s) return null;
+  const cleaned = s.replace(/[$,]/g,'');
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : null;
+}
+
+function canonicalText(v){
+  const s0 = cleanMissing(v);
+  if(!s0) return null;
+  const s = s0.trim();
+
+  // email
+  if(s.includes('@')) return s.toLowerCase();
+
+  // phone-ish -> digits only (keeps matches across formatting)
+  const digits = s.replace(/\D+/g,'');
+  if(digits.length >= 7 && digits.length <= 15) return digits;
+
+  // date-ish -> ISO date if parsable
+  const d = new Date(s);
+  if(!Number.isNaN(d.getTime())){
+    const iso = d.toISOString().slice(0,10);
+    if(iso && iso !== '1970-01-01') return iso;
   }
 
-  function readAsArrayBuffer(file){
-    return new Promise((resolve, reject)=>{
-      const fr = new FileReader();
-      fr.onload = ()=>resolve(fr.result);
-      fr.onerror = ()=>reject(fr.error);
-      fr.readAsArrayBuffer(file);
-    });
-  }
+  return s.toLowerCase().replace(/\s+/g,' ').trim();
+}
 
-  function parseFileHeadersAndRows(file, delimiter, headerRow){
-    const name = file.name || 'file';
-    const ext = (name.split('.').pop()||'').toLowerCase();
+function buildProfile(rows, col, limit){
+  const lim = Math.max(20, Math.min(300, limit || 160));
+  const nums = [];
+  const texts = new Set();
 
-    // Excel
-    if(ext === 'xlsx' || ext === 'xls'){
-      return readAsArrayBuffer(file).then(buf=>{
-        const wb = XLSX.read(buf, { type: 'array' });
-        const wsName = wb.SheetNames[0];
-        const ws = wb.Sheets[wsName];
-        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-        const hr = Math.max(1, parseInt(headerRow||'1',10));
-        const header = (rows[hr-1] || []).map(c=>String(c ?? '').trim());
-        const dataRows = rows.slice(hr).map(r=>{
-          const obj = {};
-          header.forEach((h, i)=>{ obj[h] = r[i]; });
-          return obj;
-        });
-        return { name, headers: header.filter(h=>h!==''), rows: dataRows };
-      });
+  for(const r of (rows || [])){
+    const v = r ? r[col] : null;
+    const n = parseNumber(v);
+    if(n !== null){
+      nums.push(n);
+    }else{
+      const t = canonicalText(v);
+      if(t) texts.add(t);
     }
-
-    // Text / CSV
-    return new Promise((resolve, reject)=>{
-      const fr = new FileReader();
-      fr.onload = ()=>{
-        const text = String(fr.result || '');
-        const hr = Math.max(1, parseInt(headerRow||'1',10));
-        const config = {
-          skipEmptyLines: true,
-          dynamicTyping: false,
-          delimiter: delimiter === 'auto' ? '' : delimiter,
-        };
-        const parsed = Papa.parse(text, config);
-        if(parsed.errors && parsed.errors.length){
-          // still try to proceed if data exists
-        }
-        const rows = parsed.data || [];
-        const header = (rows[hr-1] || []).map(c=>String(c ?? '').trim());
-        const dataRows = rows.slice(hr).map(r=>{
-          const obj = {};
-          header.forEach((h,i)=>{ obj[h] = r[i]; });
-          return obj;
-        });
-        resolve({ name, headers: header.filter(h=>h!==''), rows: dataRows });
-      };
-      fr.onerror = ()=>reject(fr.error);
-      fr.readAsText(file);
-    });
+    if(nums.length + texts.size >= lim) break;
   }
 
-  function buildMapping(aHeaders, bHeaders){
-    const bNorm = bHeaders.map(h=>({h, n: normalize(h)}));
-    return aHeaders.map(aCol=>{
-      let best = { bCol: '', score: 0 };
-      for(const b of bNorm){
-        const s = similarity(aCol, b.h);
-        if(s > best.score){ best = { bCol: b.h, score: s }; }
+  const total = nums.length + texts.size;
+  const numericRatio = total ? (nums.length / total) : 0;
+
+  if(nums.length && numericRatio >= 0.65){
+    nums.sort((a,b)=>a-b);
+    const min = nums[0], max = nums[nums.length-1];
+    const mean = nums.reduce((s,x)=>s+x,0) / nums.length;
+    const mid = Math.floor(nums.length/2);
+    const median = nums.length % 2 ? nums[mid] : (nums[mid-1]+nums[mid])/2;
+    let variance = 0;
+    for(const x of nums) variance += (x-mean)*(x-mean);
+    variance = variance / Math.max(1, nums.length);
+    const std = Math.sqrt(variance);
+    return { type:'num', n: nums.length, min, max, mean, median, std };
+  }
+
+  return { type:'text', n: texts.size, set: texts };
+}
+
+function valueSimilarity(pa, pb){
+  if(!pa || !pb) return 0;
+  if(pa.type !== pb.type) return 0;
+
+  if(pa.type === 'num'){
+    const scale = Math.max(
+      Math.abs(pa.mean), Math.abs(pb.mean),
+      Math.abs(pa.max - pa.min), Math.abs(pb.max - pb.min),
+      1
+    );
+    const diffMean = Math.abs(pa.mean - pb.mean) / scale;
+    const diffMed  = Math.abs(pa.median - pb.median) / scale;
+    const diffMin  = Math.abs(pa.min - pb.min) / scale;
+    const diffMax  = Math.abs(pa.max - pb.max) / scale;
+
+    const blended = (0.40*diffMean) + (0.30*diffMed) + (0.15*diffMin) + (0.15*diffMax);
+    return Math.max(0, Math.min(1, 1 - blended));
+  }
+
+  if(pa.type === 'text'){
+    const a = pa.set, b = pb.set;
+    if(!a.size || !b.size) return 0;
+    let inter = 0;
+    for(const v of a){ if(b.has(v)) inter++; }
+    const union = (new Set([...a, ...b])).size || 1;
+    const j = inter / union;
+    const containment = inter / Math.max(1, Math.min(a.size, b.size));
+    return Math.max(j, containment);
+  }
+
+  return 0;
+}
+
+// -------------------- one-to-one assignment --------------------
+function buildMapping(aHeaders, bHeaders, aRows, bRows){
+  const aProfiles = new Map();
+  const bProfiles = new Map();
+
+  for(const aCol of aHeaders){
+    aProfiles.set(aCol, buildProfile(aRows, aCol, 180));
+  }
+  for(const bCol of bHeaders){
+    bProfiles.set(bCol, buildProfile(bRows, bCol, 180));
+  }
+
+  const pairs = [];
+  for(let i=0;i<aHeaders.length;i++){
+    const aCol = aHeaders[i];
+    const pa = aProfiles.get(aCol);
+    for(let j=0;j<bHeaders.length;j++){
+      const bCol = bHeaders[j];
+      const pb = bProfiles.get(bCol);
+
+      const h = similarity(aCol, bCol);
+      const v = valueSimilarity(pa, pb);
+
+      // value similarity can rescue weak header matches (e.g., LastName vs Surname)
+      const score = (0.60*h) + (0.40*v);
+
+      pairs.push({ i, j, score });
+    }
+  }
+
+  pairs.sort((x,y)=>y.score - x.score);
+
+  const aAssigned = new Array(aHeaders.length).fill(false);
+  const bAssigned = new Array(bHeaders.length).fill(false);
+
+  const chosen = new Map(); // i -> {j, score}
+  const MIN_SCORE = 0.22;
+
+  for(const p of pairs){
+    if(p.score < MIN_SCORE) break;
+    if(aAssigned[p.i] || bAssigned[p.j]) continue;
+    aAssigned[p.i] = true;
+    bAssigned[p.j] = true;
+    chosen.set(p.i, { j: p.j, score: p.score });
+  }
+
+  // Build output in original A header order; keep best score even if unmatched
+  const out = [];
+  for(let i=0;i<aHeaders.length;i++){
+    const aCol = aHeaders[i];
+    const pick = chosen.get(i);
+    if(pick){
+      out.push({ aCol, bCol: bHeaders[pick.j], score: pick.score });
+    }else{
+      // compute best score against any B for reporting
+      let bestScore = 0, bestJ = -1;
+      for(let j=0;j<bHeaders.length;j++){
+        const pa = aProfiles.get(aCol);
+        const pb = bProfiles.get(bHeaders[j]);
+        const h = similarity(aCol, bHeaders[j]);
+        const v = valueSimilarity(pa, pb);
+        const s = (0.60*h) + (0.40*v);
+        if(s > bestScore){ bestScore = s; bestJ = j; }
       }
-      if(best.score < 0.30) best.bCol = ''; // treat as no match
-      return { aCol, bCol: best.bCol, score: best.score };
-    });
+      out.push({ aCol, bCol: (bestScore >= MIN_SCORE ? bHeaders[bestJ] : ''), score: bestScore });
+    }
   }
+
+  return out;
+}
+
 
   function renderTable(mapping, bHeaders){
     el.tbody.innerHTML = '';
@@ -680,7 +849,7 @@ function similarity(a, b){
       }
       state.a = a;
       state.b = b;
-      state.mapping = buildMapping(a.headers, b.headers);
+      state.mapping = buildMapping(a.headers, b.headers, a.rows, b.rows);
 
       el.statA.textContent = String(a.headers.length);
       el.statB.textContent = String(b.headers.length);
