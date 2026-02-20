@@ -115,34 +115,11 @@
     .hint{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
 
     .diffNavBtn{padding:8px 10px; min-width:36px; font-weight:700;}
+    .diffNavFloat{position:fixed; right:18px; bottom:18px; z-index:9999; display:flex; gap:10px; padding:10px; border-radius:14px; border:1px solid var(--border); background:rgba(0,0,0,.55); backdrop-filter: blur(10px); box-shadow:0 10px 30px rgba(0,0,0,.35);} 
+    .diffNavFloat .btn{padding:10px 12px;}
+    @media (max-width: 520px){ .diffNavFloat{right:12px; bottom:12px;} }
+
     tr.rm-active-diff td{box-shadow: inset 0 0 0 2px rgba(255,255,255,.18);}
-
-
-/* Floating diff navigation (stays visible after first use) */
-.diffNavFloat{
-  position:fixed;
-  right:18px;
-  bottom:18px;
-  z-index:9998;
-  display:none;
-  background:rgba(15,18,24,.72);
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:14px;
-  padding:10px 10px;
-  box-shadow:0 12px 30px rgba(0,0,0,.35);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  gap:8px;
-  align-items:center;
-}
-.diffNavFloat[aria-hidden="true"]{display:none;}
-.diffNavFloat[aria-hidden="false"]{display:flex;}
-.diffNavFloat .diffNavBtn{padding:8px 10px; min-width:38px;}
-.diffNavFloat .diffNavLabel{min-width:54px; text-align:center; opacity:.9;}
-@media (max-width: 520px){
-  .diffNavFloat{right:12px; bottom:12px; padding:8px;}
-  .diffNavFloat .diffNavLabel{display:none;}
-}
   </style>
 </head>
 
@@ -230,14 +207,6 @@
         <div class="diffBody" id="diffBody" aria-label="Diff results"></div>
       </div>
 
-
-<!-- Floating diff navigation: appears after you use < or > once (only when there are 3+ diffs) -->
-<div class="diffNavFloat" id="diffNavFloat" aria-hidden="true" aria-label="Diff navigation">
-  <button class="btn diffNavBtn" id="prevDiffFloatBtn" type="button" aria-label="Previous difference">&lt;</button>
-  <button class="btn diffNavBtn" id="nextDiffFloatBtn" type="button" aria-label="Next difference">&gt;</button>
-  <span class="tiny muted diffNavLabel" id="diffNavFloatLabel"></span>
-</div>
-
       <div class="tiny muted" style="margin-top:10px">
         Runs locally in your browser — your text never leaves the page.
       </div>
@@ -291,6 +260,9 @@
     runBtn: $("runBtn"),
     prevDiffBtn: $("prevDiffBtn"),
     nextDiffBtn: $("nextDiffBtn"),
+    prevDiffFloat: $("prevDiffFloat"),
+    nextDiffFloat: $("nextDiffFloat"),
+    diffNavFloat: $("diffNavFloat"),
     swapBtn: $("swapBtn"),
     clearBtn: $("clearBtn"),
     status: $("status"),
@@ -307,7 +279,7 @@
 
   // Diff navigation state (previous/next change)
   let diffNav = { rows: [], idx: 0 };
-  let navEverUsed = false;
+  let navPinnedEver = false;
 
   function collectDiffRows(){
     const table = els.diffBody.querySelector("table.diffTable");
@@ -318,49 +290,37 @@
 
   function setNavVisibility(n){
     if(!els.prevDiffBtn || !els.nextDiffBtn) return;
-    const show = n > 2;
-    els.prevDiffBtn.style.display = show ? "" : "none";
-    els.nextDiffBtn.style.display = show ? "" : "none";
+    const showInline = n > 2;
+    els.prevDiffBtn.style.display = showInline ? "" : "none";
+    els.nextDiffBtn.style.display = showInline ? "" : "none";
+
+    if(els.diffNavFloat){
+      const showFloat = navPinnedEver && (n > 2);
+      els.diffNavFloat.style.display = showFloat ? "flex" : "none";
+    }
   }
 
-
-function setFloatLabel(){
-  if(!els.diffNavFloatLabel) return;
-  const n = diffNav.rows.length;
-  if(n > 2){
-    els.diffNavFloatLabel.textContent = (diffNav.idx + 1) + " / " + n;
-  }else{
-    els.diffNavFloatLabel.textContent = "";
-  }
-}
-
-function setFloatVisibility(){
-  if(!els.diffNavFloat) return;
-  const n = diffNav.rows.length;
-  const show = (n > 2) && navEverUsed;
-  els.diffNavFloat.setAttribute("aria-hidden", show ? "false" : "true");
-  setFloatLabel();
-}
-
-  
   function updateNavDisabled(){
     const n = diffNav.rows.length;
-  
-    const prevBtns = [els.prevDiffBtn, els.prevDiffFloatBtn].filter(Boolean);
-    const nextBtns = [els.nextDiffBtn, els.nextDiffFloatBtn].filter(Boolean);
-  
+
+    const prevs = [els.prevDiffBtn, els.prevDiffFloat].filter(Boolean);
+    const nexts = [els.nextDiffBtn, els.nextDiffFloat].filter(Boolean);
+
     if(n <= 2){
-      prevBtns.forEach(b=>b.disabled = true);
-      nextBtns.forEach(b=>b.disabled = true);
-      setFloatLabel();
+      prevs.forEach(b=>b.disabled=true);
+      nexts.forEach(b=>b.disabled=true);
       return;
     }
-  
-    prevBtns.forEach(b=>b.disabled = diffNav.idx <= 0);
-    nextBtns.forEach(b=>b.disabled = diffNav.idx >= (n - 1));
-    setFloatLabel();
+    prevs.forEach(b=>b.disabled = diffNav.idx <= 0);
+    nexts.forEach(b=>b.disabled = diffNav.idx >= (n - 1));
   }
 
+  function pinNav(){
+    navPinnedEver = true;
+    if(els.diffNavFloat && diffNav.rows.length > 2){
+      els.diffNavFloat.style.display = "flex";
+    }
+  }
 
   function markActive(i){
     diffNav.rows.forEach(tr => tr.classList.remove("rm-active-diff"));
@@ -379,28 +339,22 @@ function setFloatVisibility(){
     updateNavDisabled();
   }
 
-  
   function setupDiffNav(){
     diffNav.rows = collectDiffRows();
     diffNav.idx = 0;
-  
-    // Reset floating nav for each new compare run
-    navEverUsed = false;
-  
     setNavVisibility(diffNav.rows.length);
-    setFloatVisibility();
     updateNavDisabled();
-  
+
     if(diffNav.rows.length >= 1 && diffNav.rows.length <= 2){
-      // 1–2 differences: jump straight to the first diff (nav buttons stay hidden).
+      // 1–2 diffs: no nav buttons; jump straight to the first diff.
       els.diffWrap.scrollIntoView({behavior:"smooth", block:"start"});
       requestAnimationFrame(()=>scrollToDiff(0));
     }else if(diffNav.rows.length > 2){
-      // 3+ diffs: highlight the first diff (no auto-scroll).
+      // 3+ diffs: show nav buttons; highlight first diff (no auto-scroll).
       markActive(0);
       updateNavDisabled();
     }
-}
+  }
 
   function setMeta(which, file){
     const target = which === "L" ? els.leftMeta : els.rightMeta;
@@ -527,9 +481,7 @@ function setFloatVisibility(){
 
     if(!rows.length){
       els.diffBody.innerHTML = "<div class='diffEmpty'>No differences found.</div>";
-      navEverUsed = false;
       setNavVisibility(0);
-      setFloatVisibility();
       updateNavDisabled();
       return;
     }
@@ -568,8 +520,6 @@ function setFloatVisibility(){
     setMeta("R", null);
     els.diffWrap.style.display = "none";
     setNavVisibility(0);
-    navEverUsed = false;
-    setFloatVisibility();
     diffNav.rows = [];
     diffNav.idx = 0;
     els.diffBody.innerHTML = "";
@@ -639,44 +589,27 @@ function setFloatVisibility(){
   }
 
 
-  
-  function navPrev(scrollPage){
-    if(diffNav.rows.length <= 2) return;
+  function navPrev(){
+    if(diffNav.rows.length <= 1) return;
     if(diffNav.idx <= 0) return;
-  
     diffNav.idx -= 1;
-    navEverUsed = true;
-    setFloatVisibility();
-  
-    if(scrollPage){
-      els.diffWrap.scrollIntoView({behavior:"smooth", block:"start"});
-    }
+    els.diffWrap.scrollIntoView({behavior:"smooth", block:"start"});
     requestAnimationFrame(()=>scrollToDiff(diffNav.idx));
   }
-  
-  function navNext(scrollPage){
-    if(diffNav.rows.length <= 2) return;
+  function navNext(){
+    if(diffNav.rows.length <= 1) return;
     if(diffNav.idx >= diffNav.rows.length - 1) return;
-  
     diffNav.idx += 1;
-    navEverUsed = true;
-    setFloatVisibility();
-  
-    if(scrollPage){
-      els.diffWrap.scrollIntoView({behavior:"smooth", block:"start"});
-    }
+    els.diffWrap.scrollIntoView({behavior:"smooth", block:"start"});
     requestAnimationFrame(()=>scrollToDiff(diffNav.idx));
   }
-
   els.runBtn.addEventListener("click", buildDiff);
   els.swapBtn.addEventListener("click", swap);
   els.clearBtn.addEventListener("click", clearAll);
   els.copySummaryBtn.addEventListener("click", copySummary);
   els.downloadBtn.addEventListener("click", download);
-  if(els.prevDiffBtn) els.prevDiffBtn.addEventListener("click", ()=>navPrev(true));
-  if(els.nextDiffBtn) els.nextDiffBtn.addEventListener("click", ()=>navNext(true));
-  if(els.prevDiffFloatBtn) els.prevDiffFloatBtn.addEventListener("click", ()=>navPrev(false));
-  if(els.nextDiffFloatBtn) els.nextDiffFloatBtn.addEventListener("click", ()=>navNext(false));
+  if(els.prevDiffBtn) els.prevDiffBtn.addEventListener("click", navPrev);
+  if(els.nextDiffBtn) els.nextDiffBtn.addEventListener("click", navNext);
 
 
   // Learn-more modal behavior
@@ -717,6 +650,15 @@ function setFloatVisibility(){
   setMeta("L", null);
   setMeta("R", null);
 })();
+
+// (nav listeners injected)
 </script>
+
+  <!-- Floating diff navigation (appears after first use) -->
+  <div id="diffNavFloat" class="diffNavFloat" style="display:none" aria-label="Difference navigation">
+    <button class="btn diffNavBtn" id="prevDiffFloat" type="button" aria-label="Previous difference">&lt;</button>
+    <button class="btn diffNavBtn" id="nextDiffFloat" type="button" aria-label="Next difference">&gt;</button>
+  </div>
+
 </body>
 </html>
