@@ -60,8 +60,8 @@
 .rm-lm-body li{margin:4px 0;}
 </style>
   <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <script defer src="/assets/js/rm-dropzone.js"></script>
   <script defer src="/assets/js/rm-tools-drawer.js"></script>
 </head>
@@ -266,33 +266,219 @@
     setTimeout(()=>setStatus(''), 1000);
   });
 
-  function wrapHtml(bodyHtml){
-    return '<!DOCTYPE html><html><head><meta charset="utf-8">' +
-      '<style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.35} h1,h2,h3{margin:0.6em 0 0.3em} p{margin:0.4em 0}</style>' +
-      '</head><body>' + bodyHtml + '</body></html>';
+  function splitBlocks(md){
+    const lines = (md||'').replace(/\r\n/g,'\n').split('\n');
+    const blocks = [];
+    let buf = [];
+    let inCode = false;
+    let codeBuf = [];
+
+    function flushPara(){
+      const text = buf.join(' ').trim();
+      if(text) blocks.push({type:'para', text});
+      buf = [];
+    }
+
+    for(const line of lines){
+      const l = line;
+
+      if(l.trim().startsWith('```')){
+        if(!inCode){
+          flushPara();
+          inCode = true;
+          codeBuf = [];
+        }else{
+          blocks.push({type:'code', lines: codeBuf.slice()});
+          inCode = false;
+          codeBuf = [];
+        }
+        continue;
+      }
+
+      if(inCode){
+        codeBuf.push(l);
+        continue;
+      }
+
+      if(!l.trim()){
+        flushPara();
+        continue;
+      }
+
+      const hm = l.match(/^(#{1,6})\s+(.+)$/);
+      if(hm){
+        flushPara();
+        blocks.push({type:'heading', level: hm[1].length, text: hm[2].trim()});
+        continue;
+      }
+
+      const bm = l.match(/^\s*[-*+]\s+(.+)$/);
+      if(bm){
+        flushPara();
+        blocks.push({type:'bullet', text: bm[1].trim()});
+        continue;
+      }
+
+      const nm = l.match(/^\s*(\d+)\.\s+(.+)$/);
+      if(nm){
+        flushPara();
+        blocks.push({type:'number', n: nm[1], text: nm[2].trim()});
+        continue;
+      }
+
+      buf.push(l.trim());
+    }
+
+    if(inCode){
+      blocks.push({type:'code', lines: codeBuf.slice()});
+    }else{
+      flushPara();
+    }
+    return blocks;
   }
 
-  function convert(){
+  function parseInline(text){
+    const parts = [];
+    let i = 0;
+    function pushPlain(s){ if(s) parts.push({text:s}); }
+
+    while(i < text.length){
+      const rest = text.slice(i);
+
+      if(rest[0] === '`'){
+        const j = rest.indexOf('`', 1);
+        if(j > 0){
+          parts.push({text: rest.slice(1, j), code:true});
+          i += j + 1;
+          continue;
+        }
+      }
+
+      if(rest.startsWith('**')){
+        const j = rest.indexOf('**', 2);
+        if(j > 1){
+          parts.push({text: rest.slice(2, j), bold:true});
+          i += j + 2;
+          continue;
+        }
+      }
+
+      if(rest[0] === '*' && rest[1] !== '*'){
+        const j = rest.indexOf('*', 1);
+        if(j > 0){
+          parts.push({text: rest.slice(1, j), italics:true});
+          i += j + 1;
+          continue;
+        }
+      }
+
+      const nexts = [];
+      const idxCode = rest.indexOf('`');
+      const idxBold = rest.indexOf('**');
+      const idxIt = rest.indexOf('*');
+      if(idxCode >= 0) nexts.push(idxCode);
+      if(idxBold >= 0) nexts.push(idxBold);
+      if(idxIt >= 0) nexts.push(idxIt);
+      const next = nexts.length ? Math.min.apply(null, nexts.filter(n=>n>=0)) : -1;
+      if(next === -1){
+        pushPlain(rest);
+        break;
+      }else if(next === 0){
+        pushPlain(rest[0]);
+        i += 1;
+      }else{
+        pushPlain(rest.slice(0, next));
+        i += next;
+      }
+    }
+    return parts;
+  }
+
+  async function convert(){
     const md = inputText.value || '';
     if(!md.trim()){
       setStatus('Add some Markdown first.');
       return;
     }
-    const bodyHtml = window.marked.parse(md);
-    const fullHtml = wrapHtml(bodyHtml);
-    try{
-      lastDocxBlob = window.htmlDocx.asBlob(fullHtml);
-    }catch(e){
-      setStatus('Could not build DOCX. Try simpler Markdown.');
+
+    const bodyHtml = (window.marked && typeof window.marked.parse === 'function') ? window.marked.parse(md) : md;
+    outputText.value = bodyHtml;
+    preview.innerHTML = bodyHtml;
+
+    if(!window.docx || !window.docx.Packer){
+      setStatus('DOCX engine not loaded yet. Refresh and try again.');
       return;
     }
-    outputText.value = bodyHtml; // show the generated HTML
-    preview.innerHTML = bodyHtml;
-    outMeta.innerHTML = '<b>OUT:</b><span class="muted"> DOCX ready</span>';
-    setStatus('DOCX ready — click Download.');
+
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel } = window.docx;
+
+    const blocks = splitBlocks(md);
+    const children = [];
+
+    function paraFromText(text, opts){
+      const runs = parseInline(text).map(p=>{
+        return new TextRun({
+          text: p.text,
+          bold: !!p.bold,
+          italics: !!p.italics,
+          font: p.code ? 'Courier New' : undefined
+        });
+      });
+      return new Paragraph(Object.assign({ children: runs }, opts||{}));
+    }
+
+    const map = [HeadingLevel.HEADING_1, HeadingLevel.HEADING_2, HeadingLevel.HEADING_3, HeadingLevel.HEADING_4, HeadingLevel.HEADING_5, HeadingLevel.HEADING_6];
+
+    for(const b of blocks){
+      if(b.type === 'heading'){
+        const lvl = Math.min(6, Math.max(1, b.level||1));
+        children.push(paraFromText(b.text, { heading: map[lvl-1] }));
+        continue;
+      }
+      if(b.type === 'bullet'){
+        children.push(paraFromText(b.text, { bullet: { level: 0 } }));
+        continue;
+      }
+      if(b.type === 'number'){
+        children.push(paraFromText(b.n + '. ' + b.text));
+        continue;
+      }
+      if(b.type === 'code'){
+        const lines = b.lines || [''];
+        for(const line of lines){
+          children.push(new Paragraph({
+            children: [new TextRun({ text: line || ' ', font: 'Courier New' })],
+            spacing: { before: 80, after: 80 }
+          }));
+        }
+        children.push(new Paragraph({ text: '' }));
+        continue;
+      }
+      if(b.type === 'para'){
+        children.push(paraFromText(b.text));
+        children.push(new Paragraph({ text: '' }));
+      }
+    }
+
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children
+      }]
+    });
+
+    setStatus('Building DOCX…');
+    try{
+      lastDocxBlob = await Packer.toBlob(doc);
+      outMeta.innerHTML = '<b>OUT:</b><span class="muted"> DOCX ready</span>';
+      setStatus('DOCX ready — click Download.');
+    }catch(e){
+      lastDocxBlob = null;
+      setStatus('Could not build DOCX. Try simpler Markdown.');
+    }
   }
 
-  $('#convertBtn').addEventListener('click', convert);
+  $('#convertBtn').addEventListener('click', ()=>{ convert(); });
 
   $('#downloadBtn').addEventListener('click', ()=>{
     if(!lastDocxBlob){ setStatus('Convert first to generate a DOCX.'); return; }

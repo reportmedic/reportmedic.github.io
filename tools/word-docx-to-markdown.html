@@ -60,8 +60,7 @@
 .rm-lm-body li{margin:4px 0;}
 </style>
   <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/turndown/dist/turndown.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/mammoth/mammoth.browser.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mammoth/mammoth.browser.min.js"></script>
   <script defer src="/assets/js/rm-dropzone.js"></script>
   <script defer src="/assets/js/rm-tools-drawer.js"></script>
 </head>
@@ -252,35 +251,7 @@
   'use strict';
   const { $, fileInput, inputText, outputText, preview, inMeta, outMeta, setStatus, bytes, readFileAsArrayBuffer } = window.__RM;
 
-  const td = new window.TurndownService({
-    codeBlockStyle: 'fenced',
-    headingStyle: 'atx',
-    emDelimiter: '_'
-  });
-
   let lastOutName = 'document.md';
-
-  fileInput.addEventListener('change', async ()=>{
-    const f = fileInput.files && fileInput.files[0];
-    if(!f) return;
-    if(!/\.docx$/i.test(f.name||'')){
-      setStatus('Please upload a .docx file.');
-      return;
-    }
-    inMeta.innerHTML = '<b>IN:</b><span class="muted"> '+ (f.name||'file') + ' • ' + bytes(f.size) + '</span>';
-    lastOutName = (f.name || 'document').replace(/\.[^.]+$/, '') + '.md';
-    setStatus('Reading DOCX…');
-    try{
-      const buf = await readFileAsArrayBuffer(f);
-      const result = await window.mammoth.convertToHtml({ arrayBuffer: buf });
-      inputText.value = result.value || '';
-      setStatus('DOCX loaded — click Convert.');
-      setTimeout(()=>setStatus(''), 1200);
-    }catch(e){
-      setStatus('Could not read this DOCX.');
-    }
-  });
-
 
   function downloadText(filename, text, mimeType){
     const blob = new Blob([text], {type: mimeType || 'text/plain'});
@@ -292,21 +263,48 @@
     setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 0);
   }
 
-  function convert(){
-    const html = inputText.value || '';
-    if(!html.trim()){
-      setStatus('Upload a DOCX first.');
+  async function loadDocx(file){
+    if(!window.mammoth || typeof window.mammoth.convertToMarkdown !== 'function'){
+      setStatus('DOCX engine not loaded yet. Refresh and try again.');
       return;
     }
-    let md='';
+    inMeta.innerHTML = '<b>IN:</b><span class="muted"> '+ (file.name||'file') + ' • ' + bytes(file.size) + '</span>';
+    lastOutName = (file.name || 'document').replace(/\.[^.]+$/, '') + '.md';
+    setStatus('Reading DOCX…');
     try{
-      md = td.turndown(html);
+      const buf = await readFileAsArrayBuffer(file);
+      const result = await window.mammoth.convertToMarkdown({ arrayBuffer: buf });
+      const md = (result && result.value) ? result.value : '';
+      inputText.value = md;
+      setStatus('DOCX loaded — click Convert.');
+      setTimeout(()=>setStatus(''), 1200);
     }catch(e){
-      setStatus('Could not convert this DOCX content cleanly.');
+      setStatus('Could not read this DOCX.');
+    }
+  }
+
+  fileInput.addEventListener('change', async ()=>{
+    const f = fileInput.files && fileInput.files[0];
+    if(!f) return;
+    if(!/\.docx$/i.test(f.name||'')){
+      setStatus('Please upload a .docx file.');
+      return;
+    }
+    await loadDocx(f);
+  });
+
+  function convert(){
+    const md = inputText.value || '';
+    if(!md.trim()){
+      setStatus('Upload a DOCX or paste Markdown first.');
       return;
     }
     outputText.value = md;
-    preview.innerHTML = window.marked.parse(md);
+    if(window.marked && typeof window.marked.parse === 'function'){
+      preview.innerHTML = window.marked.parse(md);
+    } else {
+      preview.textContent = md;
+    }
     outMeta.innerHTML = '<b>OUT:</b><span class="muted"> Markdown ready</span>';
     setStatus('Converted.');
     setTimeout(()=>setStatus(''), 1000);

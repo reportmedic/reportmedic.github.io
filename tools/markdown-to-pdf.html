@@ -63,6 +63,18 @@
   <script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
   <script defer src="/assets/js/rm-dropzone.js"></script>
   <script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+  /* PDF export surface: force white background + dark text for legibility */
+  #printSurface{position:fixed; left:-10000px; top:0; width:794px; background:#fff; color:#111; padding:28px; z-index:-1;}
+  #printSurface *{color:#111 !important;}
+  #printSurface h1,#printSurface h2,#printSurface h3{color:#111 !important; margin:0.8em 0 0.35em;}
+  #printSurface p{margin:0.4em 0; line-height:1.45;}
+  #printSurface pre{background:#f4f6f8 !important; border:1px solid #e2e8f0; padding:12px; border-radius:10px; overflow:auto;}
+  #printSurface code{background:#f4f6f8 !important; padding:2px 4px; border-radius:6px;}
+  #printSurface table{border-collapse:collapse; width:100%;}
+  #printSurface th,#printSurface td{border:1px solid #e5e7eb; padding:8px; vertical-align:top;}
+  #printSurface blockquote{border-left:4px solid #e5e7eb; padding-left:12px; margin:10px 0; color:#111 !important;}
+</style>
 </head>
 <body class="tools-page">
 <header>
@@ -265,39 +277,52 @@
   });
 
   function convert(){
-    const md = inputText.value || '';
-    if(!md.trim()){
-      setStatus('Add some Markdown first.');
-      return;
-    }
-    const html = window.marked.parse(md);
-    outputText.value = html;
-    preview.innerHTML = html;
-    outMeta.innerHTML = '<b>OUT:</b><span class="muted"> PDF ready</span>';
-    setStatus('Preview ready — click Download to export PDF.');
+  const md = inputText.value || '';
+  if(!md.trim()){
+    setStatus('Add some Markdown first.');
+    return;
   }
+  const html = (window.marked && typeof window.marked.parse === 'function') ? window.marked.parse(md) : md;
+  outputText.value = html;
+  preview.innerHTML = html;
+
+  const ps = document.getElementById('printSurface');
+  if(ps){ ps.innerHTML = html; }
+
+  outMeta.innerHTML = '<b>OUT:</b><span class="muted"> PDF ready</span>';
+  setStatus('Preview ready — click Download to export PDF.');
+}
 
   $('#convertBtn').addEventListener('click', convert);
 
   $('#downloadBtn').addEventListener('click', ()=>{
-    if(!preview.innerHTML.trim()){ setStatus('Convert first to build the preview.'); return; }
-    const opt = {
-      margin:       10,
-      filename:     lastOutName,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    setStatus('Generating PDF…');
-    window.html2pdf().set(opt).from(preview).save().then(()=>{
-      setStatus('Downloaded.');
-      setTimeout(()=>setStatus(''), 1000);
-    }).catch(()=>{
-      setStatus('Could not generate PDF. Try shorter content.');
-    });
+  const ps = document.getElementById('printSurface');
+  if(!ps || !ps.innerHTML.trim()){
+    setStatus('Convert first to build the preview.');
+    return;
+  }
+  const opt = {
+    margin:       10,
+    filename:     lastOutName,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:    { mode: ['css','legacy'] }
+  };
+  setStatus('Generating PDF…');
+  window.html2pdf().set(opt).from(ps).save().then(()=>{
+    setStatus('Downloaded.');
+    setTimeout(()=>setStatus(''), 1000);
+  }).catch(()=>{
+    setStatus('Could not generate PDF. Try shorter content.');
   });
+});
+
+});
 })();
 
 </script>
+
+<div id="printSurface" aria-hidden="true"></div>
 </body>
 </html>

@@ -251,13 +251,7 @@
   'use strict';
   const { $, fileInput, inputText, outputText, preview, inMeta, outMeta, setStatus, bytes, readFileAsText } = window.__RM;
 
-  const td = new window.TurndownService({
-    codeBlockStyle: 'fenced',
-    headingStyle: 'atx',
-    emDelimiter: '_'
-  });
-
-  let lastOutName = 'converted.md';
+  let lastOutName = 'document.md';
 
   fileInput.addEventListener('change', async ()=>{
     const f = fileInput.files && fileInput.files[0];
@@ -265,11 +259,23 @@
     const txt = await readFileAsText(f);
     inputText.value = txt;
     inMeta.innerHTML = '<b>IN:</b><span class="muted"> '+ (f.name||'file') + ' • ' + bytes(f.size) + '</span>';
-    lastOutName = (f.name || 'html').replace(/\.[^.]+$/, '') + '.md';
+    lastOutName = (f.name || 'document').replace(/\.[^.]+$/, '') + '.md';
     setStatus('Loaded.');
     setTimeout(()=>setStatus(''), 1000);
   });
 
+  function makeTurndown(){
+    if(!window.TurndownService){
+      throw new Error('TurndownService not loaded');
+    }
+    const td = new window.TurndownService({
+      codeBlockStyle: 'fenced',
+      headingStyle: 'atx',
+      emDelimiter: '_'
+    });
+    td.keep(['table','thead','tbody','tfoot','tr','th','td']);
+    return td;
+  }
 
   function downloadText(filename, text, mimeType){
     const blob = new Blob([text], {type: mimeType || 'text/plain'});
@@ -289,14 +295,18 @@
     }
     let md = '';
     try{
+      const td = makeTurndown();
       md = td.turndown(html);
     }catch(e){
-      setStatus('Could not convert this HTML. Try simpler HTML.');
+      setStatus('Conversion engine not ready. Refresh and try again.');
       return;
     }
     outputText.value = md;
-    // Preview as rendered markdown
-    preview.innerHTML = window.marked.parse(md);
+    if(window.marked && typeof window.marked.parse === 'function'){
+      preview.innerHTML = window.marked.parse(md);
+    }else{
+      preview.textContent = md;
+    }
     outMeta.innerHTML = '<b>OUT:</b><span class="muted"> Markdown ready</span>';
     setStatus('Converted.');
     setTimeout(()=>setStatus(''), 1000);
