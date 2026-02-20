@@ -305,22 +305,28 @@
     // (not just the visible/scrollable portion of the on-page preview).
     const sandbox = document.createElement('div');
     sandbox.id = '__rm_pdf_sandbox';
+    // Keep it ON the page (not far offscreen) so html2canvas doesn't crop/shift.
+    // Make it invisible instead.
     sandbox.style.position = 'fixed';
-    sandbox.style.left = '-10000px';
+    sandbox.style.left = '0';
     sandbox.style.top = '0';
     sandbox.style.width = '794px'; // ~A4 width at 96dpi
     sandbox.style.background = '#ffffff';
     sandbox.style.color = '#111111';
     sandbox.style.overflow = 'visible';
     sandbox.style.pointerEvents = 'none';
+    sandbox.style.opacity = '0';
+    sandbox.style.zIndex = '-1';
 
     const style = document.createElement('style');
     style.textContent = `
       #__rm_pdf_sandbox { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
+      /* Force readable colors even if the site is in dark theme */
+      #__rm_pdf_sandbox, #__rm_pdf_sandbox *{ color:#111111 !important; }
       #__rm_pdf_sandbox .__rm_pdf_content{
         box-sizing:border-box;
         width:100%;
-        padding:24px 24px 20px;
+        padding:30px 30px 24px;
         overflow:visible !important;
         height:auto !important;
         background:#ffffff !important;
@@ -334,13 +340,13 @@
       #__rm_pdf_sandbox p{margin:0 0 10px;}
       #__rm_pdf_sandbox ul, #__rm_pdf_sandbox ol{margin:0 0 10px 22px;}
       #__rm_pdf_sandbox li{margin:4px 0;}
-      #__rm_pdf_sandbox a{color:#1a56db;text-decoration:underline;}
+      #__rm_pdf_sandbox a, #__rm_pdf_sandbox a *{color:#1a56db !important;text-decoration:underline;}
       #__rm_pdf_sandbox hr{border:0;border-top:1px solid #dddddd;margin:14px 0;}
       #__rm_pdf_sandbox blockquote{
         margin:10px 0;
         padding:8px 12px;
         border-left:3px solid #bbbbbb;
-        color:#444444;
+        color:#444444 !important;
         background:#f7f7f7;
       }
       #__rm_pdf_sandbox pre{
@@ -390,7 +396,8 @@
     else if(h > 18000) scale = 1.5;
 
     const opt = {
-      margin:       [12, 10, 12, 10],
+      // Slightly larger margins reduce edge-clipping risk on some browsers.
+      margin:       [14, 12, 14, 12],
       filename:     lastOutName,
       image:        { type: 'jpeg', quality: 0.98 },
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['pre', 'blockquote', 'table', 'img'] },
@@ -400,8 +407,7 @@
         backgroundColor: '#ffffff',
         scrollX: 0,
         scrollY: 0,
-        windowWidth: content.scrollWidth,
-        windowHeight: content.scrollHeight
+        // Let html2canvas measure naturally to avoid edge-cropping.
       },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
