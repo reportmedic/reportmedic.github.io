@@ -50,6 +50,9 @@
     th{position:sticky;top:0;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);text-align:left;font-size:12px;letter-spacing:.02em;opacity:.9}
     tr:last-child td{border-bottom:none}
 
+    /* Preview table row sizing */
+    .tablewrap td{font-size:12px;padding:8px 10px}
+
     .ruleRow{display:grid;grid-template-columns:1.1fr .9fr .8fr .9fr 1fr .55fr;gap:10px;align-items:end}
     @media (max-width: 980px){.ruleRow{grid-template-columns:1fr}}
     .ruleRow .input{width:100%}
@@ -165,7 +168,7 @@
 </div>
 </div>
 <div class="hr2"></div>
-<div class="grid3">
+<div class="grid2">
 <div class="card">
 <div style="font-weight:700">1) Build rules</div>
 <div class="tiny muted">Add checks column-by-column</div>
@@ -227,6 +230,8 @@
 </div>
 <div class="mini muted" id="rules" style="margin-top:10px">Load a file to build rules.</div>
 </div>
+</div>
+<div class="hr2"></div>
 <div class="card">
 <div style="font-weight:700">3) Audit</div>
 <div class="tiny muted">Schema + thresholds + counts</div>
@@ -235,7 +240,6 @@
 <div class="note tiny muted">
           Download the Report to keep a permanent record of checks run (useful for QA sign-off).
         </div>
-</div>
 </div>
 <div class="hr2"></div>
 <div class="card">
@@ -252,14 +256,13 @@
 </select>
 </div>
 </div>
-<div class="split" style="margin-top:12px">
-<div class="tablewrap">
+<div class="tablewrap" style="margin-top:12px">
 <table>
 <thead><tr id="thead"></tr></thead>
 <tbody id="tbody"></tbody>
 </table>
 </div>
-<div class="card" style="margin:0">
+<div class="card" style="margin:12px 0 0 0">
 <div style="font-weight:700">How to read results</div>
 <div class="hr2"></div>
 <div class="mini muted">
@@ -271,6 +274,8 @@
 <li><span class="mono">_warns</span>: count of warning-level issues</li>
 <li><span class="mono">_issues</span>: human-readable list of what failed</li>
 </ul>
+</div>
+
 </div>
 </div>
 </div>
