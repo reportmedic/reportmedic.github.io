@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Markdown to PDF — Export .md as PDF — ReportMedic</title>
+  <meta name="description" content="Convert Markdown to a polished PDF you can send with confidence. Runs locally in your browser." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+<style>
+    /* Minimal page-specific styling; keeps your global /assets/css/styles.css as the source of truth. */
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media (max-width: 880px){.grid2{grid-template-columns:1fr}}
+    .card{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;background:rgba(0,0,0,.10)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .muted{opacity:.8}
+    .tiny{font-size:12px;opacity:.78}
+    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;border:1px solid rgba(255,255,255,.12);border-bottom-color:rgba(255,255,255,.22);padding:2px 6px;border-radius:8px;opacity:.9}
+    .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px}
+    .pill b{font-size:12px}
+    .hr2{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
+    .chklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
+    @media (max-width: 540px){.chklist{grid-template-columns:1fr}}
+    .chk{display:flex;gap:8px;align-items:center;padding:6px 8px;border:1px solid rgba(255,255,255,.10);border-radius:12px}
+    .chk input{transform:translateY(1px)}
+    .input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.16);color:inherit}
+    .tablewrap{overflow:auto;border:1px solid rgba(255,255,255,.10);border-radius:14px}
+    table{border-collapse:separate;border-spacing:0;width:100%;min-width:860px}
+    th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+    th{position:sticky;top:0;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);text-align:left;font-size:12px;letter-spacing:.02em;opacity:.9}
+    tr:last-child td{border-bottom:none}
+    .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;border:1px solid rgba(255,255,255,.12)}
+    .b-added{background:rgba(46, 204, 113, .12)}
+    .b-removed{background:rgba(231, 76, 60, .12)}
+    .b-changed{background:rgba(241, 196, 15, .12)}
+    .b-same{background:rgba(52, 152, 219, .10)}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .diffbox{border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:8px;background:rgba(0,0,0,.12)}
+    .diffbox .kv{display:grid;grid-template-columns:120px 1fr;gap:6px;margin:6px 0}
+    .diffbox .kv .k{opacity:.75;font-size:12px}
+    .diffbox .kv .v{word-break:break-word}
+    .hint{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
+  </style>
+<style>
+/* ReportMedic Learn-more modal (lightweight, page-local) */
+.rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+.rm-lm-link:hover{opacity:1;}
+.rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;}
+.rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+.rm-lm-dialog{color:#111;max-width:560px; width:100%; background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.25); overflow:hidden;}
+.rm-lm-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08);}
+.rm-lm-title{margin:0; font-size:1.05rem;}
+.rm-lm-close{border:0; background:transparent; font-size:1.25rem; line-height:1; padding:6px 10px; cursor:pointer; opacity:.7;}
+.rm-lm-close:hover{opacity:1;}
+.rm-lm-body{font-size:.95rem; line-height:1.45; color:#111;padding:14px 16px;}
+.rm-lm-body h3{margin:12px 0 6px; font-size:.95rem;}
+.rm-lm-body ul{margin:0 0 6px 18px;}
+.rm-lm-body li{margin:4px 0;}
+</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+  <script defer src="/assets/js/rm-dropzone.js"></script>
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+</head>
+<body class="tools-page">
+<header>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div></header>
+<div class="wrap">
+  <div class="panel">
+    <h1>Markdown to PDF <a class="rm-lm-link" data-rm-lm-open="rmLM" href="#">Learn more</a></h1>
+    <p class="sub">Convert Markdown to a polished PDF you can send with confidence. Runs locally in your browser.</p>
+    <div class="hr"></div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="row" style="justify-content:space-between; align-items:flex-start">
+          <div>
+            <div style="font-weight:700">Input</div>
+            <div class="tiny muted">Upload a file or paste text below — everything runs locally in your browser.</div>
+          </div>
+          <span class="pill tiny" id="inMeta"><b>IN:</b><span class="muted">not loaded</span></span>
+        </div>
+
+        <div style="margin-top:10px">
+          <input id="fileInput" class="input" type="file" accept=".md,.markdown,.txt" />
+        </div>
+
+        <div style="margin-top:10px">
+          <textarea id="inputText" class="input" rows="12" placeholder="Paste here…"></textarea>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <button id="convertBtn" class="btn primary" type="button">Convert</button>
+          <button id="clearBtn" class="btn" type="button">Clear</button>
+          <span class="tiny muted" id="status" style="align-self:center"></span>
+        </div>
+
+        <div class="hint tiny muted" style="margin-top:10px">
+          Tip: If you’re sharing this output, consider using <a href="/tools/mask-sensitive-data-before-sharing.html">PII Masker</a> first.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between; align-items:flex-start">
+          <div>
+            <div style="font-weight:700">Output</div>
+            <div class="tiny muted">Preview + downloadable result.</div>
+          </div>
+          <span class="pill tiny" id="outMeta"><b>OUT:</b><span class="muted">ready when you convert</span></span>
+        </div>
+
+        <div style="margin-top:10px">
+          <textarea id="outputText" class="input" rows="12" placeholder="Converted output will appear here…"></textarea>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <button id="copyBtn" class="btn" type="button">Copy output</button>
+          <button id="downloadBtn" class="btn" type="button">Download</button>
+        </div>
+
+        <div class="hr" style="margin:12px 0"></div>
+
+        <div class="tiny muted" style="margin-bottom:8px">Preview</div>
+        <div id="preview" class="diffbox" style="min-height:120px; overflow:auto"></div>
+      </div>
+    </div>
+
+    <div class="hr" style="margin-top:16px"></div>
+    <div class="tiny muted">Need human help translating this into a submission-ready explanation? <a href="/fix-my-report.html">Fix My Report</a>.</div>
+  </div>
+</div>
+
+
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="rm-lm-dialog" role="document">
+    <div class="rm-lm-head">
+      <h3 class="rm-lm-title">How this tool works</h3>
+      <button class="rm-lm-x" data-rm-lm-close="rmLM" aria-label="Close">✕</button>
+    </div>
+    <div class="rm-lm-body">
+      <div class="rm-lm-kicker">Local-only conversion</div>
+      <p class="rm-lm-p">Your files stay on your device. Conversion happens in your browser using well-known open-source libraries.</p>
+      <ul class="rm-lm-list">
+        <li>Upload a file (drag & drop supported) or paste text</li>
+        <li>Convert, review the preview, then copy or download</li>
+      </ul>
+      <div class="rm-lm-note">If the output looks off, try exporting from the source again (clean HTML / simple Markdown usually converts best).</div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  function qs(s,root){return (root||document).querySelector(s);}
+  document.addEventListener('click', function(e){
+    const open = e.target.closest('[data-rm-lm-open]');
+    const close = e.target.closest('[data-rm-lm-close]');
+    if(open){ e.preventDefault(); const id=open.getAttribute('data-rm-lm-open'); const b=qs('#'+id); if(b){ b.setAttribute('aria-hidden','false'); } }
+    if(close){ e.preventDefault(); const id=close.getAttribute('data-rm-lm-close'); const b=qs('#'+id); if(b){ b.setAttribute('aria-hidden','true'); } }
+    if(e.target.classList && e.target.classList.contains('rm-lm-backdrop')){ e.target.setAttribute('aria-hidden','true'); }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key==='Escape'){ document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(b=>b.setAttribute('aria-hidden','true')); }
+  });
+})();
+</script>
+
+
+<script>
+
+(function(){
+  'use strict';
+  const $ = (sel) => document.querySelector(sel);
+  const fileInput = $('#fileInput');
+  const inputText = $('#inputText');
+  const outputText = $('#outputText');
+  const preview = $('#preview');
+  const status = $('#status');
+  const inMeta = $('#inMeta');
+  const outMeta = $('#outMeta');
+
+  function setStatus(msg){ status.textContent = msg || ''; }
+  function setMeta(el, label){ el.innerHTML = '<b>'+label+':</b><span class="muted"> ' + label.toLowerCase() + '</span>'; }
+
+  function bytes(n){
+    if(!Number.isFinite(n)) return '';
+    const units=['B','KB','MB','GB']; let u=0;
+    while(n>=1024 && u<units.length-1){ n/=1024; u++; }
+    return (u===0? n.toFixed(0): n.toFixed(1))+' '+units[u];
+  }
+  function readFileAsText(file){
+    return new Promise((resolve,reject)=>{
+      const r = new FileReader();
+      r.onerror = ()=>reject(new Error('Failed to read file'));
+      r.onload = ()=>resolve(String(r.result||''));
+      r.readAsText(file);
+    });
+  }
+  function readFileAsArrayBuffer(file){
+    return new Promise((resolve,reject)=>{
+      const r = new FileReader();
+      r.onerror = ()=>reject(new Error('Failed to read file'));
+      r.onload = ()=>resolve(r.result);
+      r.readAsArrayBuffer(file);
+    });
+  }
+
+  // Clipboard
+  async function copyText(txt){
+    try{
+      await navigator.clipboard.writeText(txt);
+      setStatus('Copied.');
+      setTimeout(()=>setStatus(''), 1200);
+    }catch(e){
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = txt; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+      setStatus('Copied.');
+      setTimeout(()=>setStatus(''), 1200);
+    }
+  }
+
+  // UI events
+  $('#clearBtn').addEventListener('click', ()=>{
+    fileInput.value = '';
+    inputText.value = '';
+    outputText.value = '';
+    preview.innerHTML = '';
+    inMeta.innerHTML = '<b>IN:</b><span class="muted"> not loaded</span>';
+    outMeta.innerHTML = '<b>OUT:</b><span class="muted"> ready when you convert</span>';
+    setStatus('');
+  });
+
+  $('#copyBtn').addEventListener('click', ()=> copyText(outputText.value || '') );
+
+  window.__RM = { $, fileInput, inputText, outputText, preview, status, inMeta, outMeta, setStatus, bytes, readFileAsText, readFileAsArrayBuffer, copyText };
+})();
+
+(function(){
+  'use strict';
+  const { $, fileInput, inputText, outputText, preview, inMeta, outMeta, setStatus, bytes, readFileAsText } = window.__RM;
+
+  let lastOutName = 'markdown.pdf';
+
+  fileInput.addEventListener('change', async ()=>{
+    const f = fileInput.files && fileInput.files[0];
+    if(!f) return;
+    const txt = await readFileAsText(f);
+    inputText.value = txt;
+    inMeta.innerHTML = '<b>IN:</b><span class="muted"> '+ (f.name||'file') + ' • ' + bytes(f.size) + '</span>';
+    lastOutName = (f.name || 'markdown').replace(/\.[^.]+$/, '') + '.pdf';
+    setStatus('Loaded.');
+    setTimeout(()=>setStatus(''), 1000);
+  });
+
+  function convert(){
+    const md = inputText.value || '';
+    if(!md.trim()){
+      setStatus('Add some Markdown first.');
+      return;
+    }
+    const html = window.marked.parse(md);
+    outputText.value = html;
+    preview.innerHTML = html;
+    outMeta.innerHTML = '<b>OUT:</b><span class="muted"> PDF ready</span>';
+    setStatus('Preview ready — click Download to export PDF.');
+  }
+
+  $('#convertBtn').addEventListener('click', convert);
+
+  $('#downloadBtn').addEventListener('click', ()=>{
+    if(!preview.innerHTML.trim()){ setStatus('Convert first to build the preview.'); return; }
+    const opt = {
+      margin:       10,
+      filename:     lastOutName,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    setStatus('Generating PDF…');
+    window.html2pdf().set(opt).from(preview).save().then(()=>{
+      setStatus('Downloaded.');
+      setTimeout(()=>setStatus(''), 1000);
+    }).catch(()=>{
+      setStatus('Could not generate PDF. Try shorter content.');
+    });
+  });
+})();
+
+</script>
+</body>
+</html>
