@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PDF to Markdown — Convert .pdf to .md — ReportMedic</title>
+  <meta name="description" content="Convert a PDF into editable Markdown. Extracts selectable text locally in your browser (no upload)." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+  <style>
+    /* Minimal page-specific styling; keeps your global /assets/css/styles.css as the source of truth. */
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media (max-width: 880px){.grid2{grid-template-columns:1fr}}
+    .card{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;background:rgba(0,0,0,.10)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .muted{opacity:.8}
+    .tiny{font-size:12px;opacity:.78}
+    .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px}
+    .pill b{font-size:12px}
+    .hr2{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
+    .chklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
+    @media (max-width: 540px){.chklist{grid-template-columns:1fr}}
+    .chk{display:flex;gap:8px;align-items:center;padding:6px 8px;border:1px solid rgba(255,255,255,.10);border-radius:12px}
+    .chk input{transform:translateY(1px)}
+    .input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.16);color:inherit}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .diffbox{border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:8px;background:rgba(0,0,0,.12)}
+    .hint{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
+  </style>
+  <style>
+    /* ReportMedic Learn-more modal (lightweight, page-local) */
+    .rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+    .rm-lm-link:hover{opacity:1;}
+    .rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;}
+    .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+    .rm-lm-dialog{color:#111;max-width:560px; width:100%; background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.25); overflow:hidden;}
+    .rm-lm-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08);}
+    .rm-lm-title{margin:0; font-size:1.05rem;}
+    .rm-lm-x{border:0; background:transparent; font-size:1.25rem; line-height:1; padding:6px 10px; cursor:pointer; opacity:.7;}
+    .rm-lm-x:hover{opacity:1;}
+    .rm-lm-body{font-size:.95rem; line-height:1.45; color:#111;padding:14px 16px;}
+    .rm-lm-body ul{margin:0 0 6px 18px;}
+    .rm-lm-body li{margin:4px 0;}
+  </style>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script defer src="/assets/js/rm-dropzone.js"></script>
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+</head>
+<body class="tools-page">
+  <header>
+    <div class="nav">
+      <a class="logo" href="/" style="text-decoration:none;">
+        <div class="mark"></div>
+        <div>ReportMedic</div>
+      </a>
+      <div class="spacer"></div>
+      <a class="btn" href="/">Home</a>
+      <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+      <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="panel">
+      <h1>PDF to Markdown <a class="rm-lm-link" data-rm-lm-open="rmLM" href="#">Learn more</a></h1>
+      <p class="sub">Convert a PDF into editable Markdown. Extracts selectable text locally in your browser — nothing is uploaded.</p>
+      <div class="hr"></div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="row" style="justify-content:space-between; align-items:flex-start">
+            <div>
+              <div style="font-weight:700">Input</div>
+              <div class="tiny muted">Upload a PDF. If the PDF is scanned (no selectable text), results may be empty.</div>
+            </div>
+            <span class="pill tiny" id="inMeta"><b>IN:</b><span class="muted">not loaded</span></span>
+          </div>
+
+          <div style="margin-top:10px">
+            <input id="fileInput" class="input" type="file" accept="application/pdf,.pdf" />
+          </div>
+
+          <div class="hr2"></div>
+
+          <div class="tiny muted" style="margin-bottom:6px">Extraction options</div>
+          <div class="chklist">
+            <label class="chk"><input id="optDehyphen" type="checkbox" checked /> <span class="tiny">Fix broken words (de-hyphenate)</span></label>
+            <label class="chk"><input id="optMergeWrap" type="checkbox" /> <span class="tiny">Merge wrapped lines into paragraphs</span></label>
+            <label class="chk"><input id="optPageSep" type="checkbox" /> <span class="tiny">Add page separators</span></label>
+            <label class="chk"><input id="optPageHead" type="checkbox" /> <span class="tiny">Add “## Page N” headings</span></label>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <button id="convertBtn" class="btn primary" type="button">Convert</button>
+            <button id="clearBtn" class="btn" type="button">Clear</button>
+            <span class="tiny muted" id="status" style="align-self:center"></span>
+          </div>
+
+          <div class="hint tiny muted" style="margin-top:10px">
+            Tip: If you need OCR for scanned PDFs, use your system’s “Recognize Text”/OCR first, then re-export as a searchable PDF.
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="row" style="justify-content:space-between; align-items:flex-start">
+            <div>
+              <div style="font-weight:700">Output</div>
+              <div class="tiny muted">Preview + downloadable .md</div>
+            </div>
+            <span class="pill tiny" id="outMeta"><b>OUT:</b><span class="muted">ready when you convert</span></span>
+          </div>
+
+          <div style="margin-top:10px">
+            <textarea id="outputText" class="input mono" rows="12" placeholder="Converted Markdown will appear here…"></textarea>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <button id="copyBtn" class="btn" type="button">Copy output</button>
+            <button id="downloadBtn" class="btn" type="button">Download .md</button>
+          </div>
+
+          <div class="hr" style="margin:12px 0"></div>
+          <div class="tiny muted" style="margin-bottom:8px">Preview</div>
+          <div id="preview" class="diffbox" style="min-height:120px; overflow:auto"></div>
+        </div>
+      </div>
+
+      <div class="hr" style="margin-top:16px"></div>
+      <div class="tiny muted">Need a human sanity-check before you ship? <a href="/fix-my-report.html">Fix My Report</a>.</div>
+    </div>
+  </div>
+
+  <div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="rm-lm-dialog" role="document">
+      <div class="rm-lm-head">
+        <h3 class="rm-lm-title">How this tool works</h3>
+        <button class="rm-lm-x" data-rm-lm-close="rmLM" aria-label="Close">✕</button>
+      </div>
+      <div class="rm-lm-body">
+        <p><b>Local-only:</b> your PDF never leaves your device. We use a well-known open-source PDF parser in your browser.</p>
+        <ul>
+          <li>Best for PDFs with selectable text</li>
+          <li>Scanned/image-only PDFs may extract little to nothing (OCR needed)</li>
+          <li>Layout-heavy PDFs may need small cleanup after conversion</li>
+        </ul>
+        <p class="tiny" style="opacity:.85">If you want page-by-page output, enable separators/headings before converting.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    function qs(s,root){return (root||document).querySelector(s);}
+    document.addEventListener('click', function(e){
+      const open = e.target.closest('[data-rm-lm-open]');
+      const close = e.target.closest('[data-rm-lm-close]');
+      if(open){ e.preventDefault(); const id=open.getAttribute('data-rm-lm-open'); const b=qs('#'+id); if(b){ b.setAttribute('aria-hidden','false'); } }
+      if(close){ e.preventDefault(); const id=close.getAttribute('data-rm-lm-close'); const b=qs('#'+id); if(b){ b.setAttribute('aria-hidden','true'); } }
+      if(e.target.classList && e.target.classList.contains('rm-lm-backdrop')){ e.target.setAttribute('aria-hidden','true'); }
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Escape'){ document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(b=>b.setAttribute('aria-hidden','true')); }
+    });
+  })();
+  </script>
+
+  <script>
+  (function(){
+    'use strict';
+    const $ = (sel) => document.querySelector(sel);
+    const fileInput = $('#fileInput');
+    const convertBtn = $('#convertBtn');
+    const clearBtn = $('#clearBtn');
+    const outputText = $('#outputText');
+    const preview = $('#preview');
+    const status = $('#status');
+    const inMeta = $('#inMeta');
+    const outMeta = $('#outMeta');
+    const optDehyphen = $('#optDehyphen');
+    const optMergeWrap = $('#optMergeWrap');
+    const optPageSep = $('#optPageSep');
+    const optPageHead = $('#optPageHead');
+
+    let currentName = 'document.pdf';
+    let currentBytes = 0;
+    let currentPdfData = null;
+
+    function setStatus(msg){ status.textContent = msg || ''; }
+    function bytes(n){
+      if(!Number.isFinite(n)) return '';
+      const units=['B','KB','MB','GB']; let u=0;
+      let v=n;
+      while(v>=1024 && u<units.length-1){ v/=1024; u++; }
+      return (u===0? v.toFixed(0): v.toFixed(1))+' '+units[u];
+    }
+    function setInMeta(name, size){
+      inMeta.innerHTML = '<b>IN:</b><span class="muted"> '+escapeHtml(name)+' • '+bytes(size)+'</span>';
+    }
+    function setOutMeta(label){
+      outMeta.innerHTML = '<b>OUT:</b><span class="muted"> '+escapeHtml(label)+'</span>';
+    }
+    function escapeHtml(s){
+      return String(s||'').replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
+    }
+
+    function renderPreview(md){
+      try{
+        preview.innerHTML = (window.marked ? window.marked.parse(md || '') : escapeHtml(md || '')).trim() || '<span class="tiny muted">(preview empty)</span>';
+      } catch(e){
+        preview.innerHTML = '<span class="tiny muted">Preview error: '+escapeHtml(e && e.message ? e.message : String(e))+'</span>';
+      }
+    }
+
+    function downloadText(filename, text){
+      const blob = new Blob([text], {type:'text/markdown;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 0);
+    }
+
+    function copyToClipboard(text){
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        return navigator.clipboard.writeText(text);
+      }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try{ document.execCommand('copy'); } catch(e) {}
+      ta.remove();
+      return Promise.resolve();
+    }
+
+    function isLikelyListLine(line){
+      return /^\s*(?:[-*+]\s+|\d+\.|\u2022\s+)/.test(line);
+    }
+
+    function buildLinesFromItems(items){
+      // Group text items into lines using Y position tolerance.
+      const out = [];
+      const sorted = items
+        .filter(it => it && it.str && String(it.str).trim() !== '')
+        .map(it => {
+          const t = it.transform || [1,0,0,1,0,0];
+          // transform[5] is Y, [4] is X in viewport units.
+          return { str: String(it.str), x: t[4] || 0, y: t[5] || 0, w: it.width || 0 };
+        })
+        .sort((a,b)=> (b.y - a.y) || (a.x - b.x));
+
+      const tol = 2.0;
+      let curY = null;
+      let cur = [];
+      for(const it of sorted){
+        if(curY == null){ curY = it.y; cur = [it]; continue; }
+        if(Math.abs(it.y - curY) <= tol){
+          cur.push(it);
+        } else {
+          out.push(cur);
+          curY = it.y;
+          cur = [it];
+        }
+      }
+      if(cur.length) out.push(cur);
+
+      // Build line strings by X order.
+      const lines = out.map(group => {
+        const g = group.sort((a,b)=> a.x - b.x);
+        let s = '';
+        let lastX = null;
+        for(const it of g){
+          const gap = (lastX == null) ? 0 : (it.x - lastX);
+          if(s && gap > 2.5) s += ' ';
+          s += it.str;
+          lastX = it.x + (it.w || 0);
+        }
+        return s.replace(/\s+/g,' ').trim();
+      }).filter(Boolean);
+
+      return lines;
+    }
+
+    function dehyphenate(lines){
+      const out = [];
+      for(let i=0;i<lines.length;i++){
+        const a = lines[i];
+        const b = lines[i+1];
+        if(!b){ out.push(a); break; }
+        if(/\w-$/.test(a) && /^[a-z]/.test(b)){
+          out.push(a.replace(/-$/,'') + b);
+          i++; // skip next
+        } else {
+          out.push(a);
+        }
+      }
+      return out;
+    }
+
+    function mergeWrapped(lines){
+      const out = [];
+      for(let i=0;i<lines.length;i++){
+        const line = lines[i];
+        const next = lines[i+1];
+        if(!next){ out.push(line); break; }
+
+        const endsPara = /[.!?;:]$/.test(line);
+        const nextStartsNew = isLikelyListLine(next) || /^\s*#{1,6}\s+/.test(next) || /^\s*$/.test(next);
+        const thisIsList = isLikelyListLine(line);
+        if(!thisIsList && !endsPara && !nextStartsNew){
+          out.push((line + ' ' + next).replace(/\s+/g,' ').trim());
+          i++;
+        } else {
+          out.push(line);
+        }
+      }
+      return out;
+    }
+
+    async function extractMarkdownFromPdf(arrayBuffer){
+      if(!window.pdfjsLib) throw new Error('PDF library not loaded');
+      // Worker (Safari-safe)
+      try{
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+      } catch(e) {}
+
+      const loadingTask = window.pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdf = await loadingTask.promise;
+      const pageCount = pdf.numPages || 0;
+      let parts = [];
+
+      for(let p=1; p<=pageCount; p++){
+        setStatus('Reading page '+p+' of '+pageCount+'…');
+        const page = await pdf.getPage(p);
+        const tc = await page.getTextContent({ disableCombineTextItems:false });
+        let lines = buildLinesFromItems(tc.items || []);
+        if(optDehyphen.checked) lines = dehyphenate(lines);
+        if(optMergeWrap.checked) lines = mergeWrapped(lines);
+
+        let pageMd = lines.join('\n');
+        if(optPageHead.checked){
+          pageMd = '## Page ' + p + '\n\n' + pageMd;
+        }
+        parts.push(pageMd.trim());
+      }
+
+      if(optPageSep.checked){
+        return parts.filter(Boolean).join('\n\n---\n\n').trim();
+      }
+      return parts.filter(Boolean).join('\n\n').trim();
+    }
+
+    fileInput.addEventListener('change', async function(){
+      const f = fileInput.files && fileInput.files[0];
+      if(!f){ currentPdfData = null; setStatus(''); setInMeta('not loaded', 0); return; }
+      currentName = f.name || 'document.pdf';
+      currentBytes = f.size || 0;
+      setInMeta(currentName, currentBytes);
+      setStatus('Ready to convert');
+      currentPdfData = await f.arrayBuffer();
+    });
+
+    convertBtn.addEventListener('click', async function(){
+      try{
+        if(!currentPdfData){
+          setStatus('Choose a PDF first');
+          return;
+        }
+        convertBtn.disabled = true;
+        setStatus('Loading PDF…');
+        const md = await extractMarkdownFromPdf(currentPdfData);
+        outputText.value = md;
+        renderPreview(md);
+        setOutMeta(md ? ('generated • ' + md.length.toLocaleString() + ' chars') : 'empty (likely scanned PDF)');
+        setStatus('Done');
+      } catch(e){
+        outputText.value = '';
+        renderPreview('');
+        setOutMeta('error');
+        setStatus('Error: ' + (e && e.message ? e.message : String(e)));
+      } finally {
+        convertBtn.disabled = false;
+      }
+    });
+
+    clearBtn.addEventListener('click', function(){
+      fileInput.value = '';
+      currentPdfData = null;
+      currentName = 'document.pdf';
+      currentBytes = 0;
+      inMeta.innerHTML = '<b>IN:</b><span class="muted"> not loaded</span>';
+      outMeta.innerHTML = '<b>OUT:</b><span class="muted"> ready when you convert</span>';
+      outputText.value = '';
+      renderPreview('');
+      setStatus('');
+    });
+
+    $('#copyBtn').addEventListener('click', async function(){
+      const t = outputText.value || '';
+      if(!t){ setStatus('Nothing to copy'); return; }
+      await copyToClipboard(t);
+      setStatus('Copied');
+      setTimeout(()=>setStatus(''), 900);
+    });
+
+    $('#downloadBtn').addEventListener('click', function(){
+      const t = outputText.value || '';
+      if(!t){ setStatus('Nothing to download'); return; }
+      const base = (currentName || 'document.pdf').replace(/\.[^.]+$/,'');
+      downloadText(base + '.md', t);
+      setStatus('Downloaded');
+      setTimeout(()=>setStatus(''), 900);
+    });
+
+    // Live preview when user edits output manually
+    outputText.addEventListener('input', function(){ renderPreview(outputText.value || ''); });
+    renderPreview('');
+  })();
+  </script>
+</body>
+</html>
