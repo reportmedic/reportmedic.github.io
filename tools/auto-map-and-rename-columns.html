@@ -325,6 +325,141 @@
     el.metaB.querySelector('.muted').textContent = b ? (b.name + ' • ' + formatBytes(b.size)) : 'not loaded';
   }
 
+
+function normalizeDelimiter(v){
+  if(v === '\\t') return '\t';
+  return v;
+}
+
+function ensureUniqueHeaders(headers){
+  const seen = new Map();
+  return headers.map((h, idx)=>{
+    let name = String(h ?? '').trim();
+    if(!name) name = 'Column' + (idx+1);
+    const key = name.toLowerCase();
+    const n = (seen.get(key) || 0) + 1;
+    seen.set(key, n);
+    return n === 1 ? name : (name + '_' + n);
+  });
+}
+
+function rowsToObjects(headers, rowsArr){
+  const out = [];
+  for(const r of (rowsArr || [])){
+    if(!r) continue;
+    // drop totally empty rows
+    let any = false;
+    for(const v of r){ if(String(v ?? '').trim() !== '') { any = true; break; } }
+    if(!any) continue;
+
+    const obj = {};
+    for(let i=0;i<headers.length;i++){
+      obj[headers[i]] = (r[i] ?? '');
+    }
+    out.push(obj);
+  }
+  return out;
+}
+
+async function readFileAsText(file){
+  return await new Promise((resolve, reject)=>{
+    const fr = new FileReader();
+    fr.onload = ()=>resolve(fr.result);
+    fr.onerror = ()=>reject(fr.error || new Error('Failed to read file'));
+    fr.readAsText(file);
+  });
+}
+
+async function readFileAsArrayBuffer(file){
+  return await new Promise((resolve, reject)=>{
+    const fr = new FileReader();
+    fr.onload = ()=>resolve(fr.result);
+    fr.onerror = ()=>reject(fr.error || new Error('Failed to read file'));
+    fr.readAsArrayBuffer(file);
+  });
+}
+
+function parseGridFromDelimitedText(text, delimiterOpt, headerRowOpt){
+  if(text && text.charCodeAt(0) === 0xFEFF) text = text.slice(1); // strip BOM
+  const headerRowIdx = Math.max(0, (Number(headerRowOpt || 1) - 1));
+
+  const config = {
+    header: false,
+    skipEmptyLines: 'greedy'
+  };
+
+  const d = normalizeDelimiter(delimiterOpt || 'auto');
+  if(d !== 'auto') config.delimiter = d;
+
+  if(typeof Papa === 'undefined'){
+    throw new Error('Parser library (PapaParse) not loaded');
+  }
+
+  const res = Papa.parse(text, config);
+  if(res.errors && res.errors.length){
+    // show first error (keep concise)
+    const e = res.errors[0];
+    throw new Error((e.message || 'Failed to parse') + (e.row != null ? (' (row ' + (e.row+1) + ')') : ''));
+  }
+
+  const grid = res.data || [];
+  if(grid.length <= headerRowIdx){
+    throw new Error('Header row not found. Try switching Header row to Row 2.');
+  }
+
+  const headersRaw = grid[headerRowIdx] || [];
+  const headers = ensureUniqueHeaders(headersRaw);
+
+  const dataRows = grid.slice(headerRowIdx + 1);
+  const rows = rowsToObjects(headers, dataRows);
+
+  return { headers, rows };
+}
+
+function parseGridFromXlsx(arrayBuffer, headerRowOpt){
+  const headerRowIdx = Math.max(0, (Number(headerRowOpt || 1) - 1));
+
+  if(typeof XLSX === 'undefined'){
+    throw new Error('Parser library (XLSX) not loaded');
+  }
+
+  const wb = XLSX.read(arrayBuffer, { type:'array' });
+  const sheetName = wb.SheetNames && wb.SheetNames[0];
+  if(!sheetName) throw new Error('No sheets found in the Excel file');
+  const ws = wb.Sheets[sheetName];
+
+  // array-of-arrays
+  const grid = XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false, defval: '' }) || [];
+  if(grid.length <= headerRowIdx){
+    throw new Error('Header row not found. Try switching Header row to Row 2.');
+  }
+
+  const headersRaw = grid[headerRowIdx] || [];
+  const headers = ensureUniqueHeaders(headersRaw);
+
+  const dataRows = grid.slice(headerRowIdx + 1);
+  const rows = rowsToObjects(headers, dataRows);
+
+  return { headers, rows };
+}
+
+async function parseFileHeadersAndRows(file, delimiterOpt, headerRowOpt){
+  const name = (file && file.name) ? file.name : 'file';
+  const ext = name.toLowerCase().split('.').pop();
+
+  try{
+    if(ext === 'xlsx' || ext === 'xls'){
+      const ab = await readFileAsArrayBuffer(file);
+      return parseGridFromXlsx(ab, headerRowOpt);
+    }
+
+    const txt = await readFileAsText(file);
+    return parseGridFromDelimitedText(txt, delimiterOpt, headerRowOpt);
+  }catch(err){
+    throw new Error((err && err.message) ? err.message : 'Failed to parse file');
+  }
+}
+
   function normalize(s){
     // normalize headers while preserving camelCase word boundaries
     let raw = String(s ?? '');
