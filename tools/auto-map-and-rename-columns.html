@@ -360,28 +360,134 @@
     return dp[n];
   }
 
-  function similarity(a, b){
-    const na = normalize(a);
-    const nb = normalize(b);
-    if(!na || !nb) return 0;
-    if(na === nb) return 1;
+const STOP_TOKENS = new Set(['is','the','a','an','of','to','and','or','for','in','on','by','with','at','as']);
 
-    // token overlap
-    const ta = new Set(na.split(' '));
-    const tb = new Set(nb.split(' '));
-    let inter = 0;
-    ta.forEach(t=>{ if(tb.has(t)) inter++; });
-    const union = ta.size + tb.size - inter;
-    const j = union ? inter/union : 0;
+function compactNorm(s){
+  return normalize(s).replace(/\s+/g,'');
+}
 
-    // edit similarity
-    const dist = levenshtein(na, nb);
-    const maxLen = Math.max(na.length, nb.length) || 1;
-    const e = 1 - (dist / maxLen);
+function tokenSet(s){
+  const n = normalize(s);
+  const parts = n ? n.split(' ') : [];
+  const set = new Set();
 
-    // weighted blend
-    return Math.max(0, Math.min(1, 0.55*e + 0.45*j));
+  for(const t0 of parts){
+    const t = String(t0||'').trim();
+    if(!t) continue;
+    set.add(t);
+
+    // split common suffixes to help matches like custid/customerid, active_flag/is_active
+    const m = t.match(/^(.*?)(id|flag|num|number)$/);
+    if(m && m[1] && m[1].length >= 2){
+      set.add(m[1]);
+      set.add(m[2]);
+    }
   }
+
+  // add compact form to enable overlap inside a single word (phone vs phonenumber)
+  const c = n.replace(/\s+/g,'');
+  if(c) set.add(c);
+
+  // add acronym for multi-word headers (e.g., "life time value" -> "ltv")
+  if(parts.length >= 2){
+    const ac = parts.map(p=>p[0]).join('');
+    if(ac.length >= 2) set.add(ac);
+  }
+
+  return set;
+}
+
+function isSubsequence(shorter, longer){
+  const s = String(shorter||'');
+  const l = String(longer||'');
+  if(!s || !l) return false;
+  let i=0, j=0;
+  while(i<s.length && j<l.length){
+    if(s[i] === l[j]) i++;
+    j++;
+  }
+  return i === s.length;
+}
+
+function jaccardScore(setA, setB){
+  const a = Array.from(setA).filter(t=>t.length >= 2 && !STOP_TOKENS.has(t));
+  const b = new Set(Array.from(setB).filter(t=>t.length >= 2 && !STOP_TOKENS.has(t)));
+
+  if(!a.length || !b.size) return 0;
+
+  let inter = 0;
+  const union = new Set([...a, ...b]).size;
+
+  for(const t of a){
+    if(b.has(t)) inter++;
+  }
+  return union ? inter/union : 0;
+}
+
+function substringTokenScore(setA, setB){
+  const a = Array.from(setA).filter(t=>t.length >= 3 && !STOP_TOKENS.has(t));
+  const b = Array.from(setB).filter(t=>t.length >= 3 && !STOP_TOKENS.has(t));
+  if(!a.length || !b.length) return 0;
+
+  let hits = 0;
+  for(const ta of a){
+    for(const tb of b){
+      if(ta === tb) continue;
+      if(tb.includes(ta) || ta.includes(tb)){
+        hits++;
+        break;
+      }
+    }
+  }
+  const denom = Math.max(a.length, b.length) || 1;
+  return Math.min(1, hits / denom);
+}
+
+function abbreviationScore(a, b){
+  const ca = compactNorm(a);
+  const cb = compactNorm(b);
+  if(!ca || !cb) return 0;
+
+  const short = ca.length <= cb.length ? ca : cb;
+  const long  = ca.length <= cb.length ? cb : ca;
+
+  // substring for cases like phone/phonenumber, customerid/custid
+  if(short.length >= 3 && long.includes(short)) return 1;
+
+  // subsequence helps abbreviations like ltv vs lifetimevalue
+  if(short.length >= 3 && isSubsequence(short, long)) return 1;
+
+  return 0;
+}
+
+function similarity(a, b){
+  const na = normalize(a);
+  const nb = normalize(b);
+  if(!na || !nb) return 0;
+  if(na === nb) return 1;
+
+  const ca = compactNorm(a);
+  const cb = compactNorm(b);
+
+  const ta = tokenSet(a);
+  const tb = tokenSet(b);
+
+  // token overlap (including derived tokens/acronyms)
+  const j = jaccardScore(ta, tb);
+
+  // edit similarity on compact strings
+  const dist = levenshtein(ca, cb);
+  const maxLen = Math.max(ca.length, cb.length) || 1;
+  const e = 1 - (dist / maxLen);
+
+  // overlap inside words + abbreviation boost
+  const sub = substringTokenScore(ta, tb);
+  const ab = abbreviationScore(a, b);
+
+  // weighted blend
+  const blended = (0.45*e) + (0.35*j) + (0.20*Math.max(sub, ab));
+  return Math.max(0, Math.min(1, blended));
+}
 
   function download(filename, blob){
     const a = document.createElement('a');
@@ -461,7 +567,7 @@
         const s = similarity(aCol, b.h);
         if(s > best.score){ best = { bCol: b.h, score: s }; }
       }
-      if(best.score < 0.35) best.bCol = ''; // treat as no match
+      if(best.score < 0.30) best.bCol = ''; // treat as no match
       return { aCol, bCol: best.bCol, score: best.score };
     });
   }
