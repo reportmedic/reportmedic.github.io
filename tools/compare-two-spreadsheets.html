@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Compare Two Spreadsheets — XLSX/CSV diff — ReportMedic</title>
+  <meta name="description" content="Compare two spreadsheets (XLSX/CSV) to spot changed cells, added/removed rows and columns, and export a diff. Runs locally in your browser." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+  
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <script defer src="/assets/js/rm-dropzone.js"></script>
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+  <style>
+    /* ReportMedic Learn-more modal (lightweight, page-local) */
+    .rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+    .rm-lm-link:hover{opacity:1;}
+    .rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:16px; z-index:9999;}
+    .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+    .rm-lm{width:min(860px, 100%); background:rgba(20,20,24,.96); border:1px solid rgba(255,255,255,.12); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35);}
+    .rm-lm header{display:flex; align-items:center; justify-content:space-between; padding:14px 14px 10px; border-bottom:1px solid rgba(255,255,255,.10);}
+    .rm-lm header .t{font-weight:800; letter-spacing:.2px;}
+    .rm-lm .rm-lm-close{background:transparent; border:1px solid rgba(255,255,255,.18); color:inherit; border-radius:10px; padding:8px 10px; cursor:pointer;}
+    .rm-lm .rm-lm-close:hover{border-color:rgba(255,255,255,.28);}
+    .rm-lm .body{padding:14px;}
+    .rm-lm .body ul{margin:8px 0 0 18px}
+    .rm-lm .body li{margin:6px 0}
+    .rm-kv{display:grid; grid-template-columns:160px 1fr; gap:8px; margin-top:10px}
+    .rm-kv .k{opacity:.8}
+    .rm-kv .v{word-break:break-word}
+  </style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Spreadsheet Compare <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Compare two spreadsheets and pinpoint exactly what changed — added/removed rows, new columns, and the cells that drifted. Runs locally in your browser.</p>
+    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+
+    <div class="hr"></div>
+
+    
+<div class="grid2">
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <div style="font-weight:800">Spreadsheet A (baseline)</div>
+        <div class="tiny muted">Old / before version</div>
+      </div>
+      <span class="pill tiny" id="aMeta"><b>A:</b><span class="muted">not loaded</span></span>
+    </div>
+    <div style="margin-top:10px">
+      <input id="fileA" class="input" type="file" accept=".xlsx,.xls,.csv,.tsv" />
+    </div>
+    <div class="tiny muted" style="margin-top:10px">
+      Choose .xlsx/.xls or .csv/.tsv. Everything runs locally in your browser.
+    </div>
+    <div id="aSheetRow" class="row" style="margin-top:10px; display:none; gap:10px; flex-wrap:wrap">
+      <label class="tiny muted" style="min-width:120px">Sheet</label>
+      <select id="aSheet" class="input" style="max-width:320px"></select>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <div style="font-weight:800">Spreadsheet B (new)</div>
+        <div class="tiny muted">New / after version</div>
+      </div>
+      <span class="pill tiny" id="bMeta"><b>B:</b><span class="muted">not loaded</span></span>
+    </div>
+    <div style="margin-top:10px">
+      <input id="fileB" class="input" type="file" accept=".xlsx,.xls,.csv,.tsv" />
+    </div>
+    <div class="tiny muted" style="margin-top:10px">
+      Tip: Use the same column headers in both files for the cleanest results.
+    </div>
+    <div id="bSheetRow" class="row" style="margin-top:10px; display:none; gap:10px; flex-wrap:wrap">
+      <label class="tiny muted" style="min-width:120px">Sheet</label>
+      <select id="bSheet" class="input" style="max-width:320px"></select>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <div class="row" style="gap:10px; flex-wrap:wrap; justify-content:space-between">
+    <div class="row" style="gap:10px; flex-wrap:wrap">
+      <div class="row" style="gap:10px; align-items:center">
+        <span class="tiny muted" style="min-width:120px">Match rows by</span>
+        <select id="keyCol" class="input" style="max-width:360px">
+          <option value="">Row position (no key)</option>
+        </select>
+      </div>
+      <button class="btn primary" id="compareBtn" type="button" disabled>Compare</button>
+      <button class="btn" id="downloadBtn" type="button" disabled>Download diff (.csv)</button>
+      <button class="btn" id="copyBtn" type="button" disabled>Copy summary</button>
+    </div>
+    <span class="pill tiny" id="statusPill"><b>Status:</b><span class="muted">load two files to start</span></span>
+  </div>
+
+  <div class="hr"></div>
+
+  <div class="grid2">
+    <div>
+      <div style="font-weight:800; margin-bottom:6px">Summary</div>
+      <div class="tiny muted" id="summary" style="line-height:1.45">
+        No comparison yet.
+      </div>
+    </div>
+    <div>
+      <div style="font-weight:800; margin-bottom:6px">What changed</div>
+      <div class="tiny muted">Showing up to the first <b>200</b> changed cells/rows.</div>
+      <div style="margin-top:10px; overflow:auto; border:1px solid rgba(255,255,255,.10); border-radius:12px">
+        <table class="table" id="diffTable" style="min-width:720px">
+          <thead>
+            <tr>
+              <th style="width:180px">Row key</th>
+              <th style="width:220px">Column</th>
+              <th>A (before)</th>
+              <th>B (after)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </div>
+</div>
+
+
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true">
+  <div class="rm-lm" role="dialog" aria-modal="true" aria-label="Compare Two Spreadsheets">
+    <header>
+      <div class="t">Compare Two Spreadsheets</div>
+      <button class="rm-lm-close" type="button" data-rm-lm-close="rmLM">Close</button>
+    </header>
+    <div class="body">
+      <ul>
+        <li>Upload Spreadsheet A and Spreadsheet B (XLSX/XLS/CSV/TSV).</li>
+<li>Optionally pick a key column (like ID, Store, SKU) to match rows reliably.</li>
+<li>You’ll get a clean summary (rows/cols added/removed, cells changed) plus a downloadable diff CSV.</li>
+<li>Your files never leave your computer — all parsing and comparison runs in your browser.</li>
+      </ul>
+      <div class="hint tiny muted" style="margin-top:10px">If you need a human-readable explanation (or you’re not sure which column should be the key), use Live Agent.</div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+(function(){
+  function openLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','false');
+    const btn=bd.querySelector('.rm-lm-close');
+    if(btn) btn.focus();
+  }
+  function closeLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','true');
+  }
+  document.addEventListener('click', function(e){
+    const a=e.target.closest('[data-rm-lm-open]');
+    if(a){
+      e.preventDefault();
+      openLM(a.getAttribute('data-rm-lm-open'));
+      return;
+    }
+    const close=e.target.closest('[data-rm-lm-close]');
+    if(close){
+      e.preventDefault();
+      closeLM(close.getAttribute('data-rm-lm-close'));
+      return;
+    }
+    const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+    if(bd) closeLM(bd.id);
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute('aria-hidden','true'));
+  });
+})();
+</script>
+
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  const state = {
+    a: null, b: null, aName: null, bName: null,
+    aSheets: [], bSheets: [],
+    aSheetName: null, bSheetName: null,
+    diffRows: [], summaryText: ""
+  };
+
+  function setPill(id, html) { $(id).innerHTML = html; }
+  function setStatus(msg){
+    setPill("statusPill", "<b>Status:</b><span class='muted'> " + escapeHtml(msg) + "</span>");
+  }
+  function escapeHtml(s){
+    return String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function extOf(name){ return (name || "").toLowerCase().split(".").pop(); }
+
+  function readFileAsArrayBuffer(file){
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onerror = () => reject(r.error);
+      r.onload = () => resolve(r.result);
+      r.readAsArrayBuffer(file);
+    });
+  }
+
+  function readFileAsText(file){
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onerror = () => reject(r.error);
+      r.onload = () => resolve(r.result);
+      r.readAsText(file);
+    });
+  }
+
+  function normalizeCell(v){
+    if(v == null) return "";
+    if(typeof v === "number" && Number.isFinite(v)) return String(v);
+    if(v instanceof Date) return v.toISOString();
+    return String(v).trim();
+  }
+
+  function sheetToGrid(sheet){
+    const grid = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, blankrows: false });
+    // Ensure at least one row
+    return (grid || []).map(row => (row || []).map(normalizeCell));
+  }
+
+  async function parseSpreadsheet(file){
+    const ext = extOf(file.name);
+    if(ext === "xlsx" || ext === "xls"){
+      const ab = await readFileAsArrayBuffer(file);
+      const wb = XLSX.read(ab, { type: "array" });
+      const sheets = wb.SheetNames || [];
+      const grids = {};
+      sheets.forEach(name => {
+        try { grids[name] = sheetToGrid(wb.Sheets[name]); } catch(e){ grids[name] = []; }
+      });
+      return { kind:"excel", sheets, grids };
+    } else {
+      const txt = await readFileAsText(file);
+      const delimiter = (ext === "tsv") ? "\t" : "";
+      const parsed = Papa.parse(txt, { header:false, skipEmptyLines:true, delimiter: delimiter || undefined });
+      const data = (parsed.data || []).map(row => (row || []).map(normalizeCell));
+      return { kind:"csv", sheets:["Sheet1"], grids:{ "Sheet1": data } };
+    }
+  }
+
+  function metaLine(file, parsed, sheetName){
+    const grid = (parsed?.grids?.[sheetName] || []);
+    const rows = Math.max(0, grid.length - 1);
+    const cols = Math.max(0, (grid[0] || []).length);
+    return `${file.name} · ${rows} rows · ${cols} cols`;
+  }
+
+  function fillSheetSelect(which){
+    const parsed = state[which];
+    const rowEl = $(which + "SheetRow");
+    const sel = $(which + "Sheet");
+    sel.innerHTML = "";
+    if(parsed && parsed.sheets && parsed.sheets.length > 1){
+      rowEl.style.display = "flex";
+      parsed.sheets.forEach(n => {
+        const opt = document.createElement("option");
+        opt.value = n; opt.textContent = n;
+        sel.appendChild(opt);
+      });
+      sel.value = state[which + "SheetName"] || parsed.sheets[0];
+      state[which + "SheetName"] = sel.value;
+    } else {
+      rowEl.style.display = "none";
+      if(parsed && parsed.sheets && parsed.sheets.length === 1){
+        state[which + "SheetName"] = parsed.sheets[0];
+      }
+    }
+    sel.onchange = () => {
+      state[which + "SheetName"] = sel.value;
+      setPill(which === "a" ? "aMeta" : "bMeta",
+        `<b>${which.toUpperCase()}:</b> <span class="muted">${escapeHtml(metaLine(which==="a"?{name:state.aName}:{name:state.bName}, parsed, sel.value))}</span>`
+      );
+      refreshKeyChoices();
+      refreshButtons();
+    };
+  }
+
+  function commonHeaders(){
+    const aGrid = state.a?.grids?.[state.aSheetName] || [];
+    const bGrid = state.b?.grids?.[state.bSheetName] || [];
+    const aH = (aGrid[0] || []).map(normalizeCell);
+    const bH = (bGrid[0] || []).map(normalizeCell);
+    const setB = new Set(bH.filter(Boolean));
+    return aH.filter(h => h && setB.has(h));
+  }
+
+  function refreshKeyChoices(){
+    const sel = $("keyCol");
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Row position (no key)</option>';
+    commonHeaders().forEach(h => {
+      const opt = document.createElement("option");
+      opt.value = h; opt.textContent = h;
+      sel.appendChild(opt);
+    });
+    if(current && [...sel.options].some(o => o.value === current)) sel.value = current;
+  }
+
+  function refreshButtons(){
+    const ok = !!(state.a && state.b);
+    $("compareBtn").disabled = !ok;
+    $("keyCol").disabled = !ok;
+    if(!ok){
+      $("downloadBtn").disabled = true;
+      $("copyBtn").disabled = true;
+      setStatus("load two files to start");
+    } else {
+      setStatus("ready to compare");
+    }
+  }
+
+  function idxMap(headers){
+    const m = {};
+    headers.forEach((h,i)=>{ if(h) m[h]=i; });
+    return m;
+  }
+
+  function toRowObjects(grid){
+    const headers = (grid[0] || []).map(normalizeCell);
+    const map = idxMap(headers);
+    const rows = [];
+    for(let r=1;r<grid.length;r++){
+      const row = grid[r] || [];
+      const obj = {};
+      headers.forEach((h,i)=>{ if(h) obj[h]=normalizeCell(row[i]); });
+      rows.push(obj);
+    }
+    return { headers, map, rows };
+  }
+
+  function renderDiffTable(diffRows){
+    const tb = $("diffTable").querySelector("tbody");
+    tb.innerHTML = "";
+    diffRows.slice(0,200).forEach(d => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><code>${escapeHtml(d.key)}</code></td>
+        <td>${escapeHtml(d.col)}</td>
+        <td>${escapeHtml(d.a)}</td>
+        <td>${escapeHtml(d.b)}</td>`;
+      tb.appendChild(tr);
+    });
+  }
+
+  function downloadCSV(rows){
+    const header = ["row_key","column","a_before","b_after"];
+    const lines = [header.join(",")];
+    rows.forEach(r => {
+      const line = [r.key, r.col, r.a, r.b].map(v => `"${String(v ?? "").replace(/"/g,'""')}"`).join(",");
+      lines.push(line);
+    });
+    const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "spreadsheet_diff.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+  }
+
+  function buildSummary(obj){
+    const {aRows, bRows, addedCols, removedCols, changedCells, addedKeys, removedKeys, comparedBy} = obj;
+    const bits = [];
+    bits.push(`<div class="rm-kv"><div class="k">Compared by</div><div class="v"><b>${escapeHtml(comparedBy)}</b></div></div>`);
+    bits.push(`<div class="rm-kv"><div class="k">Rows</div><div class="v">A: <b>${aRows}</b> · B: <b>${bRows}</b></div></div>`);
+    bits.push(`<div class="rm-kv"><div class="k">Columns</div><div class="v">Added: <b>${addedCols}</b> · Removed: <b>${removedCols}</b></div></div>`);
+    bits.push(`<div class="rm-kv"><div class="k">Row keys</div><div class="v">Added: <b>${addedKeys}</b> · Removed: <b>${removedKeys}</b></div></div>`);
+    bits.push(`<div class="rm-kv"><div class="k">Changed cells</div><div class="v"><b>${changedCells}</b></div></div>`);
+    return bits.join("");
+  }
+
+  $("compareBtn").addEventListener("click", () => {
+    try{
+      setStatus("comparing…");
+      const aGrid = state.a.grids[state.aSheetName] || [];
+      const bGrid = state.b.grids[state.bSheetName] || [];
+
+      const aObj = toRowObjects(aGrid);
+      const bObj = toRowObjects(bGrid);
+
+      // column diffs (by header name)
+      const aSet = new Set(aObj.headers.filter(Boolean));
+      const bSet = new Set(bObj.headers.filter(Boolean));
+      const addedCols = [...bSet].filter(x => !aSet.has(x));
+      const removedCols = [...aSet].filter(x => !bSet.has(x));
+      const sharedCols = [...aSet].filter(x => bSet.has(x));
+
+      const keyCol = $("keyCol").value;
+      let diff = [];
+      let addedKeys = 0, removedKeys = 0;
+
+      if(keyCol){
+        const aMap = new Map();
+        const bMap = new Map();
+        aObj.rows.forEach((r,i)=>{ const k = normalizeCell(r[keyCol]) || `(blank:${i+1})`; aMap.set(k, r); });
+        bObj.rows.forEach((r,i)=>{ const k = normalizeCell(r[keyCol]) || `(blank:${i+1})`; bMap.set(k, r); });
+
+        const aKeys = new Set(aMap.keys());
+        const bKeys = new Set(bMap.keys());
+        const allKeys = new Set([...aKeys, ...bKeys]);
+
+        allKeys.forEach(k => {
+          const ra = aMap.get(k);
+          const rb = bMap.get(k);
+          if(ra && !rb){
+            removedKeys++;
+            diff.push({ key:k, col:"(row removed)", a:"present", b:"missing" });
+            return;
+          }
+          if(!ra && rb){
+            addedKeys++;
+            diff.push({ key:k, col:"(row added)", a:"missing", b:"present" });
+            return;
+          }
+          // both present: compare shared columns
+          sharedCols.forEach(col => {
+            const va = normalizeCell(ra[col]);
+            const vb = normalizeCell(rb[col]);
+            if(va !== vb){
+              diff.push({ key:k, col, a:va, b:vb });
+            }
+          });
+        });
+
+        state.summaryText = `Compared by key column: ${keyCol}. Rows A=${aObj.rows.length}, B=${bObj.rows.length}. Added keys=${addedKeys}, removed keys=${removedKeys}. Added cols=${addedCols.length}, removed cols=${removedCols.length}. Changed cells=${diff.filter(d=>!d.col.startsWith("(row")).length}.`;
+        $("summary").innerHTML = buildSummary({
+          comparedBy: `Key column: ${keyCol}`,
+          aRows: aObj.rows.length, bRows: bObj.rows.length,
+          addedCols: addedCols.length, removedCols: removedCols.length,
+          addedKeys, removedKeys,
+          changedCells: diff.filter(d=>!d.col.startsWith("(row")).length
+        });
+
+      } else {
+        // row-position compare
+        const maxR = Math.max(aObj.rows.length, bObj.rows.length);
+        for(let i=0;i<maxR;i++){
+          const ra = aObj.rows[i];
+          const rb = bObj.rows[i];
+          const key = `row ${i+1}`;
+          if(ra && !rb){ removedKeys++; diff.push({ key, col:"(row removed)", a:"present", b:"missing" }); continue; }
+          if(!ra && rb){ addedKeys++; diff.push({ key, col:"(row added)", a:"missing", b:"present" }); continue; }
+          sharedCols.forEach(col => {
+            const va = normalizeCell(ra[col]);
+            const vb = normalizeCell(rb[col]);
+            if(va !== vb){
+              diff.push({ key, col, a:va, b:vb });
+            }
+          });
+        }
+
+        state.summaryText = `Compared by row position. Rows A=${aObj.rows.length}, B=${bObj.rows.length}. Added rows=${addedKeys}, removed rows=${removedKeys}. Added cols=${addedCols.length}, removed cols=${removedCols.length}. Changed cells=${diff.filter(d=>!d.col.startsWith("(row")).length}.`;
+        $("summary").innerHTML = buildSummary({
+          comparedBy: "Row position (no key)",
+          aRows: aObj.rows.length, bRows: bObj.rows.length,
+          addedCols: addedCols.length, removedCols: removedCols.length,
+          addedKeys, removedKeys,
+          changedCells: diff.filter(d=>!d.col.startsWith("(row")).length
+        });
+      }
+
+      state.diffRows = diff;
+      renderDiffTable(diff);
+      $("downloadBtn").disabled = diff.length === 0;
+      $("copyBtn").disabled = false;
+      setStatus(diff.length ? "done — differences found" : "done — no differences found");
+    } catch(err){
+      console.error(err);
+      setStatus("error");
+      $("summary").innerHTML = `<span class="tiny">Couldn’t compare these files. Try exporting both as CSV, or choose a key column that uniquely identifies each row.</span>`;
+    }
+  });
+
+  $("downloadBtn").addEventListener("click", () => downloadCSV(state.diffRows || []));
+  $("copyBtn").addEventListener("click", async () => {
+    try{
+      await navigator.clipboard.writeText(state.summaryText || "");
+      setStatus("summary copied");
+      setTimeout(()=>refreshButtons(), 900);
+    } catch(e){
+      setStatus("copy failed");
+    }
+  });
+
+  async function handleLoad(which, file){
+    try{
+      setStatus(`loading ${which.toUpperCase()}…`);
+      const parsed = await parseSpreadsheet(file);
+      state[which] = parsed;
+      state[which + "Name"] = file.name;
+      state[which + "SheetName"] = parsed.sheets[0];
+      fillSheetSelect(which);
+
+      const meta = metaLine(file, parsed, state[which + "SheetName"]);
+      setPill(which === "a" ? "aMeta" : "bMeta", `<b>${which.toUpperCase()}:</b> <span class="muted">${escapeHtml(meta)}</span>`);
+
+      refreshKeyChoices();
+      refreshButtons();
+      $("summary").textContent = "No comparison yet.";
+      $("diffTable").querySelector("tbody").innerHTML = "";
+      state.diffRows = [];
+      $("downloadBtn").disabled = true;
+      $("copyBtn").disabled = true;
+      setStatus(state.a && state.b ? "ready to compare" : "load the other file");
+    } catch(err){
+      console.error(err);
+      setStatus("error reading file");
+      setPill(which === "a" ? "aMeta" : "bMeta", `<b>${which.toUpperCase()}:</b> <span class="muted">failed to load</span>`);
+    }
+  }
+
+  $("fileA").addEventListener("change", (e) => {
+    const f = e.target.files && e.target.files[0];
+    if(f) handleLoad("a", f);
+  });
+  $("fileB").addEventListener("change", (e) => {
+    const f = e.target.files && e.target.files[0];
+    if(f) handleLoad("b", f);
+  });
+
+})();
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Image Resize &amp; Compress — Optimize JPG/PNG/WebP — ReportMedic</title>
+  <meta name="description" content="Resize and compress images (JPG/PNG/WebP) locally in your browser. Choose dimensions, format, and quality, then download." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+  
+  <script defer src="/assets/js/rm-dropzone.js"></script>
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+  <style>
+    /* ReportMedic Learn-more modal (lightweight, page-local) */
+    .rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+    .rm-lm-link:hover{opacity:1;}
+    .rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:16px; z-index:9999;}
+    .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+    .rm-lm{width:min(860px, 100%); background:rgba(20,20,24,.96); border:1px solid rgba(255,255,255,.12); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35);}
+    .rm-lm header{display:flex; align-items:center; justify-content:space-between; padding:14px 14px 10px; border-bottom:1px solid rgba(255,255,255,.10);}
+    .rm-lm header .t{font-weight:800; letter-spacing:.2px;}
+    .rm-lm .rm-lm-close{background:transparent; border:1px solid rgba(255,255,255,.18); color:inherit; border-radius:10px; padding:8px 10px; cursor:pointer;}
+    .rm-lm .rm-lm-close:hover{border-color:rgba(255,255,255,.28);}
+    .rm-lm .body{padding:14px;}
+    .rm-lm .body ul{margin:8px 0 0 18px}
+    .rm-lm .body li{margin:6px 0}
+    .rm-kv{display:grid; grid-template-columns:160px 1fr; gap:8px; margin-top:10px}
+    .rm-kv .k{opacity:.8}
+    .rm-kv .v{word-break:break-word}
+  </style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Image Resize / Compress <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Resize and compress images for email, tickets, and uploads — fast, private, and clean. Runs locally in your browser.</p>
+    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+
+    <div class="hr"></div>
+
+    
+<div class="grid2">
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <div style="font-weight:800">Upload Image</div>
+        <div class="tiny muted">Resize + compress (JPG/PNG/WebP)</div>
+      </div>
+      <span class="pill tiny" id="meta"><b>Image:</b><span class="muted">not loaded</span></span>
+    </div>
+
+    <div style="margin-top:10px">
+      <input id="file" class="input" type="file" accept="image/*" />
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="row" style="gap:10px; flex-wrap:wrap">
+      <div class="row" style="gap:10px; align-items:center">
+        <span class="tiny muted" style="min-width:110px">Width</span>
+        <input id="w" class="input" type="number" min="1" step="1" style="max-width:180px" placeholder="px" />
+      </div>
+      <div class="row" style="gap:10px; align-items:center">
+        <span class="tiny muted" style="min-width:110px">Height</span>
+        <input id="h" class="input" type="number" min="1" step="1" style="max-width:180px" placeholder="px" />
+      </div>
+
+      <label class="row tiny muted" style="gap:8px; align-items:center">
+        <input id="lock" type="checkbox" checked />
+        Keep aspect ratio
+      </label>
+    </div>
+
+    <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap">
+      <div class="row" style="gap:10px; align-items:center">
+        <span class="tiny muted" style="min-width:110px">Output format</span>
+        <select id="fmt" class="input" style="max-width:220px">
+          <option value="keep" selected>Keep original</option>
+          <option value="image/jpeg">JPEG</option>
+          <option value="image/png">PNG</option>
+          <option value="image/webp">WebP</option>
+        </select>
+      </div>
+
+      <div class="row" style="gap:10px; align-items:center">
+        <span class="tiny muted" style="min-width:110px">Quality</span>
+        <input id="q" type="range" min="0.2" max="1" value="0.85" step="0.05" style="width:220px" />
+        <span class="pill tiny" id="qLbl"><b>Q:</b><span class="muted">0.85</span></span>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap">
+      <button class="btn primary" id="goBtn" type="button" disabled>Resize / Compress</button>
+      <button class="btn" id="downloadBtn" type="button" disabled>Download</button>
+      <span class="pill tiny" id="status"><b>Status:</b><span class="muted">load an image</span></span>
+    </div>
+
+    <div class="hint tiny muted" style="margin-top:10px">
+      For the smallest files, choose WebP or JPEG and reduce quality slightly (0.75–0.85).
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:800; margin-bottom:6px">Preview</div>
+    <div class="tiny muted">Before vs after (after appears once you run it).</div>
+
+    <div class="grid2" style="margin-top:10px">
+      <div style="border:1px solid rgba(255,255,255,.10); border-radius:12px; overflow:hidden">
+        <div class="tiny muted" style="padding:10px; border-bottom:1px solid rgba(255,255,255,.10)">Original</div>
+        <div style="padding:10px"><img id="imgA" alt="original preview" style="max-width:100%; height:auto; display:none" /></div>
+      </div>
+      <div style="border:1px solid rgba(255,255,255,.10); border-radius:12px; overflow:hidden">
+        <div class="tiny muted" style="padding:10px; border-bottom:1px solid rgba(255,255,255,.10)">Output</div>
+        <div style="padding:10px"><img id="imgB" alt="output preview" style="max-width:100%; height:auto; display:none" /></div>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <div style="font-weight:800; margin-bottom:6px">File details</div>
+    <div class="tiny muted" id="details">No file loaded.</div>
+  </div>
+</div>
+
+  </div>
+</div>
+
+
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true">
+  <div class="rm-lm" role="dialog" aria-modal="true" aria-label="Image Resize / Compress">
+    <header>
+      <div class="t">Image Resize / Compress</div>
+      <button class="rm-lm-close" type="button" data-rm-lm-close="rmLM">Close</button>
+    </header>
+    <div class="body">
+      <ul>
+        <li>Upload a JPG/PNG/WebP image.</li>
+<li>Set new width/height (or keep aspect ratio and change just one).</li>
+<li>Choose output format and quality (JPEG/WebP use quality; PNG is lossless).</li>
+<li>Download the optimized image. Everything runs locally in your browser.</li>
+      </ul>
+      <div class="hint tiny muted" style="margin-top:10px">If you’re resizing for tickets/email, 1600px wide is usually plenty.</div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+(function(){
+  function openLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','false');
+    const btn=bd.querySelector('.rm-lm-close');
+    if(btn) btn.focus();
+  }
+  function closeLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','true');
+  }
+  document.addEventListener('click', function(e){
+    const a=e.target.closest('[data-rm-lm-open]');
+    if(a){
+      e.preventDefault();
+      openLM(a.getAttribute('data-rm-lm-open'));
+      return;
+    }
+    const close=e.target.closest('[data-rm-lm-close]');
+    if(close){
+      e.preventDefault();
+      closeLM(close.getAttribute('data-rm-lm-close'));
+      return;
+    }
+    const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+    if(bd) closeLM(bd.id);
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute('aria-hidden','true'));
+  });
+})();
+</script>
+
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  let originalFile = null;
+  let originalImg = null;
+  let outBlob = null;
+  let outName = "image";
+
+  function setStatus(msg){
+    $("status").innerHTML = "<b>Status:</b><span class='muted'> " + escapeHtml(msg) + "</span>";
+  }
+  function escapeHtml(s){
+    return String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function fmtBytes(n){
+    if(!Number.isFinite(n)) return "";
+    const u = ["B","KB","MB","GB"];
+    let i=0, v=n;
+    while(v>1024 && i<u.length-1){ v/=1024; i++; }
+    return v.toFixed(i===0?0:2) + " " + u[i];
+  }
+
+  function updateDetails(){
+    if(!originalFile || !originalImg){
+      $("details").textContent = "No file loaded.";
+      return;
+    }
+    const d = [];
+    d.push(`<div class="rm-kv"><div class="k">Name</div><div class="v">${escapeHtml(originalFile.name)}</div></div>`);
+    d.push(`<div class="rm-kv"><div class="k">Original size</div><div class="v"><b>${fmtBytes(originalFile.size)}</b></div></div>`);
+    d.push(`<div class="rm-kv"><div class="k">Original dimensions</div><div class="v"><b>${originalImg.naturalWidth}</b> × <b>${originalImg.naturalHeight}</b> px</div></div>`);
+    if(outBlob){
+      d.push(`<div class="rm-kv"><div class="k">Output size</div><div class="v"><b>${fmtBytes(outBlob.size)}</b></div></div>`);
+    }
+    $("details").innerHTML = d.join("");
+  }
+
+  function syncAspect(changed){
+    if(!originalImg) return;
+    if(!$("lock").checked) return;
+    const ow = originalImg.naturalWidth;
+    const oh = originalImg.naturalHeight;
+    const w = parseInt($("w").value || ow, 10);
+    const h = parseInt($("h").value || oh, 10);
+    if(changed === "w" && w>0){
+      $("h").value = Math.max(1, Math.round(w * (oh/ow)));
+    }
+    if(changed === "h" && h>0){
+      $("w").value = Math.max(1, Math.round(h * (ow/oh)));
+    }
+  }
+
+  $("q").addEventListener("input", () => {
+    $("qLbl").innerHTML = "<b>Q:</b><span class='muted'> " + Number($("q").value).toFixed(2) + "</span>";
+  });
+
+  $("w").addEventListener("input", () => syncAspect("w"));
+  $("h").addEventListener("input", () => syncAspect("h"));
+
+  $("file").addEventListener("change", async (e) => {
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+
+    originalFile = f;
+    outBlob = null;
+
+    $("downloadBtn").disabled = true;
+
+    const url = URL.createObjectURL(f);
+    $("imgA").src = url;
+    $("imgA").style.display = "block";
+    $("imgB").style.display = "none";
+    $("imgB").src = "";
+
+    setStatus("loading image…");
+    originalImg = new Image();
+    originalImg.onload = () => {
+      const ow = originalImg.naturalWidth;
+      const oh = originalImg.naturalHeight;
+      $("w").value = ow;
+      $("h").value = oh;
+      outName = (f.name || "image").replace(/\.[a-z0-9]+$/i,"");
+      $("meta").innerHTML = "<b>Image:</b><span class='muted'> " + escapeHtml(f.name) + "</span>";
+      $("goBtn").disabled = false;
+      setStatus("ready");
+      updateDetails();
+    };
+    originalImg.onerror = () => {
+      setStatus("couldn’t load image");
+      $("goBtn").disabled = true;
+      updateDetails();
+    };
+    originalImg.src = url;
+  });
+
+  $("goBtn").addEventListener("click", async () => {
+    if(!originalImg) return;
+    try{
+      setStatus("processing…");
+      $("goBtn").disabled = true;
+      outBlob = null;
+
+      const w = Math.max(1, parseInt($("w").value || originalImg.naturalWidth, 10));
+      const h = Math.max(1, parseInt($("h").value || originalImg.naturalHeight, 10));
+      const fmt = $("fmt").value;
+      const q = Number($("q").value);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(originalImg, 0, 0, w, h);
+
+      // decide mime type
+      let mime = originalFile.type || "image/png";
+      if(fmt !== "keep") mime = fmt;
+
+      const blob = await new Promise((resolve) => {
+        if(mime === "image/png"){
+          canvas.toBlob(resolve, "image/png");
+        } else {
+          canvas.toBlob(resolve, mime, q);
+        }
+      });
+
+      if(!blob){
+        setStatus("failed to create image");
+        $("goBtn").disabled = false;
+        return;
+      }
+
+      outBlob = blob;
+
+      const outUrl = URL.createObjectURL(blob);
+      $("imgB").src = outUrl;
+      $("imgB").style.display = "block";
+
+      $("downloadBtn").disabled = false;
+      setStatus("done — ready to download");
+      updateDetails();
+    } catch(err){
+      console.error(err);
+      setStatus("error");
+    } finally {
+      $("goBtn").disabled = false;
+    }
+  });
+
+  $("downloadBtn").addEventListener("click", () => {
+    if(!outBlob) return;
+    const fmt = $("fmt").value === "keep" ? (originalFile.type || "image/png") : $("fmt").value;
+    const ext = (fmt === "image/jpeg") ? "jpg" : (fmt === "image/webp") ? "webp" : "png";
+    const name = outName + "_" + $("w").value + "x" + $("h").value + "." + ext;
+
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(outBlob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+  });
+
+})();
+</script>
+
+
+</body>
+</html>

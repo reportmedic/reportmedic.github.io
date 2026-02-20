@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PDF to Word (DOCX) — Convert PDF into editable .docx — ReportMedic</title>
+  <meta name="description" content="Convert a PDF into an editable Word (.docx) by extracting text locally in your browser. Best for text-based PDFs." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+  
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+  <script defer src="/assets/js/rm-dropzone.js"></script>
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+  <style>
+    /* ReportMedic Learn-more modal (lightweight, page-local) */
+    .rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+    .rm-lm-link:hover{opacity:1;}
+    .rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:16px; z-index:9999;}
+    .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+    .rm-lm{width:min(860px, 100%); background:rgba(20,20,24,.96); border:1px solid rgba(255,255,255,.12); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35);}
+    .rm-lm header{display:flex; align-items:center; justify-content:space-between; padding:14px 14px 10px; border-bottom:1px solid rgba(255,255,255,.10);}
+    .rm-lm header .t{font-weight:800; letter-spacing:.2px;}
+    .rm-lm .rm-lm-close{background:transparent; border:1px solid rgba(255,255,255,.18); color:inherit; border-radius:10px; padding:8px 10px; cursor:pointer;}
+    .rm-lm .rm-lm-close:hover{border-color:rgba(255,255,255,.28);}
+    .rm-lm .body{padding:14px;}
+    .rm-lm .body ul{margin:8px 0 0 18px}
+    .rm-lm .body li{margin:6px 0}
+    .rm-kv{display:grid; grid-template-columns:160px 1fr; gap:8px; margin-top:10px}
+    .rm-kv .k{opacity:.8}
+    .rm-kv .v{word-break:break-word}
+  </style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>PDF to Word (DOCX) <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Convert a PDF into an editable Word document — best for text-based PDFs. Runs locally in your browser.</p>
+    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+
+    <div class="hr"></div>
+
+    
+<div class="grid2">
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <div style="font-weight:800">Upload PDF</div>
+        <div class="tiny muted">PDF → editable Word (.docx)</div>
+      </div>
+      <span class="pill tiny" id="meta"><b>PDF:</b><span class="muted">not loaded</span></span>
+    </div>
+
+    <div style="margin-top:10px">
+      <input id="file" class="input" type="file" accept=".pdf" />
+    </div>
+
+    <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap">
+      <button class="btn primary" id="convertBtn" type="button" disabled>Convert to DOCX</button>
+      <button class="btn" id="downloadBtn" type="button" disabled>Download DOCX</button>
+      <span class="pill tiny" id="status"><b>Status:</b><span class="muted">load a PDF</span></span>
+    </div>
+
+    <div class="hint tiny muted" style="margin-top:10px">
+      This creates a clean, editable document from extracted text. Complex layouts (tables, multi-column PDFs) may not convert perfectly.
+    </div>
+
+    <div class="hr"></div>
+
+    <div style="font-weight:800; margin-bottom:6px">Extract preview</div>
+    <div class="tiny muted">First few pages of extracted text:</div>
+    <textarea id="preview" class="tc" style="height:260px; margin-top:10px" spellcheck="false" readonly placeholder="Nothing extracted yet..."></textarea>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:800; margin-bottom:6px">What you get</div>
+    <div class="tiny muted" style="line-height:1.5">
+      <ul style="margin:6px 0 0 18px">
+        <li>One paragraph per text line (best-effort reconstruction)</li>
+        <li>Page breaks inserted between pages</li>
+        <li>Works fully in-browser (no uploads)</li>
+      </ul>
+    </div>
+
+    <div class="hr"></div>
+
+    <div style="font-weight:800; margin-bottom:6px">If the PDF is scanned</div>
+    <div class="tiny muted" style="line-height:1.5">
+      If your PDF is an image (scanned), it may contain little/no selectable text. In that case, the output DOCX may be mostly blank.
+      Use an OCR-based PDF tool first, then convert.
+    </div>
+  </div>
+</div>
+
+  </div>
+</div>
+
+
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true">
+  <div class="rm-lm" role="dialog" aria-modal="true" aria-label="PDF to Word (DOCX)">
+    <header>
+      <div class="t">PDF to Word (DOCX)</div>
+      <button class="rm-lm-close" type="button" data-rm-lm-close="rmLM">Close</button>
+    </header>
+    <div class="body">
+      <ul>
+        <li>Upload a PDF and extract text page-by-page using PDF.js.</li>
+<li>We rebuild lines (best effort) and generate a real .docx using the docx library.</li>
+<li>Great for normal text PDFs; multi-column/table-heavy documents may need cleanup.</li>
+<li>Everything runs locally in your browser — no uploads.</li>
+      </ul>
+      <div class="hint tiny muted" style="margin-top:10px">If the PDF is scanned, run OCR first so text exists to extract.</div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+(function(){
+  function openLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','false');
+    const btn=bd.querySelector('.rm-lm-close');
+    if(btn) btn.focus();
+  }
+  function closeLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','true');
+  }
+  document.addEventListener('click', function(e){
+    const a=e.target.closest('[data-rm-lm-open]');
+    if(a){
+      e.preventDefault();
+      openLM(a.getAttribute('data-rm-lm-open'));
+      return;
+    }
+    const close=e.target.closest('[data-rm-lm-close]');
+    if(close){
+      e.preventDefault();
+      closeLM(close.getAttribute('data-rm-lm-close'));
+      return;
+    }
+    const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+    if(bd) closeLM(bd.id);
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute('aria-hidden','true'));
+  });
+})();
+</script>
+
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  let pdfData = null;
+  let outBlob = null;
+  let outName = "document.docx";
+
+  function setStatus(msg){
+    $("status").innerHTML = "<b>Status:</b><span class='muted'> " + escapeHtml(msg) + "</span>";
+  }
+  function escapeHtml(s){
+    return String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function readFileAsArrayBuffer(file){
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onerror = () => reject(r.error);
+      r.onload = () => resolve(r.result);
+      r.readAsArrayBuffer(file);
+    });
+  }
+
+  // PDF.js worker
+  if(window.pdfjsLib){
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+  }
+
+  function groupIntoLines(items){
+    // items: {str, transform}
+    const lines = new Map(); // y -> [{x,str}]
+    items.forEach(it => {
+      const t = it.transform || [];
+      const x = t[4] || 0;
+      const y = t[5] || 0;
+      const key = Math.round(y); // good enough
+      if(!lines.has(key)) lines.set(key, []);
+      lines.get(key).push({ x, s: it.str || "" });
+    });
+
+    // Sort y desc (top to bottom)
+    const ys = [...lines.keys()].sort((a,b)=>b-a);
+    const out = [];
+    ys.forEach(y => {
+      const parts = lines.get(y).sort((a,b)=>a.x-b.x).map(p => (p.s || "").trim()).filter(Boolean);
+      const line = parts.join(" ").replace(/\s+/g," ").trim();
+      if(line) out.push(line);
+    });
+    return out;
+  }
+
+  async function extractAllText(){
+    if(!pdfData) return [];
+    setStatus("opening PDF…");
+    const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+    const pdf = await loadingTask.promise;
+
+    const pages = [];
+    const maxPreviewPages = Math.min(3, pdf.numPages);
+
+    for(let p=1; p<=pdf.numPages; p++){
+      setStatus(`extracting page ${p}/${pdf.numPages}…`);
+      const page = await pdf.getPage(p);
+      const tc = await page.getTextContent();
+      const lines = groupIntoLines(tc.items || []);
+      pages.push(lines);
+
+      if(p<=maxPreviewPages){
+        const snippet = lines.slice(0, 120).join("\n");
+        $("preview").value += (p===1 ? "" : "\n\n----- Page " + p + " -----\n") + snippet;
+      }
+    }
+    return pages;
+  }
+
+  async function buildDocx(pages){
+    const { Document, Packer, Paragraph, TextRun, PageBreak } = docx;
+
+    const children = [];
+    pages.forEach((lines, idx) => {
+      if(idx>0){
+        children.push(new Paragraph({ children:[ new PageBreak() ] }));
+      }
+      (lines || []).forEach(line => {
+        children.push(new Paragraph({ children:[ new TextRun(String(line)) ] }));
+      });
+      if((lines || []).length === 0){
+        children.push(new Paragraph({ children:[ new TextRun("") ] }));
+      }
+    });
+
+    const doc = new Document({
+      sections: [{ properties: {}, children }]
+    });
+
+    return await Packer.toBlob(doc);
+  }
+
+  $("file").addEventListener("change", async (e) => {
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    try{
+      setStatus("reading file…");
+      $("preview").value = "";
+      pdfData = await readFileAsArrayBuffer(f);
+      outBlob = null;
+
+      const base = (f.name || "document").replace(/\.pdf$/i,"");
+      outName = base + ".docx";
+
+      $("meta").innerHTML = "<b>PDF:</b><span class='muted'> " + escapeHtml(f.name) + "</span>";
+      $("convertBtn").disabled = false;
+      $("downloadBtn").disabled = true;
+      setStatus("ready");
+    } catch(err){
+      console.error(err);
+      setStatus("error reading PDF");
+      $("convertBtn").disabled = true;
+      $("downloadBtn").disabled = true;
+    }
+  });
+
+  $("convertBtn").addEventListener("click", async () => {
+    if(!pdfData) return;
+    try{
+      $("convertBtn").disabled = true;
+      $("downloadBtn").disabled = true;
+      $("preview").value = "";
+      const pages = await extractAllText();
+      setStatus("building DOCX…");
+      outBlob = await buildDocx(pages);
+      $("downloadBtn").disabled = false;
+      setStatus("done — ready to download");
+    } catch(err){
+      console.error(err);
+      setStatus("conversion failed");
+    } finally {
+      $("convertBtn").disabled = false;
+    }
+  });
+
+  $("downloadBtn").addEventListener("click", () => {
+    if(!outBlob) return;
+    saveAs(outBlob, outName);
+  });
+
+})();
+</script>
+
+
+</body>
+</html>
