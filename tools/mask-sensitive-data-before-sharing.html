@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="Redact or mask sensitive fields (PII/PHI/financial) before sending files for review. Keep structure while protecting values."/>
+<title>Mask Sensitive Data — Redact PII before sharing — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+    @media (max-width: 980px){.grid3{grid-template-columns:1fr}}
+    @media (max-width: 880px){.grid2{grid-template-columns:1fr}}
+    .card{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;background:rgba(0,0,0,.10)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .muted{opacity:.8}
+    .tiny{font-size:12px;opacity:.78}
+    .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px}
+    .pill b{font-size:12px}
+    .hr2{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
+    .input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.16);color:inherit}
+    .btn.small{padding:8px 10px;font-size:13px}
+    .chklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
+    @media (max-width: 540px){.chklist{grid-template-columns:1fr}}
+    .chk{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border:1px solid rgba(255,255,255,.10);border-radius:12px}
+    .chk input{transform:translateY(2px)}
+    .tablewrap{overflow:auto;border:1px solid rgba(255,255,255,.10);border-radius:14px}
+    table{border-collapse:separate;border-spacing:0;width:100%;min-width:980px}
+    th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+    th{position:sticky;top:0;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);text-align:left;font-size:12px;letter-spacing:.02em;opacity:.9}
+    tr:last-child td{border-bottom:none}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;border:1px solid rgba(255,255,255,.12)}
+    .b-ok{background:rgba(46, 204, 113, .12)}
+    .b-warn{background:rgba(241, 196, 15, .12)}
+    .b-info{background:rgba(52, 152, 219, .10)}
+    .b-bad{background:rgba(231, 76, 60, .12)}
+    .note{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width: 820px){.split{grid-template-columns:1fr}}
+    .mini{font-size:12px;line-height:1.35;opacity:.9}
+  </style>
+  <script defer src="/assets/js/rm-dropzone.js"></script>
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+<style>
+/* ReportMedic Learn-more modal (lightweight, page-local) */
+.rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+.rm-lm-link:hover{opacity:1;}
+.rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;}
+.rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+.rm-lm-dialog{color:#111;max-width:560px; width:100%; background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.25); overflow:hidden;}
+.rm-lm-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08);}
+.rm-lm-title{margin:0; font-size:1.05rem;}
+.rm-lm-close{border:0; background:transparent; font-size:1.25rem; line-height:1; padding:6px 10px; cursor:pointer; opacity:.7;}
+.rm-lm-close:hover{opacity:1;}
+.rm-lm-body{font-size:.95rem; line-height:1.45; color:#111;padding:14px 16px;}
+.rm-lm-body h3{margin:12px 0 6px; font-size:.95rem;}
+.rm-lm-body ul{margin:0 0 6px 18px;}
+.rm-lm-body li{margin:4px 0;}
+</style>
+
+</head>
+<body class="tools-page">
+<header>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div></header>
+<div class="wrap">
+<div class="panel">
+<h1>PII Masker <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+
+
+<p class="sub">Mask sensitive fields before sharing samples — reduce risk while still getting help. Runs locally in your browser.</p>
+<div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+
+
+<div class="hr"></div>
+<div class="grid2">
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Upload</div>
+<div class="tiny muted">CSV / TSV / XLSX / XLS (first sheet used)</div>
+</div>
+<span class="pill tiny" id="meta"><b>File:</b><span class="muted">not loaded</span></span>
+</div>
+<div style="margin-top:10px">
+<input accept=".csv,.tsv,.xlsx,.xls,.txt" class="input" id="file" type="file"/>
+</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Delimiter</label>
+<select class="input" id="delimiter" style="width:auto;min-width:190px">
+<option selected="" value="auto">Auto-detect</option>
+<option value=",">Comma (,)</option>
+<option value="\t">Tab (TSV)</option>
+<option value=";">Semicolon (;)</option>
+<option value="|">Pipe (|)</option>
+</select>
+<label class="tiny muted">Preview rows</label>
+<select class="input" id="previewN" style="width:auto;min-width:150px">
+<option selected="" value="25">25</option>
+<option value="50">50</option>
+<option value="100">100</option>
+</select>
+</div>
+<div class="tiny muted" id="safetyNote">Safety: your file is read locally in your browser. Use Masker if you need to share samples.</div><div class="tiny muted" id="msg" style="margin-top:10px"></div>
+<div class="note tiny muted">Privacy: processed locally in your browser. Nothing is uploaded unless you choose to share details for help.</div>
+</div>
+<div class="card">
+<div style="font-weight:700">Run summary</div>
+<div class="tiny muted">How many fields were masked</div>
+<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
+<span class="badge b-info">Rows: <b class="mono" id="statRows">—</b></span>
+<span class="badge b-info">Cols: <b class="mono" id="statCols">—</b></span>
+<span class="badge b-warn">Masked cells: <b class="mono" id="statMasked">0</b></span>
+<span class="badge b-bad">Rule hits: <b class="mono" id="statHits">0</b></span>
+<span class="pill tiny"><b>Salt:</b><span class="mono muted" id="statSalt">—</span></span>
+</div>
+<div class="hr2"></div>
+<div class="row">
+<button class="btn primary" disabled="" id="run">Run masking</button>
+<button class="btn" disabled="" id="download">Download masked CSV</button>
+<button class="btn" disabled="" id="audit">Download audit report</button>
+</div>
+<div class="note tiny muted">
+          Tip: Use a salt for stable tokens (same email → same token) across exports.
+        </div>
+</div>
+</div>
+<div class="hr2"></div>
+<div class="grid3">
+<div class="card">
+<div style="font-weight:700">1) Quick rules</div>
+<div class="tiny muted">Auto-detect common PII patterns</div>
+<div class="chk" style="margin-top:10px">
+<input checked="" id="rEmail" type="checkbox"/>
+<div>
+<label for="rEmail"><b>Email</b></label>
+<div class="tiny muted">mask anything that looks like user@domain</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input checked="" id="rPhone" type="checkbox"/>
+<div>
+<label for="rPhone"><b>Phone</b></label>
+<div class="tiny muted">mask common phone formats (best-effort)</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input id="rSSN" type="checkbox"/>
+<div>
+<label for="rSSN"><b>SSN</b></label>
+<div class="tiny muted">mask patterns like 123-45-6789</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input checked="" id="rCard" type="checkbox"/>
+<div>
+<label for="rCard"><b>Card numbers</b></label>
+<div class="tiny muted">mask 13–19 digit sequences (validated by Luhn)</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input id="rAddress" type="checkbox"/>
+<div>
+<label for="rAddress"><b>Address-like</b></label>
+<div class="tiny muted">mask lines that look like street addresses</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input checked="" id="rFreeText" type="checkbox"/>
+<div>
+<label for="rFreeText"><b>Scan free-text columns</b></label>
+<div class="tiny muted">apply rules inside any text field</div>
+</div>
+</div>
+</div>
+<div class="card">
+<div style="font-weight:700">2) Column controls</div>
+<div class="tiny muted">Force mask specific columns (even if patterns aren’t detected)</div>
+<input class="input" id="colSearch" placeholder="Search columns…" style="margin-top:10px"/>
+<div aria-live="polite" class="chklist" id="colList"></div>
+<div class="row" style="margin-top:10px">
+<button class="btn small" id="autoCols">Auto-pick</button>
+<button class="btn small" id="clearCols">Clear</button>
+</div>
+<div class="note tiny muted">
+          Auto-pick tries common names: email, phone, mobile, ssn, dob, address, card, account, member, patient, etc.
+        </div>
+</div>
+<div class="card">
+<div style="font-weight:700">3) Masking style</div>
+<div class="tiny muted">Choose how masked values appear</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Strategy</label>
+<select class="input" id="strategy" style="width:auto;min-width:230px">
+<option selected="" value="redact">Redact (████)</option>
+<option value="partial">Partial keep (keep last 4)</option>
+<option value="token">Tokenize (stable token)</option>
+</select>
+</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Token prefix</label>
+<input class="input" id="tokenPrefix" style="width:auto;min-width:230px" value="RMK_"/>
+</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Salt (optional)</label>
+<input class="input" id="salt" placeholder="leave blank to auto-generate"/>
+</div>
+<div class="chk" style="margin-top:10px">
+<input checked="" id="keepEmpty" type="checkbox"/>
+<div>
+<label for="keepEmpty"><b>Keep empty values unchanged</b></label>
+<div class="tiny muted">blank stays blank</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input checked="" id="trim" type="checkbox"/>
+<div>
+<label for="trim"><b>Trim whitespace</b></label>
+<div class="tiny muted">helps prevent missed matches</div>
+</div>
+</div>
+</div>
+</div>
+<div class="hr2"></div>
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Preview</div>
+<div class="tiny muted">Before vs after (first N rows)</div>
+</div>
+<div class="row">
+<select class="input" id="previewMode" style="width:auto;min-width:220px">
+<option selected="" value="before">Show: Before</option>
+<option value="after">Show: After</option>
+<option value="diff">Show: Only changed cells</option>
+</select>
+</div>
+</div>
+<div class="split" style="margin-top:12px">
+<div class="tablewrap">
+<table>
+<thead><tr id="thead"></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+<div class="card" style="margin:0">
+<div style="font-weight:700">Audit notes</div>
+<div class="tiny muted">What rules matched</div>
+<div class="hr2"></div>
+<div class="mini muted" id="auditBox">Load a file, pick rules, then run masking to generate an audit.</div>
+</div>
+</div>
+</div>
+<div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+<a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+<a class="btn" href="/docs/contact.html">Contact</a>
+</div>
+</div>
+<div class="footer">© 2026 ReportMedic</div>
+</div>
+<script>
+(function(){
+  const $ = (id)=>document.getElementById(id);
+
+  const el = {
+    file: $("file"), meta: $("meta"), msg: $("msg"),
+    delimiter: $("delimiter"), previewN: $("previewN"),
+    statRows: $("statRows"), statCols: $("statCols"),
+    statMasked: $("statMasked"), statHits: $("statHits"), statSalt: $("statSalt"),
+    run: $("run"), download: $("download"), auditBtn: $("audit"),
+    rEmail: $("rEmail"), rPhone: $("rPhone"), rSSN: $("rSSN"), rCard: $("rCard"), rAddress: $("rAddress"), rFreeText: $("rFreeText"),
+    colSearch: $("colSearch"), colList: $("colList"),
+    autoCols: $("autoCols"), clearCols: $("clearCols"),
+    strategy: $("strategy"), tokenPrefix: $("tokenPrefix"), salt: $("salt"),
+    keepEmpty: $("keepEmpty"), trim: $("trim"),
+    previewMode: $("previewMode"),
+    thead: $("thead"), tbody: $("tbody"),
+    auditBox: $("auditBox"),
+  };
+
+  let state = {
+    raw: null,
+    masked: null,
+    forcedCols: new Set(),
+    audit: null,
+    salt: null
+  };
+
+  function escapeHtml(s){
+    return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function setMeta(obj){
+    if(!obj){
+      el.meta.innerHTML = `<b>File:</b><span class="muted">not loaded</span>`;
+      return;
+    }
+    el.meta.innerHTML = `<b>File:</b><span class="mono muted">${escapeHtml(obj.name)}</span> <span class="muted">(${obj.rows.length} rows, ${obj.cols.length} cols)</span>`;
+  }
+
+  function normalizeCell(v){
+    let s = String(v ?? "");
+    if(el.trim.checked) s = s.trim();
+    return s;
+  }
+
+  function fnv1a(str){
+    let h = 0x811c9dc5;
+    for(let i=0;i<str.length;i++){
+      h ^= str.charCodeAt(i);
+      h = (h + (h<<1) + (h<<4) + (h<<7) + (h<<8) + (h<<24)) >>> 0;
+    }
+    return ("00000000" + h.toString(16)).slice(-8);
+  }
+
+  function maskValue(raw, kind){
+    const s0 = normalizeCell(raw);
+    if(el.keepEmpty.checked && s0 === "") return s0;
+
+    const strategy = el.strategy.value;
+    if(strategy === "redact") return "████";
+
+    if(strategy === "partial"){
+      const digits = s0.replace(/\D/g,"");
+      if(digits.length >= 4) return `***${digits.slice(-4)}`;
+      if(s0.length <= 2) return "**";
+      return s0.slice(0,1) + "***";
+    }
+
+    const salt = state.salt || "";
+    const token = fnv1a(salt + "::" + kind + "::" + s0);
+    return (el.tokenPrefix.value || "RMK_") + token;
+  }
+
+  const RX = {
+    email: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/ig,
+    phone: /(\+?\d{1,3}[\s.-]?)?(\(?\d{2,4}\)?[\s.-]?)?\d{3}[\s.-]?\d{4}\b/g,
+    ssn: /\b\d{3}-\d{2}-\d{4}\b/g,
+    card: /\b(?:\d[ -]*?){13,19}\b/g,
+    address: /\b\d{1,6}\s+([A-Za-z0-9.'-]+\s+){1,5}(st|street|rd|road|ave|avenue|blvd|boulevard|ln|lane|dr|drive|ct|court|pl|place|way|pkwy|parkway)\b\.?/ig
+  };
+
+  function luhnOk(numStr){
+    const s = numStr.replace(/\D/g,"");
+    if(s.length < 13 || s.length > 19) return false;
+    let sum = 0, alt = false;
+    for(let i = s.length - 1; i >= 0; i--){
+      let n = parseInt(s[i],10);
+      if(alt){ n*=2; if(n>9) n-=9; }
+      sum += n;
+      alt = !alt;
+    }
+    return sum % 10 === 0;
+  }
+
+  function applyRulesToText(text, audit){
+    let s = String(text ?? "");
+    const orig = s;
+
+    if(el.rEmail.checked){
+      s = s.replace(RX.email, (m)=>{ audit.ruleHits++; audit.perRule.email++; return maskValue(m,"email"); });
+    }
+    if(el.rPhone.checked){
+      s = s.replace(RX.phone, (m)=>{
+        const d = m.replace(/\D/g,"");
+        if(d.length < 10) return m;
+        audit.ruleHits++; audit.perRule.phone++;
+        return maskValue(m,"phone");
+      });
+    }
+    if(el.rSSN.checked){
+      s = s.replace(RX.ssn, (m)=>{ audit.ruleHits++; audit.perRule.ssn++; return maskValue(m,"ssn"); });
+    }
+    if(el.rCard.checked){
+      s = s.replace(RX.card, (m)=>{
+        if(!luhnOk(m)) return m;
+        audit.ruleHits++; audit.perRule.card++;
+        return maskValue(m,"card");
+      });
+    }
+    if(el.rAddress.checked){
+      s = s.replace(RX.address, (m)=>{ audit.ruleHits++; audit.perRule.address++; return maskValue(m,"address"); });
+    }
+
+    return {text: s, changed: s !== orig};
+  }
+
+  function autoPickCols(){
+    if(!state.raw) return;
+    const cols = state.raw.cols;
+    const picks = [];
+    for(const c of cols){
+      const lc = c.toLowerCase();
+      const hit =
+        lc.includes("email") ||
+        lc.includes("phone") || lc.includes("mobile") ||
+        lc.includes("ssn") ||
+        lc.includes("dob") || lc.includes("birth") ||
+        lc.includes("address") || lc.includes("addr") ||
+        lc.includes("card") || lc.includes("credit") ||
+        lc.includes("account") || lc.includes("acct") ||
+        lc.includes("member") || lc.includes("patient") ||
+        lc.includes("mrn");
+      if(hit) picks.push(c);
+    }
+    state.forcedCols = new Set(picks);
+    renderColList();
+  }
+
+  function clearCols(){
+    state.forcedCols.clear();
+    renderColList();
+  }
+
+  function renderColList(){
+    el.colList.innerHTML = "";
+    if(!state.raw){
+      el.colList.innerHTML = `<div class="tiny muted">Load a file to choose columns.</div>`;
+      return;
+    }
+    const q = (el.colSearch.value || "").toLowerCase().trim();
+    const cols = state.raw.cols.filter(c => !q || c.toLowerCase().includes(q));
+    if(!cols.length){
+      el.colList.innerHTML = `<div class="tiny muted">No columns found.</div>`;
+      return;
+    }
+
+    for(const c of cols){
+      const id = `m_${c.replace(/[^a-zA-Z0-9_-]/g,'_')}`;
+      const checked = state.forcedCols.has(c);
+      const div = document.createElement("div");
+      div.className = "chk";
+      div.innerHTML = `
+        <input id="${id}" type="checkbox" ${checked ? "checked":""}/>
+        <div>
+          <label for="${id}" class="mono">${escapeHtml(c)}</label>
+          <div class="tiny muted">${checked ? "Always mask this column" : "Mask only if patterns are detected"}</div>
+        </div>
+      `;
+      div.querySelector("input").addEventListener("change", (e)=>{
+        if(e.target.checked) state.forcedCols.add(c);
+        else state.forcedCols.delete(c);
+      });
+      el.colList.appendChild(div);
+    }
+  }
+
+  function parseFile(file){
+    const name = file?.name || "file";
+    const ext = name.split(".").pop().toLowerCase();
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Could not read file."));
+
+      if(ext === "xlsx" || ext === "xls"){
+        reader.onload = (e) => {
+          try{
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, {type:"array"});
+            const sheetName = wb.SheetNames[0];
+            const ws = wb.Sheets[sheetName];
+            const json = XLSX.utils.sheet_to_json(ws, {defval:""});
+            const cols = json.length ? Object.keys(json[0]) : [];
+            resolve({name, rows: json, cols});
+          }catch(err){ reject(err); }
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        reader.onload = (e) => {
+          try{
+            const text = e.target.result;
+            const delimOpt = el.delimiter.value;
+            const config = {header:true, skipEmptyLines:true, dynamicTyping:false};
+            if(delimOpt !== "auto"){
+              config.delimiter = (delimOpt === "\\t") ? "\t" : delimOpt;
+            }
+            const res = Papa.parse(text, config);
+            const rows = (res.data || []).filter(r => r && Object.keys(r).length);
+            const cols = rows.length ? Object.keys(rows[0]) : (res.meta?.fields || []);
+            resolve({name, rows, cols});
+          }catch(err){ reject(err); }
+        };
+        reader.readAsText(file);
+      }
+    });
+  }
+
+  function renderStats(){
+    if(!state.raw){
+      el.statRows.textContent = "—";
+      el.statCols.textContent = "—";
+      return;
+    }
+    el.statRows.textContent = String(state.raw.rows.length);
+    el.statCols.textContent = String(state.raw.cols.length);
+  }
+
+  function renderAudit(){
+    if(!state.audit){
+      el.auditBox.innerHTML = `<div class="mini muted">Load a file, pick rules, then run masking to generate an audit.</div>`;
+      return;
+    }
+    const a = state.audit;
+    el.auditBox.innerHTML = `
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <span class="badge b-warn">Masked cells <b class="mono">${a.maskedCells}</b></span>
+        <span class="badge b-bad">Rule hits <b class="mono">${a.ruleHits}</b></span>
+      </div>
+      <div class="hr2"></div>
+      <div class="mini">
+        <div>• Email: <b class="mono">${a.perRule.email}</b></div>
+        <div>• Phone: <b class="mono">${a.perRule.phone}</b></div>
+        <div>• SSN: <b class="mono">${a.perRule.ssn}</b></div>
+        <div>• Card: <b class="mono">${a.perRule.card}</b></div>
+        <div>• Address-like: <b class="mono">${a.perRule.address}</b></div>
+      </div>
+      <div class="hr2"></div>
+      <div class="tiny muted">Detection is best-effort heuristics. Always review a sample before sharing.</div>
+    `;
+  }
+
+  function renderPreview(){
+    if(!state.raw){
+      el.thead.innerHTML = "";
+      el.tbody.innerHTML = `<tr><td class="muted">Load a file to preview.</td></tr>`;
+      return;
+    }
+    const mode = el.previewMode.value;
+    const n = parseInt(el.previewN.value,10) || 25;
+
+    const cols = state.raw.cols.slice(0, 60);
+    const before = state.raw.rows.slice(0, n);
+    const after = state.masked?.rows ? state.masked.rows.slice(0, n) : null;
+
+    el.thead.innerHTML = cols.map(c=>`<th>${escapeHtml(c)}</th>`).join("") || `<th>—</th>`;
+
+    const body = before.map((rb, idx)=>{
+      const ra = after ? (after[idx] || {}) : null;
+
+      const tds = cols.map(c=>{
+        const vb = rb?.[c] ?? "";
+        if(mode === "before" || !ra) return `<td class="mono">${escapeHtml(vb)}</td>`;
+        const va = ra?.[c] ?? "";
+        if(mode === "after") return `<td class="mono">${escapeHtml(va)}</td>`;
+        const changed = String(vb ?? "") !== String(va ?? "");
+        if(!changed) return `<td class="mono muted">${escapeHtml(va)}</td>`;
+        return `<td class="mono"><span class="badge b-warn">Before</span> ${escapeHtml(vb)}<div class="tiny muted" style="margin-top:4px"><span class="badge b-ok">After</span> ${escapeHtml(va)}</div></td>`;
+      }).join("");
+
+      return `<tr>${tds}</tr>`;
+    }).join("");
+
+    el.tbody.innerHTML = body || `<tr><td class="muted">No rows.</td></tr>`;
+  }
+
+  function runMask(){
+    if(!state.raw) return;
+
+    const inputSalt = (el.salt.value || "").trim();
+    if(inputSalt) state.salt = inputSalt;
+    else if(!state.salt) state.salt = "RM_" + Math.random().toString(16).slice(2, 10) + "_" + Date.now().toString(16).slice(-6);
+    el.statSalt.textContent = state.salt;
+
+    const audit = { maskedCells: 0, ruleHits: 0, perRule: {email:0, phone:0, ssn:0, card:0, address:0} };
+
+    const cols = state.raw.cols;
+    const out = [];
+    for(const row of state.raw.rows){
+      const r2 = {};
+      for(const c of cols){
+        const v0 = row?.[c] ?? "";
+        const s0 = normalizeCell(v0);
+        if(el.keepEmpty.checked && s0 === ""){ r2[c] = v0; continue; }
+
+        let changed = false;
+        let outVal = v0;
+
+        if(state.forcedCols.has(c)){
+          outVal = maskValue(v0, "column:" + c);
+          changed = String(outVal) !== String(v0);
+        } else if(el.rFreeText.checked){
+          const res = applyRulesToText(v0, audit);
+          outVal = res.text;
+          changed = res.changed;
+        } else {
+          // light mode: only apply if column name suggests
+          const lc = c.toLowerCase();
+          const isEmailCol = lc.includes("email");
+          const isPhoneCol = lc.includes("phone") || lc.includes("mobile");
+          const isSSNCol = lc.includes("ssn");
+          const isCardCol = lc.includes("card") || lc.includes("credit");
+          const isAddrCol = lc.includes("address") || lc.includes("addr");
+
+          if(isEmailCol && el.rEmail.checked){
+            RX.email.lastIndex = 0;
+            outVal = String(v0).replace(RX.email, (m)=>{ audit.ruleHits++; audit.perRule.email++; return maskValue(m,"email"); });
+            changed = String(outVal) !== String(v0);
+          } else if(isPhoneCol && el.rPhone.checked){
+            const res = applyRulesToText(v0, audit);
+            outVal = res.text; changed = res.changed;
+          } else if(isSSNCol && el.rSSN.checked){
+            outVal = String(v0).replace(RX.ssn, (m)=>{ audit.ruleHits++; audit.perRule.ssn++; return maskValue(m,"ssn"); });
+            changed = String(outVal) !== String(v0);
+          } else if(isCardCol && el.rCard.checked){
+            outVal = String(v0).replace(RX.card, (m)=>{ if(!luhnOk(m)) return m; audit.ruleHits++; audit.perRule.card++; return maskValue(m,"card"); });
+            changed = String(outVal) !== String(v0);
+          } else if(isAddrCol && el.rAddress.checked){
+            outVal = String(v0).replace(RX.address, (m)=>{ audit.ruleHits++; audit.perRule.address++; return maskValue(m,"address"); });
+            changed = String(outVal) !== String(v0);
+          }
+        }
+
+        if(changed) audit.maskedCells++;
+        r2[c] = outVal;
+      }
+      out.push(r2);
+    }
+
+    state.masked = {rows: out, cols: cols.slice()};
+    state.audit = audit;
+
+    el.statMasked.textContent = String(audit.maskedCells);
+    el.statHits.textContent = String(audit.ruleHits);
+
+    el.download.disabled = false;
+    el.auditBtn.disabled = false;
+
+    renderAudit();
+    renderPreview();
+  }
+
+  function csvValue(v){
+    const s = String(v ?? "");
+    if(/[",\n\r]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
+    return s;
+  }
+
+  function downloadMaskedCsv(){
+    if(!state.masked) return;
+    const cols = state.masked.cols;
+    const rows = state.masked.rows;
+    const lines = [];
+    lines.push(cols.map(csvValue).join(","));
+    for(const r of rows){
+      lines.push(cols.map(c => csvValue(r[c])).join(","));
+    }
+    const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
+    a.href = URL.createObjectURL(blob);
+    a.download = `reportmedic_masked_${stamp}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function downloadAudit(){
+    if(!state.audit) return;
+    const a = state.audit;
+    const lines = [];
+    lines.push("metric,value");
+    lines.push(`rows,${state.raw?.rows?.length || 0}`);
+    lines.push(`cols,${state.raw?.cols?.length || 0}`);
+    lines.push(`masked_cells,${a.maskedCells}`);
+    lines.push(`rule_hits,${a.ruleHits}`);
+    lines.push("");
+    lines.push("hits_by_rule,value");
+    lines.push(`email,${a.perRule.email}`);
+    lines.push(`phone,${a.perRule.phone}`);
+    lines.push(`ssn,${a.perRule.ssn}`);
+    lines.push(`card,${a.perRule.card}`);
+    lines.push(`address_like,${a.perRule.address}`);
+    lines.push("");
+    lines.push("masking");
+    lines.push(`strategy,${el.strategy.value}`);
+    lines.push(`token_prefix,${(el.tokenPrefix.value || "RMK_").trim()}`);
+    lines.push(`salt,${state.salt || ""}`);
+    lines.push(`forced_columns,${Array.from(state.forcedCols).join(" | ")}`);
+    lines.push(`scan_free_text,${el.rFreeText.checked}`);
+
+    const blob = new Blob([lines.join("\n")], {type:"text/plain;charset=utf-8"});
+    const link = document.createElement("a");
+    const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
+    link.href = URL.createObjectURL(blob);
+    link.download = `reportmedic_mask_audit_${stamp}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(link.href);
+  }
+
+  el.file.addEventListener("change", async (e)=>{
+    const f = e.target.files?.[0];
+    if(!f) return;
+    el.msg.textContent = "Loading…";
+    state.masked = null;
+    state.audit = null;
+
+    try{
+      const obj = await parseFile(f);
+      state.raw = obj;
+      setMeta(obj);
+      renderStats();
+      state.forcedCols = new Set(Array.from(state.forcedCols).filter(c => obj.cols.includes(c)));
+      renderColList();
+
+      el.msg.textContent = "Loaded. Pick rules and run masking.";
+      el.run.disabled = false;
+      el.download.disabled = true;
+      el.auditBtn.disabled = true;
+      el.statMasked.textContent = "0";
+      el.statHits.textContent = "0";
+      el.statSalt.textContent = (el.salt.value || "—");
+      el.auditBox.textContent = "Ready. Click Run masking to generate audit.";
+      renderPreview();
+    }catch(err){
+      console.error(err);
+      el.msg.textContent = "Could not parse file. Try exporting as CSV.";
+      state.raw = null;
+      setMeta(null);
+      renderStats();
+      renderColList();
+      renderPreview();
+      el.run.disabled = true;
+      el.download.disabled = true;
+      el.auditBtn.disabled = true;
+    }
+  });
+
+  el.colSearch.addEventListener("input", renderColList);
+  el.autoCols.addEventListener("click", autoPickCols);
+  el.clearCols.addEventListener("click", clearCols);
+
+  el.previewN.addEventListener("change", renderPreview);
+  el.previewMode.addEventListener("change", renderPreview);
+
+  el.salt.addEventListener("input", ()=>{
+    const v = (el.salt.value || "").trim();
+    el.statSalt.textContent = v ? v : (state.salt ? state.salt : "—");
+  });
+
+  el.run.addEventListener("click", ()=>{
+    if(!state.raw) return;
+    el.msg.textContent = "Masking…";
+    setTimeout(()=>{
+      try{
+        runMask();
+        el.msg.textContent = "Done. Review preview and download masked output.";
+      }catch(err){
+        console.error(err);
+        el.msg.textContent = "Masking failed. Check file format and try again.";
+      }
+    }, 0);
+  });
+
+  el.download.addEventListener("click", downloadMaskedCsv);
+  el.auditBtn.addEventListener("click", downloadAudit);
+
+  setMeta(null);
+  el.run.disabled = true;
+  renderStats();
+  renderColList();
+  renderPreview();
+})();
+</script>
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
+
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true" aria-label="PII Masker details">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">PII Masker</h2>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Redact sensitive columns</li>
+<li>Mask values while preserving shape</li>
+<li>Prepare files for sharing safely</li>
+<li>Reduce compliance risk</li>
+      </ul>
+
+      <h3>Common causes</h3>
+      <ul>
+        <li>Need external review but data is confidential</li>
+<li>PII/PHI/financial fields in exports</li>
+<li>Policies require redaction before sharing</li>
+      </ul>
+
+      <h3>What to do next</h3>
+      <ul>
+        <li>Mask before you upload/share</li>
+<li>Then run Compare/Reconcile on masked copies if needed</li>
+<li>If you need guidance, use Fix My Report</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<script>
+(function(){
+  function openLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','false');
+    const btn=bd.querySelector('.rm-lm-close');
+    if(btn) btn.focus();
+  }
+  function closeLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','true');
+  }
+  document.addEventListener('click', function(e){
+    const a=e.target.closest('[data-rm-lm-open]');
+    if(a){
+      e.preventDefault();
+      openLM(a.getAttribute('data-rm-lm-open'));
+      return;
+    }
+    const close=e.target.closest('[data-rm-lm-close]');
+    if(close){
+      e.preventDefault();
+      closeLM(close.getAttribute('data-rm-lm-close'));
+      return;
+    }
+    const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+    if(bd){
+      closeLM(bd.id);
+    }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute('aria-hidden','true'));
+  });
+})();
+</script>
+
+</body>
+</html>

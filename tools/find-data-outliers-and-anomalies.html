@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="Detect unusual values, spikes, and anomalies that cause report swings—great for QA on metrics, counts, totals, and distributions."/>
+<title>Find Outliers & Anomalies in Data — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+<!-- Client-side parsing + XLSX read/write (GitHub Pages friendly) -->
+<script defer="" src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+    @media (max-width: 980px){.grid3{grid-template-columns:1fr}}
+    @media (max-width: 880px){.grid2{grid-template-columns:1fr}}
+    .card{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;background:rgba(0,0,0,.10)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .muted{opacity:.8}
+    .tiny{font-size:12px;opacity:.78}
+    .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px}
+    .pill b{font-size:12px}
+    .hr2{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
+    .input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.16);color:inherit}
+    .btn.small{padding:8px 10px;font-size:13px}
+    .tablewrap{overflow:auto;border:1px solid rgba(255,255,255,.10);border-radius:14px}
+    table{border-collapse:separate;border-spacing:0;width:100%;min-width:980px}
+    th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+    th{position:sticky;top:0;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);text-align:left;font-size:12px;letter-spacing:.02em;opacity:.9}
+    tr:last-child td{border-bottom:none}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;border:1px solid rgba(255,255,255,.12)}
+    .b-ok{background:rgba(46, 204, 113, .12)}
+    .b-warn{background:rgba(241, 196, 15, .12)}
+    .b-info{background:rgba(52, 152, 219, .10)}
+    .b-bad{background:rgba(231, 76, 60, .12)}
+    .note{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
+    .mini{font-size:12px;line-height:1.35;opacity:.9}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width: 820px){.split{grid-template-columns:1fr}}
+    .tag{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);padding:5px 10px;border-radius:999px;font-size:12px}
+    .sliderWrap{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    input[type="range"]{width:220px}
+    .chk{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border:1px solid rgba(255,255,255,.10);border-radius:12px}
+    .chk input{transform:translateY(2px)}
+  </style>
+  <script defer src="/assets/js/rm-dropzone.js"></script>
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+<style>
+/* ReportMedic Learn-more modal (lightweight, page-local) */
+.rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+.rm-lm-link:hover{opacity:1;}
+.rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;}
+.rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+.rm-lm-dialog{color:#111;max-width:560px; width:100%; background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.25); overflow:hidden;}
+.rm-lm-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08);}
+.rm-lm-title{margin:0; font-size:1.05rem;}
+.rm-lm-close{border:0; background:transparent; font-size:1.25rem; line-height:1; padding:6px 10px; cursor:pointer; opacity:.7;}
+.rm-lm-close:hover{opacity:1;}
+.rm-lm-body{font-size:.95rem; line-height:1.45; color:#111;padding:14px 16px;}
+.rm-lm-body h3{margin:12px 0 6px; font-size:.95rem;}
+.rm-lm-body ul{margin:0 0 6px 18px;}
+.rm-lm-body li{margin:4px 0;}
+</style>
+
+</head>
+<body class="tools-page">
+<header>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div></header>
+<div class="wrap">
+<div class="panel">
+<h1>Outlier Finder <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+
+
+<p class="sub">Detect anomalies that create work anxiety — spikes, duplicates, and suspicious rows you can investigate before anyone else does.</p>
+<div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+
+
+<div class="hr"></div>
+<div class="grid2">
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Input</div>
+<div class="tiny muted">CSV / TSV / XLSX / XLS / delimiter-style TXT</div>
+</div>
+<span class="pill tiny" id="meta"><b>Loaded:</b><span class="muted">none</span></span>
+</div>
+<div class="row" style="margin-top:10px;display:block">
+<input accept=".csv,.tsv,.xlsx,.xls,.txt" class="input" id="file" type="file"/>
+</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Delimiter</label>
+<select class="input" id="delimiter" style="width:auto;min-width:190px">
+<option selected="" value="auto">Auto-detect</option>
+<option value=",">Comma (,)</option>
+<option value="\t">Tab (TSV)</option>
+<option value=";">Semicolon (;)</option>
+<option value="|">Pipe (|)</option>
+</select>
+<label class="tiny muted">Preview</label>
+<select class="input" id="previewN" style="width:auto;min-width:150px">
+<option selected="" value="25">25</option>
+<option value="50">50</option>
+<option value="100">100</option>
+</select>
+<label class="tiny muted">Max results</label>
+<select class="input" id="maxOut" style="width:auto;min-width:160px">
+<option selected="" value="50">50</option>
+<option value="100">100</option>
+<option value="250">250</option>
+<option value="500">500</option>
+</select>
+</div>
+<div class="tiny muted" id="safetyNote">Safety: your file is read locally in your browser. Use Masker if you need to share samples.</div><div class="tiny muted" id="msg" style="margin-top:10px"></div>
+<div class="note tiny muted">
+          Works best with numeric columns (sales, cost, hours, qty, metrics). Everything runs locally.
+        </div>
+</div>
+<div class="card">
+<div style="font-weight:700">Run summary</div>
+<div class="tiny muted">How many anomalies were found</div>
+<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
+<span class="badge b-info">Rows: <b class="mono" id="statRows">—</b></span>
+<span class="badge b-info">Cols: <b class="mono" id="statCols">—</b></span>
+<span class="badge b-ok">Numeric cols: <b class="mono" id="statNum">—</b></span>
+<span class="badge b-warn">Outliers: <b class="mono" id="statOut">0</b></span>
+<span class="badge b-bad">Rules hit: <b class="mono" id="statHits">0</b></span>
+</div>
+<div class="hr2"></div>
+<div class="row">
+<button class="btn primary" disabled="" id="run">Find outliers</button>
+<button class="btn" disabled="" id="download">Download outliers CSV</button>
+<button class="btn" disabled="" id="audit">Download audit report</button>
+</div>
+<div class="note tiny muted">
+          Tip: Use a time column + group column (like Store, SKU) to detect spikes within each group.
+        </div>
+</div>
+</div>
+<div class="hr2"></div>
+<div class="grid3">
+<div class="card">
+<div style="font-weight:700">1) Choose columns</div>
+<div class="tiny muted">Pick a value column to score, plus optional grouping &amp; time</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Value column (numeric)</label>
+<select class="input" disabled="" id="valueCol" style="width:auto;min-width:260px"></select>
+</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Group column (optional)</label>
+<select class="input" disabled="" id="groupCol" style="width:auto;min-width:260px"></select>
+</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Time column (optional)</label>
+<select class="input" disabled="" id="timeCol" style="width:auto;min-width:260px"></select>
+</div>
+<div class="note tiny muted">
+          If group is set, the tool detects outliers within each group (ex: per store, per customer, per SKU).
+        </div>
+</div>
+<div class="card">
+<div style="font-weight:700">2) Detection method</div>
+<div class="tiny muted">Different methods catch different anomaly shapes</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Method</label>
+<select class="input" id="method" style="width:auto;min-width:260px">
+<option selected="" value="zscore">Z-score (mean/std)</option>
+<option value="modz">Robust Z (median/MAD)</option>
+<option value="iqr">IQR (Q1/Q3)</option>
+<option value="pct">Percentile tails</option>
+<option value="delta">Time spike (delta vs previous)</option>
+</select>
+</div>
+<div class="hr2"></div>
+<div class="sliderWrap">
+<span class="tag">Sensitivity</span>
+<input id="thr" max="6" min="1" step="0.1" type="range" value="3.0"/>
+<span class="mono" id="thrVal">3.0</span>
+</div>
+<div class="tiny muted" style="margin-top:8px">
+          Higher sensitivity = fewer, stronger outliers. Lower sensitivity = more findings.
+        </div>
+<div class="hr2"></div>
+<div class="chk" style="margin-top:8px">
+<input id="onlyHigh" type="checkbox"/>
+<div>
+<label for="onlyHigh"><b>Only high outliers</b></label>
+<div class="tiny muted">ignore unusually small values</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input checked="" id="dropZero" type="checkbox"/>
+<div>
+<label for="dropZero"><b>Ignore zeros / blanks</b></label>
+<div class="tiny muted">prevents false spikes from missing values</div>
+</div>
+</div>
+</div>
+<div class="card">
+<div style="font-weight:700">3) Quality filters</div>
+<div class="tiny muted">Reduce noise, improve signal</div>
+<div class="row" style="margin-top:10px">
+<label class="tiny muted">Minimum group size</label>
+<select class="input" id="minGroup" style="width:auto;min-width:220px">
+<option selected="" value="1">1</option>
+<option value="3">3</option>
+<option value="5">5</option>
+<option value="10">10</option>
+</select>
+</div>
+<div class="chk" style="margin-top:8px">
+<input checked="" id="trimWs" type="checkbox"/>
+<div>
+<label for="trimWs"><b>Trim whitespace</b></label>
+<div class="tiny muted">helps merge duplicate groups like "Store 1" vs "Store 1 "</div>
+</div>
+</div>
+<div class="chk" style="margin-top:8px">
+<input checked="" id="capResults" type="checkbox"/>
+<div>
+<label for="capResults"><b>Cap results</b></label>
+<div class="tiny muted">limits output to top N scores</div>
+</div>
+</div>
+<div class="note tiny muted">
+          If your dataset is huge, consider exporting just the top 100–500 anomalies first.
+        </div>
+</div>
+</div>
+<div class="hr2"></div>
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div>
+<div style="font-weight:700">Preview</div>
+<div class="tiny muted">Top outliers with scores + reasons</div>
+</div>
+<div class="row">
+<label class="tiny muted">Show</label>
+<select class="input" id="viewMode" style="width:auto;min-width:240px">
+<option selected="" value="outliers">Outliers only</option>
+<option value="all">All rows (scored)</option>
+</select>
+</div>
+</div>
+<div class="split" style="margin-top:12px">
+<div class="tablewrap">
+<table>
+<thead><tr id="thead"></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+<div class="card" style="margin:0">
+<div style="font-weight:700">Audit</div>
+<div class="tiny muted">Method details + thresholds</div>
+<div class="hr2"></div>
+<div class="mini muted" id="auditBox">Load a file, pick a value column, then run outlier detection.</div>
+</div>
+</div>
+</div>
+<div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+<a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+<a class="btn" href="/docs/contact.html">Contact</a>
+</div>
+</div>
+<div class="footer">© 2026 ReportMedic</div>
+</div>
+<script>
+(function(){
+  const $ = (id)=>document.getElementById(id);
+
+  const el = {
+    file: $("file"), meta: $("meta"), msg: $("msg"),
+    delimiter: $("delimiter"), previewN: $("previewN"), maxOut: $("maxOut"),
+    statRows: $("statRows"), statCols: $("statCols"), statNum: $("statNum"),
+    statOut: $("statOut"), statHits: $("statHits"),
+    run: $("run"), download: $("download"), auditBtn: $("audit"),
+    valueCol: $("valueCol"), groupCol: $("groupCol"), timeCol: $("timeCol"),
+    method: $("method"), thr: $("thr"), thrVal: $("thrVal"),
+    onlyHigh: $("onlyHigh"), dropZero: $("dropZero"),
+    minGroup: $("minGroup"), trimWs: $("trimWs"), capResults: $("capResults"),
+    viewMode: $("viewMode"),
+    thead: $("thead"), tbody: $("tbody"),
+    auditBox: $("auditBox"),
+  };
+
+  let state = { raw:null, numericCols:[], scored:null, outliers:null, audit:null };
+
+  function escapeHtml(s){
+    return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+  function setMeta(obj){
+    if(!obj){ el.meta.innerHTML = `<b>Loaded:</b><span class="muted">none</span>`; return; }
+    el.meta.innerHTML = `<b>Loaded:</b><span class="mono muted">${escapeHtml(obj.name)}</span> <span class="muted">(${obj.rows.length} rows)</span>`;
+  }
+  function normalizeCell(v){
+    let s = String(v ?? "");
+    if(el.trimWs.checked) s = s.trim();
+    return s;
+  }
+  function toNumber(v){
+    const s = normalizeCell(v).replace(/,/g,"");
+    if(s === "") return null;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function parseFile(file){
+    const name = file?.name || "file";
+    const ext = name.split(".").pop().toLowerCase();
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onerror = ()=>reject(new Error("Could not read file."));
+      if(ext === "xlsx" || ext === "xls"){
+        reader.onload = (e)=>{
+          try{
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, {type:"array"});
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(ws, {defval:""});
+            const cols = json.length ? Object.keys(json[0]) : [];
+            resolve({name, rows: json, cols});
+          }catch(err){ reject(err); }
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        reader.onload = (e)=>{
+          try{
+            const text = e.target.result;
+            const delimOpt = el.delimiter.value;
+            const config = {header:true, skipEmptyLines:true, dynamicTyping:false};
+            if(delimOpt !== "auto"){ config.delimiter = (delimOpt === "\\t") ? "\t" : delimOpt; }
+            const res = Papa.parse(text, config);
+            const rows = (res.data || []).filter(r => r && Object.keys(r).length);
+            const cols = rows.length ? Object.keys(rows[0]) : (res.meta?.fields || []);
+            resolve({name, rows, cols});
+          }catch(err){ reject(err); }
+        };
+        reader.readAsText(file);
+      }
+    });
+  }
+
+  function detectNumericCols(rows, cols){
+    const nums = [];
+    for(const c of cols){
+      let seen=0, ok=0;
+      for(let i=0;i<Math.min(rows.length, 80);i++){
+        const s = normalizeCell(rows[i][c]);
+        if(s === "") continue;
+        seen++;
+        if(toNumber(rows[i][c]) !== null) ok++;
+      }
+      if(seen>0 && (ok/seen)>=0.75) nums.push(c);
+    }
+    return nums;
+  }
+
+  function fillSelect(sel, options, placeholder){
+    sel.innerHTML = "";
+    const ph = document.createElement("option");
+    ph.value = "";
+    ph.textContent = placeholder;
+    sel.appendChild(ph);
+    for(const o of options){
+      const opt = document.createElement("option");
+      opt.value = o;
+      opt.textContent = o;
+      sel.appendChild(opt);
+    }
+  }
+
+  function mean(a){ return a.reduce((x,y)=>x+y,0)/a.length; }
+  function std(a){
+    const m = mean(a);
+    const v = a.reduce((s,x)=>s+(x-m)*(x-m),0)/Math.max(1,(a.length-1));
+    return Math.sqrt(v);
+  }
+  function median(a){
+    const b = a.slice().sort((x,y)=>x-y);
+    const mid = Math.floor(b.length/2);
+    return (b.length%2===0) ? (b[mid-1]+b[mid])/2 : b[mid];
+  }
+  function quantile(a,q){
+    const b = a.slice().sort((x,y)=>x-y);
+    if(!b.length) return null;
+    const pos = (b.length-1)*q, base=Math.floor(pos), rest=pos-base;
+    if(b[base+1]===undefined) return b[base];
+    return b[base] + rest*(b[base+1]-b[base]);
+  }
+  function mad(a){
+    const med = median(a);
+    const dev = a.map(x=>Math.abs(x-med));
+    return median(dev);
+  }
+
+  function buildAudit(a){
+    return [
+      "OUTLIER FINDER AUDIT",
+      `method: ${a.method}`,
+      `threshold: ${a.thr}`,
+      `value_col: ${a.valueCol || ""}`,
+      `group_col: ${a.groupCol || ""}`,
+      `time_col: ${a.timeCol || ""}`,
+      `min_group_size: ${a.minGroup}`,
+      `only_high: ${el.onlyHigh.checked}`,
+      `ignore_zeros_blanks: ${el.dropZero.checked}`,
+      `cap_results: ${el.capResults.checked}`,
+      `max_results: ${el.maxOut.value}`,
+      "",
+      `groups_used: ${a.groups}`,
+      `scored_rows: ${a.candidates}`,
+      `outliers_found: ${a.outliersFound}`,
+      `outliers_returned: ${a.outliersReturned}`,
+      `skipped_blank_or_zero: ${a.skipped}`
+    ].join("\n");
+  }
+
+  function sortByTime(arr, timeCol){
+    if(!timeCol) return arr;
+    const parseTime = (v)=>{
+      const s = normalizeCell(v);
+      if(s==="") return null;
+      const n = Number(s);
+      if(Number.isFinite(n)) return n;
+      const t = Date.parse(s);
+      return Number.isFinite(t) ? t : null;
+    };
+    return arr.slice().sort((a,b)=>{
+      const ta=parseTime(a.row[timeCol]), tb=parseTime(b.row[timeCol]);
+      if(ta===null && tb===null) return 0;
+      if(ta===null) return 1;
+      if(tb===null) return -1;
+      return ta-tb;
+    });
+  }
+
+  function scoreGroup(series, method, thr){
+    const vals = series.map(x=>x.value);
+    const scored = [];
+
+    if(method==="zscore"){
+      const m = mean(vals), s = std(vals) || 0;
+      for(const x of series){
+        const z = s ? (x.value-m)/s : 0;
+        scored.push({...x.row, _score:Math.abs(z), _rawScore:z, _value:x.value, _reason:`z=${z.toFixed(3)} (mean=${m.toFixed(3)}, std=${s.toFixed(3)})`});
+      }
+      return scored;
+    }
+
+    if(method==="modz"){
+      const med = median(vals), m = mad(vals) || 0;
+      const denom = m ? (1.4826*m) : 0;
+      for(const x of series){
+        const rz = denom ? (x.value-med)/denom : 0;
+        scored.push({...x.row, _score:Math.abs(rz), _rawScore:rz, _value:x.value, _reason:`robust_z=${rz.toFixed(3)} (median=${med.toFixed(3)}, MAD=${m.toFixed(3)})`});
+      }
+      return scored;
+    }
+
+    if(method==="iqr"){
+      const q1=quantile(vals,0.25), q3=quantile(vals,0.75);
+      const iqr=(q3-q1)||0, lo=q1-thr*iqr, hi=q3+thr*iqr;
+      for(const x of series){
+        let dist=0;
+        if(x.value<lo) dist=(lo-x.value)/(iqr||1);
+        else if(x.value>hi) dist=(x.value-hi)/(iqr||1);
+        scored.push({...x.row, _score:dist, _rawScore:dist, _value:x.value, _reason:`IQR: q1=${q1.toFixed(3)}, q3=${q3.toFixed(3)}, iqr=${iqr.toFixed(3)}, lo=${lo.toFixed(3)}, hi=${hi.toFixed(3)}`});
+      }
+      return scored;
+    }
+
+    if(method==="pct"){
+      const lowQ=Math.max(0.001,(thr/6)*0.10), highQ=1-lowQ;
+      const lo=quantile(vals,lowQ), hi=quantile(vals,highQ);
+      for(const x of series){
+        let dist=0;
+        if(x.value<lo) dist=(lo-x.value)/(Math.abs(lo)||1);
+        else if(x.value>hi) dist=(x.value-hi)/(Math.abs(hi)||1);
+        scored.push({...x.row, _score:dist, _rawScore:dist, _value:x.value, _reason:`Percentiles: p${(lowQ*100).toFixed(1)}=${lo.toFixed(3)}, p${(highQ*100).toFixed(1)}=${hi.toFixed(3)}`});
+      }
+      return scored;
+    }
+
+    // delta
+    const deltas=[];
+    for(let i=1;i<series.length;i++) deltas.push(series[i].value-series[i-1].value);
+    const medD = deltas.length ? median(deltas) : 0;
+    const madD = deltas.length ? mad(deltas) : 0;
+    const denom = (madD ? (1.4826*madD) : 1);
+
+    scored.push({...series[0].row, _score:0, _rawScore:0, _value:series[0].value, _reason:"delta: first point (no previous)"});
+    for(let i=1;i<series.length;i++){
+      const d = series[i].value-series[i-1].value;
+      const z = (d-medD)/denom;
+      scored.push({...series[i].row, _score:Math.abs(z), _rawScore:z, _value:series[i].value, _reason:`delta_z=${z.toFixed(3)} (delta=${d.toFixed(3)}, medianΔ=${medD.toFixed(3)}, MADΔ=${madD.toFixed(3)})`});
+    }
+    return scored;
+  }
+
+  function runOutliers(){
+    const valueCol = el.valueCol.value;
+    if(!valueCol){ el.msg.textContent="Pick a numeric value column first."; return; }
+
+    const groupCol = el.groupCol.value || "";
+    const timeCol = el.timeCol.value || "";
+    const method = el.method.value;
+    const thr = parseFloat(el.thr.value || "3");
+    const minGroup = parseInt(el.minGroup.value,10) || 1;
+    const cap = el.capResults.checked;
+    const maxResults = parseInt(el.maxOut.value,10) || 50;
+
+    const groups = new Map();
+    let skipped = 0;
+
+    for(const row of state.raw.rows){
+      const val = toNumber(row[valueCol]);
+      if(val===null){ skipped++; continue; }
+      if(el.dropZero.checked && val===0){ skipped++; continue; }
+      const key = groupCol ? normalizeCell(row[groupCol]) : "__ALL__";
+      if(!groups.has(key)) groups.set(key, []);
+      groups.get(key).push({row, value: val});
+    }
+
+    const scoredAll=[];
+    let groupsUsed=0;
+
+    for(const [key, arr] of groups.entries()){
+      if(arr.length<minGroup) continue;
+      groupsUsed++;
+      let series = arr;
+      if(method==="delta") series = sortByTime(arr, timeCol);
+      const scored = scoreGroup(series, method, thr).map(r=>({ ...r, _group: groupCol?key:"", _time: timeCol?(r[timeCol]??""):"" }));
+      scoredAll.push(...scored);
+    }
+
+    // outlier rule
+    const onlyHigh = el.onlyHigh.checked;
+    const out=[];
+    let hits=0;
+
+    for(const r of scoredAll){
+      const dirOk = onlyHigh ? ((r._rawScore ?? 0) > 0) : true;
+      let pass=false;
+      if(method==="iqr" || method==="pct") pass = r._score > 0;
+      else pass = r._score >= thr;
+      if(pass && dirOk){ out.push(r); hits++; }
+    }
+
+    scoredAll.sort((a,b)=>b._score-a._score);
+    out.sort((a,b)=>b._score-a._score);
+
+    const outCapped = cap ? out.slice(0, maxResults) : out;
+
+    state.scored = scoredAll;
+    state.outliers = outCapped;
+    state.audit = {
+      method, thr, valueCol, groupCol, timeCol, minGroup,
+      groups: groupsUsed,
+      candidates: scoredAll.length,
+      outliersFound: out.length,
+      outliersReturned: outCapped.length,
+      skipped
+    };
+
+    el.statOut.textContent = String(outCapped.length);
+    el.statHits.textContent = String(hits);
+    el.download.disabled = outCapped.length===0;
+    el.auditBtn.disabled = false;
+
+    renderAudit();
+    renderTable();
+  }
+
+  function renderAudit(){
+    if(!state.audit){ el.auditBox.textContent="Load a file, pick a value column, then run outlier detection."; return; }
+    el.auditBox.innerHTML = `<div class="mini mono" style="white-space:pre-wrap">${escapeHtml(buildAudit(state.audit))}</div>`;
+  }
+
+  function renderTable(){
+    if(!state.raw){
+      el.thead.innerHTML = "";
+      el.tbody.innerHTML = `<tr><td class="muted">Load a file to preview.</td></tr>`;
+      return;
+    }
+
+    const view = el.viewMode.value;
+    const n = parseInt(el.previewN.value,10) || 25;
+
+    const baseCols = state.raw.cols.slice(0, 40);
+    const extra = ["_score","_reason","_group","_time","_value"];
+    const cols = extra.concat(baseCols);
+
+    const data = (view==="all" ? (state.scored||[]) : (state.outliers||[])) || [];
+    const rows = data.slice(0, n);
+
+    el.thead.innerHTML = cols.map(c=>`<th>${escapeHtml(c)}</th>`).join("");
+    el.tbody.innerHTML = rows.map(r=>{
+      const tds = cols.map(c=>{
+        let v = r[c];
+        if(c==="_score" && typeof v==="number") v = v.toFixed(4);
+        return `<td class="mono">${escapeHtml(v)}</td>`;
+      }).join("");
+      return `<tr>${tds}</tr>`;
+    }).join("") || `<tr><td class="muted">No results yet. Run detection.</td></tr>`;
+  }
+
+  function csvValue(v){
+    const s = String(v ?? "");
+    if(/[",\n\r]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
+    return s;
+  }
+
+  function downloadOutliers(){
+    const rows = state.outliers || [];
+    if(!rows.length) return;
+    const baseCols = state.raw.cols;
+    const cols = ["_score","_reason","_group","_time","_value"].concat(baseCols);
+    const lines = [];
+    lines.push(cols.map(csvValue).join(","));
+    for(const r of rows) lines.push(cols.map(c=>csvValue(r[c])).join(","));
+    const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
+    a.href = URL.createObjectURL(blob);
+    a.download = `reportmedic_outliers_${stamp}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function downloadAudit(){
+    if(!state.audit) return;
+    const blob = new Blob([buildAudit(state.audit)], {type:"text/plain;charset=utf-8"});
+    const a = document.createElement("a");
+    const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
+    a.href = URL.createObjectURL(blob);
+    a.download = `reportmedic_outliers_audit_${stamp}.txt`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(a.href);
+  }
+
+  el.thr.addEventListener("input", ()=>{ el.thrVal.textContent = String(el.thr.value); });
+  el.previewN.addEventListener("change", renderTable);
+  el.viewMode.addEventListener("change", renderTable);
+
+  el.file.addEventListener("change", async (e)=>{
+    const f = e.target.files?.[0];
+    if(!f) return;
+    el.msg.textContent="Loading…";
+    state.raw=null; state.scored=null; state.outliers=null; state.audit=null;
+
+    try{
+      const obj = await parseFile(f);
+      state.raw=obj; setMeta(obj);
+
+      state.numericCols = detectNumericCols(obj.rows, obj.cols);
+      fillSelect(el.valueCol, state.numericCols, "Select numeric column");
+      fillSelect(el.groupCol, obj.cols, "None");
+      fillSelect(el.timeCol, obj.cols, "None");
+
+      el.valueCol.disabled=false; el.groupCol.disabled=false; el.timeCol.disabled=false;
+
+      el.statRows.textContent=String(obj.rows.length);
+      el.statCols.textContent=String(obj.cols.length);
+      el.statNum.textContent=String(state.numericCols.length);
+
+      el.run.disabled = state.numericCols.length===0;
+      el.download.disabled=true; el.auditBtn.disabled=true;
+      el.statOut.textContent="0"; el.statHits.textContent="0";
+      el.auditBox.textContent="Ready. Choose columns and click Find outliers.";
+      renderTable();
+
+      el.msg.textContent = state.numericCols.length ? "Loaded. Choose a value column and run detection." : "Loaded, but no numeric columns detected. Try cleaning the file first.";
+    }catch(err){
+      console.error(err);
+      el.msg.textContent="Could not parse file. Try exporting as CSV.";
+      setMeta(null);
+      el.run.disabled=true; el.download.disabled=true; el.auditBtn.disabled=true;
+      el.valueCol.disabled=true; el.groupCol.disabled=true; el.timeCol.disabled=true;
+      el.statRows.textContent="—"; el.statCols.textContent="—"; el.statNum.textContent="—";
+      el.auditBox.textContent="Load a file to begin.";
+      renderTable();
+    }
+  });
+
+  el.run.addEventListener("click", ()=>{
+    if(!state.raw) return;
+    el.msg.textContent="Detecting outliers…";
+    setTimeout(()=>{
+      try{ runOutliers(); el.msg.textContent="Done. Review the outliers table and download results."; }
+      catch(err){ console.error(err); el.msg.textContent="Outlier detection failed. Try a different method or column."; }
+    }, 0);
+  });
+
+  el.download.addEventListener("click", downloadOutliers);
+  el.auditBtn.addEventListener("click", downloadAudit);
+
+  setMeta(null);
+  el.run.disabled=true; el.download.disabled=true; el.auditBtn.disabled=true;
+  el.thrVal.textContent=String(el.thr.value);
+  el.auditBox.textContent="Load a file to begin.";
+  renderTable();
+})();
+</script>
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
+
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Outlier Finder details">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Outlier Finder</h2>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Detect spikes, drops, and unusual values</li>
+<li>Find rows that break expected ranges</li>
+<li>Spot data quality anomalies quickly</li>
+<li>Prioritize where to investigate first</li>
+      </ul>
+
+      <h3>Common causes</h3>
+      <ul>
+        <li>Upstream load issues or partial refresh</li>
+<li>Bad joins creating inflated counts</li>
+<li>Unit/scale changes (%, dollars, decimals)</li>
+      </ul>
+
+      <h3>What to do next</h3>
+      <ul>
+        <li>Validate outliers against source system</li>
+<li>Use Audit notes to record findings</li>
+<li>Run Schema Validator if columns look wrong</li>
+<li>If you need guidance, use Fix My Report</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<script>
+(function(){
+  function openLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','false');
+    const btn=bd.querySelector('.rm-lm-close');
+    if(btn) btn.focus();
+  }
+  function closeLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','true');
+  }
+  document.addEventListener('click', function(e){
+    const a=e.target.closest('[data-rm-lm-open]');
+    if(a){
+      e.preventDefault();
+      openLM(a.getAttribute('data-rm-lm-open'));
+      return;
+    }
+    const close=e.target.closest('[data-rm-lm-close]');
+    if(close){
+      e.preventDefault();
+      closeLM(close.getAttribute('data-rm-lm-close'));
+      return;
+    }
+    const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+    if(bd){
+      closeLM(bd.id);
+    }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute('aria-hidden','true'));
+  });
+})();
+</script>
+
+</body>
+</html>

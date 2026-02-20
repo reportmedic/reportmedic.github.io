@@ -16,16 +16,16 @@
   ];
 
   const routes = {
-    compare: "/tools/compare.html",
-    reconcile: "/tools/reconcile.html",
-    cleaner: "/tools/cleaner.html",
-    validator: "/tools/validator.html",
-    outliers: "/tools/outliers.html",
-    pivot: "/tools/pivot.html",
-    audit: "/tools/audit.html",
-    mask: "/tools/mask.html",
-    export: "/tools/export.html",
-    scheduler: "/tools/scheduler.html",
+    compare: "/tools/compare-two-files-find-differences.html",
+    reconcile: "/tools/reconcile-two-datasets-totals-dont-match.html",
+    cleaner: "/tools/clean-dirty-data-file-online.html",
+    validator: "/tools/validate-data-schema-and-columns.html",
+    outliers: "/tools/find-data-outliers-and-anomalies.html",
+    pivot: "/tools/summarize-data-by-group-pivot-online.html",
+    audit: "/tools/why-two-reports-dont-match.html",
+    mask: "/tools/mask-sensitive-data-before-sharing.html",
+    export: "/tools/fix-export-formatting-errors.html",
+    scheduler: "/tools/schedule-data-validation-checks.html",
   };
 
   function el(tag, attrs={}, html){

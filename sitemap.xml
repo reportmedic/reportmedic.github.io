@@ -37,61 +37,61 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://reportmedic.org/tools/audit.html</loc>
+    <loc>https://reportmedic.org/tools/why-two-reports-dont-match.html</loc>
     <lastmod>2026-02-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reportmedic.org/tools/cleaner.html</loc>
+    <loc>https://reportmedic.org/tools/clean-dirty-data-file-online.html</loc>
     <lastmod>2026-02-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reportmedic.org/tools/compare.html</loc>
+    <loc>https://reportmedic.org/tools/compare-two-files-find-differences.html</loc>
     <lastmod>2026-02-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reportmedic.org/tools/export.html</loc>
+    <loc>https://reportmedic.org/tools/fix-export-formatting-errors.html</loc>
     <lastmod>2026-02-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reportmedic.org/tools/mask.html</loc>
+    <loc>https://reportmedic.org/tools/mask-sensitive-data-before-sharing.html</loc>
     <lastmod>2026-02-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reportmedic.org/tools/outliers.html</loc>
+    <loc>https://reportmedic.org/tools/find-data-outliers-and-anomalies.html</loc>
     <lastmod>2026-02-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reportmedic.org/tools/pivot.html</loc>
+    <loc>https://reportmedic.org/tools/summarize-data-by-group-pivot-online.html</loc>
     <lastmod>2026-02-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reportmedic.org/tools/reconcile.html</loc>
+    <loc>https://reportmedic.org/tools/reconcile-two-datasets-totals-dont-match.html</loc>
     <lastmod>2026-02-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reportmedic.org/tools/scheduler.html</loc>
+    <loc>https://reportmedic.org/tools/schedule-data-validation-checks.html</loc>
     <lastmod>2026-02-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reportmedic.org/tools/validator.html</loc>
+    <loc>https://reportmedic.org/tools/validate-data-schema-and-columns.html</loc>
     <lastmod>2026-02-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

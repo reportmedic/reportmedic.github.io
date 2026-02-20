@@ -205,12 +205,12 @@
 <div style="height:10px"></div>
 <div style="font-weight:700">Quick links</div>
 <div class="list">
-<a href="/tools/compare.html"><span>Report Compare</span><span class="mini">diff by keys</span></a>
-<a href="/tools/reconcile.html"><span>Reconciliation</span><span class="mini">variance &amp; totals</span></a>
-<a href="/tools/validator.html"><span>Schema Validator</span><span class="mini">rules &amp; types</span></a>
-<a href="/tools/cleaner.html"><span>Data Cleaner</span><span class="mini">dedupe &amp; normalize</span></a>
-<a href="/tools/outliers.html"><span>Outlier Finder</span><span class="mini">anomalies</span></a>
-<a href="/tools/scheduler.html"><span>Scheduler</span><span class="mini">batch runs</span></a>
+<a href="/tools/compare-two-files-find-differences.html"><span>Report Compare</span><span class="mini">diff by keys</span></a>
+<a href="/tools/reconcile-two-datasets-totals-dont-match.html"><span>Reconciliation</span><span class="mini">variance &amp; totals</span></a>
+<a href="/tools/validate-data-schema-and-columns.html"><span>Schema Validator</span><span class="mini">rules &amp; types</span></a>
+<a href="/tools/clean-dirty-data-file-online.html"><span>Data Cleaner</span><span class="mini">dedupe &amp; normalize</span></a>
+<a href="/tools/find-data-outliers-and-anomalies.html"><span>Outlier Finder</span><span class="mini">anomalies</span></a>
+<a href="/tools/schedule-data-validation-checks.html"><span>Scheduler</span><span class="mini">batch runs</span></a>
 </div>
 </aside>
 </section>
@@ -254,23 +254,23 @@
   function recommendation(pt){
     const map = {
       compare: [
-        {name:"Report Compare", href:"/tools/compare.html", why:"Find row/column diffs by key fields."},
-        {name:"Reconciliation", href:"/tools/reconcile.html", why:"Explain variances in totals and aggregates."}
+        {name:"Report Compare", href:"/tools/compare-two-files-find-differences.html", why:"Find row/column diffs by key fields."},
+        {name:"Reconciliation", href:"/tools/reconcile-two-datasets-totals-dont-match.html", why:"Explain variances in totals and aggregates."}
       ],
       schema: [
-        {name:"Schema Validator", href:"/tools/validator.html", why:"Catch missing fields, type/range violations."}
+        {name:"Schema Validator", href:"/tools/validate-data-schema-and-columns.html", why:"Catch missing fields, type/range violations."}
       ],
       clean: [
-        {name:"Data Cleaner", href:"/tools/cleaner.html", why:"Trim/normalize, fix dates, remove duplicates."}
+        {name:"Data Cleaner", href:"/tools/clean-dirty-data-file-online.html", why:"Trim/normalize, fix dates, remove duplicates."}
       ],
       outlier: [
-        {name:"Outlier Finder", href:"/tools/outliers.html", why:"Spot spikes/anomalies quickly."}
+        {name:"Outlier Finder", href:"/tools/find-data-outliers-and-anomalies.html", why:"Spot spikes/anomalies quickly."}
       ],
       schedule: [
-        {name:"Scheduler", href:"/tools/scheduler.html", why:"Diagnose batch timing/runs and automation issues."}
+        {name:"Scheduler", href:"/tools/schedule-data-validation-checks.html", why:"Diagnose batch timing/runs and automation issues."}
       ],
       other: [
-        {name:"Report Compare", href:"/tools/compare.html", why:"Start here if unsure; compare outputs and narrow down."}
+        {name:"Report Compare", href:"/tools/compare-two-files-find-differences.html", why:"Start here if unsure; compare outputs and narrow down."}
       ]
     };
     const items = map[pt] || map.other;
