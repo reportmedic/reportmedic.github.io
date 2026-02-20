@@ -116,6 +116,33 @@
 
     .diffNavBtn{padding:8px 10px; min-width:36px; font-weight:700;}
     tr.rm-active-diff td{box-shadow: inset 0 0 0 2px rgba(255,255,255,.18);}
+
+
+/* Floating diff navigation (stays visible after first use) */
+.diffNavFloat{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  z-index:9998;
+  display:none;
+  background:rgba(15,18,24,.72);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:14px;
+  padding:10px 10px;
+  box-shadow:0 12px 30px rgba(0,0,0,.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  gap:8px;
+  align-items:center;
+}
+.diffNavFloat[aria-hidden="true"]{display:none;}
+.diffNavFloat[aria-hidden="false"]{display:flex;}
+.diffNavFloat .diffNavBtn{padding:8px 10px; min-width:38px;}
+.diffNavFloat .diffNavLabel{min-width:54px; text-align:center; opacity:.9;}
+@media (max-width: 520px){
+  .diffNavFloat{right:12px; bottom:12px; padding:8px;}
+  .diffNavFloat .diffNavLabel{display:none;}
+}
   </style>
 </head>
 
@@ -203,6 +230,14 @@
         <div class="diffBody" id="diffBody" aria-label="Diff results"></div>
       </div>
 
+
+<!-- Floating diff navigation: appears after you use < or > once (only when there are 2+ diffs) -->
+<div class="diffNavFloat" id="diffNavFloat" aria-hidden="true" aria-label="Diff navigation">
+  <button class="btn diffNavBtn" id="prevDiffFloatBtn" type="button" aria-label="Previous difference">&lt;</button>
+  <button class="btn diffNavBtn" id="nextDiffFloatBtn" type="button" aria-label="Next difference">&gt;</button>
+  <span class="tiny muted diffNavLabel" id="diffNavFloatLabel"></span>
+</div>
+
       <div class="tiny muted" style="margin-top:10px">
         Runs locally in your browser — your text never leaves the page.
       </div>
@@ -272,6 +307,7 @@
 
   // Diff navigation state (previous/next change)
   let diffNav = { rows: [], idx: 0 };
+  let navEverUsed = false;
 
   function collectDiffRows(){
     const table = els.diffBody.querySelector("table.diffTable");
@@ -287,17 +323,44 @@
     els.nextDiffBtn.style.display = show ? "" : "none";
   }
 
+
+function setFloatLabel(){
+  if(!els.diffNavFloatLabel) return;
+  const n = diffNav.rows.length;
+  if(n > 1){
+    els.diffNavFloatLabel.textContent = (diffNav.idx + 1) + " / " + n;
+  }else{
+    els.diffNavFloatLabel.textContent = "";
+  }
+}
+
+function setFloatVisibility(){
+  if(!els.diffNavFloat) return;
+  const n = diffNav.rows.length;
+  const show = (n > 1) && navEverUsed;
+  els.diffNavFloat.setAttribute("aria-hidden", show ? "false" : "true");
+  setFloatLabel();
+}
+
+  
   function updateNavDisabled(){
-    if(!els.prevDiffBtn || !els.nextDiffBtn) return;
     const n = diffNav.rows.length;
+  
+    const prevBtns = [els.prevDiffBtn, els.prevDiffFloatBtn].filter(Boolean);
+    const nextBtns = [els.nextDiffBtn, els.nextDiffFloatBtn].filter(Boolean);
+  
     if(n <= 1){
-      els.prevDiffBtn.disabled = true;
-      els.nextDiffBtn.disabled = true;
+      prevBtns.forEach(b=>b.disabled = true);
+      nextBtns.forEach(b=>b.disabled = true);
+      setFloatLabel();
       return;
     }
-    els.prevDiffBtn.disabled = diffNav.idx <= 0;
-    els.nextDiffBtn.disabled = diffNav.idx >= (n - 1);
+  
+    prevBtns.forEach(b=>b.disabled = diffNav.idx <= 0);
+    nextBtns.forEach(b=>b.disabled = diffNav.idx >= (n - 1));
+    setFloatLabel();
   }
+
 
   function markActive(i){
     diffNav.rows.forEach(tr => tr.classList.remove("rm-active-diff"));
@@ -316,18 +379,24 @@
     updateNavDisabled();
   }
 
+  
   function setupDiffNav(){
     diffNav.rows = collectDiffRows();
     diffNav.idx = 0;
+  
+    // Reset floating nav for each new compare run
+    navEverUsed = false;
+  
     setNavVisibility(diffNav.rows.length);
+    setFloatVisibility();
     updateNavDisabled();
-
+  
     if(diffNav.rows.length === 1){
       // Only one difference: jump straight to it.
       els.diffWrap.scrollIntoView({behavior:"smooth", block:"start"});
       requestAnimationFrame(()=>scrollToDiff(0));
     }else if(diffNav.rows.length > 1){
-      // Multiple diffs: show nav buttons, highlight the first diff (no auto-scroll).
+      // Multiple diffs: highlight the first diff (no auto-scroll).
       markActive(0);
       updateNavDisabled();
     }
@@ -458,7 +527,9 @@
 
     if(!rows.length){
       els.diffBody.innerHTML = "<div class='diffEmpty'>No differences found.</div>";
+      navEverUsed = false;
       setNavVisibility(0);
+      setFloatVisibility();
       updateNavDisabled();
       return;
     }
@@ -497,6 +568,8 @@
     setMeta("R", null);
     els.diffWrap.style.display = "none";
     setNavVisibility(0);
+    navEverUsed = false;
+    setFloatVisibility();
     diffNav.rows = [];
     diffNav.idx = 0;
     els.diffBody.innerHTML = "";
@@ -566,27 +639,44 @@
   }
 
 
-  function navPrev(){
+  
+  function navPrev(scrollPage){
     if(diffNav.rows.length <= 1) return;
     if(diffNav.idx <= 0) return;
+  
     diffNav.idx -= 1;
-    els.diffWrap.scrollIntoView({behavior:"smooth", block:"start"});
+    navEverUsed = true;
+    setFloatVisibility();
+  
+    if(scrollPage){
+      els.diffWrap.scrollIntoView({behavior:"smooth", block:"start"});
+    }
     requestAnimationFrame(()=>scrollToDiff(diffNav.idx));
   }
-  function navNext(){
+  
+  function navNext(scrollPage){
     if(diffNav.rows.length <= 1) return;
     if(diffNav.idx >= diffNav.rows.length - 1) return;
+  
     diffNav.idx += 1;
-    els.diffWrap.scrollIntoView({behavior:"smooth", block:"start"});
+    navEverUsed = true;
+    setFloatVisibility();
+  
+    if(scrollPage){
+      els.diffWrap.scrollIntoView({behavior:"smooth", block:"start"});
+    }
     requestAnimationFrame(()=>scrollToDiff(diffNav.idx));
   }
+
   els.runBtn.addEventListener("click", buildDiff);
   els.swapBtn.addEventListener("click", swap);
   els.clearBtn.addEventListener("click", clearAll);
   els.copySummaryBtn.addEventListener("click", copySummary);
   els.downloadBtn.addEventListener("click", download);
-  if(els.prevDiffBtn) els.prevDiffBtn.addEventListener("click", navPrev);
-  if(els.nextDiffBtn) els.nextDiffBtn.addEventListener("click", navNext);
+  if(els.prevDiffBtn) els.prevDiffBtn.addEventListener("click", ()=>navPrev(true));
+  if(els.nextDiffBtn) els.nextDiffBtn.addEventListener("click", ()=>navNext(true));
+  if(els.prevDiffFloatBtn) els.prevDiffFloatBtn.addEventListener("click", ()=>navPrev(false));
+  if(els.nextDiffFloatBtn) els.nextDiffFloatBtn.addEventListener("click", ()=>navNext(false));
 
 
   // Learn-more modal behavior
