@@ -1,780 +1,538 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<meta name="description" content="Compare two files or report extracts to find row/column differences, missing values, and drift—ideal for validating reruns and troubleshooting mismatches."/>
-<title>Compare Two Files/Reports — Find differences fast — ReportMedic</title>
-<link href="/favicon.ico" rel="icon" sizes="any"/>
-<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
-<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
-<link href="/assets/css/styles.css" rel="stylesheet"/>
-<!-- Client-side parsing libraries (safe for GitHub Pages). If you prefer fully-offline, vendor these files later. -->
-<script defer="" src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<script defer="" src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<style>
-    /* Minimal page-specific styling; keeps your global /assets/css/styles.css as the source of truth. */
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-    @media (max-width: 880px){.grid2{grid-template-columns:1fr}}
-    .card{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;background:rgba(0,0,0,.10)}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .muted{opacity:.8}
-    .tiny{font-size:12px;opacity:.78}
-    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;border:1px solid rgba(255,255,255,.12);border-bottom-color:rgba(255,255,255,.22);padding:2px 6px;border-radius:8px;opacity:.9}
-    .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px}
-    .pill b{font-size:12px}
-    .hr2{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
-    .chklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
-    @media (max-width: 540px){.chklist{grid-template-columns:1fr}}
-    .chk{display:flex;gap:8px;align-items:center;padding:6px 8px;border:1px solid rgba(255,255,255,.10);border-radius:12px}
-    .chk input{transform:translateY(1px)}
-    .input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.16);color:inherit}
-    .tablewrap{overflow:auto;border:1px solid rgba(255,255,255,.10);border-radius:14px}
-    table{border-collapse:separate;border-spacing:0;width:100%;min-width:860px}
-    th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
-    th{position:sticky;top:0;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);text-align:left;font-size:12px;letter-spacing:.02em;opacity:.9}
-    tr:last-child td{border-bottom:none}
-    .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;border:1px solid rgba(255,255,255,.12)}
-    .b-added{background:rgba(46, 204, 113, .12)}
-    .b-removed{background:rgba(231, 76, 60, .12)}
-    .b-changed{background:rgba(241, 196, 15, .12)}
-    .b-same{background:rgba(52, 152, 219, .10)}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
-    .diffbox{border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:8px;background:rgba(0,0,0,.12)}
-    .diffbox .kv{display:grid;grid-template-columns:120px 1fr;gap:6px;margin:6px 0}
-    .diffbox .kv .k{opacity:.75;font-size:12px}
-    .diffbox .kv .v{word-break:break-word}
-    .hint{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
-  </style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="description" content="Compare two blocks of text side-by-side with Notepad++-style highlights for added, removed, and blank lines. Runs locally in your browser."/>
+  <title>Compare Two Texts Side-by-Side — Highlight differences — ReportMedic</title>
+
+  <link rel="icon" sizes="any" href="/favicon.ico"/>
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/reportmedic-48.png?v=1"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png"/>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+
+  <!-- Lightweight diff engine (client-side). -->
+  <script defer src="https://cdn.jsdelivr.net/npm/diff@5.2.0/dist/diff.min.js"></script>
+
+  <!-- Site drawer nav (All Tools). -->
   <script defer src="/assets/js/rm-dropzone.js"></script>
   <script defer src="/assets/js/rm-tools-drawer.js"></script>
 
-<style>
-/* ReportMedic Learn-more modal (lightweight, page-local) */
-.rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
-.rm-lm-link:hover{opacity:1;}
-.rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;}
-.rm-lm-backdrop[aria-hidden="false"]{display:flex;}
-.rm-lm-dialog{color:#111;max-width:560px; width:100%; background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.25); overflow:hidden;}
-.rm-lm-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08);}
-.rm-lm-title{margin:0; font-size:1.05rem;}
-.rm-lm-close{border:0; background:transparent; font-size:1.25rem; line-height:1; padding:6px 10px; cursor:pointer; opacity:.7;}
-.rm-lm-close:hover{opacity:1;}
-.rm-lm-body{font-size:.95rem; line-height:1.45; color:#111;padding:14px 16px;}
-.rm-lm-body h3{margin:12px 0 6px; font-size:.95rem;}
-.rm-lm-body ul{margin:0 0 6px 18px;}
-.rm-lm-body li{margin:4px 0;}
-</style>
+  <style>
+    /* Page-local polish (keeps global CSS untouched) */
+    .rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+    .rm-lm-link:hover{opacity:1;}
+    .rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;}
+    .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+    .rm-lm-dialog{color:#111; max-width:620px; width:100%; background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.35); overflow:hidden;}
+    .rm-lm-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08);}
+    .rm-lm-title{margin:0; font-size:1.05rem;}
+    .rm-lm-close{border:none; background:transparent; font-size:1.35rem; line-height:1; cursor:pointer; padding:4px 8px;}
+    .rm-lm-body{padding:14px 16px; font-size:.95rem;}
+    .rm-lm-body h3{margin:12px 0 6px; font-size:1rem;}
+    .rm-lm-body ul{margin:0 0 10px 18px;}
 
+    .tc-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+    @media (max-width: 900px){ .tc-grid{grid-template-columns:1fr;} }
+
+    .tc-meta{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px;}
+    .tc-meta label{display:flex; gap:8px; align-items:center; font-size:.92rem;}
+    .tc-meta input[type="checkbox"]{transform: translateY(1px);}
+
+    textarea.tc{
+      width:100%;
+      min-height:220px;
+      resize:vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12.8px;
+      line-height:1.4;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      outline:none;
+    }
+    textarea.tc:focus{border-color:rgba(110,168,255,.55); box-shadow:0 0 0 4px rgba(110,168,255,.12);}
+
+    .tc-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px;}
+    .tc-actions .btn{white-space:nowrap;}
+
+    .diffWrap{
+      margin-top:14px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      background:rgba(0,0,0,.12);
+    }
+    .diffTop{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 12px;
+      background:rgba(255,255,255,.05);
+      border-bottom:1px solid var(--border);
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .diffTop .tiny{opacity:.92}
+    .diffBody{
+      max-height:520px;
+      overflow:auto;
+    }
+    table.diffTable{
+      width:100%;
+      border-collapse:collapse;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12.6px;
+      line-height:1.35;
+    }
+    .diffTable td{
+      vertical-align:top;
+      padding:4px 8px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .ln{
+      width:1%;
+      white-space:nowrap;
+      text-align:right;
+      color:rgba(238,246,255,.55);
+      background:rgba(255,255,255,.03);
+      user-select:none;
+      font-variant-numeric: tabular-nums;
+    }
+    .cell{width:49%;}
+    .sep{width:0; padding:0; border-bottom:1px solid rgba(255,255,255,.08);}
+    .added{background: rgba(124,247,212,.14);}
+    .removed{background: rgba(255,107,107,.16);}
+    .blank{color: rgba(238,246,255,.38);}
+    .changedHint{color: rgba(238,246,255,.8);}
+    .diffEmpty{padding:14px 12px; color:rgba(238,246,255,.78);}
+
+    .fileRow{margin-top:10px;}
+    .fileRow input[type="file"]{width:100%; max-width:100%;}
+    .fileRow .rm-dropzone{width:100%;}
+    .hint{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
+  </style>
 </head>
+
 <body class="tools-page">
 <header>
-<div class="nav">
-<a class="logo" href="/" style="text-decoration:none;">
-<div class="mark"></div>
-<div>ReportMedic</div>
-</a>
-<div class="spacer"></div>
-<a class="btn" href="/">Home</a>
-<button class="btn" id="openDrawerBtn" type="button">All Tools</button>
-<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
-</div></header>
-<div class="wrap">
-<div class="panel">
-<h1>Report Compare <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
-
-
-<p class="sub">Compare two reports and pinpoint exactly what changed — so mismatches don’t turn into long debug sessions. Runs locally in your browser.</p>
-<div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
-
-
-<div class="hr"></div>
-<div class="grid2">
-<div class="card">
-<div class="row" style="justify-content:space-between">
-<div>
-<div style="font-weight:700">Report A (baseline)</div>
-<div class="tiny muted">This is the “old / before” version</div>
-</div>
-<span class="pill tiny" id="aMeta"><b>A:</b><span class="muted">not loaded</span></span>
-</div>
-<div style="margin-top:10px">
-<input accept=".csv,.tsv,.xlsx,.xls" class="input" id="fileA" type="file"/>
-</div>
-<div class="hint tiny muted">
-          Tip: Export your report as <span class="kbd">CSV</span> if possible. XLSX works too (first sheet is used).
-        </div>
-</div>
-<div class="card">
-<div class="row" style="justify-content:space-between">
-<div>
-<div style="font-weight:700">Report B (new)</div>
-<div class="tiny muted">This is the “new / after” version</div>
-</div>
-<span class="pill tiny" id="bMeta"><b>B:</b><span class="muted">not loaded</span></span>
-</div>
-<div style="margin-top:10px">
-<input accept=".csv,.tsv,.xlsx,.xls" class="input" id="fileB" type="file"/>
-</div>
-<div class="hint tiny muted">
-          Privacy: files are processed locally in your browser — nothing is uploaded to a server.
-        </div>
-</div>
-</div>
-<div class="hr2"></div>
-<div class="grid2">
-<div class="card">
-<div style="font-weight:700">1) Choose key fields</div>
-<div class="tiny muted">Keys uniquely identify a row (example: <span class="kbd">StoreId</span> + <span class="kbd">Week</span>)</div>
-<div class="row" style="margin-top:10px">
-<input class="input" id="keySearch" placeholder="Search columns…"/>
-</div>
-<div aria-live="polite" class="chklist" id="keyList"></div>
-<div class="row" style="margin-top:10px">
-<button class="btn" id="autoKey">Auto-pick</button>
-<button class="btn" id="clearKey">Clear</button>
-</div>
-<div class="tiny muted" style="margin-top:8px">
-          Auto-pick tries common names: id, key, code, name, date, week, etc.
-        </div>
-</div>
-<div class="card">
-<div style="font-weight:700">2) Compare options</div>
-<div class="chk" style="margin-top:10px">
-<input checked="" id="optTrim" type="checkbox"/>
-<label for="optTrim"><b>Trim whitespace</b> <span class="tiny muted">(" abc " → "abc")</span></label>
-</div>
-<div class="chk" style="margin-top:8px">
-<input id="optCase" type="checkbox"/>
-<label for="optCase"><b>Case-insensitive</b> <span class="tiny muted">("ABC" == "abc")</span></label>
-</div>
-<div class="chk" style="margin-top:8px">
-<input checked="" id="optEmptyEq" type="checkbox"/>
-<label for="optEmptyEq"><b>Treat empty as equal</b> <span class="tiny muted">(blank == blank)</span></label>
-</div>
-<div class="chk" style="margin-top:8px">
-<input checked="" id="optNumeric" type="checkbox"/>
-<label for="optNumeric"><b>Normalize numbers</b> <span class="tiny muted">(1, 1.0, "1" treated similarly)</span></label>
-</div>
-<div class="row" style="margin-top:12px">
-<button class="btn primary" disabled="" id="run">Run compare</button>
-<button class="btn" disabled="" id="swap">Swap A↔B</button>
-</div>
-<div class="tiny muted" id="runMsg" style="margin-top:10px"></div>
-</div>
-</div>
-<div class="hr2"></div>
-<div class="card">
-<div class="row" style="justify-content:space-between">
-<div>
-<div style="font-weight:700">Results</div>
-<div class="tiny muted">Added / removed / changed / unchanged rows</div>
-</div>
-<div class="row">
-<select class="input" id="filterStatus" style="width:auto;min-width:190px">
-<option value="all">Show: All</option>
-<option value="changed">Show: Changed</option>
-<option value="added">Show: Added</option>
-<option value="removed">Show: Removed</option>
-<option value="same">Show: Same</option>
-</select>
-<button class="btn" disabled="" id="download">Download diff CSV</button>
-</div>
-</div>
-<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
-<span class="badge b-added" id="statAdded">Added: <b class="mono">0</b></span>
-<span class="badge b-removed" id="statRemoved">Removed: <b class="mono">0</b></span>
-<span class="badge b-changed" id="statChanged">Changed: <b class="mono">0</b></span>
-<span class="badge b-same" id="statSame">Same: <b class="mono">0</b></span>
-<span class="pill tiny" id="statCols"><b>Columns:</b><span class="mono muted">—</span></span>
-<span class="pill tiny" id="statKeys"><b>Keys:</b><span class="mono muted">—</span></span>
-</div>
-<div class="tablewrap" style="margin-top:12px">
-<table>
-<thead>
-<tr>
-<th style="width:130px">Status</th>
-<th style="width:260px">Row key</th>
-<th>Details</th>
-</tr>
-</thead>
-<tbody id="rows"></tbody>
-</table>
-</div>
-<div class="tiny muted" style="margin-top:10px">
-        “Row key” is generated from the key fields you selected. If nothing matches correctly, re-check keys.
-      </div>
-</div>
-<div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-<a class="btn primary" href="/#toolbox">Back to Toolbox</a>
-<a class="btn" href="/docs/contact.html">Contact</a>
-</div>
-</div>
-<div class="footer">© 2026 ReportMedic</div>
-</div>
-<script>
-(function(){
-  const $ = (id) => document.getElementById(id);
-
-  const el = {
-    fileA: $("fileA"), fileB: $("fileB"),
-    aMeta: $("aMeta"), bMeta: $("bMeta"),
-    keySearch: $("keySearch"),
-    keyList: $("keyList"),
-    autoKey: $("autoKey"), clearKey: $("clearKey"),
-    run: $("run"), swap: $("swap"),
-    runMsg: $("runMsg"),
-    optTrim: $("optTrim"), optCase: $("optCase"), optEmptyEq: $("optEmptyEq"), optNumeric: $("optNumeric"),
-    filterStatus: $("filterStatus"),
-    download: $("download"),
-    rows: $("rows"),
-    statAdded: $("statAdded"), statRemoved: $("statRemoved"), statChanged: $("statChanged"), statSame: $("statSame"),
-    statCols: $("statCols"), statKeys: $("statKeys"),
-  };
-
-  let state = {
-    A: null, B: null, // {name, rows:[obj], cols:[string]}
-    keys: new Set(),
-    commonCols: [],
-    lastDiff: null // array of diff rows
-  };
-
-  function setMeta(which, obj){
-    const target = which === "A" ? el.aMeta : el.bMeta;
-    if(!obj){ target.innerHTML = `<b>${which}:</b><span class="muted">not loaded</span>`; return; }
-    target.innerHTML = `<b>${which}:</b><span class="mono muted">${escapeHtml(obj.name)}</span> <span class="muted">(${obj.rows.length} rows, ${obj.cols.length} cols)</span>`;
-  }
-
-  function escapeHtml(s){
-    return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  }
-
-  function normalizeValue(v){
-    if(v === null || v === undefined) return "";
-    let s = String(v);
-
-    if(el.optTrim.checked) s = s.trim();
-    if(el.optCase.checked) s = s.toLowerCase();
-
-    // For XLSX, numbers may be real numbers; for CSV, they may be strings.
-    if(el.optNumeric.checked){
-      // normalize commas and spaces in numeric-looking strings
-      const t = s.replace(/,/g, "").trim();
-      if(t !== "" && /^-?\d+(\.\d+)?$/.test(t)){
-        // normalize to fixed string without trailing zeros
-        const num = Number(t);
-        if(Number.isFinite(num)){
-          s = String(num);
-        }
-      }
-    }
-
-    return s;
-  }
-
-  function isEmpty(v){
-    return normalizeValue(v) === "";
-  }
-
-  function keyFromRow(row, keys){
-    const parts = [];
-    for(const k of keys){
-      parts.push(`${k}=${normalizeValue(row[k])}`);
-    }
-    return parts.join(" | ");
-  }
-
-  function updateRunEnabled(){
-    const ok = !!(state.A && state.B && state.A.rows.length && state.B.rows.length);
-    const hasKeys = state.keys.size > 0;
-    el.run.disabled = !(ok && hasKeys);
-    el.swap.disabled = !ok;
-    el.download.disabled = !state.lastDiff;
-    if(!ok){
-      el.runMsg.textContent = "Load both files to unlock compare.";
-    }else if(!hasKeys){
-      el.runMsg.textContent = "Select at least one key field to run compare.";
-    }else{
-      el.runMsg.textContent = "";
-    }
-  }
-
-  function computeCommonCols(){
-    if(!state.A || !state.B){ state.commonCols = []; return; }
-    const a = new Set(state.A.cols);
-    const b = new Set(state.B.cols);
-    const common = [];
-    for(const c of a){ if(b.has(c)) common.push(c); }
-    // keep stable-ish order: A's order first, filtered by B
-    state.commonCols = common;
-  }
-
-  function renderKeyList(){
-    el.keyList.innerHTML = "";
-    const cols = state.commonCols.length ? state.commonCols : (state.A?.cols || state.B?.cols || []);
-    const q = (el.keySearch.value || "").toLowerCase().trim();
-
-    const filtered = cols.filter(c => !q || c.toLowerCase().includes(q));
-    if(!filtered.length){
-      el.keyList.innerHTML = `<div class="tiny muted">No columns found.</div>`;
-      return;
-    }
-
-    for(const c of filtered){
-      const id = `k_${c.replace(/[^a-zA-Z0-9_-]/g,'_')}`;
-      const checked = state.keys.has(c);
-      const div = document.createElement("div");
-      div.className = "chk";
-      div.innerHTML = `
-        <input id="${id}" type="checkbox" ${checked ? "checked":""}/>
-        <label for="${id}" class="mono">${escapeHtml(c)}</label>
-      `;
-      div.querySelector("input").addEventListener("change", (e)=>{
-        if(e.target.checked) state.keys.add(c);
-        else state.keys.delete(c);
-        updateStatsHeader();
-        updateRunEnabled();
-      });
-      el.keyList.appendChild(div);
-    }
-  }
-
-  function autoPickKeys(){
-    const cols = state.commonCols.length ? state.commonCols : (state.A?.cols || []);
-    const scored = cols.map(c => {
-      const lc = c.toLowerCase();
-      let s = 0;
-      if(lc === "id" || lc.endsWith("id")) s += 6;
-      if(lc.includes("key")) s += 5;
-      if(lc.includes("code")) s += 4;
-      if(lc.includes("name")) s += 2;
-      if(lc.includes("date")) s += 3;
-      if(lc.includes("week")) s += 3;
-      if(lc.includes("store")) s += 3;
-      if(lc.includes("invoice") || lc.includes("order")) s += 2;
-      if(lc.includes("email") || lc.includes("phone")) s += 2;
-      return {c, s};
-    }).sort((a,b)=>b.s-a.s);
-
-    state.keys.clear();
-    // pick up to 2 keys with score >=3; else pick the top 1
-    const pick = scored.filter(x=>x.s>=3).slice(0,2);
-    if(pick.length){
-      pick.forEach(x=>state.keys.add(x.c));
-    }else if(scored[0]){
-      state.keys.add(scored[0].c);
-    }
-    renderKeyList();
-    updateStatsHeader();
-    updateRunEnabled();
-  }
-
-  function clearKeys(){
-    state.keys.clear();
-    renderKeyList();
-    updateStatsHeader();
-    updateRunEnabled();
-  }
-
-  function updateStatsHeader(counts){
-    const cols = state.commonCols.length ? state.commonCols : [];
-    const keys = Array.from(state.keys);
-    el.statCols.innerHTML = `<b>Columns:</b><span class="mono muted">${cols.length ? cols.length : "—"}</span>`;
-    el.statKeys.innerHTML = `<b>Keys:</b><span class="mono muted">${keys.length ? escapeHtml(keys.join(", ")) : "—"}</span>`;
-
-    if(counts){
-      el.statAdded.querySelector("b").textContent = counts.added;
-      el.statRemoved.querySelector("b").textContent = counts.removed;
-      el.statChanged.querySelector("b").textContent = counts.changed;
-      el.statSame.querySelector("b").textContent = counts.same;
-    }else{
-      el.statAdded.querySelector("b").textContent = 0;
-      el.statRemoved.querySelector("b").textContent = 0;
-      el.statChanged.querySelector("b").textContent = 0;
-      el.statSame.querySelector("b").textContent = 0;
-    }
-  }
-
-  function parseFile(file){
-    const name = file?.name || "file";
-    const ext = name.split(".").pop().toLowerCase();
-
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = () => reject(new Error("Could not read file."));
-
-      if(ext === "xlsx" || ext === "xls"){
-        reader.onload = (e) => {
-          try{
-            const data = new Uint8Array(e.target.result);
-            const wb = XLSX.read(data, {type:"array"});
-            const sheetName = wb.SheetNames[0];
-            const ws = wb.Sheets[sheetName];
-            const json = XLSX.utils.sheet_to_json(ws, {defval:""});
-            const cols = json.length ? Object.keys(json[0]) : [];
-            resolve({name, rows: json, cols});
-          }catch(err){ reject(err); }
-        };
-        reader.readAsArrayBuffer(file);
-      } else {
-        reader.onload = (e) => {
-          try{
-            const text = e.target.result;
-            const res = Papa.parse(text, {header:true, skipEmptyLines:true, dynamicTyping:false});
-            if(res.errors && res.errors.length){
-              console.warn("PapaParse errors", res.errors);
-            }
-            const rows = (res.data || []).filter(r => r && Object.keys(r).length);
-            const cols = rows.length ? Object.keys(rows[0]) : (res.meta?.fields || []);
-            resolve({name, rows, cols});
-          }catch(err){ reject(err); }
-        };
-        reader.readAsText(file);
-      }
-    });
-  }
-
-  function onFileLoaded(which, obj){
-    state[which] = obj;
-    setMeta(which, obj);
-    computeCommonCols();
-    // Reset keys only if the previous keys don't exist in new common columns
-    const commonSet = new Set(state.commonCols);
-    state.keys = new Set(Array.from(state.keys).filter(k => commonSet.has(k)));
-    renderKeyList();
-    updateStatsHeader();
-    state.lastDiff = null;
-    el.rows.innerHTML = "";
-    el.download.disabled = true;
-    updateRunEnabled();
-  }
-
-  function compare(){
-    const keys = Array.from(state.keys);
-    if(!keys.length) return;
-
-    const aMap = new Map();
-    const bMap = new Map();
-
-    for(const r of state.A.rows){
-      const k = keyFromRow(r, keys);
-      if(!aMap.has(k)) aMap.set(k, r);
-    }
-    for(const r of state.B.rows){
-      const k = keyFromRow(r, keys);
-      if(!bMap.has(k)) bMap.set(k, r);
-    }
-
-    const allKeys = new Set([...aMap.keys(), ...bMap.keys()]);
-    const colsToCheck = state.commonCols.filter(c => !state.keys.has(c));
-
-    const diffs = [];
-    let counts = {added:0, removed:0, changed:0, same:0};
-
-    for(const k of allKeys){
-      const ar = aMap.get(k);
-      const br = bMap.get(k);
-
-      if(ar && !br){
-        diffs.push({status:"removed", key:k, changes:[], a:ar, b:null});
-        counts.removed++;
-        continue;
-      }
-      if(!ar && br){
-        diffs.push({status:"added", key:k, changes:[], a:null, b:br});
-        counts.added++;
-        continue;
-      }
-
-      // both present: check columns
-      const changes = [];
-      for(const c of colsToCheck){
-        const av = normalizeValue(ar[c]);
-        const bv = normalizeValue(br[c]);
-
-        if(el.optEmptyEq.checked && av === "" && bv === "") continue;
-
-        if(av !== bv){
-          changes.push({col:c, a:ar[c], b:br[c]});
-        }
-      }
-
-      if(changes.length){
-        diffs.push({status:"changed", key:k, changes, a:ar, b:br});
-        counts.changed++;
-      }else{
-        diffs.push({status:"same", key:k, changes:[], a:ar, b:br});
-        counts.same++;
-      }
-    }
-
-    // stable-ish ordering: changed first, then added/removed, then same
-    const rank = {changed:0, added:1, removed:2, same:3};
-    diffs.sort((x,y)=> (rank[x.status]-rank[y.status]) || x.key.localeCompare(y.key));
-
-    state.lastDiff = diffs;
-    updateStatsHeader(counts);
-    renderRows();
-    el.download.disabled = false;
-  }
-
-  function badge(status){
-    const m = {
-      added: `<span class="badge b-added">Added</span>`,
-      removed: `<span class="badge b-removed">Removed</span>`,
-      changed: `<span class="badge b-changed">Changed</span>`,
-      same: `<span class="badge b-same">Same</span>`
-    };
-    return m[status] || status;
-  }
-
-  function renderRows(){
-    const filter = el.filterStatus.value;
-    const diffs = state.lastDiff || [];
-    const rows = diffs.filter(d => filter === "all" || d.status === filter);
-
-    if(!rows.length){
-      el.rows.innerHTML = `<tr><td colspan="3" class="muted">No rows to show.</td></tr>`;
-      return;
-    }
-
-    const html = rows.map(d => {
-      let details = "";
-      if(d.status === "changed"){
-        const list = d.changes.slice(0, 10).map(ch => {
-          return `
-            <div class="kv">
-              <div class="k mono">${escapeHtml(ch.col)}</div>
-              <div class="v">
-                <div class="diffbox">
-                  <div class="kv"><div class="k">A</div><div class="v mono">${escapeHtml(ch.a)}</div></div>
-                  <div class="kv"><div class="k">B</div><div class="v mono">${escapeHtml(ch.b)}</div></div>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join("");
-
-        const more = d.changes.length > 10 ? `<div class="tiny muted">+${d.changes.length - 10} more changed columns (download diff for full list)</div>` : "";
-        details = `<div class="diffbox">${list}${more}</div>`;
-      } else if(d.status === "added"){
-        details = `<div class="tiny muted">Row exists only in Report B.</div>`;
-      } else if(d.status === "removed"){
-        details = `<div class="tiny muted">Row exists only in Report A.</div>`;
-      } else {
-        details = `<div class="tiny muted">No differences in compared columns.</div>`;
-      }
-
-      return `
-        <tr>
-          <td>${badge(d.status)}</td>
-          <td class="mono">${escapeHtml(d.key)}</td>
-          <td>${details}</td>
-        </tr>
-      `;
-    }).join("");
-
-    el.rows.innerHTML = html;
-  }
-
-  function toCsvValue(v){
-    const s = String(v ?? "");
-    if(/[",\n\r]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
-    return s;
-  }
-
-  function downloadDiffCsv(){
-    if(!state.lastDiff) return;
-    const keys = Array.from(state.keys);
-
-    const rows = [];
-    rows.push(["status","row_key","changed_columns","a_values","b_values"].join(","));
-
-    for(const d of state.lastDiff){
-      if(d.status === "changed"){
-        const cols = d.changes.map(x=>x.col).join(" | ");
-        const aVals = d.changes.map(x=>`${x.col}:${normalizeValue(x.a)}`).join(" | ");
-        const bVals = d.changes.map(x=>`${x.col}:${normalizeValue(x.b)}`).join(" | ");
-        rows.push([d.status, d.key, cols, aVals, bVals].map(toCsvValue).join(","));
-      }else{
-        rows.push([d.status, d.key, "", "", ""].map(toCsvValue).join(","));
-      }
-    }
-
-    const blob = new Blob([rows.join("\n")], {type:"text/csv;charset=utf-8"});
-    const a = document.createElement("a");
-    const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
-    a.href = URL.createObjectURL(blob);
-    a.download = `report-compare-diff_${stamp}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(a.href);
-  }
-
-  function swap(){
-    const tmp = state.A; state.A = state.B; state.B = tmp;
-    setMeta("A", state.A); setMeta("B", state.B);
-    computeCommonCols();
-    // Keep keys if still present
-    const commonSet = new Set(state.commonCols);
-    state.keys = new Set(Array.from(state.keys).filter(k => commonSet.has(k)));
-    renderKeyList();
-    updateStatsHeader();
-    state.lastDiff = null;
-    el.rows.innerHTML = "";
-    el.download.disabled = true;
-    updateRunEnabled();
-  }
-
-  // Wiring
-  el.fileA.addEventListener("change", async (e)=>{
-    const f = e.target.files?.[0];
-    if(!f) return;
-    el.runMsg.textContent = "Loading Report A…";
-    try{
-      const obj = await parseFile(f);
-      onFileLoaded("A", obj);
-      el.runMsg.textContent = "";
-    }catch(err){
-      console.error(err);
-      el.runMsg.textContent = "Could not parse Report A. Try CSV export instead.";
-    }
-  });
-
-  el.fileB.addEventListener("change", async (e)=>{
-    const f = e.target.files?.[0];
-    if(!f) return;
-    el.runMsg.textContent = "Loading Report B…";
-    try{
-      const obj = await parseFile(f);
-      onFileLoaded("B", obj);
-      el.runMsg.textContent = "";
-    }catch(err){
-      console.error(err);
-      el.runMsg.textContent = "Could not parse Report B. Try CSV export instead.";
-    }
-  });
-
-  el.keySearch.addEventListener("input", renderKeyList);
-  el.autoKey.addEventListener("click", autoPickKeys);
-  el.clearKey.addEventListener("click", clearKeys);
-
-  el.run.addEventListener("click", ()=>{
-    el.runMsg.textContent = "Comparing…";
-    setTimeout(()=>{ // allow UI paint
-      try{
-        compare();
-        el.runMsg.textContent = "";
-        el.download.disabled = false;
-      }catch(err){
-        console.error(err);
-        el.runMsg.textContent = "Compare failed. Check key fields and file formats.";
-      }
-    }, 0);
-  });
-
-  el.swap.addEventListener("click", swap);
-  el.filterStatus.addEventListener("change", renderRows);
-  el.download.addEventListener("click", downloadDiffCsv);
-
-  // Initial
-  setMeta("A", null); setMeta("B", null);
-  updateStatsHeader();
-  renderKeyList();
-  updateRunEnabled();
-})();
-</script>
-<footer class="rm-footer">
-  <div class="rm-footer-inner">
-    <div class="rm-footer-brand">
-      <div class="rm-footer-name">ReportMedic</div>
-      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
-    </div>
-    <div class="rm-footer-links">
-      <a href="/fix-my-report.html">Fix My Report</a>
-      <a href="/#tools">Tools</a>
-      <a href="/docs/">Docs</a>
-      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
-    </div>
-    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
   </div>
-</footer>
+</header>
 
+<div class="wrap">
+  <div class="panel">
+    <h1>Text Compare <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Paste two versions (or load .txt/.csv/.log) and get a clean, Notepad++-style side-by-side view: green = added, red = removed, blanks align the change.</p>
 
-<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Report Compare details">
+    <div class="hr"></div>
+
+    <div class="card">
+      <div class="tc-grid">
+        <div>
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <div style="font-weight:700">Left (Original)</div>
+              <div class="tiny muted">Baseline / “before”</div>
+            </div>
+            <span class="pill tiny" id="leftMeta"><b>L:</b><span class="muted">not loaded</span></span>
+          </div>
+
+          <div class="fileRow">
+            <input id="leftFile" type="file" accept=".txt,.csv,.log,.json,.md,.sql,.xml,.html"/ class="input">
+          </div>
+          <div class="hint tiny muted">Tip: you can also paste directly.</div>
+
+          <textarea class="tc" id="leftText" spellcheck="false" placeholder="Paste the original text here..."></textarea>
+        </div>
+
+        <div>
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <div style="font-weight:700">Right (Updated)</div>
+              <div class="tiny muted">New / “after”</div>
+            </div>
+            <span class="pill tiny" id="rightMeta"><b>R:</b><span class="muted">not loaded</span></span>
+          </div>
+
+          <div class="fileRow">
+            <input id="rightFile" type="file" accept=".txt,.csv,.log,.json,.md,.sql,.xml,.html"/ class="input">
+          </div>
+          <div class="hint tiny muted">Same file types as left.</div>
+
+          <textarea class="tc" id="rightText" spellcheck="false" placeholder="Paste the updated text here..."></textarea>
+        </div>
+      </div>
+
+      <div class="tc-meta">
+        <label><input type="checkbox" id="optTrim" checked/> Ignore leading/trailing spaces</label>
+        <label><input type="checkbox" id="optCase"/> Ignore case</label>
+        <label><input type="checkbox" id="optEmpty"/> Ignore empty lines</label>
+        <label><input type="checkbox" id="optCompact"/> Show differences only</label>
+      </div>
+
+      <div class="tc-actions">
+        <button class="btn primary" id="runBtn" type="button">Compare</button>
+        <button class="btn" id="swapBtn" type="button">Swap</button>
+        <button class="btn" id="clearBtn" type="button">Clear</button>
+        <button class="btn" id="copySummaryBtn" type="button">Copy summary</button>
+        <button class="btn" id="downloadBtn" type="button">Download diff.txt</button>
+        <span class="tiny muted" id="status" style="margin-left:auto"></span>
+      </div>
+
+      <div class="diffWrap" id="diffWrap" style="display:none">
+        <div class="diffTop">
+          <div class="tiny"><span class="changedHint">Green</span> = added (right), <span class="changedHint">Red</span> = removed (left), blanks align the change.</div>
+          <div class="tiny muted" id="counts"></div>
+        </div>
+        <div class="diffBody" id="diffBody" aria-label="Diff results"></div>
+      </div>
+
+      <div class="tiny muted" style="margin-top:10px">
+        Runs locally in your browser — your text never leaves the page.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Learn more modal -->
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="rm-lm-dialog">
     <div class="rm-lm-head">
-      <h2 class="rm-lm-title">Report Compare</h2>
+      <h2 class="rm-lm-title">Text Compare</h2>
       <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
     </div>
     <div class="rm-lm-body">
-      <h3>What this helps with</h3>
+      <h3>Best for</h3>
       <ul>
-        <li>Find added/removed/changed rows</li>
-<li>Highlight column-level differences</li>
-<li>Spot header/format drift</li>
-<li>Generate a clear diff summary</li>
+        <li>Comparing report exports, logs, config files, SQL, or documentation</li>
+        <li>Spotting what changed without scanning manually</li>
+        <li>Producing a quick “what changed” summary for teammates</li>
       </ul>
 
-      <h3>Common causes</h3>
+      <h3>How highlights work</h3>
       <ul>
-        <li>Source refresh timing differences</li>
-<li>Filter/parameter changes</li>
-<li>Schema drift or missing joins</li>
+        <li><b>Green (right)</b>: lines added in the updated version</li>
+        <li><b>Red (left)</b>: lines removed from the original version</li>
+        <li><b>Blank rows</b>: inserted only to keep both sides aligned</li>
       </ul>
 
-      <h3>What to do next</h3>
+      <h3>Helpful options</h3>
       <ul>
-        <li>Start here when “yesterday vs today” doesn’t match</li>
-<li>Use Cleaner if diffs look noisy</li>
-<li>Use Reconcile to quantify variances</li>
-<li>If you need guidance, use Fix My Report</li>
+        <li>Ignore spaces/case when exports differ only by formatting</li>
+        <li>Ignore empty lines to reduce noise</li>
+        <li>Show differences only when you want a short review list</li>
       </ul>
     </div>
   </div>
 </div>
 
-
 <script>
 (function(){
+  const $ = (id)=>document.getElementById(id);
+
+  const els = {
+    leftText: $("leftText"),
+    rightText: $("rightText"),
+    leftFile: $("leftFile"),
+    rightFile: $("rightFile"),
+    leftMeta: $("leftMeta"),
+    rightMeta: $("rightMeta"),
+    runBtn: $("runBtn"),
+    swapBtn: $("swapBtn"),
+    clearBtn: $("clearBtn"),
+    status: $("status"),
+    diffWrap: $("diffWrap"),
+    diffBody: $("diffBody"),
+    counts: $("counts"),
+    optTrim: $("optTrim"),
+    optCase: $("optCase"),
+    optEmpty: $("optEmpty"),
+    optCompact: $("optCompact"),
+    copySummaryBtn: $("copySummaryBtn"),
+    downloadBtn: $("downloadBtn"),
+  };
+
+  function setMeta(which, file){
+    const target = which === "L" ? els.leftMeta : els.rightMeta;
+    if(!file){ target.innerHTML = "<b>"+which+":</b><span class='muted'>not loaded</span>"; return; }
+    const kb = Math.max(1, Math.round(file.size/1024));
+    target.innerHTML = "<b>"+which+":</b> <span class='muted'>"+escapeHtml(file.name)+" • "+kb+"KB</span>";
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, (m)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+  }
+
+  function readTextFile(file, cb){
+    const reader = new FileReader();
+    reader.onload = ()=>cb(String(reader.result || ""));
+    reader.onerror = ()=>cb("");
+    reader.readAsText(file);
+  }
+
+  els.leftFile.addEventListener("change", ()=>{
+    const f = els.leftFile.files && els.leftFile.files[0];
+    setMeta("L", f);
+    if(!f) return;
+    readTextFile(f, (txt)=>{ els.leftText.value = txt; });
+  });
+  els.rightFile.addEventListener("change", ()=>{
+    const f = els.rightFile.files && els.rightFile.files[0];
+    setMeta("R", f);
+    if(!f) return;
+    readTextFile(f, (txt)=>{ els.rightText.value = txt; });
+  });
+
+  function normalizeLine(line, opts){
+    let s = line;
+    if(opts.trim) s = s.replace(/\s+$/,"").replace(/^\s+/,"");
+    if(opts.case) s = s.toLowerCase();
+    return s;
+  }
+
+  function splitLines(text){
+    // Preserve final empty line behavior similar to editors.
+    const lines = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n");
+    return lines;
+  }
+
+  function buildDiff(){
+    const leftRaw = els.leftText.value || "";
+    const rightRaw = els.rightText.value || "";
+
+    if(!window.Diff || !Diff.diffArrays){
+      els.status.textContent = "Diff engine not loaded yet — try again.";
+      return;
+    }
+
+    const opts = {
+      trim: !!els.optTrim.checked,
+      case: !!els.optCase.checked,
+      empty: !!els.optEmpty.checked,
+      compact: !!els.optCompact.checked
+    };
+
+    const L = splitLines(leftRaw);
+    const R = splitLines(rightRaw);
+
+    // Build normalized arrays (same length as originals, for index mapping).
+    const Ln = L.map(x=>normalizeLine(x, opts));
+    const Rn = R.map(x=>normalizeLine(x, opts));
+
+    // Optionally filter empty lines *after* normalization.
+    // Keep mapping arrays to originals by storing pairs.
+    const Lpairs = Ln.map((n,i)=>({n, o:L[i]})).filter(p=> !(opts.empty && p.n.trim()===""));
+    const Rpairs = Rn.map((n,i)=>({n, o:R[i]})).filter(p=> !(opts.empty && p.n.trim()===""));
+
+    const a = Lpairs.map(p=>p.n);
+    const b = Rpairs.map(p=>p.n);
+
+    const blocks = Diff.diffArrays(a, b);
+
+    let iL = 0, iR = 0;
+    let rows = [];
+    let added = 0, removed = 0, same = 0;
+
+    for(let bi=0; bi<blocks.length; bi++){
+      const blk = blocks[bi];
+      const count = blk.value.length;
+
+      if(blk.added){
+        for(let k=0; k<count; k++){
+          const rightLine = Rpairs[iR] ? Rpairs[iR].o : "";
+          rows.push({lNo:"", lTxt:"", lCls:"blank", rNo:(iR+1), rTxt:rightLine, rCls:"added"});
+          iR++; added++;
+        }
+        continue;
+      }
+      if(blk.removed){
+        for(let k=0; k<count; k++){
+          const leftLine = Lpairs[iL] ? Lpairs[iL].o : "";
+          rows.push({lNo:(iL+1), lTxt:leftLine, lCls:"removed", rNo:"", rTxt:"", rCls:"blank"});
+          iL++; removed++;
+        }
+        continue;
+      }
+      // unchanged
+      for(let k=0; k<count; k++){
+        const leftLine = Lpairs[iL] ? Lpairs[iL].o : "";
+        const rightLine = Rpairs[iR] ? Rpairs[iR].o : "";
+        rows.push({lNo:(iL+1), lTxt:leftLine, lCls:"", rNo:(iR+1), rTxt:rightLine, rCls:""});
+        iL++; iR++; same++;
+      }
+    }
+
+    // Compact mode: keep only rows where something changed or aligned blank
+    if(opts.compact){
+      rows = rows.filter(r => r.lCls || r.rCls || r.lTxt !== r.rTxt);
+    }
+
+    render(rows, {added, removed, same, total: rows.length});
+    els.status.textContent = "Compared " + (a.length) + " vs " + (b.length) + " lines.";
+  }
+
+  function render(rows, stats){
+    els.diffWrap.style.display = "block";
+    els.counts.textContent = "Added: " + stats.added + " • Removed: " + stats.removed + " • Unchanged: " + stats.same;
+
+    if(!rows.length){
+      els.diffBody.innerHTML = "<div class='diffEmpty'>No differences found.</div>";
+      return;
+    }
+
+    const tbody = rows.map(r=>{
+      const lNo = r.lNo ? r.lNo : "";
+      const rNo = r.rNo ? r.rNo : "";
+      const lTxt = escapeHtml(r.lTxt);
+      const rTxt = escapeHtml(r.rTxt);
+
+      return "<tr>" +
+        "<td class='ln'>" + lNo + "</td>" +
+        "<td class='cell " + (r.lCls || "") + "'>" + lTxt + "</td>" +
+        "<td class='sep'></td>" +
+        "<td class='ln'>" + rNo + "</td>" +
+        "<td class='cell " + (r.rCls || "") + "'>" + rTxt + "</td>" +
+      "</tr>";
+    }).join("");
+
+    els.diffBody.innerHTML = "<table class='diffTable'><tbody>" + tbody + "</tbody></table>";
+  }
+
+  function swap(){
+    const a = els.leftText.value;
+    els.leftText.value = els.rightText.value;
+    els.rightText.value = a;
+    els.status.textContent = "Swapped.";
+  }
+  function clearAll(){
+    els.leftText.value = "";
+    els.rightText.value = "";
+    els.leftFile.value = "";
+    els.rightFile.value = "";
+    setMeta("L", null);
+    setMeta("R", null);
+    els.diffWrap.style.display = "none";
+    els.diffBody.innerHTML = "";
+    els.counts.textContent = "";
+    els.status.textContent = "";
+  }
+
+  function buildSummary(){
+    const wrap = els.diffBody.querySelector("table");
+    if(!wrap) return "No diff computed.";
+    const rows = Array.from(wrap.querySelectorAll("tr"));
+    let added=0, removed=0;
+    rows.forEach(tr=>{
+      const cells = tr.querySelectorAll("td");
+      const lCell = cells[1];
+      const rCell = cells[4];
+      if(rCell && rCell.classList.contains("added")) added++;
+      if(lCell && lCell.classList.contains("removed")) removed++;
+    });
+    const leftLines = (els.leftText.value || "").replace(/\r\n/g,"\n").split("\n").length;
+    const rightLines = (els.rightText.value || "").replace(/\r\n/g,"\n").split("\n").length;
+    return [
+      "ReportMedic — Text Compare summary",
+      "Left lines: " + leftLines,
+      "Right lines: " + rightLines,
+      "Added (right): " + added,
+      "Removed (left): " + removed,
+      "Options: " +
+        (els.optTrim.checked ? "trim " : "") +
+        (els.optCase.checked ? "ignore-case " : "") +
+        (els.optEmpty.checked ? "ignore-empty " : "") +
+        (els.optCompact.checked ? "diff-only " : ""),
+      "",
+      "Tip: green = added, red = removed, blanks align changes."
+    ].join("\n");
+  }
+
+  async function copySummary(){
+    const text = buildSummary();
+    try{
+      await navigator.clipboard.writeText(text);
+      els.status.textContent = "Summary copied.";
+    }catch(e){
+      // fallback
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      els.status.textContent = "Summary copied.";
+    }
+  }
+
+  function download(){
+    const wrap = els.diffBody.querySelector("table");
+    const text = buildSummary();
+    const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "text-diff.txt";
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(a.href);
+    a.remove();
+    els.status.textContent = "Downloaded text-diff.txt";
+  }
+
+  els.runBtn.addEventListener("click", buildDiff);
+  els.swapBtn.addEventListener("click", swap);
+  els.clearBtn.addEventListener("click", clearAll);
+  els.copySummaryBtn.addEventListener("click", copySummary);
+  els.downloadBtn.addEventListener("click", download);
+
+  // Learn-more modal behavior
   function openLM(id){
-    const bd=document.getElementById(id);
+    const bd = document.getElementById(id);
     if(!bd) return;
-    bd.setAttribute('aria-hidden','false');
-    const btn=bd.querySelector('.rm-lm-close');
+    bd.setAttribute("aria-hidden","false");
+    const btn = bd.querySelector(".rm-lm-close");
     if(btn) btn.focus();
   }
   function closeLM(id){
-    const bd=document.getElementById(id);
+    const bd = document.getElementById(id);
     if(!bd) return;
-    bd.setAttribute('aria-hidden','true');
+    bd.setAttribute("aria-hidden","true");
   }
-  document.addEventListener('click', function(e){
-    const a=e.target.closest('[data-rm-lm-open]');
+  document.addEventListener("click", function(e){
+    const a = e.target.closest("[data-rm-lm-open]");
     if(a){
       e.preventDefault();
-      openLM(a.getAttribute('data-rm-lm-open'));
+      openLM(a.getAttribute("data-rm-lm-open"));
       return;
     }
-    const close=e.target.closest('[data-rm-lm-close]');
+    const close = e.target.closest("[data-rm-lm-close]");
     if(close){
       e.preventDefault();
-      closeLM(close.getAttribute('data-rm-lm-close'));
+      closeLM(close.getAttribute("data-rm-lm-close"));
       return;
     }
-    const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
-    if(bd){
-      closeLM(bd.id);
-    }
+    const bd = e.target.classList && e.target.classList.contains("rm-lm-backdrop") ? e.target : null;
+    if(bd) closeLM(bd.id);
   });
-  document.addEventListener('keydown', function(e){
-    if(e.key !== 'Escape') return;
-    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute('aria-hidden','true'));
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Escape") return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute("aria-hidden","true"));
   });
+
+  // Init metas
+  setMeta("L", null);
+  setMeta("R", null);
 })();
 </script>
-
 </body>
 </html>
