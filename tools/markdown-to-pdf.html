@@ -270,11 +270,28 @@
       setStatus('Add some Markdown first.');
       return;
     }
-    const html = window.marked.parse(md);
-    outputText.value = html;
-    preview.innerHTML = html;
-    outMeta.innerHTML = '<b>OUT:</b><span class="muted"> PDF ready</span>';
-    setStatus('Preview ready — click Download to export PDF.');
+
+    // marked may load in different global shapes depending on version/build
+    const markedApi =
+      (window.marked && typeof window.marked.parse === 'function') ? window.marked :
+      (window.marked && window.marked.marked && typeof window.marked.marked.parse === 'function') ? window.marked.marked :
+      null;
+
+    if(!markedApi){
+      setStatus('Markdown engine failed to load. Refresh the page and try again.');
+      return;
+    }
+
+    try{
+      const html = markedApi.parse(md);
+      outputText.value = html;
+      preview.innerHTML = html;
+      outMeta.innerHTML = '<b>OUT:</b><span class="muted"> PDF ready</span>';
+      setStatus('Preview ready — click Download to export PDF.');
+    }catch(e){
+      console.error(e);
+      setStatus('Could not convert Markdown. Check for very large content or refresh and retry.');
+    }
   }
 
   $('#convertBtn').addEventListener('click', convert);
@@ -400,6 +417,8 @@
       sandbox.remove();
     }
   });
+
+})();
 </script>
 </body>
 </html>
