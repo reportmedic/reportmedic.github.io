@@ -295,7 +295,6 @@
 
   $('#convertBtn').addEventListener('click', convert);
 
-  
   function showExportOverlay(){
     let ov = document.getElementById('rmExportOverlay');
     if(!ov){
@@ -314,8 +313,6 @@
     if(ov) ov.style.display = 'none';
   }
 
-  $('#convertBtn').addEventListener('click', convert);
-
   $('#downloadBtn').addEventListener('click', ()=>{
     const ps = document.getElementById('printSurface');
     if(!ps || !ps.innerHTML.trim()){
@@ -323,23 +320,45 @@
       return;
     }
 
-    // Some browsers render off-screen surfaces as blank in html2canvas/html2pdf.
-    // We temporarily bring the export surface on-screen (covered by an overlay) during capture.
-    const prev = {
-      position: ps.style.position,
-      left: ps.style.left,
-      top: ps.style.top,
-      zIndex: ps.style.zIndex,
-      width: ps.style.width
-    };
-
+    setStatus('Generating PDF…');
     showExportOverlay();
-    ps.style.position = 'fixed';
-    ps.style.left = '0';
-    ps.style.top = '0';
-    ps.style.zIndex = '99998';
-    ps.style.width = '794px'; // ~A4 at 96dpi
-    ps.style.background = '#ffffff';
+
+    // Build a fresh, fully-visible clone so html2canvas always has a painted element to capture.
+    // Repositioning the off-screen #printSurface in-place is unreliable across browsers because
+    // html2canvas captures before the browser repaints the moved element.
+    const clone = document.createElement('div');
+    clone.innerHTML = ps.innerHTML;
+    clone.style.cssText = [
+      'position:fixed',
+      'left:0',
+      'top:0',
+      'width:794px',
+      'background:#ffffff',
+      'color:#111',
+      'padding:28px',
+      // Place it above the overlay so it is painted, but visually hidden behind it (overlay is 99999)
+      'z-index:100000',
+      'pointer-events:none',
+      'font-family:system-ui,sans-serif',
+      'font-size:14px',
+      'line-height:1.5'
+    ].join(';');
+
+    // Copy the printSurface child styles inline so they survive the clone
+    const styleTag = document.createElement('style');
+    styleTag.textContent = `
+      #rmPdfClone *{color:#111 !important;}
+      #rmPdfClone h1,#rmPdfClone h2,#rmPdfClone h3{color:#111 !important;margin:0.8em 0 0.35em;}
+      #rmPdfClone p{margin:0.4em 0;line-height:1.45;}
+      #rmPdfClone pre{background:#f4f6f8 !important;border:1px solid #e2e8f0;padding:12px;border-radius:10px;overflow:auto;}
+      #rmPdfClone code{background:#f4f6f8 !important;padding:2px 4px;border-radius:6px;}
+      #rmPdfClone table{border-collapse:collapse;width:100%;}
+      #rmPdfClone th,#rmPdfClone td{border:1px solid #e5e7eb;padding:8px;vertical-align:top;}
+      #rmPdfClone blockquote{border-left:4px solid #e5e7eb;padding-left:12px;margin:10px 0;color:#111 !important;}
+    `;
+    clone.id = 'rmPdfClone';
+    document.head.appendChild(styleTag);
+    document.body.appendChild(clone);
 
     const opt = {
       margin:       10,
@@ -351,18 +370,16 @@
         backgroundColor: '#ffffff',
         scrollX: 0,
         scrollY: 0,
-        windowWidth: Math.max(ps.scrollWidth, 794),
-        windowHeight: Math.max(ps.scrollHeight, 1123)
+        windowWidth: 794,
+        windowHeight: Math.max(clone.scrollHeight, 1123)
       },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css','legacy'] }
     };
 
-    setStatus('Generating PDF…');
-
-    // Wait a frame to ensure layout paints before capture
-    requestAnimationFrame(()=>{
-      window.html2pdf().set(opt).from(ps).save()
+    // Give the browser two animation frames to fully paint the clone before capture
+    requestAnimationFrame(()=> requestAnimationFrame(()=>{
+      window.html2pdf().set(opt).from(clone).save()
         .then(()=>{
           setStatus('Downloaded.');
           setTimeout(()=>setStatus(''), 1000);
@@ -371,15 +388,11 @@
           setStatus('Could not generate PDF. Try shorter content.');
         })
         .finally(()=>{
-          // restore export surface position
-          ps.style.position = prev.position || '';
-          ps.style.left = prev.left || '';
-          ps.style.top = prev.top || '';
-          ps.style.zIndex = prev.zIndex || '';
-          ps.style.width = prev.width || '';
+          document.body.removeChild(clone);
+          document.head.removeChild(styleTag);
           hideExportOverlay();
         });
-    });
+    }));
   });
 
 })();
