@@ -231,7 +231,7 @@
       </div>
 
 
-<!-- Floating diff navigation: appears after you use < or > once (only when there are 2+ diffs) -->
+<!-- Floating diff navigation: appears after you use < or > once (only when there are 3+ diffs) -->
 <div class="diffNavFloat" id="diffNavFloat" aria-hidden="true" aria-label="Diff navigation">
   <button class="btn diffNavBtn" id="prevDiffFloatBtn" type="button" aria-label="Previous difference">&lt;</button>
   <button class="btn diffNavBtn" id="nextDiffFloatBtn" type="button" aria-label="Next difference">&gt;</button>
@@ -318,7 +318,7 @@
 
   function setNavVisibility(n){
     if(!els.prevDiffBtn || !els.nextDiffBtn) return;
-    const show = n > 1;
+    const show = n > 2;
     els.prevDiffBtn.style.display = show ? "" : "none";
     els.nextDiffBtn.style.display = show ? "" : "none";
   }
@@ -327,7 +327,7 @@
 function setFloatLabel(){
   if(!els.diffNavFloatLabel) return;
   const n = diffNav.rows.length;
-  if(n > 1){
+  if(n > 2){
     els.diffNavFloatLabel.textContent = (diffNav.idx + 1) + " / " + n;
   }else{
     els.diffNavFloatLabel.textContent = "";
@@ -337,7 +337,7 @@ function setFloatLabel(){
 function setFloatVisibility(){
   if(!els.diffNavFloat) return;
   const n = diffNav.rows.length;
-  const show = (n > 1) && navEverUsed;
+  const show = (n > 2) && navEverUsed;
   els.diffNavFloat.setAttribute("aria-hidden", show ? "false" : "true");
   setFloatLabel();
 }
@@ -349,7 +349,7 @@ function setFloatVisibility(){
     const prevBtns = [els.prevDiffBtn, els.prevDiffFloatBtn].filter(Boolean);
     const nextBtns = [els.nextDiffBtn, els.nextDiffFloatBtn].filter(Boolean);
   
-    if(n <= 1){
+    if(n <= 2){
       prevBtns.forEach(b=>b.disabled = true);
       nextBtns.forEach(b=>b.disabled = true);
       setFloatLabel();
@@ -391,16 +391,16 @@ function setFloatVisibility(){
     setFloatVisibility();
     updateNavDisabled();
   
-    if(diffNav.rows.length === 1){
-      // Only one difference: jump straight to it.
+    if(diffNav.rows.length >= 1 && diffNav.rows.length <= 2){
+      // 1–2 differences: jump straight to the first diff (nav buttons stay hidden).
       els.diffWrap.scrollIntoView({behavior:"smooth", block:"start"});
       requestAnimationFrame(()=>scrollToDiff(0));
-    }else if(diffNav.rows.length > 1){
-      // Multiple diffs: highlight the first diff (no auto-scroll).
+    }else if(diffNav.rows.length > 2){
+      // 3+ diffs: highlight the first diff (no auto-scroll).
       markActive(0);
       updateNavDisabled();
     }
-  }
+}
 
   function setMeta(which, file){
     const target = which === "L" ? els.leftMeta : els.rightMeta;
@@ -641,7 +641,7 @@ function setFloatVisibility(){
 
   
   function navPrev(scrollPage){
-    if(diffNav.rows.length <= 1) return;
+    if(diffNav.rows.length <= 2) return;
     if(diffNav.idx <= 0) return;
   
     diffNav.idx -= 1;
@@ -655,7 +655,7 @@ function setFloatVisibility(){
   }
   
   function navNext(scrollPage){
-    if(diffNav.rows.length <= 1) return;
+    if(diffNav.rows.length <= 2) return;
     if(diffNav.idx >= diffNav.rows.length - 1) return;
   
     diffNav.idx += 1;
