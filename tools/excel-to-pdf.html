@@ -248,6 +248,14 @@
     setStatus("rendering PDF…");
     lastPdfBlob = null;
 
+    // This tool relies on html2pdf.bundle (which internally includes html2canvas + jsPDF).
+    // Use the html2pdf API directly (more reliable than expecting window.html2canvas to exist).
+    if(typeof window.html2pdf !== 'function'){
+      console.error('html2pdf missing');
+      setStatus('error building PDF');
+      return;
+    }
+
     // Clone preview into a printable node with white background
     const src = $("preview");
     const clone = src.cloneNode(true);
@@ -281,46 +289,19 @@
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
     try{
-      if(typeof window.html2canvas !== 'function'){
-        throw new Error('html2canvas missing');
-      }
-      const canvas = await window.html2canvas(clone, {
-        backgroundColor: "#ffffff",
-        scale: 2,
-        useCORS: true,
-        logging: false
-      });
+      const opt = {
+        margin:       10,
+        filename:     outName || 'excel.pdf',
+        image:        { type: 'jpeg', quality: 0.95 },
+        html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
+        jsPDF:        { unit: 'mm', format, orientation }
+      };
 
-      // Create PDF via jsPDF (available through html2pdf.bundle)
-      const JSPDF = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : null;
-      if(!JSPDF) throw new Error('jsPDF missing');
+      // Build PDF without auto-downloading; we’ll provide our own Download button.
+      const worker = window.html2pdf().set(opt).from(clone).toPdf();
+      const pdf = await worker.get('pdf');
+      lastPdfBlob = pdf.output('blob');
 
-      const pdf = new JSPDF({
-        orientation,
-        unit: "mm",
-        format
-      });
-
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-      const margin = 10;
-      const imgData = canvas.toDataURL("image/jpeg", 0.95);
-
-      const imgW = pageW - margin * 2;
-      const imgH = (canvas.height * imgW) / canvas.width;
-
-      // Multi-page support by reusing the same tall image with vertical offsets
-      let remaining = imgH;
-      let page = 0;
-      while (remaining > 0) {
-        const y = margin - page * (pageH - margin * 2);
-        pdf.addImage(imgData, "JPEG", margin, y, imgW, imgH);
-        remaining -= (pageH - margin * 2);
-        page += 1;
-        if (remaining > 0) pdf.addPage();
-      }
-
-      lastPdfBlob = pdf.output("blob");
       $("downloadBtn").disabled = false;
       setStatus("done — ready to download");
     } catch(err){
