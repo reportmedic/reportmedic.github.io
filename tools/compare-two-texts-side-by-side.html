@@ -15,6 +15,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/diff@5.2.0/dist/diff.min.js"></script>
 
   <!-- Site drawer nav (All Tools). -->
+  <script defer src="/assets/js/rm-dropzone.js"></script>
   <script defer src="/assets/js/rm-tools-drawer.js"></script>
 
   <style>
@@ -108,9 +109,10 @@
     .changedHint{color: rgba(238,246,255,.8);}
     .diffEmpty{padding:14px 12px; color:rgba(238,246,255,.78);}
 
-    .fileRow{display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-top:8px;}
-    .fileRow .tiny{margin:0;}
-    .fileRow input[type="file"]{max-width:100%;}
+    .fileRow{margin-top:10px;}
+    .fileRow input[type="file"]{width:100%; max-width:100%;}
+    .fileRow .rm-dropzone{width:100%;}
+    .hint{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
   </style>
 </head>
 
@@ -147,9 +149,9 @@
           </div>
 
           <div class="fileRow">
-            <input id="leftFile" type="file" accept=".txt,.csv,.log,.json,.md,.sql,.xml,.html"/>
-            <p class="tiny muted">Tip: you can also paste directly.</p>
+            <input id="leftFile" type="file" accept=".txt,.csv,.log,.json,.md,.sql,.xml,.html"/ class="input">
           </div>
+          <div class="hint tiny muted">Tip: you can also paste directly.</div>
 
           <textarea class="tc" id="leftText" spellcheck="false" placeholder="Paste the original text here..."></textarea>
         </div>
@@ -164,9 +166,9 @@
           </div>
 
           <div class="fileRow">
-            <input id="rightFile" type="file" accept=".txt,.csv,.log,.json,.md,.sql,.xml,.html"/>
-            <p class="tiny muted">Same file types as left.</p>
+            <input id="rightFile" type="file" accept=".txt,.csv,.log,.json,.md,.sql,.xml,.html"/ class="input">
           </div>
+          <div class="hint tiny muted">Same file types as left.</div>
 
           <textarea class="tc" id="rightText" spellcheck="false" placeholder="Paste the updated text here..."></textarea>
         </div>
