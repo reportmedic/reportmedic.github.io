@@ -104,7 +104,7 @@
 <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
 <a class="btn" href="/tools/compare-two-files-find-differences.html">Open Compare</a>
 <a class="btn" href="/tools/validate-data-schema-and-columns.html">Open Validator</a>
-<button class="btn" id="quickAll">Browse All 17</button>
+<button class="btn" id="quickAll">Browse All 10</button>
 </div>
 <div class="hr"></div>
 <div class="small">
@@ -139,44 +139,30 @@
 <div class="toast" id="toast"></div>
 <script>
   const tools = [
-    { id:"compare", name:"Report Compare", icon:"≋", cat:["Compare", "Analyze"], desc:"Compare two reports and highlight diffs by key fields.", tags:["diff", "keys", "columns"] },
-    { id:"reconcile", name:"Reconciliation", icon:"✓", cat:["Compare", "Validate"], desc:"Match totals, track variance, and explain gaps.", tags:["variance", "totals"] },
-    { id:"why", name:"Why Reports Don’t Match", icon:"✎", cat:["Analyze"], desc:"Turn mismatches into a clear explanation you can share confidently.", tags:["explain", "root-cause"] },
-    { id:"cleaner", name:"Data Cleaner", icon:"✦", cat:["Clean"], desc:"Trim, normalize, dedupe, fix dates, and standardize formats.", tags:["dedupe", "normalize"] },
-    { id:"validator", name:"Schema Validator", icon:"⊢", cat:["Validate"], desc:"Validate required fields, types, ranges, and null rules.", tags:["rules", "nulls"] },
-    { id:"outliers", name:"Outlier Finder", icon:"⚡", cat:["Analyze", "Validate"], desc:"Detect spikes, anomalies, and suspicious rows fast.", tags:["anomaly", "spikes"] },
-    { id:"pivot", name:"Quick Pivot", icon:"▦", cat:["Analyze"], desc:"Instant pivot tables & group summaries (counts/sums/avg).", tags:["groupby", "summary"] },
-    { id:"comparetext", name:"Text Compare", icon:"≡", cat:["Compare"], desc:"Compare two text blocks side-by-side and highlight changes.", tags:["diff", "text"] },
-    { id:"notepad", name:"Online Notepad", icon:"🗒", cat:["Analyze"], desc:"Create, search, and format notes (saved locally in your browser).", tags:["notes", "local"] },
-    { id:"mask", name:"PII Masker", icon:"◎", cat:["Clean", "Export"], desc:"Mask sensitive fields for safe sharing.", tags:["pii", "redact"] },
-    { id:"export", name:"Export Fixer", icon:"⇣", cat:["Export"], desc:"Fix export formatting errors and produce clean outputs.", tags:["csv", "xlsx"] },
-    { id:"scheduler", name:"Run Scheduler", icon:"⏱", cat:["Export", "Validate"], desc:"Save a run config and repeat it on new files.", tags:["repeat", "config"] },
-    { id:"md2html", name:"Markdown → HTML", icon:"⌗", cat:["Export"], desc:"Convert Markdown to clean HTML instantly.", tags:["markdown", "html"] },
-    { id:"html2md", name:"HTML → Markdown", icon:"⟲", cat:["Export"], desc:"Convert HTML to tidy Markdown.", tags:["html", "markdown"] },
-    { id:"md2pdf", name:"Markdown → PDF", icon:"⧉", cat:["Export"], desc:"Create a PDF from Markdown (client-side).", tags:["pdf", "markdown"] },
-    { id:"md2docx", name:"Markdown → Word", icon:"W", cat:["Export"], desc:"Convert Markdown to a Word (DOCX) document.", tags:["docx", "markdown"] },
-    { id:"docx2md", name:"Word → Markdown", icon:"W⇢", cat:["Export"], desc:"Convert Word (DOCX) to Markdown.", tags:["docx", "markdown"] }
+    { id:"compare-two-files-find-differences", name:"Report Compare", icon:"≋", cat:["Compare","Analyze"], desc:"Compare two reports and pinpoint exactly what changed.", tags:["diff","keys","columns"] },
+    { id:"reconcile-two-datasets-totals-dont-match", name:"Reconciliation", icon:"✓", cat:["Compare","Validate"], desc:"Match totals, quantify variance, and explain gaps.", tags:["variance","totals"] },
+    { id:"clean-dirty-data-file-online", name:"Data Cleaner", icon:"✦", cat:["Clean"], desc:"Trim, normalize, dedupe, fix dates, and standardize formats.", tags:["dedupe","normalize"] },
+    { id:"validate-data-schema-and-columns", name:"Schema Validator", icon:"⊢", cat:["Validate"], desc:"Validate required fields, types, ranges, and null rules.", tags:["rules","nulls"] },
+    { id:"find-data-outliers-and-anomalies", name:"Outlier Finder", icon:"⚡", cat:["Analyze","Validate"], desc:"Detect spikes, anomalies, and suspicious rows fast.", tags:["anomaly","spikes"] },
+    { id:"summarize-data-by-group-pivot-online", name:"Quick Pivot", icon:"▦", cat:["Analyze"], desc:"Instant pivot tables & group summaries (counts/sums/avg).", tags:["groupby","summary"] },
+    { id:"why-two-reports-dont-match", name:"Why Reports Don’t Match", icon:"✎", cat:["Analyze"], desc:"Turn mismatches into a clear, audit-ready explanation.", tags:["explain","audit"] },
+    { id:"compare-two-texts-side-by-side", name:"Text Compare", icon:"↔", cat:["Compare"], desc:"Compare two texts side-by-side and spot exactly what changed.", tags:["text","diff"] },
+
+    { id:"online-notepad-rich-text-editor", name:"Online Notepad", icon:"🗒", cat:["Write"], desc:"Notebooks + rich-text notes with find/replace (saved locally).", tags:["notes","richtext"] },
+
+    { id:"mask-sensitive-data-before-sharing", name:"PII Masker", icon:"◎", cat:["Clean","Export"], desc:"Mask sensitive fields for safe sharing.", tags:["pii","redact"] },
+    { id:"fix-export-formatting-errors", name:"Export Fixer", icon:"⇣", cat:["Export"], desc:"Repair export formatting and generate clean outputs.", tags:["csv","xlsx"] },
+    { id:"schedule-data-validation-checks", name:"Run Scheduler", icon:"⏱", cat:["Export","Validate"], desc:"Save a run config and repeat it on new files.", tags:["repeat","config"] },
+
+    { id:"markdown-to-html", name:"Markdown → HTML", icon:"⌁", cat:["Convert"], desc:"Convert Markdown into clean HTML.", tags:["md","html"] },
+    { id:"html-to-markdown", name:"HTML → Markdown", icon:"⌁", cat:["Convert"], desc:"Convert HTML into Markdown.", tags:["html","md"] },
+    { id:"markdown-to-pdf", name:"Markdown → PDF", icon:"⎙", cat:["Convert"], desc:"Turn Markdown into a printable PDF.", tags:["pdf","print"] },
+    { id:"markdown-to-word-docx", name:"Markdown → Word", icon:"W", cat:["Convert"], desc:"Convert Markdown into a .docx file.", tags:["docx","word"] },
+    { id:"word-docx-to-markdown", name:"Word → Markdown", icon:"W", cat:["Convert"], desc:"Convert a .docx file into Markdown.", tags:["docx","md"] },
   ];
 
-  const routes = {
-    compare: "/tools/compare-two-files-find-differences.html",
-    reconcile: "/tools/reconcile-two-datasets-totals-dont-match.html",
-    cleaner: "/tools/clean-dirty-data-file-online.html",
-    validator: "/tools/validate-data-schema-and-columns.html",
-    outliers: "/tools/find-data-outliers-and-anomalies.html",
-    pivot: "/tools/summarize-data-by-group-pivot-online.html",
-    why: "/tools/why-two-reports-dont-match.html",
-    comparetext: "/tools/compare-two-texts-side-by-side.html",
-    notepad: "/tools/online-notepad-rich-text-editor.html",
-    mask: "/tools/mask-sensitive-data-before-sharing.html",
-    export: "/tools/fix-export-formatting-errors.html",
-    scheduler: "/tools/schedule-data-validation-checks.html",
-    md2html: "/tools/markdown-to-html.html",
-    html2md: "/tools/html-to-markdown.html",
-    md2pdf: "/tools/markdown-to-pdf.html",
-    md2docx: "/tools/markdown-to-word-docx.html",
-    docx2md: "/tools/word-docx-to-markdown.html"
-  };
+  const routes = Object.fromEntries(tools.map(t => [t.id, `/tools/${t.id}.html`]));
+
 
   const toolGrid = document.getElementById("toolGrid");
   const drawerList = document.getElementById("drawerList");

@@ -1,46 +1,30 @@
 /* ReportMedic — All Tools drawer for tool pages.
-   Keeps navigation lightweight and consistent with the home page. */
+   Auto-populated routes based on /tools/<slug>.html so every tool stays in the menu. */
 (function(){
   const tools = [
-    // Icons match the home page drawer for consistency.
-    { id:"compare", name:"Report Compare", icon:"≋", desc:"Compare two reports and highlight diffs by key fields." },
-    { id:"reconcile", name:"Reconciliation", icon:"✓", desc:"Match totals, track variance, and explain gaps." },
-    { id:"why", name:"Why Reports Don’t Match", icon:"✎", desc:"Explain the root cause of mismatches in plain English." },
-    { id:"cleaner", name:"Data Cleaner", icon:"✦", desc:"Trim, normalize, dedupe, fix dates, and standardize formats." },
-    { id:"validator", name:"Schema Validator", icon:"⊢", desc:"Validate required fields, types, ranges, and null rules." },
-    { id:"outliers", name:"Outlier Finder", icon:"⚡", desc:"Detect spikes, anomalies, and suspicious rows fast." },
-    { id:"pivot", name:"Quick Pivot", icon:"▦", desc:"Instant pivot tables & group summaries (counts/sums/avg)." },
-    { id:"comparetext", name:"Text Compare", icon:"≡", desc:"Compare two text blocks side-by-side and highlight changes." },
-    { id:"notepad", name:"Online Notepad", icon:"🗒", desc:"Create, search, and format notes (saved locally in your browser)." },
-    { id:"mask", name:"PII Masker", icon:"◎", desc:"Mask sensitive fields for safe sharing." },
-    { id:"export", name:"Export Fixer", icon:"⇣", desc:"Fix export formatting errors and produce clean outputs." },
-    { id:"scheduler", name:"Run Scheduler", icon:"⏱", desc:"Save a run config and repeat it on new files." },
-    { id:"md2html", name:"Markdown → HTML", icon:"⌗", desc:"Convert Markdown to clean HTML instantly." },
-    { id:"html2md", name:"HTML → Markdown", icon:"⟲", desc:"Convert HTML to tidy Markdown." },
-    { id:"md2pdf", name:"Markdown → PDF", icon:"⧉", desc:"Create a PDF from Markdown (client-side)." },
-    { id:"md2docx", name:"Markdown → Word", icon:"W", desc:"Convert Markdown to a Word (DOCX) document." },
-    { id:"docx2md", name:"Word → Markdown", icon:"W⇢", desc:"Convert Word (DOCX) to Markdown." }
+    { id:"compare-two-files-find-differences",      name:"Report Compare",       icon:"≋", desc:"Compare two reports and pinpoint exactly what changed." },
+    { id:"reconcile-two-datasets-totals-dont-match",name:"Reconciliation",       icon:"✓", desc:"Match totals, quantify variance, and explain gaps." },
+    { id:"clean-dirty-data-file-online",           name:"Data Cleaner",         icon:"✦", desc:"Trim, normalize, dedupe, and standardize formats." },
+    { id:"validate-data-schema-and-columns",       name:"Schema Validator",     icon:"⊢", desc:"Validate required fields, types, ranges, and null rules." },
+    { id:"find-data-outliers-and-anomalies",       name:"Outlier Finder",       icon:"⚡", desc:"Spot spikes, anomalies, and suspicious rows fast." },
+    { id:"summarize-data-by-group-pivot-online",   name:"Quick Pivot",          icon:"▦", desc:"Instant group summaries and pivot-style totals." },
+    { id:"why-two-reports-dont-match",             name:"Why Reports Don’t Match",icon:"✎", desc:"Turn mismatches into a crisp, audit-ready explanation." },
+    { id:"compare-two-texts-side-by-side",         name:"Text Compare",         icon:"↔", desc:"Compare two text blocks side-by-side with highlights." },
+
+    { id:"online-notepad-rich-text-editor",        name:"Online Notepad",       icon:"🗒", desc:"Create notebooks + rich-text notes (saved locally)." },
+
+    { id:"mask-sensitive-data-before-sharing",     name:"PII Masker",           icon:"◎", desc:"Mask sensitive fields for safe sharing." },
+    { id:"fix-export-formatting-errors",           name:"Export Fixer",         icon:"⇣", desc:"Repair export formatting and produce clean outputs." },
+    { id:"schedule-data-validation-checks",        name:"Run Scheduler",        icon:"⏱", desc:"Save a run setup and repeat it on new files." },
+
+    { id:"markdown-to-html",                       name:"Markdown → HTML",      icon:"⌁", desc:"Convert Markdown into clean HTML." },
+    { id:"html-to-markdown",                       name:"HTML → Markdown",      icon:"⌁", desc:"Convert HTML into Markdown." },
+    { id:"markdown-to-pdf",                        name:"Markdown → PDF",       icon:"⎙", desc:"Turn Markdown into a printable PDF." },
+    { id:"markdown-to-word-docx",                  name:"Markdown → Word",      icon:"W",  desc:"Convert Markdown into a .docx file." },
+    { id:"word-docx-to-markdown",                  name:"Word → Markdown",      icon:"W",  desc:"Convert a .docx file into Markdown." },
   ];
 
-  const routes = {
-    compare: "/tools/compare-two-files-find-differences.html",
-    reconcile: "/tools/reconcile-two-datasets-totals-dont-match.html",
-    why: "/tools/why-two-reports-dont-match.html",
-    cleaner: "/tools/clean-dirty-data-file-online.html",
-    validator: "/tools/validate-data-schema-and-columns.html",
-    outliers: "/tools/find-data-outliers-and-anomalies.html",
-    pivot: "/tools/summarize-data-by-group-pivot-online.html",
-    comparetext: "/tools/compare-two-texts-side-by-side.html",
-    notepad: "/tools/online-notepad-rich-text-editor.html",
-    mask: "/tools/mask-sensitive-data-before-sharing.html",
-    export: "/tools/fix-export-formatting-errors.html",
-    scheduler: "/tools/schedule-data-validation-checks.html",
-    md2html: "/tools/markdown-to-html.html",
-    html2md: "/tools/html-to-markdown.html",
-    md2pdf: "/tools/markdown-to-pdf.html",
-    md2docx: "/tools/markdown-to-word-docx.html",
-    docx2md: "/tools/word-docx-to-markdown.html"
-  };
+  const routes = Object.fromEntries(tools.map(t => [t.id, `/tools/${t.id}.html`]));
 
   function el(tag, attrs={}, html){
     const n = document.createElement(tag);
@@ -53,8 +37,10 @@
     return n;
   }
 
-  function currentPath(){
-    return (window.location.pathname || "").toLowerCase();
+  function currentToolId(){
+    const path = (window.location.pathname || "").toLowerCase();
+    const m = path.match(/\/tools\/(.+?)\.html$/);
+    return m ? m[1] : null;
   }
 
   function ensureDrawer(){
@@ -82,8 +68,7 @@
     document.body.appendChild(overlay);
     document.body.appendChild(drawer);
 
-    // populate
-    const active = currentPath();
+    const active = currentToolId();
     list.innerHTML = "";
     tools.forEach(t=>{
       const a = el("a", { class:"drawerRow", href: routes[t.id] || "#", "data-tool": t.id });
@@ -94,7 +79,7 @@
           <div class="rDesc">${t.desc}</div>
         </div>
       `;
-      if(active && (routes[t.id] || "").toLowerCase() === active){
+      if(active && active === t.id){
         a.classList.add("active");
         a.setAttribute("aria-current", "page");
       }
