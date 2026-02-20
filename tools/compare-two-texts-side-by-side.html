@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="description" content="Compare two blocks of text side-by-side with Notepad++-style highlights for added, removed, and blank lines. Runs locally in your browser."/>
+  <title>Compare Two Texts Side-by-Side — Highlight differences — ReportMedic</title>
+
+  <link rel="icon" sizes="any" href="/favicon.ico"/>
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/reportmedic-48.png?v=1"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png"/>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+
+  <!-- Lightweight diff engine (client-side). -->
+  <script defer src="https://cdn.jsdelivr.net/npm/diff@5.2.0/dist/diff.min.js"></script>
+
+  <!-- Site drawer nav (All Tools). -->
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+  <style>
+    /* Page-local polish (keeps global CSS untouched) */
+    .rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+    .rm-lm-link:hover{opacity:1;}
+    .rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;}
+    .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+    .rm-lm-dialog{color:#111; max-width:620px; width:100%; background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.35); overflow:hidden;}
+    .rm-lm-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08);}
+    .rm-lm-title{margin:0; font-size:1.05rem;}
+    .rm-lm-close{border:none; background:transparent; font-size:1.35rem; line-height:1; cursor:pointer; padding:4px 8px;}
+    .rm-lm-body{padding:14px 16px; font-size:.95rem;}
+    .rm-lm-body h3{margin:12px 0 6px; font-size:1rem;}
+    .rm-lm-body ul{margin:0 0 10px 18px;}
+
+    .tc-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+    @media (max-width: 900px){ .tc-grid{grid-template-columns:1fr;} }
+
+    .tc-meta{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px;}
+    .tc-meta label{display:flex; gap:8px; align-items:center; font-size:.92rem;}
+    .tc-meta input[type="checkbox"]{transform: translateY(1px);}
+
+    textarea.tc{
+      width:100%;
+      min-height:220px;
+      resize:vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12.8px;
+      line-height:1.4;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      outline:none;
+    }
+    textarea.tc:focus{border-color:rgba(110,168,255,.55); box-shadow:0 0 0 4px rgba(110,168,255,.12);}
+
+    .tc-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px;}
+    .tc-actions .btn{white-space:nowrap;}
+
+    .diffWrap{
+      margin-top:14px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      background:rgba(0,0,0,.12);
+    }
+    .diffTop{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 12px;
+      background:rgba(255,255,255,.05);
+      border-bottom:1px solid var(--border);
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .diffTop .tiny{opacity:.92}
+    .diffBody{
+      max-height:520px;
+      overflow:auto;
+    }
+    table.diffTable{
+      width:100%;
+      border-collapse:collapse;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12.6px;
+      line-height:1.35;
+    }
+    .diffTable td{
+      vertical-align:top;
+      padding:4px 8px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .ln{
+      width:1%;
+      white-space:nowrap;
+      text-align:right;
+      color:rgba(238,246,255,.55);
+      background:rgba(255,255,255,.03);
+      user-select:none;
+      font-variant-numeric: tabular-nums;
+    }
+    .cell{width:49%;}
+    .sep{width:0; padding:0; border-bottom:1px solid rgba(255,255,255,.08);}
+    .added{background: rgba(124,247,212,.14);}
+    .removed{background: rgba(255,107,107,.16);}
+    .blank{color: rgba(238,246,255,.38);}
+    .changedHint{color: rgba(238,246,255,.8);}
+    .diffEmpty{padding:14px 12px; color:rgba(238,246,255,.78);}
+
+    .fileRow{display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-top:8px;}
+    .fileRow .tiny{margin:0;}
+    .fileRow input[type="file"]{max-width:100%;}
+  </style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Text Compare <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Paste two versions (or load .txt/.csv/.log) and get a clean, Notepad++-style side-by-side view: green = added, red = removed, blanks align the change.</p>
+
+    <div class="hr"></div>
+
+    <div class="card">
+      <div class="tc-grid">
+        <div>
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <div style="font-weight:700">Left (Original)</div>
+              <div class="tiny muted">Baseline / “before”</div>
+            </div>
+            <span class="pill tiny" id="leftMeta"><b>L:</b><span class="muted">not loaded</span></span>
+          </div>
+
+          <div class="fileRow">
+            <input id="leftFile" type="file" accept=".txt,.csv,.log,.json,.md,.sql,.xml,.html"/>
+            <p class="tiny muted">Tip: you can also paste directly.</p>
+          </div>
+
+          <textarea class="tc" id="leftText" spellcheck="false" placeholder="Paste the original text here..."></textarea>
+        </div>
+
+        <div>
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <div style="font-weight:700">Right (Updated)</div>
+              <div class="tiny muted">New / “after”</div>
+            </div>
+            <span class="pill tiny" id="rightMeta"><b>R:</b><span class="muted">not loaded</span></span>
+          </div>
+
+          <div class="fileRow">
+            <input id="rightFile" type="file" accept=".txt,.csv,.log,.json,.md,.sql,.xml,.html"/>
+            <p class="tiny muted">Same file types as left.</p>
+          </div>
+
+          <textarea class="tc" id="rightText" spellcheck="false" placeholder="Paste the updated text here..."></textarea>
+        </div>
+      </div>
+
+      <div class="tc-meta">
+        <label><input type="checkbox" id="optTrim" checked/> Ignore leading/trailing spaces</label>
+        <label><input type="checkbox" id="optCase"/> Ignore case</label>
+        <label><input type="checkbox" id="optEmpty"/> Ignore empty lines</label>
+        <label><input type="checkbox" id="optCompact"/> Show differences only</label>
+      </div>
+
+      <div class="tc-actions">
+        <button class="btn primary" id="runBtn" type="button">Compare</button>
+        <button class="btn" id="swapBtn" type="button">Swap</button>
+        <button class="btn" id="clearBtn" type="button">Clear</button>
+        <button class="btn" id="copySummaryBtn" type="button">Copy summary</button>
+        <button class="btn" id="downloadBtn" type="button">Download diff.txt</button>
+        <span class="tiny muted" id="status" style="margin-left:auto"></span>
+      </div>
+
+      <div class="diffWrap" id="diffWrap" style="display:none">
+        <div class="diffTop">
+          <div class="tiny"><span class="changedHint">Green</span> = added (right), <span class="changedHint">Red</span> = removed (left), blanks align the change.</div>
+          <div class="tiny muted" id="counts"></div>
+        </div>
+        <div class="diffBody" id="diffBody" aria-label="Diff results"></div>
+      </div>
+
+      <div class="tiny muted" style="margin-top:10px">
+        Runs locally in your browser — your text never leaves the page.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Learn more modal -->
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Text Compare</h2>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>Best for</h3>
+      <ul>
+        <li>Comparing report exports, logs, config files, SQL, or documentation</li>
+        <li>Spotting what changed without scanning manually</li>
+        <li>Producing a quick “what changed” summary for teammates</li>
+      </ul>
+
+      <h3>How highlights work</h3>
+      <ul>
+        <li><b>Green (right)</b>: lines added in the updated version</li>
+        <li><b>Red (left)</b>: lines removed from the original version</li>
+        <li><b>Blank rows</b>: inserted only to keep both sides aligned</li>
+      </ul>
+
+      <h3>Helpful options</h3>
+      <ul>
+        <li>Ignore spaces/case when exports differ only by formatting</li>
+        <li>Ignore empty lines to reduce noise</li>
+        <li>Show differences only when you want a short review list</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $ = (id)=>document.getElementById(id);
+
+  const els = {
+    leftText: $("leftText"),
+    rightText: $("rightText"),
+    leftFile: $("leftFile"),
+    rightFile: $("rightFile"),
+    leftMeta: $("leftMeta"),
+    rightMeta: $("rightMeta"),
+    runBtn: $("runBtn"),
+    swapBtn: $("swapBtn"),
+    clearBtn: $("clearBtn"),
+    status: $("status"),
+    diffWrap: $("diffWrap"),
+    diffBody: $("diffBody"),
+    counts: $("counts"),
+    optTrim: $("optTrim"),
+    optCase: $("optCase"),
+    optEmpty: $("optEmpty"),
+    optCompact: $("optCompact"),
+    copySummaryBtn: $("copySummaryBtn"),
+    downloadBtn: $("downloadBtn"),
+  };
+
+  function setMeta(which, file){
+    const target = which === "L" ? els.leftMeta : els.rightMeta;
+    if(!file){ target.innerHTML = "<b>"+which+":</b><span class='muted'>not loaded</span>"; return; }
+    const kb = Math.max(1, Math.round(file.size/1024));
+    target.innerHTML = "<b>"+which+":</b> <span class='muted'>"+escapeHtml(file.name)+" • "+kb+"KB</span>";
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, (m)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+  }
+
+  function readTextFile(file, cb){
+    const reader = new FileReader();
+    reader.onload = ()=>cb(String(reader.result || ""));
+    reader.onerror = ()=>cb("");
+    reader.readAsText(file);
+  }
+
+  els.leftFile.addEventListener("change", ()=>{
+    const f = els.leftFile.files && els.leftFile.files[0];
+    setMeta("L", f);
+    if(!f) return;
+    readTextFile(f, (txt)=>{ els.leftText.value = txt; });
+  });
+  els.rightFile.addEventListener("change", ()=>{
+    const f = els.rightFile.files && els.rightFile.files[0];
+    setMeta("R", f);
+    if(!f) return;
+    readTextFile(f, (txt)=>{ els.rightText.value = txt; });
+  });
+
+  function normalizeLine(line, opts){
+    let s = line;
+    if(opts.trim) s = s.replace(/\s+$/,"").replace(/^\s+/,"");
+    if(opts.case) s = s.toLowerCase();
+    return s;
+  }
+
+  function splitLines(text){
+    // Preserve final empty line behavior similar to editors.
+    const lines = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n");
+    return lines;
+  }
+
+  function buildDiff(){
+    const leftRaw = els.leftText.value || "";
+    const rightRaw = els.rightText.value || "";
+
+    if(!window.Diff || !Diff.diffArrays){
+      els.status.textContent = "Diff engine not loaded yet — try again.";
+      return;
+    }
+
+    const opts = {
+      trim: !!els.optTrim.checked,
+      case: !!els.optCase.checked,
+      empty: !!els.optEmpty.checked,
+      compact: !!els.optCompact.checked
+    };
+
+    const L = splitLines(leftRaw);
+    const R = splitLines(rightRaw);
+
+    // Build normalized arrays (same length as originals, for index mapping).
+    const Ln = L.map(x=>normalizeLine(x, opts));
+    const Rn = R.map(x=>normalizeLine(x, opts));
+
+    // Optionally filter empty lines *after* normalization.
+    // Keep mapping arrays to originals by storing pairs.
+    const Lpairs = Ln.map((n,i)=>({n, o:L[i]})).filter(p=> !(opts.empty && p.n.trim()===""));
+    const Rpairs = Rn.map((n,i)=>({n, o:R[i]})).filter(p=> !(opts.empty && p.n.trim()===""));
+
+    const a = Lpairs.map(p=>p.n);
+    const b = Rpairs.map(p=>p.n);
+
+    const blocks = Diff.diffArrays(a, b);
+
+    let iL = 0, iR = 0;
+    let rows = [];
+    let added = 0, removed = 0, same = 0;
+
+    for(let bi=0; bi<blocks.length; bi++){
+      const blk = blocks[bi];
+      const count = blk.value.length;
+
+      if(blk.added){
+        for(let k=0; k<count; k++){
+          const rightLine = Rpairs[iR] ? Rpairs[iR].o : "";
+          rows.push({lNo:"", lTxt:"", lCls:"blank", rNo:(iR+1), rTxt:rightLine, rCls:"added"});
+          iR++; added++;
+        }
+        continue;
+      }
+      if(blk.removed){
+        for(let k=0; k<count; k++){
+          const leftLine = Lpairs[iL] ? Lpairs[iL].o : "";
+          rows.push({lNo:(iL+1), lTxt:leftLine, lCls:"removed", rNo:"", rTxt:"", rCls:"blank"});
+          iL++; removed++;
+        }
+        continue;
+      }
+      // unchanged
+      for(let k=0; k<count; k++){
+        const leftLine = Lpairs[iL] ? Lpairs[iL].o : "";
+        const rightLine = Rpairs[iR] ? Rpairs[iR].o : "";
+        rows.push({lNo:(iL+1), lTxt:leftLine, lCls:"", rNo:(iR+1), rTxt:rightLine, rCls:""});
+        iL++; iR++; same++;
+      }
+    }
+
+    // Compact mode: keep only rows where something changed or aligned blank
+    if(opts.compact){
+      rows = rows.filter(r => r.lCls || r.rCls || r.lTxt !== r.rTxt);
+    }
+
+    render(rows, {added, removed, same, total: rows.length});
+    els.status.textContent = "Compared " + (a.length) + " vs " + (b.length) + " lines.";
+  }
+
+  function render(rows, stats){
+    els.diffWrap.style.display = "block";
+    els.counts.textContent = "Added: " + stats.added + " • Removed: " + stats.removed + " • Unchanged: " + stats.same;
+
+    if(!rows.length){
+      els.diffBody.innerHTML = "<div class='diffEmpty'>No differences found.</div>";
+      return;
+    }
+
+    const tbody = rows.map(r=>{
+      const lNo = r.lNo ? r.lNo : "";
+      const rNo = r.rNo ? r.rNo : "";
+      const lTxt = escapeHtml(r.lTxt);
+      const rTxt = escapeHtml(r.rTxt);
+
+      return "<tr>" +
+        "<td class='ln'>" + lNo + "</td>" +
+        "<td class='cell " + (r.lCls || "") + "'>" + lTxt + "</td>" +
+        "<td class='sep'></td>" +
+        "<td class='ln'>" + rNo + "</td>" +
+        "<td class='cell " + (r.rCls || "") + "'>" + rTxt + "</td>" +
+      "</tr>";
+    }).join("");
+
+    els.diffBody.innerHTML = "<table class='diffTable'><tbody>" + tbody + "</tbody></table>";
+  }
+
+  function swap(){
+    const a = els.leftText.value;
+    els.leftText.value = els.rightText.value;
+    els.rightText.value = a;
+    els.status.textContent = "Swapped.";
+  }
+  function clearAll(){
+    els.leftText.value = "";
+    els.rightText.value = "";
+    els.leftFile.value = "";
+    els.rightFile.value = "";
+    setMeta("L", null);
+    setMeta("R", null);
+    els.diffWrap.style.display = "none";
+    els.diffBody.innerHTML = "";
+    els.counts.textContent = "";
+    els.status.textContent = "";
+  }
+
+  function buildSummary(){
+    const wrap = els.diffBody.querySelector("table");
+    if(!wrap) return "No diff computed.";
+    const rows = Array.from(wrap.querySelectorAll("tr"));
+    let added=0, removed=0;
+    rows.forEach(tr=>{
+      const cells = tr.querySelectorAll("td");
+      const lCell = cells[1];
+      const rCell = cells[4];
+      if(rCell && rCell.classList.contains("added")) added++;
+      if(lCell && lCell.classList.contains("removed")) removed++;
+    });
+    const leftLines = (els.leftText.value || "").replace(/\r\n/g,"\n").split("\n").length;
+    const rightLines = (els.rightText.value || "").replace(/\r\n/g,"\n").split("\n").length;
+    return [
+      "ReportMedic — Text Compare summary",
+      "Left lines: " + leftLines,
+      "Right lines: " + rightLines,
+      "Added (right): " + added,
+      "Removed (left): " + removed,
+      "Options: " +
+        (els.optTrim.checked ? "trim " : "") +
+        (els.optCase.checked ? "ignore-case " : "") +
+        (els.optEmpty.checked ? "ignore-empty " : "") +
+        (els.optCompact.checked ? "diff-only " : ""),
+      "",
+      "Tip: green = added, red = removed, blanks align changes."
+    ].join("\n");
+  }
+
+  async function copySummary(){
+    const text = buildSummary();
+    try{
+      await navigator.clipboard.writeText(text);
+      els.status.textContent = "Summary copied.";
+    }catch(e){
+      // fallback
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      els.status.textContent = "Summary copied.";
+    }
+  }
+
+  function download(){
+    const wrap = els.diffBody.querySelector("table");
+    const text = buildSummary();
+    const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "text-diff.txt";
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(a.href);
+    a.remove();
+    els.status.textContent = "Downloaded text-diff.txt";
+  }
+
+  els.runBtn.addEventListener("click", buildDiff);
+  els.swapBtn.addEventListener("click", swap);
+  els.clearBtn.addEventListener("click", clearAll);
+  els.copySummaryBtn.addEventListener("click", copySummary);
+  els.downloadBtn.addEventListener("click", download);
+
+  // Learn-more modal behavior
+  function openLM(id){
+    const bd = document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute("aria-hidden","false");
+    const btn = bd.querySelector(".rm-lm-close");
+    if(btn) btn.focus();
+  }
+  function closeLM(id){
+    const bd = document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute("aria-hidden","true");
+  }
+  document.addEventListener("click", function(e){
+    const a = e.target.closest("[data-rm-lm-open]");
+    if(a){
+      e.preventDefault();
+      openLM(a.getAttribute("data-rm-lm-open"));
+      return;
+    }
+    const close = e.target.closest("[data-rm-lm-close]");
+    if(close){
+      e.preventDefault();
+      closeLM(close.getAttribute("data-rm-lm-close"));
+      return;
+    }
+    const bd = e.target.classList && e.target.classList.contains("rm-lm-backdrop") ? e.target : null;
+    if(bd) closeLM(bd.id);
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Escape") return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute("aria-hidden","true"));
+  });
+
+  // Init metas
+  setMeta("L", null);
+  setMeta("R", null);
+})();
+</script>
+</body>
+</html>
