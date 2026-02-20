@@ -63,18 +63,6 @@
   <script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
   <script defer src="/assets/js/rm-dropzone.js"></script>
   <script defer src="/assets/js/rm-tools-drawer.js"></script>
-<style>
-  /* PDF export surface: force white background + dark text for legibility */
-  #printSurface{position:fixed; left:-10000px; top:0; width:794px; background:#fff; color:#111; padding:28px; z-index:-1;}
-  #printSurface *{color:#111 !important;}
-  #printSurface h1,#printSurface h2,#printSurface h3{color:#111 !important; margin:0.8em 0 0.35em;}
-  #printSurface p{margin:0.4em 0; line-height:1.45;}
-  #printSurface pre{background:#f4f6f8 !important; border:1px solid #e2e8f0; padding:12px; border-radius:10px; overflow:auto;}
-  #printSurface code{background:#f4f6f8 !important; padding:2px 4px; border-radius:6px;}
-  #printSurface table{border-collapse:collapse; width:100%;}
-  #printSurface th,#printSurface td{border:1px solid #e5e7eb; padding:8px; vertical-align:top;}
-  #printSurface blockquote{border-left:4px solid #e5e7eb; padding-left:12px; margin:10px 0; color:#111 !important;}
-</style>
 </head>
 <body class="tools-page">
 <header>
@@ -277,128 +265,39 @@
   });
 
   function convert(){
-  const md = inputText.value || '';
-  if(!md.trim()){
-    setStatus('Add some Markdown first.');
-    return;
+    const md = inputText.value || '';
+    if(!md.trim()){
+      setStatus('Add some Markdown first.');
+      return;
+    }
+    const html = window.marked.parse(md);
+    outputText.value = html;
+    preview.innerHTML = html;
+    outMeta.innerHTML = '<b>OUT:</b><span class="muted"> PDF ready</span>';
+    setStatus('Preview ready — click Download to export PDF.');
   }
-  const html = (window.marked && typeof window.marked.parse === 'function') ? window.marked.parse(md) : md;
-  outputText.value = html;
-  preview.innerHTML = html;
-
-  const ps = document.getElementById('printSurface');
-  if(ps){ ps.innerHTML = html; }
-
-  outMeta.innerHTML = '<b>OUT:</b><span class="muted"> PDF ready</span>';
-  setStatus('Preview ready — click Download to export PDF.');
-}
 
   $('#convertBtn').addEventListener('click', convert);
 
-  function showExportOverlay(){
-    let ov = document.getElementById('rmExportOverlay');
-    if(!ov){
-      ov = document.createElement('div');
-      ov.id = 'rmExportOverlay';
-      ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-      ov.innerHTML = '<div style="background:#111827;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:16px;padding:14px 16px;max-width:520px;width:100%;font-size:13px;line-height:1.35;box-shadow:0 20px 60px rgba(0,0,0,.45)"><div style="font-weight:700;margin-bottom:6px">Generating PDF…</div><div style="opacity:.85">Preparing a clean white export (this can take a few seconds).</div></div>';
-      document.body.appendChild(ov);
-    } else {
-      ov.style.display = 'flex';
-    }
-    return ov;
-  }
-  function hideExportOverlay(){
-    const ov = document.getElementById('rmExportOverlay');
-    if(ov) ov.style.display = 'none';
-  }
-
   $('#downloadBtn').addEventListener('click', ()=>{
-    const ps = document.getElementById('printSurface');
-    if(!ps || !ps.innerHTML.trim()){
-      setStatus('Convert first to build the preview.');
-      return;
-    }
-
-    setStatus('Generating PDF…');
-    showExportOverlay();
-
-    // Build a fresh, fully-visible clone so html2canvas always has a painted element to capture.
-    // Repositioning the off-screen #printSurface in-place is unreliable across browsers because
-    // html2canvas captures before the browser repaints the moved element.
-    const clone = document.createElement('div');
-    clone.innerHTML = ps.innerHTML;
-    clone.style.cssText = [
-      'position:fixed',
-      'left:0',
-      'top:0',
-      'width:794px',
-      'background:#ffffff',
-      'color:#111',
-      'padding:28px',
-      // Place it above the overlay so it is painted, but visually hidden behind it (overlay is 99999)
-      'z-index:100000',
-      'pointer-events:none',
-      'font-family:system-ui,sans-serif',
-      'font-size:14px',
-      'line-height:1.5'
-    ].join(';');
-
-    // Copy the printSurface child styles inline so they survive the clone
-    const styleTag = document.createElement('style');
-    styleTag.textContent = `
-      #rmPdfClone *{color:#111 !important;}
-      #rmPdfClone h1,#rmPdfClone h2,#rmPdfClone h3{color:#111 !important;margin:0.8em 0 0.35em;}
-      #rmPdfClone p{margin:0.4em 0;line-height:1.45;}
-      #rmPdfClone pre{background:#f4f6f8 !important;border:1px solid #e2e8f0;padding:12px;border-radius:10px;overflow:auto;}
-      #rmPdfClone code{background:#f4f6f8 !important;padding:2px 4px;border-radius:6px;}
-      #rmPdfClone table{border-collapse:collapse;width:100%;}
-      #rmPdfClone th,#rmPdfClone td{border:1px solid #e5e7eb;padding:8px;vertical-align:top;}
-      #rmPdfClone blockquote{border-left:4px solid #e5e7eb;padding-left:12px;margin:10px 0;color:#111 !important;}
-    `;
-    clone.id = 'rmPdfClone';
-    document.head.appendChild(styleTag);
-    document.body.appendChild(clone);
-
+    if(!preview.innerHTML.trim()){ setStatus('Convert first to build the preview.'); return; }
     const opt = {
       margin:       10,
       filename:     lastOutName,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: 794,
-        windowHeight: Math.max(clone.scrollHeight, 1123)
-      },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak:    { mode: ['css','legacy'] }
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-
-    // Give the browser two animation frames to fully paint the clone before capture
-    requestAnimationFrame(()=> requestAnimationFrame(()=>{
-      window.html2pdf().set(opt).from(clone).save()
-        .then(()=>{
-          setStatus('Downloaded.');
-          setTimeout(()=>setStatus(''), 1000);
-        })
-        .catch(()=>{
-          setStatus('Could not generate PDF. Try shorter content.');
-        })
-        .finally(()=>{
-          document.body.removeChild(clone);
-          document.head.removeChild(styleTag);
-          hideExportOverlay();
-        });
-    }));
+    setStatus('Generating PDF…');
+    window.html2pdf().set(opt).from(preview).save().then(()=>{
+      setStatus('Downloaded.');
+      setTimeout(()=>setStatus(''), 1000);
+    }).catch(()=>{
+      setStatus('Could not generate PDF. Try shorter content.');
+    });
   });
-
 })();
 
 </script>
-
-<div id="printSurface" aria-hidden="true"></div>
 </body>
 </html>
