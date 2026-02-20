@@ -270,166 +270,62 @@
       setStatus('Add some Markdown first.');
       return;
     }
-
-    // marked may load in different global shapes depending on version/build
-    const markedApi =
-      (window.marked && typeof window.marked.parse === 'function') ? window.marked :
-      (window.marked && window.marked.marked && typeof window.marked.marked.parse === 'function') ? window.marked.marked :
-      null;
-
-    if(!markedApi){
-      setStatus('Markdown engine failed to load. Refresh the page and try again.');
-      return;
-    }
-
-    try{
-      const html = markedApi.parse(md);
-      outputText.value = html;
-      preview.innerHTML = html;
-      outMeta.innerHTML = '<b>OUT:</b><span class="muted"> PDF ready</span>';
-      setStatus('Preview ready — click Download to export PDF.');
-    }catch(e){
-      console.error(e);
-      setStatus('Could not convert Markdown. Check for very large content or refresh and retry.');
-    }
+    const html = window.marked.parse(md);
+    outputText.value = html;
+    preview.innerHTML = html;
+    outMeta.innerHTML = '<b>OUT:</b><span class="muted"> PDF ready</span>';
+    setStatus('Preview ready — click Download to export PDF.');
   }
 
   $('#convertBtn').addEventListener('click', convert);
 
-  $('#downloadBtn').addEventListener('click', async ()=>{
+  $('#downloadBtn').addEventListener('click', ()=>{
     if(!preview.innerHTML.trim()){ setStatus('Convert first to build the preview.'); return; }
 
-    setStatus('Generating PDF…');
-
-    // Build an offscreen, print-friendly clone so html2pdf captures ALL content
-    // (not just the visible/scrollable portion of the on-page preview).
-    const sandbox = document.createElement('div');
-    sandbox.id = '__rm_pdf_sandbox';
-    // Position far offscreen (not z-index hidden) so html2canvas captures at full opacity.
-    // z-index:-9999 causes browsers to composite the element with reduced opacity
-    // during canvas capture, leading to washed-out text. Offscreen avoids that entirely.
-    sandbox.style.position = 'absolute';
-    sandbox.style.left = '-9999px';
-    sandbox.style.top = '0';
-    sandbox.style.width = '794px'; // ~A4 width at 96dpi
-    sandbox.style.background = '#ffffff';
-    sandbox.style.color = '#111111';
-    sandbox.style.overflow = 'visible';
-    sandbox.style.pointerEvents = 'none';
-    sandbox.style.opacity = '1';
-
-    const style = document.createElement('style');
-    style.textContent = `
-      #__rm_pdf_sandbox { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
-      /* Force readable colors even if the site is in dark theme */
-      #__rm_pdf_sandbox, #__rm_pdf_sandbox *{ color:#111111 !important; opacity:1 !important; -webkit-text-fill-color:#111111 !important; text-shadow:none !important; filter:none !important; mix-blend-mode:normal !important; }
-      #__rm_pdf_sandbox h1, #__rm_pdf_sandbox h2, #__rm_pdf_sandbox h3,
-      #__rm_pdf_sandbox h4, #__rm_pdf_sandbox h5, #__rm_pdf_sandbox h6{
-        color:#000000 !important; -webkit-text-fill-color:#000000 !important;
-        font-weight:700;
+    // Inject a temporary <style> that forces light-mode on the preview and all
+    // its descendants. Using !important beats any dark-theme rules from styles.css.
+    // We remove this style tag immediately after html2pdf finishes.
+    const tempStyle = document.createElement('style');
+    tempStyle.id = '__rm_pdf_reset';
+    tempStyle.textContent = `
+      #preview, #preview * {
+        color: #111111 !important;
+        background: #ffffff !important;
+        border-color: #cccccc !important;
       }
-      #__rm_pdf_sandbox .__rm_pdf_content{
-        box-sizing:border-box;
-        width:100%;
-        padding:30px 30px 24px;
-        overflow:visible !important;
-        height:auto !important;
-        background:#ffffff !important;
-        color:#111111 !important;
-        font-size:13px;
-        line-height:1.55;
+      #preview { padding: 16px !important; }
+      #preview a { color: #1a56db !important; }
+      #preview pre, #preview code {
+        background: #f4f4f4 !important;
+        color: #111111 !important;
       }
-      #__rm_pdf_sandbox h1{font-size:20px;margin:0 0 10px;}
-      #__rm_pdf_sandbox h2{font-size:16px;margin:16px 0 8px;}
-      #__rm_pdf_sandbox h3{font-size:14px;margin:14px 0 6px;}
-      #__rm_pdf_sandbox p{margin:0 0 10px;}
-      #__rm_pdf_sandbox ul, #__rm_pdf_sandbox ol{margin:0 0 10px 22px;}
-      #__rm_pdf_sandbox li{margin:4px 0;}
-      #__rm_pdf_sandbox a, #__rm_pdf_sandbox a *{color:#1a56db !important;text-decoration:underline;}
-      #__rm_pdf_sandbox hr{border:0;border-top:1px solid #dddddd;margin:14px 0;}
-      #__rm_pdf_sandbox blockquote{
-        margin:10px 0;
-        padding:8px 12px;
-        border-left:3px solid #bbbbbb;
-        color:#444444 !important;
-        background:#f7f7f7;
+      #preview blockquote {
+        border-left: 3px solid #aaaaaa !important;
+        color: #444444 !important;
       }
-      #__rm_pdf_sandbox pre{
-        margin:10px 0;
-        padding:10px 12px;
-        background:#f4f4f4;
-        border:1px solid #e5e5e5;
-        border-radius:8px;
-        overflow:visible;
-        white-space:pre-wrap;
-        word-break:break-word;
-      }
-      #__rm_pdf_sandbox code{
-        background:#f4f4f4;
-        padding:1px 4px;
-        border-radius:6px;
-      }
-      #__rm_pdf_sandbox pre code{padding:0;background:transparent;}
-      #__rm_pdf_sandbox table{
-        width:100%;
-        border-collapse:collapse;
-        margin:10px 0;
-        table-layout:fixed;
-        word-break:break-word;
-      }
-      #__rm_pdf_sandbox th, #__rm_pdf_sandbox td{
-        border:1px solid #dddddd;
-        padding:6px 8px;
-        vertical-align:top;
-      }
-      #__rm_pdf_sandbox th{background:#f0f0f0;}
-      #__rm_pdf_sandbox img{max-width:100%;height:auto;}
+      #preview th { background: #f0f0f0 !important; }
     `;
-    sandbox.appendChild(style);
-
-    const content = document.createElement('div');
-    content.className = '__rm_pdf_content';
-    content.innerHTML = preview.innerHTML; // already rendered HTML from Markdown
-    sandbox.appendChild(content);
-
-    document.body.appendChild(sandbox);
-
-    // Adjust scale for very long docs to reduce the chance of canvas limits while keeping full content.
-    let scale = 2;
-    const h = content.scrollHeight || 0;
-    if(h > 25000) scale = 1.25;
-    else if(h > 18000) scale = 1.5;
+    document.head.appendChild(tempStyle);
 
     const opt = {
-      // Slightly larger margins reduce edge-clipping risk on some browsers.
-      margin:       [14, 12, 14, 12],
+      margin:       10,
       filename:     lastOutName,
-      image:        { type: 'png' },
-      pagebreak:    { mode: ['css', 'legacy'], avoid: ['pre', 'blockquote', 'table', 'img'] },
-      html2canvas:  {
-        scale,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        scrollX: 0,
-        scrollY: 0,
-        // Let html2canvas measure naturally to avoid edge-cropping.
-      },
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-
-    try{
-      await window.html2pdf().set(opt).from(content).save();
+    setStatus('Generating PDF…');
+    window.html2pdf().set(opt).from(preview).save().then(()=>{
+      tempStyle.remove();
       setStatus('Downloaded.');
       setTimeout(()=>setStatus(''), 1000);
-    }catch(e){
-      console.error(e);
-      setStatus('Could not generate PDF. Try again, or reduce images/very large tables.');
-    }finally{
-      sandbox.remove();
-    }
+    }).catch(()=>{
+      tempStyle.remove();
+      setStatus('Could not generate PDF. Try shorter content.');
+    });
   });
-
 })();
+
 </script>
 </body>
 </html>
