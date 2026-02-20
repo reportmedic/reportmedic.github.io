@@ -282,6 +282,119 @@
     border-radius: 18px !important;
   }
   .npFullscreen .npEditor{ padding: 18px 18px; }
+
+  /* Learn more link sizing (consistent across tools) */
+  h1 .rm-lm-link{
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,.82);
+    text-decoration: none;
+    margin-left: 8px;
+    padding: 4px 8px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.03);
+    vertical-align: middle;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  h1 .rm-lm-link:hover{ background: rgba(255,255,255,.06); }
+
+  /* Learn-more modal fallback styles (in case global CSS is missing) */
+  .rm-lm-overlay{
+    position: fixed;
+    inset: 0;
+    z-index: 10050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    background: rgba(0,0,0,.58);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s ease;
+  }
+  .rm-lm-overlay.show{ opacity: 1; pointer-events: auto; }
+  .rm-lm-modal{
+    width: min(740px, calc(100% - 18px));
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(10,16,30,.96);
+    box-shadow: 0 18px 60px rgba(0,0,0,.55);
+    overflow: hidden;
+  }
+  .rm-lm-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 14px 10px 14px;
+    border-bottom: 1px solid rgba(255,255,255,.10);
+  }
+  .rm-lm-title{ font-weight: 900; font-size: 15px; color: rgba(255,255,255,.92); }
+  .rm-lm-sub{ margin-top: 4px; font-size: 13px; color: rgba(255,255,255,.66); }
+  .rm-lm-x{
+    width: 34px; height: 34px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.03);
+    color: rgba(255,255,255,.9);
+    cursor: pointer;
+  }
+  .rm-lm-x:hover{ background: rgba(255,255,255,.06); }
+  .rm-lm-body{ padding: 12px 14px 2px 14px; }
+  .rm-lm-list{ margin: 0 0 10px 16px; padding: 0; }
+  .rm-lm-list li{ margin: 8px 0; color: rgba(255,255,255,.86); font-size: 13px; line-height: 1.55; }
+  .rm-lm-callout{
+    margin: 10px 0 12px 0;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(110,168,255,.22);
+    background: rgba(110,168,255,.10);
+    color: rgba(255,255,255,.88);
+    font-size: 13px;
+  }
+  .rm-lm-foot{
+    display:flex;
+    justify-content:flex-end;
+    gap: 10px;
+    padding: 12px 14px;
+    border-top: 1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.02);
+  }
+  body.rm-modal-open{ overflow:hidden; }
+
+  /* Notebook controls */
+  .npNotebookRow{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    margin-bottom: 10px;
+  }
+  .npNotebookSel{
+    flex: 1;
+    max-width: none;
+  }
+  .npTinyIcon{
+    width:34px; height:34px;
+    border-radius: 10px;
+  }
+
+  /* Color buttons with icons */
+  .npBtnIcon{
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+  }
+  .npSwatch{
+    width: 14px;
+    height: 14px;
+    border-radius: 5px;
+    border: 1px solid rgba(255,255,255,.16);
+    background: rgba(255,255,255,.18);
+  }
+
 </style>
 </head>
 
@@ -308,8 +421,13 @@
       <!-- Left -->
       <aside class="npLeft" aria-label="Notes list">
         <div class="npLeftTop">
-          <button class="npNewBtn" id="npNewBtn" type="button">＋ New Note</button>
-          <input class="npSearch" id="npSearch" type="search" placeholder="Search notes…" autocomplete="off"/>
+          <div class="npNotebookRow">
+  <select class="npSelect npNotebookSel" id="npNotebookSel" aria-label="Notebook"></select>
+  <button class="npIconBtn npTinyIcon" id="npAddNotebookBtn" type="button" title="Add notebook">＋</button>
+  <button class="npIconBtn npTinyIcon" id="npDelNotebookBtn" type="button" title="Delete notebook">🗑</button>
+</div>
+<button class="npNewBtn" id="npNewBtn" type="button">＋ New Note</button>
+<input class="npSearch" id="npSearch" type="search" placeholder="Search notes…" autocomplete="off"/>
         </div>
         <div class="npList" id="npList"></div>
       </aside>
@@ -384,9 +502,24 @@
           <div class="npGroup">
             <button class="npBtn" id="npLink" type="button" title="Insert link">🔗</button>
             <button class="npBtn" id="npUnlink" type="button" title="Remove link">⨯</button>
-            <input class="npColor" id="npColor" type="color" title="Text color"/>
-            <input class="npColor" id="npHilite" type="color" title="Highlight color"/>
-            <button class="npBtn" id="npClear" type="button" title="Clear formatting">Aa</button>
+            <button class="npBtn" id="npTextColorBtn" type="button" title="Text color" aria-label="Text color">
+  <svg class="npBtnIcon" viewBox="0 0 24 24" aria-hidden="true">
+    <path fill="currentColor" d="M7.2 20h2.2l1.2-3h6.7l1.2 3H21L14.9 4h-2.8L7.2 20zm4.1-5 2.6-6.6 2.6 6.6h-5.2z"/>
+    <path fill="currentColor" d="M4 22h16v-2H4v2z"/>
+  </svg>
+  <span class="npSwatch" id="npTextSwatch" aria-hidden="true"></span>
+</button>
+<input id="npColor" type="color" class="npHidden" title="Text color"/>
+<button class="npBtn" id="npHiliteColorBtn" type="button" title="Highlight color" aria-label="Highlight color">
+  <svg class="npBtnIcon" viewBox="0 0 24 24" aria-hidden="true">
+    <path fill="currentColor" d="M3 17h18v2H3v-2zm3.2-2.2 9.9-9.9 2.1 2.1-9.9 9.9H6.2zM18.3 4.6 16.2 2.5 14.8 3.9l2.1 2.1 1.4-1.4z"/>
+  </svg>
+  <span class="npSwatch" id="npHiliteSwatch" aria-hidden="true"></span>
+</button>
+<input id="npHilite" type="color" class="npHidden" title="Highlight color"/>
+<button class="npBtn" id="npClear" type="button" title="Clear formatting" aria-label="Clear formatting">
+  <span style="font-weight:900;letter-spacing:.2px">Aa</span>
+</button>
           </div>
 
           <div class="npSep"></div>
@@ -468,9 +601,10 @@
 </script>
 
 <script>
-/* Notepad — local-only, rich-text editor using contenteditable + execCommand */
+/* Notepad — local-only, rich-text editor using contenteditable + execCommand + notebook support */
 (function(){
-  const LS_KEY = "rm_notepad_notes_v1";
+  const LEGACY_KEY = "rm_notepad_notes_v1";
+  const LS_KEY = "rm_notepad_notebooks_v1";
   const $ = (id)=>document.getElementById(id);
 
   const elList = $("npList");
@@ -485,6 +619,10 @@
   const elCopy = $("npCopyBtn");
   const elDelete = $("npDeleteBtn");
   const elFull = $("npFullBtn");
+
+  const nbSel = $("npNotebookSel");
+  const nbAddBtn = $("npAddNotebookBtn");
+  const nbDelBtn = $("npDelNotebookBtn");
 
   const fontSel = $("npFont");
   const fmtSel = $("npFormat");
@@ -504,6 +642,12 @@
 
   const btnLink = $("npLink");
   const btnUnlink = $("npUnlink");
+
+  const textColorBtn = $("npTextColorBtn");
+  const hiliteColorBtn = $("npHiliteColorBtn");
+  const textSwatch = $("npTextSwatch");
+  const hiliteSwatch = $("npHiliteSwatch");
+
   const colorPick = $("npColor");
   const hilitePick = $("npHilite");
   const btnClear = $("npClear");
@@ -516,31 +660,75 @@
   const btnUndo = $("npUndo");
   const btnRedo = $("npRedo");
 
-  let notes = [];
-  let activeId = null;
+  // ---- State (Notebooks + Notes) ----
+  // notebooks: [{id,name}], notes: [{id, notebookId, title, html, updated}]
+  let state = { notebooks: [], notes: [], activeNotebookId: null, activeNoteId: null };
   let saveTimer = null;
   let dirty = false;
 
   function nowISO(){ return new Date().toISOString(); }
+  function uuid(prefix){
+    return (prefix || "id") + "_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+  }
+
+  function safeParse(raw){
+    try{ return JSON.parse(raw); }catch(_){ return null; }
+  }
 
   function load(){
-    try{
-      const raw = localStorage.getItem(LS_KEY);
-      notes = raw ? JSON.parse(raw) : [];
-      if(!Array.isArray(notes)) notes = [];
-    }catch(_){ notes = []; }
+    const raw = localStorage.getItem(LS_KEY);
+    const parsed = raw ? safeParse(raw) : null;
+
+    if(parsed && typeof parsed === "object" && Array.isArray(parsed.notebooks) && Array.isArray(parsed.notes)){
+      state = {
+        notebooks: parsed.notebooks,
+        notes: parsed.notes,
+        activeNotebookId: parsed.activeNotebookId || null,
+        activeNoteId: parsed.activeNoteId || null
+      };
+      // harden
+      if(state.notebooks.length === 0) state.notebooks = [];
+      if(state.notes.length === 0) state.notes = [];
+      return;
+    }
+
+    // Migrate legacy notes -> a default notebook
+    const legacyRaw = localStorage.getItem(LEGACY_KEY);
+    const legacy = legacyRaw ? safeParse(legacyRaw) : null;
+    if(Array.isArray(legacy) && legacy.length){
+      const nbId = uuid("nb");
+      state.notebooks = [{ id: nbId, name: "My Notebook" }];
+      state.notes = legacy.map(n => ({
+        id: n.id || uuid("n"),
+        notebookId: nbId,
+        title: n.title || "Untitled note",
+        html: n.html || "",
+        updated: n.updated || nowISO()
+      }));
+      state.activeNotebookId = nbId;
+      state.activeNoteId = state.notes.sort((a,b)=>(b.updated||"").localeCompare(a.updated||""))[0].id;
+      persist();
+      return;
+    }
+
+    // Fresh start
+    const nbId = uuid("nb");
+    state.notebooks = [{ id: nbId, name: "My Notebook" }];
+    state.activeNotebookId = nbId;
+    state.notes = [];
+    persist();
   }
+
   function persist(){
-    localStorage.setItem(LS_KEY, JSON.stringify(notes));
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
   }
-  function uuid(){
-    return "n_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
-  }
+
   function plainTextFromHtml(html){
     const d=document.createElement("div");
     d.innerHTML = html || "";
     return (d.textContent || "").replace(/\s+/g," ").trim();
   }
+
   function relTime(iso){
     if(!iso) return "";
     const t = new Date(iso).getTime();
@@ -556,14 +744,67 @@
     return new Date(iso).toLocaleDateString();
   }
 
+  function setSavedBadge(stateLabel){
+    if(stateLabel==="saving"){ elSaved.textContent="Saving…"; elSaved.style.opacity="1"; }
+    else if(stateLabel==="unsaved"){ elSaved.textContent="Unsaved"; elSaved.style.opacity=".95"; }
+    else { elSaved.textContent="Saved"; elSaved.style.opacity=".75"; }
+  }
+
+  function scheduleSave(){
+    dirty = true;
+    setSavedBadge("unsaved");
+    if(saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=>saveActive(), 350);
+  }
+
   function sortNotes(){
-    notes.sort((a,b)=> (b.updated||"").localeCompare(a.updated||""));
+    state.notes.sort((a,b)=> (b.updated||"").localeCompare(a.updated||""));
+  }
+
+  function notesForNotebook(nbId){
+    return state.notes.filter(n => n.notebookId === nbId);
+  }
+
+  function getActiveNotebook(){
+    return state.notebooks.find(nb => nb.id === state.activeNotebookId) || null;
+  }
+
+  function getActiveNote(){
+    return state.notes.find(n => n.id === state.activeNoteId) || null;
+  }
+
+  function ensureNotebookSelection(){
+    if(!state.activeNotebookId || !state.notebooks.some(nb => nb.id === state.activeNotebookId)){
+      state.activeNotebookId = state.notebooks[0]?.id || null;
+    }
+  }
+
+  function ensureActiveNote(){
+    const nbId = state.activeNotebookId;
+    const list = notesForNotebook(nbId);
+    if(!state.activeNoteId || !list.some(n => n.id === state.activeNoteId)){
+      state.activeNoteId = list.sort((a,b)=> (b.updated||"").localeCompare(a.updated||""))[0]?.id || null;
+    }
+  }
+
+  // ---- UI rendering ----
+  function renderNotebooks(){
+    nbSel.innerHTML = "";
+    state.notebooks.forEach(nb=>{
+      const opt=document.createElement("option");
+      opt.value = nb.id;
+      opt.textContent = nb.name || "Notebook";
+      nbSel.appendChild(opt);
+    });
+    if(state.activeNotebookId) nbSel.value = state.activeNotebookId;
   }
 
   function filteredNotes(){
     const q = (elSearch.value || "").trim().toLowerCase();
-    if(!q) return notes;
-    return notes.filter(n=>{
+    const nbId = state.activeNotebookId;
+    let list = notesForNotebook(nbId);
+    if(!q) return list;
+    return list.filter(n=>{
       const t=(n.title||"").toLowerCase();
       const body=plainTextFromHtml(n.html||"").toLowerCase();
       return t.includes(q) || body.includes(q);
@@ -571,21 +812,21 @@
   }
 
   function renderList(){
-    const list = filteredNotes();
+    const list = filteredNotes().sort((a,b)=> (b.updated||"").localeCompare(a.updated||""));
     elList.innerHTML = "";
     if(list.length === 0){
       const empty = document.createElement("div");
       empty.style.padding="12px";
       empty.style.color="rgba(255,255,255,.55)";
       empty.style.fontSize="13px";
-      empty.textContent = notes.length ? "No matches." : "No notes yet. Create your first note.";
+      empty.textContent = state.notes.length ? "No matches in this notebook." : "No notes yet. Create your first note.";
       elList.appendChild(empty);
       return;
     }
 
     list.forEach(n=>{
       const item=document.createElement("div");
-      item.className="npItem" + (n.id===activeId ? " active" : "");
+      item.className="npItem" + (n.id===state.activeNoteId ? " active" : "");
       item.dataset.id=n.id;
 
       const title=document.createElement("div");
@@ -613,26 +854,21 @@
     });
   }
 
-  function getActive(){
-    return notes.find(n=>n.id===activeId) || null;
-  }
-
-  function setSavedBadge(state){
-    // state: "saved" | "saving" | "unsaved"
-    if(state==="saving"){ elSaved.textContent="Saving…"; elSaved.style.opacity="1"; }
-    else if(state==="unsaved"){ elSaved.textContent="Unsaved"; elSaved.style.opacity=".95"; }
-    else { elSaved.textContent="Saved"; elSaved.style.opacity=".75"; }
-  }
-
-  function scheduleSave(){
-    dirty = true;
-    setSavedBadge("unsaved");
-    if(saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(()=>saveActive(), 350);
+  function openNote(id){
+    if(dirty) saveActive();
+    state.activeNoteId = id;
+    const n = getActiveNote();
+    if(!n) return;
+    elTitle.value = n.title || "";
+    elEditor.innerHTML = n.html || "";
+    setSavedBadge("saved");
+    persist();
+    renderList();
+    setTimeout(()=>elEditor.focus(), 0);
   }
 
   function saveActive(){
-    const n=getActive();
+    const n=getActiveNote();
     if(!n) return;
     n.title = (elTitle.value || "").trim() || "Untitled note";
     n.html = elEditor.innerHTML || "";
@@ -644,37 +880,27 @@
     renderList();
   }
 
-  function selectNote(id){
-    if(dirty) saveActive();
-    activeId = id;
-    const n=getActive();
-    if(!n) return;
-    elTitle.value = n.title || "";
-    elEditor.innerHTML = n.html || "";
-    setSavedBadge("saved");
-    renderList();
-    setTimeout(()=>elEditor.focus(), 0);
-  }
-
   function newNote(){
-    const n = { id: uuid(), title:"Untitled note", html:"", updated: nowISO() };
-    notes.unshift(n);
-    activeId = n.id;
+    const nbId = state.activeNotebookId;
+    const n = { id: uuid("n"), notebookId: nbId, title:"Untitled note", html:"", updated: nowISO() };
+    state.notes.unshift(n);
+    state.activeNoteId = n.id;
     persist();
     renderList();
-    selectNote(n.id);
+    openNote(n.id);
   }
 
-  function deleteActive(){
-    const n=getActive();
+  function deleteActiveNote(){
+    const n=getActiveNote();
     if(!n) return;
     const ok = confirm("Delete this note? This cannot be undone.");
     if(!ok) return;
-    notes = notes.filter(x=>x.id!==activeId);
+    state.notes = state.notes.filter(x=>x.id!==state.activeNoteId);
+    dirty = false;
+    ensureActiveNote();
     persist();
-    activeId = notes[0]?.id || null;
     renderList();
-    if(activeId) selectNote(activeId);
+    if(state.activeNoteId) openNote(state.activeNoteId);
     else{
       elTitle.value="";
       elEditor.innerHTML="";
@@ -683,7 +909,7 @@
   }
 
   function downloadActive(){
-    const n=getActive();
+    const n=getActiveNote();
     if(!n) return;
     saveActive();
     const safeName = (n.title || "note").replace(/[^a-z0-9\-_ ]/gi,"").trim().slice(0,60) || "note";
@@ -698,14 +924,13 @@
   }
 
   function copyActive(){
-    const n=getActive();
+    const n=getActiveNote();
     if(!n) return;
     saveActive();
     const plain = plainTextFromHtml(n.html||"");
     (navigator.clipboard?.writeText ? navigator.clipboard.writeText(plain) : Promise.reject())
       .then(()=>toast("Copied as text"))
       .catch(()=>{
-        // fallback
         const t=document.createElement("textarea");
         t.value=plain;
         document.body.appendChild(t);
@@ -720,7 +945,58 @@
     return (s||"").replace(/[&<>"]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
   }
 
-  /* Simple toast (matches site tone) */
+  // ---- Notebooks ----
+  function addNotebook(){
+    const name = (prompt("Notebook name:") || "").trim();
+    if(!name) return;
+    const nb = { id: uuid("nb"), name: name.slice(0, 60) };
+    state.notebooks.unshift(nb);
+    state.activeNotebookId = nb.id;
+    state.activeNoteId = null;
+    persist();
+    renderNotebooks();
+    renderList();
+    // Make a first note so the notebook isn't empty
+    newNote();
+  }
+
+  function deleteNotebook(){
+    const nb = getActiveNotebook();
+    if(!nb) return;
+    if(state.notebooks.length === 1){
+      alert("You need at least one notebook.");
+      return;
+    }
+    const ok = confirm(`Delete notebook "${nb.name}" and all notes inside it? This cannot be undone.`);
+    if(!ok) return;
+
+    // remove notes
+    state.notes = state.notes.filter(n => n.notebookId !== nb.id);
+    // remove notebook
+    state.notebooks = state.notebooks.filter(x => x.id !== nb.id);
+
+    // select next notebook
+    state.activeNotebookId = state.notebooks[0]?.id || null;
+    ensureActiveNote();
+    persist();
+    renderNotebooks();
+    renderList();
+    if(state.activeNoteId) openNote(state.activeNoteId);
+    else newNote();
+  }
+
+  function changeNotebook(nbId){
+    if(dirty) saveActive();
+    state.activeNotebookId = nbId;
+    state.activeNoteId = null;
+    ensureActiveNote();
+    persist();
+    renderList();
+    if(state.activeNoteId) openNote(state.activeNoteId);
+    else newNote();
+  }
+
+  // ---- Toast ----
   let toastTimer=null;
   function toast(msg){
     let t=document.getElementById("npToast");
@@ -731,7 +1007,7 @@
       t.style.left="50%";
       t.style.top="16px";
       t.style.transform="translateX(-50%)";
-      t.style.zIndex="10001";
+      t.style.zIndex="10051";
       t.style.padding="10px 12px";
       t.style.borderRadius="12px";
       t.style.border="1px solid rgba(255,255,255,.14)";
@@ -747,13 +1023,42 @@
     toastTimer=setTimeout(()=>{ t.style.opacity="0"; }, 1200);
   }
 
-  /* Editor commands */
+  // ---- Editor commands (selection-first) ----
   function focusEditor(){ elEditor.focus(); }
+
   function cmd(command, value=null){
     focusEditor();
-    try{
-      document.execCommand(command, false, value);
-    }catch(_){}
+    try{ document.execCommand("styleWithCSS", false, true); }catch(_){}
+    try{ document.execCommand(command, false, value); }catch(_){}
+    scheduleSave();
+    reflectTogglesSoon();
+  }
+
+  function applyFontFamily(f){
+    // Applies to selection / caret (does NOT restyle entire doc)
+    cmd("fontName", f);
+  }
+
+  function applyFontSizePx(px){
+    focusEditor();
+    try{ document.execCommand("styleWithCSS", false, true); }catch(_){}
+    // Use the classic hack: apply a large fontSize to selection, then convert that markup to px
+    try{ document.execCommand("fontSize", false, "7"); }catch(_){}
+    // Convert any <font size="7"> into <span style="font-size:..px">
+    const fonts = elEditor.querySelectorAll('font[size="7"]');
+    fonts.forEach(font=>{
+      const span=document.createElement("span");
+      span.style.fontSize = px + "px";
+      span.innerHTML = font.innerHTML;
+      font.replaceWith(span);
+    });
+    scheduleSave();
+    reflectTogglesSoon();
+  }
+
+  function applyBlock(tag){
+    focusEditor();
+    try{ document.execCommand("formatBlock", false, tag); }catch(_){}
     scheduleSave();
     reflectTogglesSoon();
   }
@@ -767,7 +1072,6 @@
       const node=document.createElement(tag);
       node.textContent = tag==="code" ? "code" : "";
       range.insertNode(node);
-      // move caret after
       range.setStartAfter(node); range.collapse(true);
       sel.removeAllRanges(); sel.addRange(range);
     }else{
@@ -775,51 +1079,11 @@
       try{
         range.surroundContents(node);
       }catch(_){
-        // fallback: insert as HTML
         const frag = range.extractContents();
         node.appendChild(frag);
         range.insertNode(node);
       }
     }
-    scheduleSave();
-    reflectTogglesSoon();
-  }
-
-  function applyFontFamily(f){
-    // execCommand uses CSS or deprecated font tags depending on browser; keep it simple.
-    cmd("fontName", f);
-    // ensure editor keeps default for new typing
-    elEditor.style.fontFamily = f;
-  }
-
-  function applyFontSizePx(px){
-    // For contenteditable, easiest is to apply as inline style on editor (for new typing),
-    // and for selection, use a span with style.
-    focusEditor();
-    const sel = window.getSelection();
-    if(sel && sel.rangeCount){
-      const range=sel.getRangeAt(0);
-      if(!range.collapsed){
-        const span=document.createElement("span");
-        span.style.fontSize = px + "px";
-        try{
-          range.surroundContents(span);
-        }catch(_){
-          const frag = range.extractContents();
-          span.appendChild(frag);
-          range.insertNode(span);
-        }
-      }
-    }
-    elEditor.style.fontSize = px + "px";
-    scheduleSave();
-  }
-
-  function applyBlock(tag){
-    focusEditor();
-    try{
-      document.execCommand("formatBlock", false, tag);
-    }catch(_){}
     scheduleSave();
     reflectTogglesSoon();
   }
@@ -831,6 +1095,27 @@
     cmd("createLink", url.trim());
   }
 
+  function clearFormattingSelection(){
+    focusEditor();
+    const sel = window.getSelection();
+    if(sel && sel.rangeCount){
+      const range = sel.getRangeAt(0);
+      if(!range.collapsed){
+        // replace selected HTML with plain text (keeps the content, drops styling)
+        const tmp = document.createElement("div");
+        tmp.appendChild(range.cloneContents());
+        const txt = tmp.textContent || "";
+        try{ document.execCommand("insertText", false, txt); }catch(_){}
+      }else{
+        try{ document.execCommand("removeFormat", false, null); }catch(_){}
+        try{ document.execCommand("unlink", false, null); }catch(_){}
+      }
+    }
+    scheduleSave();
+    reflectTogglesSoon();
+  }
+
+  // ---- Images ----
   function insertImageFromFile(file){
     if(!file) return;
     const reader=new FileReader();
@@ -840,7 +1125,6 @@
       const img=document.createElement("img");
       img.src = src;
       img.alt = "image";
-      // insert at caret
       const sel=window.getSelection();
       if(sel && sel.rangeCount){
         const range=sel.getRangeAt(0);
@@ -855,7 +1139,6 @@
     reader.readAsDataURL(file);
   }
 
-  /* Paste handling: image paste + keep HTML clean */
   elEditor.addEventListener("paste", (e)=>{
     const items = e.clipboardData && e.clipboardData.items ? Array.from(e.clipboardData.items) : [];
     const imgItem = items.find(it => it.type && it.type.startsWith("image/"));
@@ -866,115 +1149,15 @@
       toast("Image pasted");
       return;
     }
-    // Allow normal paste; autosave shortly
     setTimeout(scheduleSave, 0);
   });
 
-  /* Autosave on edits */
-  elEditor.addEventListener("input", scheduleSave);
-  elTitle.addEventListener("input", scheduleSave);
-
-  /* Keyboard shortcuts */
-  document.addEventListener("keydown", (e)=>{
-    const mac = navigator.platform.toUpperCase().includes("MAC");
-    const mod = mac ? e.metaKey : e.ctrlKey;
-
-    if(mod && e.key.toLowerCase()==="k"){
-      e.preventDefault(); linkPrompt(); return;
-    }
-    if(mod && e.key.toLowerCase()==="s"){
-      e.preventDefault(); saveActive(); toast("Saved"); return;
-    }
-  });
-
-  /* Buttons */
-  elNew.addEventListener("click", newNote);
-  elSearch.addEventListener("input", renderList);
-  elList.addEventListener("click", (e)=>{
-    const item = e.target.closest(".npItem");
-    if(!item) return;
-    selectNote(item.dataset.id);
-  });
-
-  elDelete.addEventListener("click", deleteActive);
-  elDownload.addEventListener("click", downloadActive);
-  elCopy.addEventListener("click", copyActive);
-
-  elFull.addEventListener("click", ()=>{
-    const full = elRight.classList.toggle("npFullscreen");
-    if(full) toast("Fullscreen");
-    else toast("Exit fullscreen");
-  });
-
-  btnUndo.addEventListener("click", ()=>cmd("undo"));
-  btnRedo.addEventListener("click", ()=>cmd("redo"));
-
-  btnBold.addEventListener("click", ()=>cmd("bold"));
-  btnItalic.addEventListener("click", ()=>cmd("italic"));
-  btnUnderline.addEventListener("click", ()=>cmd("underline"));
-  btnStrike.addEventListener("click", ()=>cmd("strikeThrough"));
-  btnCode.addEventListener("click", ()=>wrapSelectionWith("code"));
-
-  btnBullets.addEventListener("click", ()=>cmd("insertUnorderedList"));
-  btnNumbers.addEventListener("click", ()=>cmd("insertOrderedList"));
-
-  btnLink.addEventListener("click", linkPrompt);
-  btnUnlink.addEventListener("click", ()=>cmd("unlink"));
-
-  btnClear.addEventListener("click", ()=>{
-    cmd("removeFormat");
-    // also clear inline styles for selection by toggling to paragraph
-    applyBlock("P");
-  });
-
-  btnAlign.addEventListener("click", (e)=>openMenu(e.currentTarget, buildAlignMenu()));
-  colorPick.addEventListener("input", ()=>cmd("foreColor", colorPick.value));
-  hilitePick.addEventListener("input", ()=>{
-    // hiliteColor works in most modern browsers; fallback to backColor
-    try{ document.execCommand("hiliteColor", false, hilitePick.value); }
-    catch(_){ cmd("backColor", hilitePick.value); }
-    scheduleSave();
-  });
-
-  btnImage.addEventListener("click", ()=>fileInput.click());
-  fileInput.addEventListener("change", ()=>{
-    const f=fileInput.files && fileInput.files[0];
-    if(f) insertImageFromFile(f);
-    fileInput.value="";
-  });
-
-  btnEmoji.addEventListener("click", (e)=>openMenu(e.currentTarget, buildEmojiMenu()));
-  btnFormats.addEventListener("click", (e)=>openMenu(e.currentTarget, buildFormatsMenu()));
-
-  fontSel.addEventListener("change", ()=>applyFontFamily(fontSel.value));
-  fmtSel.addEventListener("change", ()=>applyBlock(fmtSel.value));
-  fontSize.addEventListener("change", ()=>{
-    const px = clampInt(fontSize.value, 10, 36);
-    fontSize.value = px;
-    applyFontSizePx(px);
-  });
-  incBtn.addEventListener("click", ()=>{
-    const px = clampInt(parseInt(fontSize.value||"14",10)+1, 10, 36);
-    fontSize.value = px;
-    applyFontSizePx(px);
-  });
-  decBtn.addEventListener("click", ()=>{
-    const px = clampInt(parseInt(fontSize.value||"14",10)-1, 10, 36);
-    fontSize.value = px;
-    applyFontSizePx(px);
-  });
-
-  function clampInt(v, a, b){
-    let n=parseInt(v,10);
-    if(!isFinite(n)) n=a;
-    return Math.max(a, Math.min(b, n));
-  }
-
-  /* Popover menus */
+  // ---- Popover menus ----
   let pop=null;
   function closeMenu(){
     if(pop){ pop.remove(); pop=null; }
   }
+
   function openMenu(anchor, contentNode){
     closeMenu();
     const r = anchor.getBoundingClientRect();
@@ -982,7 +1165,7 @@
     pop.className="npPopover";
     pop.appendChild(contentNode);
     document.body.appendChild(pop);
-    // position
+
     const pad=10;
     let left = Math.min(window.innerWidth - pop.offsetWidth - pad, Math.max(pad, r.left));
     let top = Math.min(window.innerHeight - pop.offsetHeight - pad, r.bottom + 8);
@@ -1003,7 +1186,7 @@
     }, 0);
   }
 
-  function menuItem(label, hint, onClick){
+  function menuItem(label, hint, onClick, opts){
     const d=document.createElement("div");
     d.className="npMenuItem";
     const l=document.createElement("div");
@@ -1013,7 +1196,12 @@
     h.textContent=hint||"";
     d.appendChild(l);
     if(hint) d.appendChild(h);
-    d.addEventListener("click", ()=>{ onClick(); closeMenu(); });
+    d.addEventListener("click", ()=>{
+      // For submenu entries: close current menu BEFORE opening the next
+      if(opts && opts.closeFirst) closeMenu();
+      onClick();
+      if(!opts || opts.closeAfter !== false) closeMenu();
+    });
     return d;
   }
 
@@ -1045,7 +1233,7 @@
       b.textContent=em;
       b.addEventListener("click", ()=>{
         focusEditor();
-        document.execCommand("insertText", false, em);
+        try{ document.execCommand("insertText", false, em); }catch(_){}
         scheduleSave();
         closeMenu();
       });
@@ -1055,30 +1243,6 @@
     return wrap;
   }
 
-  function buildFormatsMenu(){
-    const wrap=document.createElement("div");
-    const head=document.createElement("div");
-    head.style.fontWeight="800";
-    head.style.fontSize="13px";
-    head.style.padding="2px 2px 8px 2px";
-    head.textContent="Formats";
-    wrap.appendChild(head);
-
-    // Headings
-    wrap.appendChild(menuItem("Headings →", "H1–H6", ()=>{
-      openMenu(btnFormats, buildHeadingsSubmenu());
-    }));
-    wrap.appendChild(menuItem("Inline →", "bold/italic/…", ()=>{
-      openMenu(btnFormats, buildInlineSubmenu());
-    }));
-    wrap.appendChild(menuItem("Blocks →", "quote/pre/div", ()=>{
-      openMenu(btnFormats, buildBlocksSubmenu());
-    }));
-    wrap.appendChild(menuItem("Alignment →", "left/center/…", ()=>{
-      openMenu(btnFormats, buildAlignMenu());
-    }));
-    return wrap;
-  }
   function buildHeadingsSubmenu(){
     const w=document.createElement("div");
     ["H1","H2","H3","H4","H5","H6"].forEach(h=>{
@@ -1086,6 +1250,7 @@
     });
     return w;
   }
+
   function buildInlineSubmenu(){
     const w=document.createElement("div");
     w.appendChild(menuItem("Bold", "⌘/Ctrl+B", ()=>cmd("bold")));
@@ -1097,6 +1262,7 @@
     w.appendChild(menuItem("Inline code", "", ()=>wrapSelectionWith("code")));
     return w;
   }
+
   function buildBlocksSubmenu(){
     const w=document.createElement("div");
     w.appendChild(menuItem("Paragraph", "", ()=>applyBlock("P")));
@@ -1105,13 +1271,41 @@
     w.appendChild(menuItem("Pre", "", ()=>applyBlock("PRE")));
     w.appendChild(menuItem("Horizontal line", "", ()=>{
       focusEditor();
-      document.execCommand("insertHorizontalRule", false, null);
+      try{ document.execCommand("insertHorizontalRule", false, null); }catch(_){}
       scheduleSave();
     }));
     return w;
   }
 
-  /* Toggle reflection (best-effort) */
+  function buildFormatsMenu(){
+    const wrap=document.createElement("div");
+    const head=document.createElement("div");
+    head.style.fontWeight="800";
+    head.style.fontSize="13px";
+    head.style.padding="2px 2px 8px 2px";
+    head.textContent="Formats";
+    wrap.appendChild(head);
+
+    wrap.appendChild(menuItem("Headings →", "H1–H6", ()=>{
+      openMenu(btnFormats, buildHeadingsSubmenu());
+    }, { closeFirst: true, closeAfter: false }));
+
+    wrap.appendChild(menuItem("Inline →", "bold/italic/…", ()=>{
+      openMenu(btnFormats, buildInlineSubmenu());
+    }, { closeFirst: true, closeAfter: false }));
+
+    wrap.appendChild(menuItem("Blocks →", "quote/pre/div", ()=>{
+      openMenu(btnFormats, buildBlocksSubmenu());
+    }, { closeFirst: true, closeAfter: false }));
+
+    wrap.appendChild(menuItem("Alignment →", "left/center/…", ()=>{
+      openMenu(btnFormats, buildAlignMenu());
+    }, { closeFirst: true, closeAfter: false }));
+
+    return wrap;
+  }
+
+  // ---- Toggle reflection ----
   let reflectTimer=null;
   function reflectTogglesSoon(){
     if(reflectTimer) cancelAnimationFrame(reflectTimer);
@@ -1130,18 +1324,141 @@
     if(document.activeElement===elEditor) reflectTogglesSoon();
   });
 
-  /* Bootstrap */
-  load();
-  if(notes.length===0) newNote();
-  else{
-    sortNotes();
-    activeId = notes[0].id;
-    renderList();
-    selectNote(activeId);
+  // ---- Wiring ----
+  elEditor.addEventListener("input", scheduleSave);
+  elTitle.addEventListener("input", scheduleSave);
+
+  document.addEventListener("keydown", (e)=>{
+    const mac = navigator.platform.toUpperCase().includes("MAC");
+    const mod = mac ? e.metaKey : e.ctrlKey;
+    if(mod && e.key.toLowerCase()==="k"){
+      e.preventDefault(); linkPrompt(); return;
+    }
+    if(mod && e.key.toLowerCase()==="s"){
+      e.preventDefault(); saveActive(); toast("Saved"); return;
+    }
+  });
+
+  elNew.addEventListener("click", newNote);
+  elSearch.addEventListener("input", renderList);
+
+  elList.addEventListener("click", (e)=>{
+    const item = e.target.closest(".npItem");
+    if(!item) return;
+    openNote(item.dataset.id);
+  });
+
+  elDelete.addEventListener("click", deleteActiveNote);
+  elDownload.addEventListener("click", downloadActive);
+  elCopy.addEventListener("click", copyActive);
+
+  elFull.addEventListener("click", ()=>{
+    const full = elRight.classList.toggle("npFullscreen");
+    toast(full ? "Fullscreen" : "Exit fullscreen");
+  });
+
+  nbAddBtn.addEventListener("click", addNotebook);
+  nbDelBtn.addEventListener("click", deleteNotebook);
+  nbSel.addEventListener("change", ()=>changeNotebook(nbSel.value));
+
+  btnUndo.addEventListener("click", ()=>cmd("undo"));
+  btnRedo.addEventListener("click", ()=>cmd("redo"));
+
+  btnBold.addEventListener("click", ()=>cmd("bold"));
+  btnItalic.addEventListener("click", ()=>cmd("italic"));
+  btnUnderline.addEventListener("click", ()=>cmd("underline"));
+  btnStrike.addEventListener("click", ()=>cmd("strikeThrough"));
+  btnCode.addEventListener("click", ()=>wrapSelectionWith("code"));
+
+  btnBullets.addEventListener("click", ()=>cmd("insertUnorderedList"));
+  btnNumbers.addEventListener("click", ()=>cmd("insertOrderedList"));
+
+  btnAlign.addEventListener("click", (e)=>openMenu(e.currentTarget, buildAlignMenu()));
+  btnLink.addEventListener("click", linkPrompt);
+  btnUnlink.addEventListener("click", ()=>cmd("unlink"));
+
+  btnClear.addEventListener("click", clearFormattingSelection);
+
+  // Color pickers (hidden) + icon buttons
+  function syncSwatches(){
+    textSwatch.style.background = colorPick.value || "#ffffff";
+    hiliteSwatch.style.background = hilitePick.value || "#ffff00";
   }
+  syncSwatches();
+
+  textColorBtn.addEventListener("click", ()=>colorPick.click());
+  hiliteColorBtn.addEventListener("click", ()=>hilitePick.click());
+
+  colorPick.addEventListener("input", ()=>{
+    cmd("foreColor", colorPick.value);
+    syncSwatches();
+  });
+
+  hilitePick.addEventListener("input", ()=>{
+    focusEditor();
+    try{ document.execCommand("styleWithCSS", false, true); }catch(_){}
+    try{ document.execCommand("hiliteColor", false, hilitePick.value); }
+    catch(_){ try{ document.execCommand("backColor", false, hilitePick.value); }catch(__){} }
+    scheduleSave();
+    syncSwatches();
+  });
+
+  btnImage.addEventListener("click", ()=>fileInput.click());
+  fileInput.addEventListener("change", ()=>{
+    const f=fileInput.files && fileInput.files[0];
+    if(f) insertImageFromFile(f);
+    fileInput.value="";
+  });
+
+  btnEmoji.addEventListener("click", (e)=>openMenu(e.currentTarget, buildEmojiMenu()));
+  btnFormats.addEventListener("click", (e)=>openMenu(e.currentTarget, buildFormatsMenu()));
+
+  fontSel.addEventListener("change", ()=>applyFontFamily(fontSel.value));
+
+  fmtSel.addEventListener("change", ()=>applyBlock(fmtSel.value));
+
+  function clampInt(v, a, b){
+    let n=parseInt(v,10);
+    if(!isFinite(n)) n=a;
+    return Math.max(a, Math.min(b, n));
+  }
+
+  fontSize.addEventListener("change", ()=>{
+    const px = clampInt(fontSize.value, 10, 36);
+    fontSize.value = px;
+    applyFontSizePx(px);
+  });
+
+  incBtn.addEventListener("click", ()=>{
+    const px = clampInt(parseInt(fontSize.value||"14",10)+1, 10, 36);
+    fontSize.value = px;
+    applyFontSizePx(px);
+  });
+
+  decBtn.addEventListener("click", ()=>{
+    const px = clampInt(parseInt(fontSize.value||"14",10)-1, 10, 36);
+    fontSize.value = px;
+    applyFontSizePx(px);
+  });
 
   // Save before unload
   window.addEventListener("beforeunload", ()=>{ if(dirty) saveActive(); });
+
+  // Bootstrap
+  load();
+  ensureNotebookSelection();
+  renderNotebooks();
+
+  sortNotes();
+  ensureActiveNote();
+
+  renderList();
+
+  if(!state.activeNoteId){
+    newNote();
+  }else{
+    openNote(state.activeNoteId);
+  }
 })();
 </script>
 
