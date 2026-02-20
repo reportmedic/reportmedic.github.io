@@ -340,8 +340,16 @@
       for(let p=1; p<=pageCount; p++){
         setStatus('Reading page '+p+' of '+pageCount+'…');
         const page = await pdf.getPage(p);
-        const tc = await page.getTextContent({ disableCombineTextItems:false });
+        const tc = await page.getTextContent({ normalizeWhitespace: true, disableCombineTextItems:false });
         let lines = buildLinesFromItems(tc.items || []);
+        // Fallback: if line grouping fails, still return the raw extracted text.
+        if((!lines || lines.length===0) && tc && Array.isArray(tc.items)){
+          const raw = tc.items.map(it => (it && typeof it.str==='string') ? it.str : '')
+                              .join(' ')
+                              .replace(/\s+/g,' ')
+                              .trim();
+          if(raw) lines = [raw];
+        }
         if(optDehyphen.checked) lines = dehyphenate(lines);
         if(optMergeWrap.checked) lines = mergeWrapped(lines);
 
@@ -382,8 +390,12 @@
         const md = await extractMarkdownFromPdf(new Uint8Array(currentPdfBytes));
         outputText.value = md;
         renderPreview(md);
-        setOutMeta(md ? ('generated • ' + md.length.toLocaleString() + ' chars') : 'empty (likely scanned PDF)');
-        setStatus('Done');
+        setOutMeta(md ? ('generated • ' + md.length.toLocaleString() + ' chars') : 'empty (no selectable text found)');
+        if(!md){
+          setStatus('No selectable text found (scanned/image PDF). Run OCR first, then convert again.');
+        } else {
+          setStatus('Done');
+        }
       } catch(e){
         outputText.value = '';
         renderPreview('');
