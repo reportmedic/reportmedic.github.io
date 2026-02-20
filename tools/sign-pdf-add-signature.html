@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="Draw a signature and stamp it onto a PDF (visual signature). Export a new signed PDF locally."/>
+<title>Sign PDF — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+
+<style>
+  .rm-modebar{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+  .rm-modebar .btn{border:1px solid rgba(255,255,255,.14)}
+  .rm-modebar .btn.is-active{outline:2px solid rgba(124,247,212,.35)}
+  .rm-mini{font-size:12px}
+  .rm-list{list-style:none; padding:0; margin:10px 0 0;}
+  .rm-item{display:flex; gap:10px; align-items:center; padding:10px; border:1px solid rgba(255,255,255,.12); border-radius:14px; margin:8px 0; background:rgba(255,255,255,.03)}
+  .rm-handle{cursor:grab; user-select:none; font-size:14px; padding:6px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18)}
+  .rm-thumb{width:64px; height:64px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.10); display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.22)}
+  .rm-thumb img,.rm-thumb canvas{max-width:100%; max-height:100%; display:block}
+  .rm-item .rm-grow{flex:1; min-width:0}
+  .rm-k{font-weight:700}
+  .rm-v{color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .rm-gridThumbs{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-top:12px}
+  .rm-pageCard{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.03)}
+  .rm-pageCard .rm-pageTop{display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .rm-pageCard .rm-pageNo{font-weight:700; font-size:12px; color:var(--muted)}
+  .rm-dropHint{font-size:12px; color:var(--muted); margin-top:8px}
+  .rm-status{min-height:20px}
+  .rm-bad{color:#ffb4b4}
+  .rm-good{color:#b7ffd7}
+  .rm-warn{color:#ffe7a8}
+  .rm-hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div>
+</header>
+<div class="wrap">
+  <div class="panel">
+ <div class="wrap">
+<div class="panel">
+<h1>Sign PDF <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+
+<p class="sub">Draw a signature and stamp it onto a PDF — last page, all pages, or a specific page.</p>
+<hr class="hr"/>
+
+
+<div class="grid2">
+  <div class="card">
+    <div class="tiny muted">Upload PDF</div>
+    <div class="hr2"></div>
+    <input class="input" id="sgFile" type="file" accept="application/pdf"/>
+    <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:12px">
+      <label class="tiny muted">Apply to</label>
+      <select class="input" id="sgScope" style="max-width:220px">
+        <option value="last" selected>Last page</option>
+        <option value="all">All pages</option>
+        <option value="page">Specific page…</option>
+      </select>
+      <input class="input" id="sgPage" type="number" min="1" step="1" placeholder="Page #" style="max-width:140px" disabled/>
+      <label class="tiny muted">Position</label>
+      <select class="input" id="sgPos" style="max-width:220px">
+        <option value="br" selected>Bottom right</option>
+        <option value="bl">Bottom left</option>
+        <option value="tr">Top right</option>
+        <option value="tl">Top left</option>
+      </select>
+      <label class="tiny muted">Size</label>
+      <input class="input" id="sgScale" type="number" min="0.2" max="2" step="0.1" value="1" style="max-width:120px"/>
+    </div>
+    <div class="hr2"></div>
+    <div class="row" style="gap:10px; flex-wrap:wrap;">
+      <button class="btn primary" id="sgApply" type="button">Apply signature</button>
+      <button class="btn" id="sgClear" type="button">Clear signature</button>
+      <span class="tiny muted rm-status" id="sgStatus"></span>
+    </div>
+    <div class="rm-dropHint">Note: This is a visual signature stamp (not a cryptographic digital certificate).</div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between; align-items:center;">
+      <div class="tiny muted">Draw your signature</div>
+      <div class="row" style="gap:10px; flex-wrap:wrap;">
+        <button class="btn small" id="sgUndo" type="button">Undo</button>
+        <button class="btn small" id="sgErase" type="button">Erase</button>
+      </div>
+    </div>
+    <div class="hr2"></div>
+    <div style="border-radius:16px; overflow:hidden; border:1px solid rgba(148,163,184,.18); background:#ffffff;">
+      <canvas id="sgCanvas" width="700" height="220" style="width:100%; height:auto; display:block; touch-action:none;"></canvas>
+    </div>
+    <div class="rm-dropHint">Use mouse or touch. Keep it inside the box for best results.</div>
+  </div>
+</div>
+
+
+</div>
+</div>
+footer-inner">
+<div class="rm-footer-brand">
+<div class="rm-footer-name">ReportMedic</div>
+<div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+</div>
+<div class="rm-footer-links">
+<a href="/fix-my-report.html">Fix My Report</a>
+<a href="/#tools">Tools</a>
+<a href="/docs/">Docs</a>
+<a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+</div>
+<div class="rm-footer-meta">© 2026 ReportMedic</div>
+</div>
+</footer>
+<div aria-hidden="true" aria-label="PDF Organizer details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">PDF Organizer</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+<ul>
+  <li>Combine multiple PDFs into one file (in the right order)</li>
+  <li>Extract only the pages you need for upload portals</li>
+  <li>Reorder pages before you send or archive</li>
+</ul>
+<h3>Good to know</h3>
+<ul>
+  <li>Everything runs locally in your browser — files are not uploaded.</li>
+  <li>Reorder keeps the original pages (no quality loss).</li>
+  <li>Splitting can export a single PDF or a ZIP of multiple PDFs.</li>
+</ul>
+<h3>What to do next</h3>
+<ul>
+  <li>If you’re working with scans or huge files, try “Compress PDF” afterwards.</li>
+  <li>If a portal rejects your document, split to isolate the failing pages.</li>
+</ul>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  const { PDFDocument } = window.PDFLib;
+
+  // PDF.js worker
+  if (window['pdfjsLib']) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js';
+  }
+
+  const $ = (id) => document.getElementById(id);
+  const humanBytes = (n) => {
+    if (!Number.isFinite(n)) return '';
+    const u=['B','KB','MB','GB']; let i=0; let v=n;
+    while(v>=1024 && i<u.length-1){ v/=1024; i++; }
+    const s = i===0 ? String(Math.round(v)) : String(Math.round(v*10)/10);
+    return s+' '+u[i];
+  };
+  const downloadBlob = (blob, name) => {
+    const a=document.createElement('a');
+    const url=URL.createObjectURL(blob);
+    a.href=url; a.download=name;
+    document.body.appendChild(a); a.click();
+    setTimeout(()<div aria-hidden="true" aria-label="Sign PDF (visual stamp) details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Sign PDF (visual stamp)</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Draw a signature and stamp it onto a PDF</li>
+<li>Choose last page, all pages, or a specific page</li>
+<li>Great for quick approvals and internal sign-offs</li>
+      </ul>
+      <h3>Privacy</h3><p>Your PDF and signature stay in your browser. Export creates a new PDF with the signature image embedded.</p>
+    </div>
+  </div>
+</div>
+
+= '<b>Loaded:</b><span class="muted">'+mergeFiles.length+' file(s)</span>';
+    mergeFiles.forEach((f, idx) => {
+      const li=document.createElement('li');
+      li.className='rm-item';
+      li.draggable=true;
+      li.dataset.idx=String(idx);
+
+      const handle=document.createElement('<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script>
+
+  const $ = (id)=>document.getElementById(id);
+  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+  function toast(msg){
+    // Reuse existing toast style if present; fallback to alert-like pill.
+    let el = document.getElementById('rmToast');
+    if(!el){
+      el = document.createElement('div');
+      el.id='rmToast';
+      el.style.position='fixed';
+      el.style.left='50%';
+      el.style.bottom='18px';
+      el.style.transform='translateX(-50%)';
+      el.style.padding='10px 12px';
+      el.style.borderRadius='12px';
+      el.style.background='rgba(15,23,42,.92)';
+      el.style.color='#fff';
+      el.style.fontSize='13px';
+      el.style.zIndex='9999';
+      el.style.boxShadow='0 10px 30px rgba(0,0,0,.35)';
+      el.style.maxWidth='min(92vw,720px)';
+      el.style.textAlign='center';
+      el.style.opacity='0';
+      el.style.transition='opacity .18s ease';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.opacity='1';
+    clearTimeout(el._t);
+    el._t=setTimeout(()=>{el.style.opacity='0';}, 2200);
+  }
+  function downloadBlob(blob, filename){
+    const a=document.createElement('a');
+    const url=URL.createObjectURL(blob);
+    a.href=url; a.download=filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 2500);
+  }
+  async function fileToArrayBuffer(file){
+    return await file.arrayBuffer();
+  }
+
+  const { PDFDocument } = PDFLib;
+
+  // Signature canvas drawing
+  const c=$('sgCanvas');
+  const ctx=c.getContext('2d');
+  ctx.lineWidth=3.2;
+  ctx.lineCap='round';
+  ctx.lineJoin='round';
+  ctx.strokeStyle='#111827';
+
+  let drawing=false, last=null, strokes=[];
+
+  function redraw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(0,0,c.width,c.height);
+    ctx.strokeStyle='#111827';
+    strokes.forEach(st=>{
+      ctx.beginPath();
+      st.forEach((p,i)=>{
+        if(i===0) ctx.moveTo(p.x,p.y);
+        else ctx.lineTo(p.x,p.y);
+      });
+      ctx.stroke();
+    });
+  }
+  redraw();
+
+  function pt(e){
+    const r=c.getBoundingClientRect();
+    const x=(e.clientX-r.left)*(c.width/r.width);
+    const y=(e.clientY-r.top)*(c.height/r.height);
+    return {x,y};
+  }
+
+  function start(e){
+    drawing=true;
+    const p=pt(e);
+    strokes.push([p]);
+    last=p;
+  }
+  function move(e){
+    if(!drawing) return;
+    const p=pt(e);
+    const st=strokes[strokes.length-1];
+    st.push(p);
+    ctx.beginPath();
+    ctx.moveTo(last.x,last.y);
+    ctx.lineTo(p.x,p.y);
+    ctx.stroke();
+    last=p;
+  }
+  function end(){ drawing=false; last=null; }
+
+  c.addEventListener('pointerdown', (e)=>{ c.setPointerCapture(e.pointerId); start(e); });
+  c.addEventListener('pointermove', move);
+  c.addEventListener('pointerup', end);
+  c.addEventListener('pointercancel', end);
+
+  $('sgErase').addEventListener('click', ()=>{ strokes=[]; redraw(); toast('Cleared.'); });
+  $('sgUndo').addEventListener('click', ()=>{ strokes.pop(); redraw(); });
+
+  $('sgClear').addEventListener('click', ()=>{ strokes=[]; redraw(); });
+
+  $('sgScope').addEventListener('change', ()=>{
+    const v=$('sgScope').value;
+    $('sgPage').disabled = (v!=='page');
+  });
+
+  function signaturePngBytes(){
+    // Trim whitespace by drawing to a smaller canvas (simple bounding box)
+    const img = ctx.getImageData(0,0,c.width,c.height);
+    let minX=c.width, minY=c.height, maxX=0, maxY=0, found=false;
+    for(let y=0;y<c.height;y++){
+      for(let x=0;x<c.width;x++){
+        const i=(y*c.width+x)*4;
+        const r=img.data[i], g=img.data[i+1], b=img.data[i+2], a=img.data[i+3];
+        // find non-white-ish pixels
+        if(a>10 && (r<245 || g<245 || b<245)){
+          found=true;
+          if(x<minX) minX=x;
+          if(y<minY) minY=y;
+          if(x>maxX) maxX=x;
+          if(y>maxY) maxY=y;
+        }
+      }
+    }
+    if(!found) return null;
+    const pad=10;
+    minX=Math.max(0,minX-pad); minY=Math.max(0,minY-pad);
+    maxX=Math.min(c.width-1,maxX+pad); maxY=Math.min(c.height-1,maxY+pad);
+    const w=maxX-minX+1, h=maxY-minY+1;
+    const c2=document.createElement('canvas');
+    c2.width=w; c2.height=h;
+    const cx=c2.getContext('2d');
+    cx.fillStyle='rgba(0,0,0,0)';
+    cx.clearRect(0,0,w,h);
+    cx.drawImage(c, minX,minY,w,h, 0,0,w,h);
+    return new Promise(resolve=>c2.toBlob(async (blob)=>{
+      if(!blob) return resolve(null);
+      const ab=await blob.arrayBuffer();
+      resolve(new Uint8Array(ab));
+    }, 'image/png'));
+  }
+
+  $('sgApply').addEventListener('click', async ()=>{
+    const f=$('sgFile').files && $('sgFile').files[0];
+    if(!f){ toast('Choose a PDF first.'); return; }
+    $('sgStatus').textContent='Preparing…';
+    $('sgApply').disabled=true;
+
+    try{
+      const sigBytes = await signaturePngBytes();
+      if(!sigBytes){ toast('Draw a signature first.'); $('sgStatus').textContent=''; return; }
+
+      const ab = await fileToArrayBuffer(f);
+      const pdfDoc = await PDFDocument.load(ab);
+      const png = await pdfDoc.embedPng(sigBytes);
+
+      const pages = pdfDoc.getPages();
+      const scope=$('sgScope').value;
+      let targets=[];
+      if(scope==='all') targets = pages.map((_,i)=>i);
+      else if(scope==='last') targets = [pages.length-1];
+      else {
+        const n=parseInt($('sgPage').value||'0',10);
+        if(!n || n<1 || n>pages.length){ toast('Enter a valid page number.'); $('sgStatus').textContent=''; return; }
+        targets=[n-1];
+      }
+
+      const scale=Math.max(0.2, Math.min(2, parseFloat($('sgScale').value||'1')));
+      const pos=$('sgPos').value;
+      for(const idx of targets){
+        const p=pages[idx];
+        const { width, height } = p.getSize();
+        const imgW = png.width * 0.22 * scale;
+        const imgH = png.height * 0.22 * scale;
+        const margin = 28;
+        let x=margin, y=margin;
+        if(pos.includes('r')) x = width - imgW - margin;
+        if(pos.includes('t')) y = height - imgH - margin;
+        p.drawImage(png, { x, y, width: imgW, height: imgH, opacity: 1 });
+      }
+
+      const out = await pdfDoc.save();
+      downloadBlob(new Blob([out], {type:'application/pdf'}), 'signed.pdf');
+      $('sgStatus').textContent='Downloaded.';
+      toast('Signed PDF created.');
+    }catch(e){
+      console.error(e);
+      $('sgStatus').textContent='Failed.';
+      toast('Could not sign this PDF.');
+    }finally{
+      $('sgApply').disabled=false;
+    }
+  });
+
+</script>
+<script>
+  (function(){
+    function openLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','false');
+      const btn=bd.querySelector('.rm-lm-close');
+      if(btn) btn.focus();
+    }
+    function closeLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','true');
+    }
+    document.addEventListener('click', function(e){
+      const a=e.target.closest('[data-rm-lm-open]');
+      if(a){
+        e.preventDefault();
+        openLM(a.getAttribute('data-rm-lm-open'));
+        return;
+      }
+      const close=e.target.closest('[data-rm-lm-close]');
+      if(close){
+        e.preventDefault();
+        closeLM(close.getAttribute('data-rm-lm-close'));
+        return;
+      }
+      const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+      if(bd){
+        e.preventDefault();
+        closeLM(bd.id);
+      }
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Escape'){
+        const open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        if(open) open.setAttribute('aria-hidden','true');
+      }
+    });
+  })();
+</script>
+<script src="/assets/js/rm-dropzone.js"></script>
+<script src="/assets/js/rm-tools-drawer.js"></script>

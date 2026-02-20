@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="Remove EXIF/GPS metadata from images by re-encoding them locally in your browser."/>
+<title>Image Metadata Remover — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+
+<style>
+  .rm-modebar{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+  .rm-modebar .btn{border:1px solid rgba(255,255,255,.14)}
+  .rm-modebar .btn.is-active{outline:2px solid rgba(124,247,212,.35)}
+  .rm-mini{font-size:12px}
+  .rm-list{list-style:none; padding:0; margin:10px 0 0;}
+  .rm-item{display:flex; gap:10px; align-items:center; padding:10px; border:1px solid rgba(255,255,255,.12); border-radius:14px; margin:8px 0; background:rgba(255,255,255,.03)}
+  .rm-handle{cursor:grab; user-select:none; font-size:14px; padding:6px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18)}
+  .rm-thumb{width:64px; height:64px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.10); display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.22)}
+  .rm-thumb img,.rm-thumb canvas{max-width:100%; max-height:100%; display:block}
+  .rm-item .rm-grow{flex:1; min-width:0}
+  .rm-k{font-weight:700}
+  .rm-v{color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .rm-gridThumbs{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-top:12px}
+  .rm-pageCard{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.03)}
+  .rm-pageCard .rm-pageTop{display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .rm-pageCard .rm-pageNo{font-weight:700; font-size:12px; color:var(--muted)}
+  .rm-dropHint{font-size:12px; color:var(--muted); margin-top:8px}
+  .rm-status{min-height:20px}
+  .rm-bad{color:#ffb4b4}
+  .rm-good{color:#b7ffd7}
+  .rm-warn{color:#ffe7a8}
+  .rm-hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div>
+</header>
+<div class="wrap">
+  <div class="panel"><div class="wrap">
+<div class="panel">
+<h1>Image Metadata Remover <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+
+<p class="sub">Strip EXIF/GPS metadata from photos before sharing — batch download as ZIP.</p>
+<hr class="hr"/>
+
+
+<div class="grid2">
+  <div class="card">
+    <div class="tiny muted">Upload images</div>
+    <div class="hr2"></div>
+    <input class="input" id="exifFiles" type="file" accept="image/*" multiple/>
+    <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:12px">
+      <label class="tiny muted">Output</label>
+      <select class="input" id="exifFmt" style="max-width:220px">
+        <option value="keep" selected>Keep format</option>
+        <option value="image/jpeg">JPG</option>
+        <option value="image/png">PNG</option>
+      </select>
+      <label class="tiny muted">JPG quality</label>
+      <input class="input" id="exifQ" type="number" min="0.1" max="1" step="0.05" value="0.92" style="max-width:140px"/>
+    </div>
+    <div class="hr2"></div>
+    <div class="row" style="gap:10px; flex-wrap:wrap;">
+      <button class="btn primary" id="exifRun" type="button">Remove metadata</button>
+      <button class="btn" id="exifZip" type="button" disabled>Download ZIP</button>
+      <span class="tiny muted rm-status" id="exifStatus"></span>
+    </div>
+    <div class="rm-dropHint">This strips EXIF/GPS by re‑encoding images. It does not upload your photos.</div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between; align-items:center;">
+      <div class="tiny muted">Results</div>
+      <div class="pill tiny" id="exifCount">0 files</div>
+    </div>
+    <div class="hr2"></div>
+    <div id="exifList" style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px;"></div>
+  </div>
+</div>
+
+
+</div>
+</div>
+m-footer-inner">
+<div class="rm-footer-brand">
+<div class="rm-footer-name">ReportMedic</div>
+<div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+</div>
+<div class="rm-footer-links">
+<a href="/fix-my-report.html">Fix My Report</a>
+<a href="/#tools">Tools</a>
+<a href="/docs/">Docs</a>
+<a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+</div>
+<div class="rm-footer-meta">© 2026 ReportMedic</div>
+</div>
+</footer>
+<div aria-hidden="true" aria-label="PDF Organizer details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">PDF Organizer</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+<ul>
+  <li>Combine multiple PDFs into one file (in the right order)</li>
+  <li>Extract only the pages you need for upload portals</li>
+  <li>Reorder pages before you send or archive</li>
+</ul>
+<h3>Good to know</h3>
+<ul>
+  <li>Everything runs locally in your browser — files are not uploaded.</li>
+  <li>Reorder keeps the original pages (no quality loss).</li>
+  <li>Splitting can export a single PDF or a ZIP of multiple PDFs.</li>
+</ul>
+<h3>What to do next</h3>
+<ul>
+  <li>If you’re working with scans or huge files, try “Compress PDF” afterwards.</li>
+  <li>If a portal rejects your document, split to isolate the failing pages.</li>
+</ul>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  const { PDFDocument } = window.PDFLib;
+
+  // PDF.js worker
+  if (window['pdfjsLib']) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js';
+  }
+
+  const $ = (id) => document.getElementById(id);
+  const humanBytes = (n) => {
+    if (!Number.isFinite(n)) return '';
+    const u=['B','KB','MB','GB']; let i=0; let v=n;
+    while(v>=1024 && i<u.length-1){ v/=1024; i++; }
+    const s = i===0 ? String(Math.round(v)) : String(Math.round(v*10)/10);
+    return s+' '+u[i];
+  };
+  const downloadBlob = (blob, name) => {
+    const a=document.createElement('a');
+    const url=URL.createObjectURL(blob);
+    a.href=url; a.download=name;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 250);
+  };
+
+  // Mode switching
+  const modeBtns = { merge:$('modeMerge'), split:$('modeSplit'), reorder:$('modeReorder') };
+  const panes = { merge:$('paneMerge'), split:$('paneSplit'), reorder:$('paneReorder') };
+
+  function setMode(m){
+    Object.keys(modeBtns).forEach(k => modeBtns[k].classList.toggle('is-active', k===m));
+    Object.keys(panes).forEach(k => panes[k].classList.toggle('rm-hidden', k!==m));
+  }
+  modeBtns.merge.addEventListener('click', ()=>setMode('merge'));
+  modeBtns.split.addEventListener('click', ()=>setMode('split'));
+  modeBtns.reorder.addEventListener('click', ()=>setMode('reorder'));
+
+  // ---------- MERGE ----------
+  let mergeFiles = [];
+  const mergeInput = $('mergeFiles');
+  const mergeList = $('mergeList');
+  const mergeMeta = $('mergeMeta');
+  const mergeStatus<div aria-hidden="true" aria-label="Image Metadata Remover (EXIF stripper) details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Image Metadata Remover (EXIF stripper)</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Remove GPS location and camera metadata before sharing photos</li>
+<li>Batch process images and download a ZIP</li>
+<li>Re-encodes images locally to strip metadata</li>
+      </ul>
+      <h3>Tips</h3><ul><li>If you need the exact original bytes (no recompression), this tool isn’t suitable.</li><li>PNG output avoids JPEG recompression but can be larger.</li></ul>
+    </div>
+  </div>
+</div>
+
+      del.addEventListener('click', ()=>{
+        mergeFiles.splice(idx,1);
+        renderMergeList();
+      });
+
+      li.appendChild(handle);
+      li.appendChild(thumb);
+      li.appendChild(grow);
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+
+  const $ = (id)=>document.getElementById(id);
+  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+  function toast(msg){
+    // Reuse existing toast style if present; fallback to alert-like pill.
+    let el = document.getElementById('rmToast');
+    if(!el){
+      el = document.createElement('div');
+      el.id='rmToast';
+      el.style.position='fixed';
+      el.style.left='50%';
+      el.style.bottom='18px';
+      el.style.transform='translateX(-50%)';
+      el.style.padding='10px 12px';
+      el.style.borderRadius='12px';
+      el.style.background='rgba(15,23,42,.92)';
+      el.style.color='#fff';
+      el.style.fontSize='13px';
+      el.style.zIndex='9999';
+      el.style.boxShadow='0 10px 30px rgba(0,0,0,.35)';
+      el.style.maxWidth='min(92vw,720px)';
+      el.style.textAlign='center';
+      el.style.opacity='0';
+      el.style.transition='opacity .18s ease';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.opacity='1';
+    clearTimeout(el._t);
+    el._t=setTimeout(()=>{el.style.opacity='0';}, 2200);
+  }
+  function downloadBlob(blob, filename){
+    const a=document.createElement('a');
+    const url=URL.createObjectURL(blob);
+    a.href=url; a.download=filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 2500);
+  }
+  async function fileToArrayBuffer(file){
+    return await file.arrayBuffer();
+  }
+
+  let outputs=[];
+  function clearOut(){
+    outputs.forEach(o=>o.url && URL.revokeObjectURL(o.url));
+    outputs=[];
+    $('exifList').innerHTML='';
+    $('exifZip').disabled=true;
+    $('exifCount').textContent='0 files';
+  }
+
+  $('exifFiles').addEventListener('change', ()=>{
+    const n=$('exifFiles').files ? $('exifFiles').files.length : 0;
+    $('exifCount').textContent=`${n} file${n===1?'':'s'}`;
+    clearOut();
+  });
+
+  function card(name, blob){
+    const url=URL.createObjectURL(blob);
+    const wrap=document.createElement('div');
+    wrap.style.border='1px solid rgba(148,163,184,.18)';
+    wrap.style.borderRadius='14px';
+    wrap.style.padding='10px';
+    wrap.style.background='rgba(2,6,23,.35)';
+
+    const img=document.createElement('img');
+    img.src=url;
+    img.alt=name;
+    img.style.width='100%';
+    img.style.borderRadius='10px';
+    img.style.display='block';
+    img.style.background='#0b1220';
+
+    const row=document.createElement('div');
+    row.className='row';
+    row.style.justifyContent='space-between';
+    row.style.alignItems='center';
+    row.style.gap='10px';
+    row.style.marginTop='8px';
+
+    const label=document.createElement('div');
+    label.className='tiny muted';
+    label.style.overflow='hidden';
+    label.style.textOverflow='ellipsis';
+    label.style.whiteSpace='nowrap';
+    label.title=name;
+    label.textContent=name;
+
+    const btn=document.createElement('button');
+    btn.className='btn'; btn.type='button'; btn.textContent='Download';
+    btn.addEventListener('click', ()=>downloadBlob(blob, name));
+
+    row.appendChild(label); row.appendChild(btn);
+    wrap.appendChild(img); wrap.appendChild(row);
+    $('exifList').appendChild(wrap);
+
+    outputs.push({name, blob, url});
+  }
+
+  async function reencode(file, mime, quality){
+    const img=new Image();
+    const src=URL.createObjectURL(file);
+    await new Promise((res,rej)=>{ img.onload=()=>res(); img.onerror=rej; img.src=src; });
+    const c=document.createElement('canvas');
+    c.width=img.naturalWidth; c.height=img.naturalHeight;
+    const cx=c.getContext('2d');
+    cx.drawImage(img,0,0);
+    URL.revokeObjectURL(src);
+    const outMime = mime || 'image/png';
+    return await new Promise(resolve=>c.toBlob(b=>resolve(b), outMime, quality));
+  }
+
+  $('exifRun').addEventListener('click', async ()=>{
+    const files = $('exifFiles').files ? Array.from($('exifFiles').files) : [];
+    if(!files.length){ toast('Choose images first.'); return; }
+    $('exifStatus').textContent='Processing…';
+    clearOut();
+
+    const fmt = $('exifFmt').value;
+    const q = Math.max(0.1, Math.min(1, parseFloat($('exifQ').value||'0.92')));
+    let ok=0;
+
+    for(const f of files){
+      const originalMime = f.type || (f.name.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg');
+      const mime = (fmt==='keep') ? originalMime : fmt;
+      const blob = await reencode(f, mime, q);
+      const ext = (mime==='image/png') ? 'png' : 'jpg';
+      const outName = (f.name.replace(/\.[a-z0-9]+$/i,'') || 'image') + '_clean.' + ext;
+      if(blob){ card(outName, blob); ok++; }
+      $('exifStatus').textContent=`Processed ${ok}/${files.length}`;
+      await sleep(0);
+    }
+
+    $('exifZip').disabled = ok===0;
+    $('exifStatus').textContent = ok ? 'Done.' : 'Nothing processed.';
+    toast('Metadata removed.');
+  });
+
+  $('exifZip').addEventListener('click', async ()=>{
+    if(!outputs.length) return;
+    $('exifStatus').textContent='Building ZIP…';
+    const zip=new JSZip();
+    outputs.forEach(o=>zip.file(o.name, o.blob));
+    const blob=await zip.generateAsync({type:'blob'});
+    downloadBlob(blob,'images_without_metadata.zip');
+    $('exifStatus').textContent='ZIP downloaded.';
+  });
+
+</script>
+<script>
+  (function(){
+    function openLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','false');
+      const btn=bd.querySelector('.rm-lm-close');
+      if(btn) btn.focus();
+    }
+    function closeLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','true');
+    }
+    document.addEventListener('click', function(e){
+      const a=e.target.closest('[data-rm-lm-open]');
+      if(a){
+        e.preventDefault();
+        openLM(a.getAttribute('data-rm-lm-open'));
+        return;
+      }
+      const close=e.target.closest('[data-rm-lm-close]');
+      if(close){
+        e.preventDefault();
+        closeLM(close.getAttribute('data-rm-lm-close'));
+        return;
+      }
+      const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+      if(bd){
+        e.preventDefault();
+        closeLM(bd.id);
+      }
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Escape'){
+        const open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        if(open) open.setAttribute('aria-hidden','true');
+      }
+    });
+  })();
+</script>
+<script src="/assets/js/rm-dropzone.js"></script>
+<script src="/assets/js/rm-tools-drawer.js"></script>

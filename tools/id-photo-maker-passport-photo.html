@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="Create passport-style ID photos and a printable 4×6 sheet — adjust framing and background."/>
+<title>ID Photo Maker — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+
+<style>
+  .rm-modebar{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+  .rm-modebar .btn{border:1px solid rgba(255,255,255,.14)}
+  .rm-modebar .btn.is-active{outline:2px solid rgba(124,247,212,.35)}
+  .rm-mini{font-size:12px}
+  .rm-list{list-style:none; padding:0; margin:10px 0 0;}
+  .rm-item{display:flex; gap:10px; align-items:center; padding:10px; border:1px solid rgba(255,255,255,.12); border-radius:14px; margin:8px 0; background:rgba(255,255,255,.03)}
+  .rm-handle{cursor:grab; user-select:none; font-size:14px; padding:6px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18)}
+  .rm-thumb{width:64px; height:64px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.10); display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.22)}
+  .rm-thumb img,.rm-thumb canvas{max-width:100%; max-height:100%; display:block}
+  .rm-item .rm-grow{flex:1; min-width:0}
+  .rm-k{font-weight:700}
+  .rm-v{color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .rm-gridThumbs{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-top:12px}
+  .rm-pageCard{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.03)}
+  .rm-pageCard .rm-pageTop{display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .rm-pageCard .rm-pageNo{font-weight:700; font-size:12px; color:var(--muted)}
+  .rm-dropHint{font-size:12px; color:var(--muted); margin-top:8px}
+  .rm-status{min-height:20px}
+  .rm-bad{color:#ffb4b4}
+  .rm-good{color:#b7ffd7}
+  .rm-warn{color:#ffe7a8}
+  .rm-hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div>
+</header>
+<div class="wrap">
+  <div class="panel"<div class="wrap">
+<div class="panel">
+<h1>ID Photo Maker <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+
+<p class="sub">Generate a clean ID photo and a 4×6 printable sheet in minutes.</p>
+<hr class="hr"/>
+
+
+<div class="grid2">
+  <div class="card">
+    <div class="tiny muted">Upload a portrait photo</div>
+    <div class="hr2"></div>
+    <input class="input" id="idFile" type="file" accept="image/*"/>
+    <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:12px">
+      <label class="tiny muted">Size</label>
+      <select class="input" id="idSize" style="max-width:240px">
+        <option value="2x2" selected>2×2 inch (US passport)</option>
+        <option value="35x45">35×45 mm (many visas)</option>
+      </select>
+      <label class="tiny muted">Background</label>
+      <select class="input" id="idBg" style="max-width:220px">
+        <option value="#ffffff" selected>White</option>
+        <option value="#eaf2ff">Light blue</option>
+        <option value="#f3f4f6">Light gray</option>
+      </select>
+    </div>
+    <div class="hr2"></div>
+    <div class="tiny muted">Adjust framing</div>
+    <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:8px">
+      <label class="tiny muted">Zoom</label><input class="input" id="idZoom" type="range" min="1" max="3" step="0.01" value="1.4" style="flex:1">
+    </div>
+    <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:8px">
+      <label class="tiny muted">X</label><input class="input" id="idX" type="range" min="-1" max="1" step="0.001" value="0" style="flex:1">
+    </div>
+    <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:8px">
+      <label class="tiny muted">Y</label><input class="input" id="idY" type="range" min="-1" max="1" step="0.001" value="-0.05" style="flex:1">
+    </div>
+    <div class="hr2"></div>
+    <div class="row" style="gap:10px; flex-wrap:wrap;">
+      <button class="btn primary" id="idMake" type="button">Generate</button>
+      <button class="btn" id="idDownload" type="button" disabled>Download 4×6 sheet</button>
+      <span class="tiny muted rm-status" id="idStatus"></span>
+    </div>
+    <div class="rm-dropHint">This is a quick maker. Official requirements vary — verify your country’s rules before submitting.</div>
+  </div>
+
+  <div class="card">
+    <div class="tiny muted">Preview</div>
+    <div class="hr2"></div>
+    <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px;">
+      <div>
+        <div class="tiny muted">Single photo</div>
+        <div style="border:1px solid rgba(148,163,184,.18); border-radius:16px; overflow:hidden; background:#0b1220;">
+          <canvas id="idSingle" width="600" height="600" style="width:100%; display:block;"></canvas>
+        </div>
+      </div>
+      <div>
+        <div class="tiny muted">4×6 print sheet</div>
+        <div style="border:1px solid rgba(148,163,184,.18); border-radius:16px; overflow:hidden; background:#0b1220;">
+          <canvas id="idSheet" width="1200" height="1800" style="width:100%; display:block;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+</div>
+rm-footer-inner">
+<div class="rm-footer-brand">
+<div class="rm-footer-name">ReportMedic</div>
+<div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+</div>
+<div class="rm-footer-links">
+<a href="/fix-my-report.html">Fix My Report</a>
+<a href="/#tools">Tools</a>
+<a href="/docs/">Docs</a>
+<a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+</div>
+<div class="rm-footer-meta">© 2026 ReportMedic</div>
+</div>
+</footer>
+<div aria-hidden="true" aria-label="PDF Organizer details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">PDF Organizer</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+<ul>
+  <li>Combine multiple PDFs into one file (in the right order)</li>
+  <li>Extract only the pages you need for upload portals</li>
+  <li>Reorder pages before you send or archive</li>
+</ul>
+<h3>Good to know</h3>
+<ul>
+  <li>Everything runs locally in your browser — files are not uploaded.</li>
+  <li>Reorder keeps the original pages (no quality loss).</li>
+  <li>Splitting can export a single PDF or a ZIP of multiple PDFs.</li>
+</ul>
+<h3>What to do next</h3>
+<ul>
+  <li>If you’re working with scans or huge files, try “Compress PDF” afterwards.</li>
+  <li>If a portal rejects your document, split to isolate the failing pages.</li>
+</ul>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  const { PDFDocument } = window.PDFLib;
+
+  // PDF.js worker
+  if (window['pdfjsLib']) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js';
+  }
+
+  const $ = (id) => document.getElementById(id);
+  const humanBytes = (n) => {
+    <div aria-hidden="true" aria-label="ID Photo Maker details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">ID Photo Maker</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Create a passport-style ID photo with a clean background</li>
+<li>Generate a 4×6 inch printable sheet with multiple copies</li>
+<li>Adjust zoom and framing</li>
+      </ul>
+      <h3>Privacy</h3><p>Your photo stays on your device. Export is generated in your browser.</p>
+    </div>
+  </div>
+</div>
+
+entListener('click', ()=>setMode('reorder'));
+
+  // ---------- MERGE ----------
+  let mergeFiles = [];
+  const mergeInput = $('mergeFiles');
+  const mergeList = $('mergeList');
+  const mergeMeta = $('mergeMeta');
+  const mergeStatus = $('mergeStatus');
+
+  function renderMergeList(){
+    mergeList.innerHTML='';
+    if(!mergeFiles.length){
+    <script>
+
+  const $ = (id)=>document.getElementById(id);
+  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+  function toast(msg){
+    // Reuse existing toast style if present; fallback to alert-like pill.
+    let el = document.getElementById('rmToast');
+    if(!el){
+      el = document.createElement('div');
+      el.id='rmToast';
+      el.style.position='fixed';
+      el.style.left='50%';
+      el.style.bottom='18px';
+      el.style.transform='translateX(-50%)';
+      el.style.padding='10px 12px';
+      el.style.borderRadius='12px';
+      el.style.background='rgba(15,23,42,.92)';
+      el.style.color='#fff';
+      el.style.fontSize='13px';
+      el.style.zIndex='9999';
+      el.style.boxShadow='0 10px 30px rgba(0,0,0,.35)';
+      el.style.maxWidth='min(92vw,720px)';
+      el.style.textAlign='center';
+      el.style.opacity='0';
+      el.style.transition='opacity .18s ease';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.opacity='1';
+    clearTimeout(el._t);
+    el._t=setTimeout(()=>{el.style.opacity='0';}, 2200);
+  }
+  function downloadBlob(blob, filename){
+    const a=document.createElement('a');
+    const url=URL.createObjectURL(blob);
+    a.href=url; a.download=filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 2500);
+  }
+  async function fileToArrayBuffer(file){
+    return await file.arrayBuffer();
+  }
+
+  let img=null;
+  const single=$('idSingle'), sheet=$('idSheet');
+  const sctx=single.getContext('2d');
+  const shctx=sheet.getContext('2d');
+
+  function spec(){
+    const size=$('idSize').value;
+    if(size==='2x2'){
+      return { w:600, h:600, // preview pixels
+               ratio:1, copies:[ [100,100],[700,100],[100,700],[700,700],[100,1300],[700,1300] ] };
+    }
+    // 35x45mm => ratio 35/45 = 0.777...
+    return { w:560, h:720, ratio:35/45, copies:[ [120,120],[640,120],[120,960],[640,960],[120,1800-720-120],[640,1800-720-120] ] };
+  }
+
+  function draw(){
+    const bg=$('idBg').value;
+    const z=parseFloat($('idZoom').value);
+    const ox=parseFloat($('idX').value);
+    const oy=parseFloat($('idY').value);
+
+    if(!img){
+      // clear
+      sctx.clearRect(0,0,single.width,single.height);
+      shctx.clearRect(0,0,sheet.width,sheet.height);
+      return;
+    }
+
+    const sp=spec();
+    single.width=sp.w; single.height=sp.h;
+    // single
+    sctx.fillStyle=bg; sctx.fillRect(0,0,single.width,single.height);
+    // Compute crop box in source coordinates
+    const targetW = img.naturalWidth / z;
+    const targetH = (targetW / sp.ratio);
+    const cx = img.naturalWidth/2 + ox*img.naturalWidth*0.2;
+    const cy = img.naturalHeight/2 + oy*img.naturalHeight*0.2;
+    const sx = Math.max(0, Math.min(img.naturalWidth-targetW, cx - targetW/2));
+    const sy = Math.max(0, Math.min(img.naturalHeight-targetH, cy - targetH/2));
+    sctx.drawImage(img, sx, sy, targetW, targetH, 0, 0, single.width, single.height);
+
+    // sheet 4x6 at 300dpi => 1200x1800
+    sheet.width=1200; sheet.height=1800;
+    shctx.fillStyle='#ffffff';
+    shctx.fillRect(0,0,sheet.width,sheet.height);
+
+    // copies
+    sp.copies.forEach(([x,y])=>{
+      shctx.fillStyle=bg;
+      shctx.fillRect(x,y,single.width*0.5,single.height*0.5);
+      shctx.drawImage(img, sx, sy, targetW, targetH, x, y, single.width*0.5, single.height*0.5);
+    });
+
+    // cut guides
+    shctx.strokeStyle='rgba(0,0,0,.25)';
+    sp.copies.forEach(([x,y])=>{
+      shctx.strokeRect(x+.5,y+.5,single.width*0.5,single.height*0.5);
+    });
+  }
+
+  $('idFile').addEventListener('change', ()=>{
+    const f=$('idFile').files && $('idFile').files[0];
+    if(!f){ img=null; draw(); return; }
+    const url=URL.createObjectURL(f);
+    const i=new Image();
+    i.onload=()=>{ img=i; URL.revokeObjectURL(url); draw(); $('idDownload').disabled=false; $('idStatus').textContent='Ready.'; };
+    i.onerror=()=>{ URL.revokeObjectURL(url); toast('Could not read image.'); };
+    i.src=url;
+  });
+
+  ['idSize','idBg','idZoom','idX','idY'].forEach(id=>{
+    $(id).addEventListener('input', draw);
+    $(id).addEventListener('change', draw);
+  });
+
+  $('idMake').addEventListener('click', ()=>{
+    if(!img){ toast('Choose a photo first.'); return; }
+    draw();
+    $('idStatus').textContent='Generated.';
+    toast('Generated.');
+  });
+
+  $('idDownload').addEventListener('click', ()=>{
+    if(!img) return;
+    sheet.toBlob(b=>{
+      if(!b) return;
+      downloadBlob(b, 'id_photo_4x6.png');
+    }, 'image/png');
+  });
+
+</script>
+<script>
+  (function(){
+    function openLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','false');
+      const btn=bd.querySelector('.rm-lm-close');
+      if(btn) btn.focus();
+    }
+    function closeLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','true');
+    }
+    document.addEventListener('click', function(e){
+      const a=e.target.closest('[data-rm-lm-open]');
+      if(a){
+        e.preventDefault();
+        openLM(a.getAttribute('data-rm-lm-open'));
+        return;
+      }
+      const close=e.target.closest('[data-rm-lm-close]');
+      if(close){
+        e.preventDefault();
+        closeLM(close.getAttribute('data-rm-lm-close'));
+        return;
+      }
+      const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+      if(bd){
+        e.preventDefault();
+        closeLM(bd.id);
+      }
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Escape'){
+        const open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        if(open) open.setAttribute('aria-hidden','true');
+      }
+    });
+  })();
+</script>
+<script src="/assets/js/rm-dropzone.js"></script>
+<script src="/assets/js/rm-tools-drawer.js"></script>

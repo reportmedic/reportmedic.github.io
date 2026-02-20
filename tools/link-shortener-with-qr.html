@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="Shorten links (optional) and generate downloadable QR codes for flyers and posters."/>
+<title>Link Shortener + QR — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+
+<style>
+  .rm-modebar{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+  .rm-modebar .btn{border:1px solid rgba(255,255,255,.14)}
+  .rm-modebar .btn.is-active{outline:2px solid rgba(124,247,212,.35)}
+  .rm-mini{font-size:12px}
+  .rm-list{list-style:none; padding:0; margin:10px 0 0;}
+  .rm-item{display:flex; gap:10px; align-items:center; padding:10px; border:1px solid rgba(255,255,255,.12); border-radius:14px; margin:8px 0; background:rgba(255,255,255,.03)}
+  .rm-handle{cursor:grab; user-select:none; font-size:14px; padding:6px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18)}
+  .rm-thumb{width:64px; height:64px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.10); display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.22)}
+  .rm-thumb img,.rm-thumb canvas{max-width:100%; max-height:100%; display:block}
+  .rm-item .rm-grow{flex:1; min-width:0}
+  .rm-k{font-weight:700}
+  .rm-v{color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .rm-gridThumbs{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-top:12px}
+  .rm-pageCard{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.03)}
+  .rm-pageCard .rm-pageTop{display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .rm-pageCard .rm-pageNo{font-weight:700; font-size:12px; color:var(--muted)}
+  .rm-dropHint{font-size:12px; color:var(--muted); margin-top:8px}
+  .rm-status{min-height:20px}
+  .rm-bad{color:#ffb4b4}
+  .rm-good{color:#b7ffd7}
+  .rm-warn{color:#ffe7a8}
+  .rm-hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div>
+</header>
+<div class="wrap">
+  <div class="panel">
+<div class="wrap">
+<div class="panel">
+<h1>Link Shortener + QR <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+
+<p class="sub">Create a short link (optional) and instantly generate a QR code.</p>
+<hr class="hr"/>
+
+
+<div class="grid2">
+  <div class="card">
+    <div class="tiny muted">Long URL</div>
+    <div class="hr2"></div>
+    <input class="input" id="shUrl" type="text" placeholder="https://…"/>
+    <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:12px">
+      <label class="tiny muted">Service</label>
+      <select class="input" id="shSvc" style="max-width:220px">
+        <option value="none">No shortening (QR only)</option>
+        <option value="isgd" selected>is.gd</option>
+        <option value="tinyurl">TinyURL</option>
+      </select>
+      <button class="btn primary" id="shGo" type="button">Create</button>
+      <button class="btn" id="shCopy" type="button" disabled>Copy</button>
+      <button class="btn" id="shOpen" type="button" disabled>Open</button>
+      <span class="tiny muted rm-status" id="shStatus"></span>
+    </div>
+    <div class="rm-dropHint">If you choose a service, your URL is sent to that service to create the short link.</div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between; align-items:center;">
+      <div class="tiny muted">Result</div>
+      <button class="btn" id="shDownload" type="button" disabled>Download QR PNG</button>
+    </div>
+    <div class="hr2"></div>
+    <div class="tiny muted">Short URL</div>
+    <input class="input" id="shOut" type="text" readonly placeholder="—"/>
+    <div id="shQR" style="display:flex; justify-content:center; padding:14px 0;"></div>
+  </div>
+</div>
+
+
+</div>
+</div>
+-footer-inner">
+<div class="rm-footer-brand">
+<div class="rm-footer-name">ReportMedic</div>
+<div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+</div>
+<div class="rm-footer-links">
+<a href="/fix-my-report.html">Fix My Report</a>
+<a href="/#tools">Tools</a>
+<a href="/docs/">Docs</a>
+<a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+</div>
+<div class="rm-footer-meta">© 2026 ReportMedic</div>
+</div>
+</footer>
+<div aria-hidden="true" aria-label="PDF Organizer details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">PDF Organizer</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+<ul>
+  <li>Combine multiple PDFs into one file (in the right order)</li>
+  <li>Extract only the pages you need for upload portals</li>
+  <li>Reorder pages before you send or archive</li>
+</ul>
+<h3>Good to know</h3>
+<ul>
+  <li>Everything runs locally in your browser — files are not uploaded.</li>
+  <li>Reorder keeps the original pages (no quality loss).</li>
+  <li>Splitting can export a single PDF or a ZIP of multiple PDFs.</li>
+</ul>
+<h3>What to do next</h3>
+<ul>
+  <li>If you’re working with scans or huge files, try “Compress PDF” afterwards.</li>
+  <li>If a portal rejects your document, split to isolate the failing pages.</li>
+</ul>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  const { PDFDocument } = window.PDFLib;
+
+  // PDF.js worker
+  if (window['pdfjsLib']) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js';
+  }
+
+  const $ = (id) => document.getElementById(id);
+  const humanBytes = (n) => {
+    if (!Number.isFinite(n)) return '';
+    const u=['B','KB','MB','GB']; let i=0; let v=n;
+    while(v>=1024 && i<u.length-1){ v/=1024; i++; }
+    const s = i===0 ? String(Math.round(v)) : String(Math.round(v*10)/10);
+    return s+' '+u[i];
+  };
+  const downloadBlob = (blob, name) => {
+    const a=document.createElement('a');
+    const url=URL.createObjectURL(blob);
+    a.href=url; a.download=name;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 250);
+  };
+
+  // Mode switching
+  const modeBtns = { merge:$('modeMerge'), split:$('modeSplit'), reorder:$('modeReorder') };
+  const panes = { merge:$('paneMerge'), split:$('paneSplit'), reorder:$('paneReorder') };
+
+  function setMode(m){
+    Object.keys(modeBtns).forEach(k => modeBtns[k].classList.toggle('is-active', k===m));
+    Object.keys(panes).forEach(k => panes[k].classList.toggle('rm-hidden', k!==m));
+  }
+  modeBtns.merge.addEventListener('click', ()=>setMode('merge'));
+  modeBtns.split.addEventListener('click', ()=>setMode('split'));
+  modeBtns.reorder.addEventListener('click', ()=>setMode('reorder'));
+
+  // ---------- MERGE ----------
+  let mergeFiles = [];
+  const mergeInput = $('mergeFiles');
+  const mergeList = $('mergeList');
+  const mergeMeta = $('mergeMeta');
+  const mergeStatus = $('mergeStatus');
+
+  function renderMergeList(){
+    mergeList.innerHTML='';
+    if(!mergeFil<div aria-hidden="true" aria-label="Link Shortener + QR details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Link Shortener + QR</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Create a short link (optional) and generate a QR code</li>
+<li>Copy or open the link instantly</li>
+<li>Download a QR PNG for posters and flyers</li>
+      </ul>
+      <h3>Privacy</h3><p>If you select a shortening service, your URL is sent to that service to generate the short link. QR generation is local.</p>
+    </div>
+  </div>
+</div>
+
+ist();
+      });
+
+      li.appendChild(handle);
+      li.appendChild(thumb);
+      li.appendChild(grow);
+      li.appendChild(del);
+
+      // Drag reorder
+      li.addEventListener('dragstart', (e)=>{
+        e.dataTransfer.setData('text/plain', li.dataset.idx);
+        e.dataTransfer.effectAl<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+
+  const $ = (id)=>document.getElementById(id);
+  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+  function toast(msg){
+    // Reuse existing toast style if present; fallback to alert-like pill.
+    let el = document.getElementById('rmToast');
+    if(!el){
+      el = document.createElement('div');
+      el.id='rmToast';
+      el.style.position='fixed';
+      el.style.left='50%';
+      el.style.bottom='18px';
+      el.style.transform='translateX(-50%)';
+      el.style.padding='10px 12px';
+      el.style.borderRadius='12px';
+      el.style.background='rgba(15,23,42,.92)';
+      el.style.color='#fff';
+      el.style.fontSize='13px';
+      el.style.zIndex='9999';
+      el.style.boxShadow='0 10px 30px rgba(0,0,0,.35)';
+      el.style.maxWidth='min(92vw,720px)';
+      el.style.textAlign='center';
+      el.style.opacity='0';
+      el.style.transition='opacity .18s ease';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.opacity='1';
+    clearTimeout(el._t);
+    el._t=setTimeout(()=>{el.style.opacity='0';}, 2200);
+  }
+  function downloadBlob(blob, filename){
+    const a=document.createElement('a');
+    const url=URL.createObjectURL(blob);
+    a.href=url; a.download=filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 2500);
+  }
+  async function fileToArrayBuffer(file){
+    return await file.arrayBuffer();
+  }
+
+  let qr=null;
+  function setOut(url){
+    $('shOut').value=url || '';
+    $('shQR').innerHTML='';
+    $('shDownload').disabled=true;
+    if(!url) return;
+    qr = new QRCode($('shQR'), { text:url, width:240, height:240, correctLevel:QRCode.CorrectLevel.M });
+    $('shDownload').disabled=false;
+    $('shCopy').disabled=false;
+    $('shOpen').disabled=false;
+  }
+
+  function isUrl(s){ try{ new URL(s); return true; }catch{ return false; } }
+
+  async function shorten(url){
+    const svc=$('shSvc').value;
+    if(svc==='none') return url;
+    if(svc==='isgd'){
+      const u='https://is.gd/create.php?format=simple&url='+encodeURIComponent(url);
+      const r=await fetch(u);
+      const t=await r.text();
+      if(!r.ok || !isUrl(t)) throw new Error('isgd_fail');
+      return t.trim();
+    }
+    if(svc==='tinyurl'){
+      const u='https://tinyurl.com/api-create.php?url='+encodeURIComponent(url);
+      const r=await fetch(u);
+      const t=await r.text();
+      if(!r.ok || !isUrl(t)) throw new Error('tiny_fail');
+      return t.trim();
+    }
+    return url;
+  }
+
+  $('shGo').addEventListener('click', async ()=>{
+    const url=$('shUrl').value.trim();
+    if(!isUrl(url)){ toast('Paste a valid URL.'); return; }
+    $('shStatus').textContent='Working…';
+    $('shGo').disabled=true;
+    $('shCopy').disabled=true;
+    $('shOpen').disabled=true;
+    try{
+      const out = await shorten(url);
+      setOut(out);
+      $('shStatus').textContent='Ready.';
+      toast('Created.');
+    }catch(e){
+      console.error(e);
+      $('shStatus').textContent='Shortening failed. Using original URL.';
+      setOut(url);
+      toast('Could not shorten; QR created for original URL.');
+    }finally{
+      $('shGo').disabled=false;
+    }
+  });
+
+  $('shCopy').addEventListener('click', async ()=>{
+    const t=$('shOut').value.trim();
+    if(!t) return;
+    try{ await navigator.clipboard.writeText(t); toast('Copied.'); } catch { toast('Copy failed.'); }
+  });
+  $('shOpen').addEventListener('click', ()=>{
+    const t=$('shOut').value.trim();
+    if(!t) return;
+    window.open(t,'_blank','noopener');
+  });
+
+  $('shDownload').addEventListener('click', ()=>{
+    const img = $('shQR').querySelector('img') || $('shQR').querySelector('canvas');
+    if(!img) return;
+    if(img.tagName.toLowerCase()==='img'){
+      fetch(img.src).then(r=>r.blob()).then(b=>downloadBlob(b,'qr.png'));
+    }else{
+      img.toBlob(b=>{ if(b) downloadBlob(b,'qr.png'); }, 'image/png');
+    }
+  });
+
+</script>
+<script>
+  (function(){
+    function openLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','false');
+      const btn=bd.querySelector('.rm-lm-close');
+      if(btn) btn.focus();
+    }
+    function closeLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','true');
+    }
+    document.addEventListener('click', function(e){
+      const a=e.target.closest('[data-rm-lm-open]');
+      if(a){
+        e.preventDefault();
+        openLM(a.getAttribute('data-rm-lm-open'));
+        return;
+      }
+      const close=e.target.closest('[data-rm-lm-close]');
+      if(close){
+        e.preventDefault();
+        closeLM(close.getAttribute('data-rm-lm-close'));
+        return;
+      }
+      const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+      if(bd){
+        e.preventDefault();
+        closeLM(bd.id);
+      }
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Escape'){
+        const open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        if(open) open.setAttribute('aria-hidden','true');
+      }
+    });
+  })();
+</script>
+<script src="/assets/js/rm-dropzone.js"></script>
+<script src="/assets/js/rm-tools-drawer.js"></script>

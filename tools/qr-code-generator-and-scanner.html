@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="Generate QR codes and scan them from camera or images — fast, private, and browser-based."/>
+<title>QR Code Generator & Scanner — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+
+<style>
+  .rm-modebar{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+  .rm-modebar .btn{border:1px solid rgba(255,255,255,.14)}
+  .rm-modebar .btn.is-active{outline:2px solid rgba(124,247,212,.35)}
+  .rm-mini{font-size:12px}
+  .rm-list{list-style:none; padding:0; margin:10px 0 0;}
+  .rm-item{display:flex; gap:10px; align-items:center; padding:10px; border:1px solid rgba(255,255,255,.12); border-radius:14px; margin:8px 0; background:rgba(255,255,255,.03)}
+  .rm-handle{cursor:grab; user-select:none; font-size:14px; padding:6px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18)}
+  .rm-thumb{width:64px; height:64px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.10); display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.22)}
+  .rm-thumb img,.rm-thumb canvas{max-width:100%; max-height:100%; display:block}
+  .rm-item .rm-grow{flex:1; min-width:0}
+  .rm-k{font-weight:700}
+  .rm-v{color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .rm-gridThumbs{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-top:12px}
+  .rm-pageCard{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.03)}
+  .rm-pageCard .rm-pageTop{display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .rm-pageCard .rm-pageNo{font-weight:700; font-size:12px; color:var(--muted)}
+  .rm-dropHint{font-size:12px; color:var(--muted); margin-top:8px}
+  .rm-status{min-height:20px}
+  .rm-bad{color:#ffb4b4}
+  .rm-good{color:#b7ffd7}
+  .rm-warn{color:#ffe7a8}
+  .rm-hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div>
+</header>
+<div class="wrap">
+  <div c<div class="wrap">
+<div class="panel">
+<h1>QR Code Generator & Scanner <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+
+<p class="sub">Create a QR for any text or link, or scan a QR from camera/image — no installs.</p>
+<hr class="hr"/>
+
+
+<div class="rm-modebar" role="tablist" aria-label="Mode">
+  <button class="btn small is-active" id="tabGen" type="button">Generate</button>
+  <button class="btn small" id="tabScan" type="button">Scan (camera)</button>
+  <button class="btn small" id="tabImg" type="button">Scan (image)</button>
+</div>
+
+<div id="paneGen">
+  <div class="grid2">
+    <div class="card">
+      <div class="row" style="justify-content:space-between; align-items:flex-end;">
+        <div>
+          <div class="tiny muted">Text / URL</div>
+          <input class="input" id="qrText" placeholder="Paste a link or any text…" type="text"/>
+        </div>
+      </div>
+      <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:12px">
+        <button class="btn primary" id="btnMake" type="button">Create QR</button>
+        <button class="btn" id="btnClear" type="button">Clear</button>
+        <span class="tiny muted rm-status" id="genStatus"></span>
+      </div>
+      <div class="rm-dropHint">Tip: Works offline once loaded. No uploads — everything stays in your browser.</div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <div class="tiny muted">Preview</div>
+        <div class="row" style="gap:10px; flex-wrap:wrap;">
+          <button class="btn" id="btnDownloadPng" type="button" disabled>Download PNG</button>
+          <button class="btn" id="btnCopyText" type="button" disabled>Copy text</button>
+        </div>
+      </div>
+      <div class="hr2"></div>
+      <div id="qrOut" style="display:flex; justify-content:center; padding:14px 0;"></div>
+      <div class="tiny muted" id="qrEcho" style="text-align:center;"></div>
+    </div>
+  </div>
+</div>
+
+<div id="paneScan" style="display:none">
+  <div class="grid2">
+    <div class="card">
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <div>
+          <div class="tiny muted">Camera</div>
+          <div class="muted">Point at a QR code — decoded text appears instantly.</div>
+        </div>
+        <div class="row" style="gap:10px; flex-wrap:wrap;">
+          <button class="btn primary" id="btnStartCam" type="button">Start</button>
+          <button class="btn" id="btnStopCam" type="button" disabled>Stop</button>
+        </div>
+      </div>
+      <div class="hr2"></div>
+      <video id="qrVideo" playsinline style="width:100%; border-radius:16px; background:#0b1220;"></video>
+      <canvas id="qrCanvas" style="display:none"></canvas>
+      <div class="rm-dropHint">Tip: If camera permission is blocked, use “Scan (image)”.</div>
+    </div>
+
+    <div class="card">
+      <div class="tiny muted">Result</div>
+      <div class="hr2"></div>
+      <textarea class="input" id="scanResult" rows="8" placeholder="Decoded content will appear here…" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;"></textarea>
+      <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:12px">
+        <button class="btn" id="btnCopyScan" type="button">Copy</button>
+        <button class="btn" id="btnOpenLink" type="button">Open if link</button>
+        <span class="tiny muted rm-status" id="scanStatus"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="paneImg" style="display:none">
+  <div class="grid2">
+    <div class="card">
+      <div class="tiny muted">Upload a QR image</div>
+      <div class="hr2"></div>
+      <input class="input" id="qrImage" type="file" accept="image/*"/>
+      <div class="rm-dropHint">Drag & drop works too.</div>
+    </div>
+    <div class="card">
+      <div class="tiny muted">Decoded</div>
+      <div class="hr2"></div>
+      <textarea class="input" id="imgResult" rows="8" placeholder="Decoded content will appear here…"></textarea>
+      <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:12px">
+        <button class="btn" id="btnCopyImg" type="button">Copy</button>
+        <span class="tiny muted rm-status" id="imgStatus"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+</div>
+<div class="rm-footer-inner">
+<div class="rm-footer-brand">
+<div class="rm-footer-name">ReportMedic</div>
+<div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+</div>
+<div class="rm-footer-links">
+<a href="/fix-my-report.html">Fix My Report</a>
+<a href="/#tools">Tools</a>
+<a href="/docs/">Docs</a>
+<a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+</div>
+<div class="rm-footer-meta">© 2026 ReportMedic</div>
+</div>
+</footer>
+<div aria-hidden="true" aria-label="PDF Organizer details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">PDF Organizer</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+<ul>
+  <li>Combine multiple PDFs into one file (in t<div aria-hidden="true" aria-label="QR Code Generator & Scanner details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">QR Code Generator & Scanner</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Create QR codes for links, text, Wi‑Fi details, menus, and contact cards</li>
+<li>Scan a QR code from your camera or from an image</li>
+<li>Copy results instantly or open safe links</li>
+      </ul>
+      <h3>Privacy</h3><p>Everything runs locally in your browser. Your content is not uploaded to a server.</p>
+    </div>
+  </div>
+</div>
+
+/pdfjs-dist@4.10.38/build/pdf.worker.min.js';
+  }
+
+  const $ = (id) => document.getElementById(id);
+  const humanBytes = (n) => {
+    if (!Number.isFinite(n)) return '';
+    const u=['B','KB','MB','GB']; let i=0; let v=n;
+    while(v>=1024 && i<u.length-1){ v/=1024; i++; }
+    c<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+
+  const $ = (id)=>document.getElementById(id);
+  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+  function toast(msg){
+    // Reuse existing toast style if present; fallback to alert-like pill.
+    let el = document.getElementById('rmToast');
+    if(!el){
+      el = document.createElement('div');
+      el.id='rmToast';
+      el.style.position='fixed';
+      el.style.left='50%';
+      el.style.bottom='18px';
+      el.style.transform='translateX(-50%)';
+      el.style.padding='10px 12px';
+      el.style.borderRadius='12px';
+      el.style.background='rgba(15,23,42,.92)';
+      el.style.color='#fff';
+      el.style.fontSize='13px';
+      el.style.zIndex='9999';
+      el.style.boxShadow='0 10px 30px rgba(0,0,0,.35)';
+      el.style.maxWidth='min(92vw,720px)';
+      el.style.textAlign='center';
+      el.style.opacity='0';
+      el.style.transition='opacity .18s ease';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.opacity='1';
+    clearTimeout(el._t);
+    el._t=setTimeout(()=>{el.style.opacity='0';}, 2200);
+  }
+  function downloadBlob(blob, filename){
+    const a=document.createElement('a');
+    const url=URL.createObjectURL(blob);
+    a.href=url; a.download=filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 2500);
+  }
+  async function fileToArrayBuffer(file){
+    return await file.arrayBuffer();
+  }
+
+  const panes = { gen:$('paneGen'), scan:$('paneScan'), img:$('paneImg') };
+  const tabs = { gen:$('tabGen'), scan:$('tabScan'), img:$('tabImg') };
+  function show(which){
+    Object.keys(panes).forEach(k=>panes[k].style.display = (k===which?'block':'none'));
+    Object.keys(tabs).forEach(k=>tabs[k].classList.toggle('is-active', k===which));
+    if(which!=='scan') stopCam();
+  }
+  tabs.gen.addEventListener('click', ()=>show('gen'));
+  tabs.scan.addEventListener('click', ()=>show('scan'));
+  tabs.img.addEventListener('click', ()=>show('img'));
+
+  let qr=null;
+  function makeQR(){
+    const text = $('qrText').value.trim();
+    $('genStatus').textContent='';
+    $('qrOut').innerHTML='';
+    $('qrEcho').textContent='';
+    $('btnDownloadPng').disabled=true;
+    $('btnCopyText').disabled=true;
+    if(!text){ toast('Paste a link or text first.'); return; }
+    qr = new QRCode($('qrOut'), { text, width: 240, height: 240, correctLevel: QRCode.CorrectLevel.M });
+    $('qrEcho').textContent = text;
+    $('btnDownloadPng').disabled=false;
+    $('btnCopyText').disabled=false;
+    $('genStatus').textContent='Ready.';
+  }
+
+  $('btnMake').addEventListener('click', makeQR);
+  $('qrText').addEventListener('keydown', (e)=>{ if(e.key==='Enter') makeQR(); });
+  $('btnClear').addEventListener('click', ()=>{
+    $('qrText').value='';
+    $('qrOut').innerHTML='';
+    $('qrEcho').textContent='';
+    $('genStatus').textContent='';
+    $('btnDownloadPng').disabled=true;
+    $('btnCopyText').disabled=true;
+  });
+
+  $('btnCopyText').addEventListener('click', async ()=>{
+    const t=$('qrEcho').textContent;
+    if(!t) return;
+    try{ await navigator.clipboard.writeText(t); toast('Copied.'); } catch{ toast('Copy failed in this browser.'); }
+  });
+
+  $('btnDownloadPng').addEventListener('click', ()=>{
+    const img = $('qrOut').querySelector('img') || $('qrOut').querySelector('canvas');
+    if(!img){ toast('Create a QR first.'); return; }
+    if(img.tagName.toLowerCase()==='img'){
+      fetch(img.src).then(r=>r.blob()).then(b=>downloadBlob(b,'qr.png'));
+    }else{
+      img.toBlob((b)=>{ if(b) downloadBlob(b,'qr.png'); }, 'image/png');
+    }
+  });
+
+  // Scanner (camera)
+  let stream=null, raf=0;
+  const v=$('qrVideo'), c=$('qrCanvas'), ctx=c.getContext('2d', { willReadFrequently: true });
+  async function startCam(){
+    $('scanStatus').textContent='';
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio:false });
+      v.srcObject=stream;
+      await v.play();
+      $('btnStartCam').disabled=true;
+      $('btnStopCam').disabled=false;
+      tick();
+    }catch(err){
+      $('scanStatus').textContent='Camera blocked or unavailable.';
+      toast('Could not access camera.');
+    }
+  }
+  function stopCam(){
+    if(raf) cancelAnimationFrame(raf);
+    raf=0;
+    if(stream){
+      stream.getTracks().forEach(t=>t.stop());
+      stream=null;
+    }
+    v.srcObject=null;
+    $('btnStartCam').disabled=false;
+    $('btnStopCam').disabled=true;
+  }
+  function tick(){
+    if(!v.videoWidth){ raf=requestAnimationFrame(tick); return; }
+    c.width=v.videoWidth; c.height=v.videoHeight;
+    ctx.drawImage(v,0,0,c.width,c.height);
+    const imgData=ctx.getImageData(0,0,c.width,c.height);
+    const code=jsQR(imgData.data, imgData.width, imgData.height);
+    if(code && code.data){
+      $('scanResult').value=code.data;
+      $('scanStatus').textContent='Decoded.';
+    }
+    raf=requestAnimationFrame(tick);
+  }
+  $('btnStartCam').addEventListener('click', startCam);
+  $('btnStopCam').addEventListener('click', stopCam);
+
+  function isProbablyUrl(s){
+    try{ new URL(s); return true; }catch{ return false; }
+  }
+  $('btnCopyScan').addEventListener('click', async ()=>{
+    const t=$('scanResult').value.trim();
+    if(!t) return;
+    try{ await navigator.clipboard.writeText(t); toast('Copied.'); } catch { toast('Copy failed.'); }
+  });
+  $('btnOpenLink').addEventListener('click', ()=>{
+    const t=$('scanResult').value.trim();
+    if(!t) return;
+    if(isProbablyUrl(t)) window.open(t,'_blank','noopener');
+    else toast('Not a valid link.');
+  });
+
+  // Scan from image
+  $('qrImage').addEventListener('change', async ()=>{
+    $('imgStatus').textContent='';
+    $('imgResult').value='';
+    const f=$('qrImage').files && $('qrImage').files[0];
+    if(!f) return;
+    const img=new Image();
+    img.onload=()=>{
+      const w=img.naturalWidth, h=img.naturalHeight;
+      c.width=w; c.height=h;
+      ctx.drawImage(img,0,0,w,h);
+      const d=ctx.getImageData(0,0,w,h);
+      const code=jsQR(d.data, d.width, d.height);
+      if(code && code.data){
+        $('imgResult').value=code.data;
+        $('imgStatus').textContent='Decoded.';
+      }else{
+        $('imgStatus').textContent='No QR found.';
+      }
+      URL.revokeObjectURL(img.src);
+    };
+    img.src=URL.createObjectURL(f);
+  });
+  $('btnCopyImg').addEventListener('click', async ()=>{
+    const t=$('imgResult').value.trim();
+    if(!t) return;
+    try{ await navigator.clipboard.writeText(t); toast('Copied.'); } catch { toast('Copy failed.'); }
+  });
+
+</script>
+<script>
+  (function(){
+    function openLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','false');
+      const btn=bd.querySelector('.rm-lm-close');
+      if(btn) btn.focus();
+    }
+    function closeLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','true');
+    }
+    document.addEventListener('click', function(e){
+      const a=e.target.closest('[data-rm-lm-open]');
+      if(a){
+        e.preventDefault();
+        openLM(a.getAttribute('data-rm-lm-open'));
+        return;
+      }
+      const close=e.target.closest('[data-rm-lm-close]');
+      if(close){
+        e.preventDefault();
+        closeLM(close.getAttribute('data-rm-lm-close'));
+        return;
+      }
+      const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+      if(bd){
+        e.preventDefault();
+        closeLM(bd.id);
+      }
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Escape'){
+        const open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        if(open) open.setAttribute('aria-hidden','true');
+      }
+    });
+  })();
+</script>
+<script src="/assets/js/rm-dropzone.js"></script>
+<script src="/assets/js/rm-tools-drawer.js"></script>

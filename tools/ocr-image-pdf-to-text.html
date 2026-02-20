@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="Run OCR on images or PDFs and extract text locally in your browser using Tesseract.js."/>
+<title>OCR: Image/PDF to Text — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+
+<style>
+  .rm-modebar{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+  .rm-modebar .btn{border:1px solid rgba(255,255,255,.14)}
+  .rm-modebar .btn.is-active{outline:2px solid rgba(124,247,212,.35)}
+  .rm-mini{font-size:12px}
+  .rm-list{list-style:none; padding:0; margin:10px 0 0;}
+  .rm-item{display:flex; gap:10px; align-items:center; padding:10px; border:1px solid rgba(255,255,255,.12); border-radius:14px; margin:8px 0; background:rgba(255,255,255,.03)}
+  .rm-handle{cursor:grab; user-select:none; font-size:14px; padding:6px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18)}
+  .rm-thumb{width:64px; height:64px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.10); display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.22)}
+  .rm-thumb img,.rm-thumb canvas{max-width:100%; max-height:100%; display:block}
+  .rm-item .rm-grow{flex:1; min-width:0}
+  .rm-k{font-weight:700}
+  .rm-v{color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .rm-gridThumbs{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-top:12px}
+  .rm-pageCard{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.03)}
+  .rm-pageCard .rm-pageTop{display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .rm-pageCard .rm-pageNo{font-weight:700; font-size:12px; color:var(--muted)}
+  .rm-dropHint{font-size:12px; color:var(--muted); margin-top:8px}
+  .rm-status{min-height:20px}
+  .rm-bad{color:#ffb4b4}
+  .rm-good{color:#b7ffd7}
+  .rm-warn{color:#ffe7a8}
+  .rm-hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div>
+</header>
+<div class="wrap">
+  <div class="pa<div class="wrap">
+<div class="panel">
+<h1>OCR: Image / PDF to Text <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+
+<p class="sub">Extract selectable text from images or PDFs (best for scans and screenshots).</p>
+<hr class="hr"/>
+
+
+<div class="grid2">
+  <div class="card">
+    <div class="tiny muted">Upload image or PDF</div>
+    <div class="hr2"></div>
+    <input class="input" id="ocrFile" type="file" accept="image/*,application/pdf"/>
+    <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:12px">
+      <label class="tiny muted">Language</label>
+      <select class="input" id="ocrLang" style="max-width:220px">
+        <option value="eng" selected>English</option>
+        <option value="spa">Spanish</option>
+        <option value="fra">French</option>
+        <option value="deu">German</option>
+        <option value="ita">Italian</option>
+        <option value="por">Portuguese</option>
+      </select>
+      <label class="tiny muted">PDF pages</label>
+      <input class="input" id="ocrPages" type="text" value="1" style="max-width:220px" placeholder="e.g., 1 or 1-3"/>
+    </div>
+    <div class="hr2"></div>
+    <div class="row" style="gap:10px; flex-wrap:wrap;">
+      <button class="btn primary" id="ocrRun" type="button">Run OCR</button>
+      <button class="btn" id="ocrCancel" type="button" disabled>Cancel</button>
+      <span class="tiny muted rm-status" id="ocrStatus"></span>
+    </div>
+    <div class="rm-dropHint">Tip: OCR quality improves with high‑contrast scans (300 DPI) and straight pages.</div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between; align-items:center;">
+      <div class="tiny muted">Extracted text</div>
+      <div class="row" style="gap:10px; flex-wrap:wrap;">
+        <button class="btn" id="ocrCopy" type="button">Copy</button>
+        <button class="btn" id="ocrTxt" type="button">Download .txt</button>
+      </div>
+    </div>
+    <div class="hr2"></div>
+    <textarea class="input" id="ocrOut" rows="14" placeholder="OCR output will appear here…"
+      style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;"></textarea>
+  </div>
+</div>
+
+
+</div>
+</div>
+ss="rm-footer-inner">
+<div class="rm-footer-brand">
+<div class="rm-footer-name">ReportMedic</div>
+<div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+</div>
+<div class="rm-footer-links">
+<a href="/fix-my-report.html">Fix My Report</a>
+<a href="/#tools">Tools</a>
+<a href="/docs/">Docs</a>
+<a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+</div>
+<div class="rm-footer-meta">© 2026 ReportMedic</div>
+</div>
+</footer>
+<div aria-hidden="true" aria-label="PDF Organizer details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">PDF Organizer</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+<ul>
+  <li>Combine multiple PDFs into one file (in the right order)</li>
+  <li>Extract only the pages you need for upload portals</li>
+  <li>Reorder pages before you send or archive</li>
+</ul>
+<h3>Good to know</h3>
+<ul>
+  <li>Everything runs locally in your browser — files are not uploaded.</li>
+  <li>Reorder keeps the original pages (no quality loss).</li>
+  <li>Splitting can export a single PDF or a ZIP of multiple PDFs.</li>
+</ul>
+<h3>What to do next</h3>
+<ul>
+  <li>If you’re working with scans or huge files, try “Compress PDF” afterwards.</li>
+  <li>If a portal rejects your document, split to isolate the failing pages.</li>
+</ul>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  const { PDFDocument } = window.PDFLib;
+
+  // PDF.js worker
+  if (window['pdfjsLib']) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js';
+  }
+
+  const $ = (id) => document.getElementById(id);
+  const humanBytes = (n) => {
+    if (!Number.isFinite(n)) return '';
+    const u=['B','KB','MB','GB']; let i=0; let v=n;
+    while(v>=1024 && i<u.length-1){ v/=1024; i++; }
+    const s = i===0 ? String(Math.round(v)) : String(Math.round(v*10)/10);
+    return s+' '+u[i];
+  };
+  const downloadBlob = (blob, name) => {
+    const a=document.createElement('a');
+    const url=URL.createObjectURL(blob);
+    a.href=url; a.download=name;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 250);
+  };
+
+  // Mode switching
+  const modeBtns = { merge:$('modeMerge'), split:$('modeSplit'), reorder:$('modeReorder') };
+  const panes = { merge:$('paneMerge'), split:$('paneSplit'), reorder:$('paneReorder') };
+
+  function setMode(m){
+    Object.keys(modeBtns).forEach(k => modeBtns[k].classList.toggle('is-active', k===m));
+    Object.keys(panes).forEach(k => panes[k].classLis<div aria-hidden="true" aria-label="OCR: Image / PDF to Text details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">OCR: Image / PDF to Text</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Convert scans and photos into selectable, copyable text</li>
+<li>Works for receipts, letters, forms, and screenshots</li>
+<li>Download clean text for reports and notes</li>
+      </ul>
+      <h3>Privacy</h3><p>OCR runs locally using Tesseract.js. If you OCR a PDF, pages are rendered in your browser first.</p>
+    </div>
+  </div>
+</div>
+
+lassName='rm-thumb';
+      thumb.innerHTML='<span class="tiny muted">PDF</span>';
+
+      const grow=document.createElement('div');
+      grow.className='rm-grow';
+      grow.innerHTML = '<div class="rm-k">'+escapeHtml(f.name)+'</div><div class="rm-v">'+humanBytes(f.size)+'</div>';
+
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js"></script>
+<script>
+
+  const $ = (id)=>document.getElementById(id);
+  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+  function toast(msg){
+    // Reuse existing toast style if present; fallback to alert-like pill.
+    let el = document.getElementById('rmToast');
+    if(!el){
+      el = document.createElement('div');
+      el.id='rmToast';
+      el.style.position='fixed';
+      el.style.left='50%';
+      el.style.bottom='18px';
+      el.style.transform='translateX(-50%)';
+      el.style.padding='10px 12px';
+      el.style.borderRadius='12px';
+      el.style.background='rgba(15,23,42,.92)';
+      el.style.color='#fff';
+      el.style.fontSize='13px';
+      el.style.zIndex='9999';
+      el.style.boxShadow='0 10px 30px rgba(0,0,0,.35)';
+      el.style.maxWidth='min(92vw,720px)';
+      el.style.textAlign='center';
+      el.style.opacity='0';
+      el.style.transition='opacity .18s ease';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.opacity='1';
+    clearTimeout(el._t);
+    el._t=setTimeout(()=>{el.style.opacity='0';}, 2200);
+  }
+  function downloadBlob(blob, filename){
+    const a=document.createElement('a');
+    const url=URL.createObjectURL(blob);
+    a.href=url; a.download=filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 2500);
+  }
+  async function fileToArrayBuffer(file){
+    return await file.arrayBuffer();
+  }
+
+  const pdfjsLib = window['pdfjs-dist/build/pdf'];
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js';
+
+  let worker=null;
+  let cancelRequested=false;
+
+  function parsePages(str, maxPages){
+    str=(str||'1').trim();
+    if(!str) return [1];
+    if(/^\d+$/.test(str)){
+      const n=parseInt(str,10);
+      return [Math.max(1, Math.min(maxPages,n))];
+    }
+    const m=str.match(/^(\d+)\s*-\s*(\d+)$/);
+    if(m){
+      let a=parseInt(m[1],10), b=parseInt(m[2],10);
+      a=Math.max(1,Math.min(maxPages,a));
+      b=Math.max(1,Math.min(maxPages,b));
+      if(b<a) [a,b]=[b,a];
+      const out=[];
+      for(let i=a;i<=b;i++) out.push(i);
+      return out;
+    }
+    return [1];
+  }
+
+  async function ensureWorker(lang){
+    if(worker) return worker;
+    worker = await Tesseract.createWorker(lang, 1, {
+      logger: m=>{
+        if(m && m.status){
+          const pct = (m.progress!=null) ? ` ${(m.progress*100).toFixed(0)}%` : '';
+          $('ocrStatus').textContent = `${m.status}${pct}`;
+        }
+      }
+    });
+    return worker;
+  }
+
+  $('ocrCancel').addEventListener('click', ()=>{
+    cancelRequested=true;
+    $('ocrStatus').textContent='Canceling…';
+  });
+
+  $('ocrRun').addEventListener('click', async ()=>{
+    cancelRequested=false;
+    const f=$('ocrFile').files && $('ocrFile').files[0];
+    if(!f){ toast('Choose a file first.'); return; }
+    const lang=$('ocrLang').value || 'eng';
+    $('ocrOut').value='';
+    $('ocrStatus').textContent='Starting…';
+    $('ocrRun').disabled=true;
+    $('ocrCancel').disabled=false;
+
+    try{
+      const w = await ensureWorker(lang);
+      await w.loadLanguage(lang);
+      await w.initialize(lang);
+
+      let textAll='';
+      if(f.type==='application/pdf' || /\.pdf$/i.test(f.name)){
+        const ab = await fileToArrayBuffer(f);
+        const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+        const pages = parsePages($('ocrPages').value, pdf.numPages);
+        for(const p of pages){
+          if(cancelRequested) break;
+          $('ocrStatus').textContent=`Rendering page ${p}/${pdf.numPages}…`;
+          const page = await pdf.getPage(p);
+          const vp = page.getViewport({ scale: 2 });
+          const c=document.createElement('canvas');
+          c.width=Math.floor(vp.width); c.height=Math.floor(vp.height);
+          const cx=c.getContext('2d');
+          await page.render({ canvasContext: cx, viewport: vp }).promise;
+          const { data: { text } } = await w.recognize(c);
+          textAll += (text || '') + '\n';
+          $('ocrOut').value = textAll.trimEnd();
+          await sleep(0);
+        }
+      }else{
+        const { data: { text } } = await w.recognize(f);
+        textAll = text || '';
+        $('ocrOut').value = textAll.trimEnd();
+      }
+
+      if(cancelRequested){
+        $('ocrStatus').textContent='Canceled.';
+        toast('Canceled.');
+      }else{
+        $('ocrStatus').textContent='Done.';
+        toast('OCR complete.');
+      }
+    }catch(e){
+      console.error(e);
+      $('ocrStatus').textContent='OCR failed.';
+      toast('OCR failed.');
+    }finally{
+      $('ocrRun').disabled=false;
+      $('ocrCancel').disabled=true;
+    }
+  });
+
+  $('ocrCopy').addEventListener('click', async ()=>{
+    const t=$('ocrOut').value;
+    if(!t.trim()) return;
+    try{ await navigator.clipboard.writeText(t); toast('Copied.'); } catch { toast('Copy failed.'); }
+  });
+  $('ocrTxt').addEventListener('click', ()=>{
+    const t=$('ocrOut').value || '';
+    downloadBlob(new Blob([t], {type:'text/plain;charset=utf-8'}), 'ocr.txt');
+  });
+
+</script>
+<script>
+  (function(){
+    function openLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','false');
+      const btn=bd.querySelector('.rm-lm-close');
+      if(btn) btn.focus();
+    }
+    function closeLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','true');
+    }
+    document.addEventListener('click', function(e){
+      const a=e.target.closest('[data-rm-lm-open]');
+      if(a){
+        e.preventDefault();
+        openLM(a.getAttribute('data-rm-lm-open'));
+        return;
+      }
+      const close=e.target.closest('[data-rm-lm-close]');
+      if(close){
+        e.preventDefault();
+        closeLM(close.getAttribute('data-rm-lm-close'));
+        return;
+      }
+      const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+      if(bd){
+        e.preventDefault();
+        closeLM(bd.id);
+      }
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Escape'){
+        const open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        if(open) open.setAttribute('aria-hidden','true');
+      }
+    });
+  })();
+</script>
+<script src="/assets/js/rm-dropzone.js"></script>
+<script src="/assets/js/rm-tools-drawer.js"></script>
