@@ -395,6 +395,141 @@
     background: rgba(255,255,255,.18);
   }
 
+  .npColorWrap{ position: relative; }
+  /* Keep native color picker anchored to the button */
+  .npColorInput{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    opacity:0;
+    cursor:pointer;
+    border:none;
+    padding:0;
+    margin:0;
+  }
+
+
+  /* Find & Replace */
+  .npFROverlay{
+    position: fixed;
+    inset: 0;
+    z-index: 10060;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 18px 12px;
+    background: rgba(0,0,0,.38);
+  }
+  .npFROverlay.npHidden{ display:none !important; }
+  .npFRModal{
+    width: min(720px, calc(100% - 16px));
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(10,16,30,.98);
+    box-shadow: 0 18px 60px rgba(0,0,0,.55);
+    overflow: hidden;
+  }
+  .npFRHead{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 12px;
+    border-bottom: 1px solid rgba(255,255,255,.10);
+  }
+  .npFRHeadTitle{
+    font-weight: 900;
+    font-size: 14px;
+    color: rgba(255,255,255,.92);
+  }
+  .npFRX{
+    width: 34px; height: 34px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.03);
+    color: rgba(255,255,255,.9);
+    cursor: pointer;
+  }
+  .npFRX:hover{ background: rgba(255,255,255,.06); }
+  .npFRBody{
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 10px 12px;
+    align-items: center;
+  }
+  .npFRLbl{
+    font-size: 12px;
+    color: rgba(255,255,255,.72);
+    font-weight: 700;
+  }
+  .npFRInput{
+    width: 100%;
+    height: 34px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.04);
+    color: rgba(255,255,255,.92);
+    padding: 0 10px;
+    outline: none;
+    font-size: 13px;
+  }
+  .npFRInput:focus{ border-color: rgba(110,168,255,.45); box-shadow: 0 0 0 3px rgba(110,168,255,.12); }
+  .npFROpts{
+    grid-column: 1 / -1;
+    display:flex;
+    gap: 16px;
+    align-items:center;
+    padding-top: 2px;
+    font-size: 12px;
+    color: rgba(255,255,255,.78);
+  }
+  .npFROpts input{ transform: translateY(1px); }
+  .npFRRow{
+    grid-column: 1 / -1;
+    display:flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items:center;
+    padding-top: 6px;
+  }
+  .npFRBtns, .npFRNav{ display:flex; gap: 8px; flex-wrap: wrap; }
+  .npFRBtn{
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.03);
+    color: rgba(255,255,255,.9);
+    cursor:pointer;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .npFRBtn:hover{ background: rgba(255,255,255,.06); }
+  .npFRBtn.primary{
+    background: rgba(110,168,255,.18);
+    border-color: rgba(110,168,255,.35);
+  }
+  .npFRHint{
+    grid-column: 1 / -1;
+    font-size: 12px;
+    color: rgba(255,255,255,.62);
+    padding-top: 2px;
+  }
+
+  /* Find highlights (never persist to storage) */
+  .npFindMark{
+    background: rgba(110,168,255,.22);
+    border: 1px solid rgba(110,168,255,.28);
+    border-radius: 6px;
+    padding: 0 1px;
+  }
+  .npFindMark.active{
+    outline: 2px solid rgba(110,168,255,.55);
+    background: rgba(110,168,255,.33);
+  }
+
 </style>
 </head>
 
@@ -502,21 +637,27 @@
           <div class="npGroup">
             <button class="npBtn" id="npLink" type="button" title="Insert link">🔗</button>
             <button class="npBtn" id="npUnlink" type="button" title="Remove link">⨯</button>
-            <button class="npBtn" id="npTextColorBtn" type="button" title="Text color" aria-label="Text color">
+            <button class="npBtn" id="npFindBtn" type="button" title="Find / Replace" aria-label="Find and replace">
+              <svg class="npBtnIcon" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d="M7 6h2l1 5v2H5v-2l2-5zm8 0h2l2 5v2h-5v-2l1-5zM5 14a3 3 0 1 0 6 0a3 3 0 1 0-6 0zm8 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0zM9 9h6v3H9V9z"/>
+              </svg>
+            </button>
+
+            <button class="npBtn npColorWrap" id="npTextColorBtn" type="button" title="Text color" aria-label="Text color">
   <svg class="npBtnIcon" viewBox="0 0 24 24" aria-hidden="true">
     <path fill="currentColor" d="M7.2 20h2.2l1.2-3h6.7l1.2 3H21L14.9 4h-2.8L7.2 20zm4.1-5 2.6-6.6 2.6 6.6h-5.2z"/>
     <path fill="currentColor" d="M4 22h16v-2H4v2z"/>
   </svg>
   <span class="npSwatch" id="npTextSwatch" aria-hidden="true"></span>
+  <input id="npColor" type="color" class="npColorInput" title="Text color"/>
 </button>
-<input id="npColor" type="color" class="npHidden" title="Text color"/>
-<button class="npBtn" id="npHiliteColorBtn" type="button" title="Highlight color" aria-label="Highlight color">
+<button class="npBtn npColorWrap" id="npHiliteColorBtn" type="button" title="Highlight color" aria-label="Highlight color">
   <svg class="npBtnIcon" viewBox="0 0 24 24" aria-hidden="true">
     <path fill="currentColor" d="M3 17h18v2H3v-2zm3.2-2.2 9.9-9.9 2.1 2.1-9.9 9.9H6.2zM18.3 4.6 16.2 2.5 14.8 3.9l2.1 2.1 1.4-1.4z"/>
   </svg>
   <span class="npSwatch" id="npHiliteSwatch" aria-hidden="true"></span>
+  <input id="npHilite" type="color" class="npColorInput" title="Highlight color"/>
 </button>
-<input id="npHilite" type="color" class="npHidden" title="Highlight color"/>
 <button class="npBtn" id="npClear" type="button" title="Clear formatting" aria-label="Clear formatting">
   <span style="font-weight:900;letter-spacing:.2px">Aa</span>
 </button>
@@ -570,6 +711,45 @@
     </div>
   </div>
 </div>
+
+
+<!-- Find & Replace -->
+<div class="npFROverlay npHidden" id="npFR" aria-hidden="true">
+  <div class="npFRModal" role="dialog" aria-modal="true" aria-labelledby="npFRTitle">
+    <div class="npFRHead">
+      <div class="npFRHeadTitle" id="npFRTitle">Find and replace</div>
+      <button class="npFRX" id="npFRClose" type="button" aria-label="Close">✕</button>
+    </div>
+    <div class="npFRBody">
+      <div class="npFRLbl">Find</div>
+      <input class="npFRInput" id="npFindInput" type="text" autocomplete="off" />
+
+      <div class="npFRLbl" id="npReplaceLbl">Replace with</div>
+      <input class="npFRInput" id="npReplaceInput" type="text" autocomplete="off" />
+
+      <div class="npFROpts">
+        <label><input type="checkbox" id="npMatchCase" /> Match case</label>
+        <label><input type="checkbox" id="npWholeWord" /> Whole words</label>
+        <span style="margin-left:auto;opacity:.85">Esc to close</span>
+      </div>
+
+      <div class="npFRRow">
+        <div class="npFRBtns">
+          <button class="npFRBtn primary" id="npFRFindBtn" type="button">Find</button>
+          <button class="npFRBtn" id="npFRReplaceBtn" type="button">Replace</button>
+          <button class="npFRBtn" id="npFRReplaceAllBtn" type="button">Replace all</button>
+        </div>
+        <div class="npFRNav">
+          <button class="npFRBtn" id="npFRPrevBtn" type="button">Prev</button>
+          <button class="npFRBtn" id="npFRNextBtn" type="button">Next</button>
+        </div>
+      </div>
+
+      <div class="npFRHint" id="npFRHint">Tip: ⌘/Ctrl+F opens Find, ⌘/Ctrl+H opens Replace.</div>
+    </div>
+  </div>
+</div>
+
 
 <script>
 /* Learn more modal helpers (shared behavior across tools) */
@@ -1041,8 +1221,8 @@
 
   function applyFontSizePx(px){
     focusEditor();
-    try{ document.execCommand("styleWithCSS", false, true); }catch(_){}
-    // Use the classic hack: apply a large fontSize to selection, then convert that markup to px
+    // Force classic <font size="7"> output so we can reliably convert to px.
+    try{ document.execCommand("styleWithCSS", false, false); }catch(_){}
     try{ document.execCommand("fontSize", false, "7"); }catch(_){}
     // Convert any <font size="7"> into <span style="font-size:..px">
     const fonts = elEditor.querySelectorAll('font[size="7"]');
@@ -1055,6 +1235,7 @@
     scheduleSave();
     reflectTogglesSoon();
   }
+
 
   function applyBlock(tag){
     focusEditor();
@@ -1305,6 +1486,229 @@
     return wrap;
   }
 
+
+  // ---- Find & Replace (compact dialog) ----
+  const btnFind = $("npFindBtn");
+  const frOverlay = $("npFR");
+  const frClose = $("npFRClose");
+  const frFindInput = $("npFindInput");
+  const frReplaceInput = $("npReplaceInput");
+  const frMatchCase = $("npMatchCase");
+  const frWholeWord = $("npWholeWord");
+  const frFindBtn = $("npFRFindBtn");
+  const frReplaceBtn = $("npFRReplaceBtn");
+  const frReplaceAllBtn = $("npFRReplaceAllBtn");
+  const frPrevBtn = $("npFRPrevBtn");
+  const frNextBtn = $("npFRNextBtn");
+  const frHint = $("npFRHint");
+
+  let frMarks = [];
+  let frIndex = -1;
+  let frOpen = false;
+
+  function escapeRegExp(s){
+    return (s||"").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function buildFindRegex(term){
+    if(!term) return null;
+    const base = escapeRegExp(term);
+    const pat = frWholeWord && frWholeWord.checked ? `\\b${base}\\b` : base;
+    const flags = frMatchCase && frMatchCase.checked ? "g" : "gi";
+    try{ return new RegExp(pat, flags); }catch(_){ return null; }
+  }
+
+  function unwrapMarks(){
+    const marks = elEditor.querySelectorAll(".npFindMark");
+    marks.forEach(m=>{
+      const parent = m.parentNode;
+      if(!parent) return;
+      parent.replaceChild(document.createTextNode(m.textContent || ""), m);
+      parent.normalize();
+    });
+  }
+
+  function refreshMarks(){
+    frMarks = Array.from(elEditor.querySelectorAll(".npFindMark"));
+    if(frMarks.length === 0){
+      frIndex = -1;
+      if(frHint) frHint.textContent = "No matches.";
+      return;
+    }
+    if(frIndex < 0 || frIndex >= frMarks.length) frIndex = 0;
+    activateMark(frIndex);
+  }
+
+  function activateMark(i){
+    frMarks.forEach((m, idx)=>m.classList.toggle("active", idx===i));
+    const m = frMarks[i];
+    if(m && typeof m.scrollIntoView === "function"){
+      m.scrollIntoView({block:"center", behavior:"smooth"});
+    }
+    if(frHint) frHint.textContent = `${i+1} of ${frMarks.length} matches`;
+  }
+
+  function highlightMatches(){
+    // Never persist highlights
+    unwrapMarks();
+    frMarks = [];
+    frIndex = -1;
+
+    const term = (frFindInput && frFindInput.value || "").trim();
+    const rx = buildFindRegex(term);
+    if(!rx) { if(frHint) frHint.textContent = "Type something to search."; return; }
+
+    const walker = document.createTreeWalker(elEditor, NodeFilter.SHOW_TEXT, {
+      acceptNode(node){
+        if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        if(node.parentElement && node.parentElement.closest(".npFindMark")) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+
+    const nodes = [];
+    let n;
+    while((n = walker.nextNode())) nodes.push(n);
+
+    nodes.forEach(tn=>{
+      const text = tn.nodeValue;
+      rx.lastIndex = 0;
+      const matches = [];
+      let m;
+      while((m = rx.exec(text))){
+        matches.push({ start: m.index, end: m.index + m[0].length });
+        if(m[0].length === 0) break;
+      }
+      if(matches.length === 0) return;
+
+      const frag = document.createDocumentFragment();
+      let last = 0;
+      matches.forEach(mm=>{
+        if(mm.start > last){
+          frag.appendChild(document.createTextNode(text.slice(last, mm.start)));
+        }
+        const span = document.createElement("span");
+        span.className = "npFindMark";
+        span.textContent = text.slice(mm.start, mm.end);
+        frag.appendChild(span);
+        last = mm.end;
+      });
+      if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      tn.parentNode.replaceChild(frag, tn);
+    });
+
+    refreshMarks();
+  }
+
+  function openFindDialog(mode){
+    frOpen = true;
+    frOverlay.classList.remove("npHidden");
+    frOverlay.setAttribute("aria-hidden", "false");
+    document.body.classList.add("rm-modal-open");
+    // focus find input
+    setTimeout(()=>{
+      frFindInput.focus();
+      frFindInput.select();
+    }, 0);
+
+    // In "find" mode we keep replace visible (compact) but focus on Find.
+    if(mode === "replace"){
+      setTimeout(()=>frReplaceInput.focus(), 10);
+    }
+  }
+
+  function closeFindDialog(){
+    frOpen = false;
+    unwrapMarks();
+    frOverlay.classList.add("npHidden");
+    frOverlay.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("rm-modal-open");
+    frMarks = [];
+    frIndex = -1;
+    if(frHint) frHint.textContent = "Tip: ⌘/Ctrl+F opens Find, ⌘/Ctrl+H opens Replace.";
+  }
+
+  function findNext(dir){
+    if(frMarks.length === 0){ highlightMatches(); return; }
+    frIndex = (frIndex + dir + frMarks.length) % frMarks.length;
+    activateMark(frIndex);
+  }
+
+  function replaceCurrent(){
+    const rep = frReplaceInput.value || "";
+    if(frMarks.length === 0){ highlightMatches(); return; }
+    const m = frMarks[frIndex];
+    if(!m) return;
+    m.textContent = rep;
+    // Re-run to update positions and keep navigation accurate
+    highlightMatches();
+    scheduleSave();
+  }
+
+  function replaceAll(){
+    const rep = frReplaceInput.value || "";
+    if(frMarks.length === 0){ highlightMatches(); }
+    if(frMarks.length === 0) return;
+    frMarks.forEach(m=>{ m.textContent = rep; });
+    unwrapMarks();
+    // After replacements, re-highlight with same query to update counts
+    highlightMatches();
+    scheduleSave();
+  }
+
+  // Ensure highlights never get stored
+  const _saveActive = saveActive;
+  saveActive = function(){
+    unwrapMarks();
+    _saveActive();
+  };
+
+  btnFind && btnFind.addEventListener("click", ()=>openFindDialog("find"));
+  frClose && frClose.addEventListener("click", closeFindDialog);
+  frOverlay && frOverlay.addEventListener("mousedown", (e)=>{
+    if(e.target === frOverlay) closeFindDialog();
+  });
+
+  [frFindInput, frReplaceInput, frMatchCase, frWholeWord].forEach(el=>{
+    if(!el) return;
+    el.addEventListener("input", ()=>highlightMatches());
+    el.addEventListener("change", ()=>highlightMatches());
+  });
+
+  frFindBtn && frFindBtn.addEventListener("click", ()=>highlightMatches());
+  frNextBtn && frNextBtn.addEventListener("click", ()=>findNext(+1));
+  frPrevBtn && frPrevBtn.addEventListener("click", ()=>findNext(-1));
+  frReplaceBtn && frReplaceBtn.addEventListener("click", ()=>replaceCurrent());
+  frReplaceAllBtn && frReplaceAllBtn.addEventListener("click", ()=>replaceAll());
+
+  document.addEventListener("keydown", (e)=>{
+    if(!frOverlay) return;
+    const mac = navigator.platform.toUpperCase().includes("MAC");
+    const mod = mac ? e.metaKey : e.ctrlKey;
+
+    if(e.key === "Escape" && frOpen){
+      e.preventDefault();
+      closeFindDialog();
+      return;
+    }
+
+    if(mod && e.key.toLowerCase() === "f"){
+      e.preventDefault();
+      openFindDialog("find");
+      return;
+    }
+    if(mod && e.key.toLowerCase() === "h"){
+      e.preventDefault();
+      openFindDialog("replace");
+      return;
+    }
+
+    if(frOpen && e.key === "Enter"){
+      e.preventDefault();
+      findNext(+1);
+    }
+  });
+
   // ---- Toggle reflection ----
   let reflectTimer=null;
   function reflectTogglesSoon(){
@@ -1385,11 +1789,7 @@
     hiliteSwatch.style.background = hilitePick.value || "#ffff00";
   }
   syncSwatches();
-
-  textColorBtn.addEventListener("click", ()=>colorPick.click());
-  hiliteColorBtn.addEventListener("click", ()=>hilitePick.click());
-
-  colorPick.addEventListener("input", ()=>{
+colorPick.addEventListener("input", ()=>{
     cmd("foreColor", colorPick.value);
     syncSwatches();
   });
