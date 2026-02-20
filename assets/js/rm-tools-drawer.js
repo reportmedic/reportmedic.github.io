@@ -3,31 +3,43 @@
 (function(){
   const tools = [
     // Icons match the home page drawer for consistency.
-    { id:"compare",   name:"Report Compare",    icon:"≋", desc:"Compare two reports and highlight diffs by key fields." },
-    { id:"reconcile", name:"Reconciliation",    icon:"✓", desc:"Match totals, track variance, and explain gaps." },
-    { id:"cleaner",   name:"Data Cleaner",      icon:"✦", desc:"Trim, normalize, dedupe, fix dates, and standardize formats." },
-    { id:"validator", name:"Schema Validator",  icon:"⊢", desc:"Validate required fields, types, ranges, and null rules." },
-    { id:"outliers",  name:"Outlier Finder",    icon:"⚡", desc:"Detect spikes, anomalies, and suspicious rows fast." },
-    { id:"pivot",     name:"Quick Pivot",       icon:"▦", desc:"Instant pivot tables & group summaries (counts/sums/avg)." },
-    { id:"audit",     name:"Audit Trail Notes", icon:"✎", desc:"Generate audit-ready explanations and change notes." },
-    { id:"notepad",  name:"Online Notepad",    icon:"🗒", desc:"Create, search, and format notes (saved locally in your browser)." },
-    { id:"mask",      name:"PII Masker",        icon:"◎", desc:"Mask sensitive fields for safe sharing." },
-    { id:"export",    name:"Export Studio",     icon:"⇣", desc:"Export cleaned/merged results as CSV/XLSX + summary." },
-    { id:"scheduler", name:"Run Scheduler",     icon:"⏱", desc:"Save a run config and repeat it on new files." },
+    { id:"compare", name:"Report Compare", icon:"≋", desc:"Compare two reports and highlight diffs by key fields." },
+    { id:"reconcile", name:"Reconciliation", icon:"✓", desc:"Match totals, track variance, and explain gaps." },
+    { id:"why", name:"Why Reports Don’t Match", icon:"✎", desc:"Explain the root cause of mismatches in plain English." },
+    { id:"cleaner", name:"Data Cleaner", icon:"✦", desc:"Trim, normalize, dedupe, fix dates, and standardize formats." },
+    { id:"validator", name:"Schema Validator", icon:"⊢", desc:"Validate required fields, types, ranges, and null rules." },
+    { id:"outliers", name:"Outlier Finder", icon:"⚡", desc:"Detect spikes, anomalies, and suspicious rows fast." },
+    { id:"pivot", name:"Quick Pivot", icon:"▦", desc:"Instant pivot tables & group summaries (counts/sums/avg)." },
+    { id:"comparetext", name:"Text Compare", icon:"≡", desc:"Compare two text blocks side-by-side and highlight changes." },
+    { id:"notepad", name:"Online Notepad", icon:"🗒", desc:"Create, search, and format notes (saved locally in your browser)." },
+    { id:"mask", name:"PII Masker", icon:"◎", desc:"Mask sensitive fields for safe sharing." },
+    { id:"export", name:"Export Fixer", icon:"⇣", desc:"Fix export formatting errors and produce clean outputs." },
+    { id:"scheduler", name:"Run Scheduler", icon:"⏱", desc:"Save a run config and repeat it on new files." },
+    { id:"md2html", name:"Markdown → HTML", icon:"⌗", desc:"Convert Markdown to clean HTML instantly." },
+    { id:"html2md", name:"HTML → Markdown", icon:"⟲", desc:"Convert HTML to tidy Markdown." },
+    { id:"md2pdf", name:"Markdown → PDF", icon:"⧉", desc:"Create a PDF from Markdown (client-side)." },
+    { id:"md2docx", name:"Markdown → Word", icon:"W", desc:"Convert Markdown to a Word (DOCX) document." },
+    { id:"docx2md", name:"Word → Markdown", icon:"W⇢", desc:"Convert Word (DOCX) to Markdown." }
   ];
 
   const routes = {
     compare: "/tools/compare-two-files-find-differences.html",
     reconcile: "/tools/reconcile-two-datasets-totals-dont-match.html",
+    why: "/tools/why-two-reports-dont-match.html",
     cleaner: "/tools/clean-dirty-data-file-online.html",
     validator: "/tools/validate-data-schema-and-columns.html",
     outliers: "/tools/find-data-outliers-and-anomalies.html",
     pivot: "/tools/summarize-data-by-group-pivot-online.html",
-    audit: "/tools/why-two-reports-dont-match.html",
+    comparetext: "/tools/compare-two-texts-side-by-side.html",
     notepad: "/tools/online-notepad-rich-text-editor.html",
     mask: "/tools/mask-sensitive-data-before-sharing.html",
     export: "/tools/fix-export-formatting-errors.html",
     scheduler: "/tools/schedule-data-validation-checks.html",
+    md2html: "/tools/markdown-to-html.html",
+    html2md: "/tools/html-to-markdown.html",
+    md2pdf: "/tools/markdown-to-pdf.html",
+    md2docx: "/tools/markdown-to-word-docx.html",
+    docx2md: "/tools/word-docx-to-markdown.html"
   };
 
   function el(tag, attrs={}, html){
@@ -41,10 +53,8 @@
     return n;
   }
 
-  function currentToolId(){
-    const path = (window.location.pathname || "").toLowerCase();
-    const m = path.match(/\/tools\/(.+?)\.html$/);
-    return m ? m[1] : null;
+  function currentPath(){
+    return (window.location.pathname || "").toLowerCase();
   }
 
   function ensureDrawer(){
@@ -73,7 +83,7 @@
     document.body.appendChild(drawer);
 
     // populate
-    const active = currentToolId();
+    const active = currentPath();
     list.innerHTML = "";
     tools.forEach(t=>{
       const a = el("a", { class:"drawerRow", href: routes[t.id] || "#", "data-tool": t.id });
@@ -84,7 +94,7 @@
           <div class="rDesc">${t.desc}</div>
         </div>
       `;
-      if(active && active === t.id){
+      if(active && (routes[t.id] || "").toLowerCase() === active){
         a.classList.add("active");
         a.setAttribute("aria-current", "page");
       }
