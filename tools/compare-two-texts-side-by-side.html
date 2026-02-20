@@ -113,6 +113,9 @@
     .fileRow input[type="file"]{width:100%; max-width:100%;}
     .fileRow .rm-dropzone{width:100%;}
     .hint{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
+
+    .diffNavBtn{padding:8px 10px; min-width:36px; font-weight:700;}
+    tr.rm-active-diff td{box-shadow: inset 0 0 0 2px rgba(255,255,255,.18);}
   </style>
 </head>
 
@@ -183,6 +186,8 @@
 
       <div class="tc-actions">
         <button class="btn primary" id="runBtn" type="button">Compare</button>
+        <button class="btn diffNavBtn" id="prevDiffBtn" type="button" style="display:none" aria-label="Previous difference">&lt;</button>
+        <button class="btn diffNavBtn" id="nextDiffBtn" type="button" style="display:none" aria-label="Next difference">&gt;</button>
         <button class="btn" id="swapBtn" type="button">Swap</button>
         <button class="btn" id="clearBtn" type="button">Clear</button>
         <button class="btn" id="copySummaryBtn" type="button">Copy summary</button>
@@ -249,6 +254,8 @@
     leftMeta: $("leftMeta"),
     rightMeta: $("rightMeta"),
     runBtn: $("runBtn"),
+    prevDiffBtn: $("prevDiffBtn"),
+    nextDiffBtn: $("nextDiffBtn"),
     swapBtn: $("swapBtn"),
     clearBtn: $("clearBtn"),
     status: $("status"),
@@ -262,6 +269,69 @@
     copySummaryBtn: $("copySummaryBtn"),
     downloadBtn: $("downloadBtn"),
   };
+
+  // Diff navigation state (previous/next change)
+  let diffNav = { rows: [], idx: 0 };
+
+  function collectDiffRows(){
+    const table = els.diffBody.querySelector("table.diffTable");
+    if(!table) return [];
+    const trs = Array.from(table.querySelectorAll("tr"));
+    return trs.filter(tr => tr.querySelector("td.cell.added, td.cell.removed"));
+  }
+
+  function setNavVisibility(n){
+    if(!els.prevDiffBtn || !els.nextDiffBtn) return;
+    const show = n > 1;
+    els.prevDiffBtn.style.display = show ? "" : "none";
+    els.nextDiffBtn.style.display = show ? "" : "none";
+  }
+
+  function updateNavDisabled(){
+    if(!els.prevDiffBtn || !els.nextDiffBtn) return;
+    const n = diffNav.rows.length;
+    if(n <= 1){
+      els.prevDiffBtn.disabled = true;
+      els.nextDiffBtn.disabled = true;
+      return;
+    }
+    els.prevDiffBtn.disabled = diffNav.idx <= 0;
+    els.nextDiffBtn.disabled = diffNav.idx >= (n - 1);
+  }
+
+  function markActive(i){
+    diffNav.rows.forEach(tr => tr.classList.remove("rm-active-diff"));
+    const tr = diffNav.rows[i];
+    if(tr) tr.classList.add("rm-active-diff");
+  }
+
+  function scrollToDiff(i){
+    const body = els.diffBody;
+    const tr = diffNav.rows[i];
+    if(!body || !tr) return;
+    const top = tr.offsetTop;
+    const target = Math.max(0, top - body.clientHeight * 0.35);
+    body.scrollTo({top: target, behavior:"smooth"});
+    markActive(i);
+    updateNavDisabled();
+  }
+
+  function setupDiffNav(){
+    diffNav.rows = collectDiffRows();
+    diffNav.idx = 0;
+    setNavVisibility(diffNav.rows.length);
+    updateNavDisabled();
+
+    if(diffNav.rows.length === 1){
+      // Only one difference: jump straight to it.
+      els.diffWrap.scrollIntoView({behavior:"smooth", block:"start"});
+      requestAnimationFrame(()=>scrollToDiff(0));
+    }else if(diffNav.rows.length > 1){
+      // Multiple diffs: show nav buttons, highlight the first diff (no auto-scroll).
+      markActive(0);
+      updateNavDisabled();
+    }
+  }
 
   function setMeta(which, file){
     const target = which === "L" ? els.leftMeta : els.rightMeta;
@@ -388,6 +458,8 @@
 
     if(!rows.length){
       els.diffBody.innerHTML = "<div class='diffEmpty'>No differences found.</div>";
+      setNavVisibility(0);
+      updateNavDisabled();
       return;
     }
 
@@ -407,6 +479,7 @@
     }).join("");
 
     els.diffBody.innerHTML = "<table class='diffTable'><tbody>" + tbody + "</tbody></table>";
+    setupDiffNav();
   }
 
   function swap(){
@@ -423,6 +496,9 @@
     setMeta("L", null);
     setMeta("R", null);
     els.diffWrap.style.display = "none";
+    setNavVisibility(0);
+    diffNav.rows = [];
+    diffNav.idx = 0;
     els.diffBody.innerHTML = "";
     els.counts.textContent = "";
     els.status.textContent = "";
@@ -489,11 +565,29 @@
     els.status.textContent = "Downloaded text-diff.txt";
   }
 
+
+  function navPrev(){
+    if(diffNav.rows.length <= 1) return;
+    if(diffNav.idx <= 0) return;
+    diffNav.idx -= 1;
+    els.diffWrap.scrollIntoView({behavior:"smooth", block:"start"});
+    requestAnimationFrame(()=>scrollToDiff(diffNav.idx));
+  }
+  function navNext(){
+    if(diffNav.rows.length <= 1) return;
+    if(diffNav.idx >= diffNav.rows.length - 1) return;
+    diffNav.idx += 1;
+    els.diffWrap.scrollIntoView({behavior:"smooth", block:"start"});
+    requestAnimationFrame(()=>scrollToDiff(diffNav.idx));
+  }
   els.runBtn.addEventListener("click", buildDiff);
   els.swapBtn.addEventListener("click", swap);
   els.clearBtn.addEventListener("click", clearAll);
   els.copySummaryBtn.addEventListener("click", copySummary);
   els.downloadBtn.addEventListener("click", download);
+  if(els.prevDiffBtn) els.prevDiffBtn.addEventListener("click", navPrev);
+  if(els.nextDiffBtn) els.nextDiffBtn.addEventListener("click", navNext);
+
 
   // Learn-more modal behavior
   function openLM(id){

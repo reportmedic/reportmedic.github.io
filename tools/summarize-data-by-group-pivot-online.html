@@ -49,6 +49,8 @@
     .pillset{display:flex;gap:8px;flex-wrap:wrap}
     .warn{color:rgba(241,196,15,.95)}
     .good{color:rgba(46,204,113,.95)}
+    .previewStack{display:grid;grid-template-columns:1fr;gap:10px}
+    .tablewrap td{font-size:12px;line-height:1.35}
   </style>
   <script defer src="/assets/js/rm-dropzone.js"></script>
   <script defer src="/assets/js/rm-tools-drawer.js"></script>
@@ -252,22 +254,22 @@
 </select>
 </div>
 </div>
-<div class="split" style="margin-top:12px">
-<div class="tablewrap">
+<div class="previewStack" style="margin-top:12px">
+<div class="card" style="margin:0">
+<div style="font-weight:700">Audit notes</div>
+<div class="tiny muted">What was run (settings + counts)</div>
+<div class="hr2"></div>
+<div class="mini muted" id="auditBox">Load a file to begin.</div>
+</div>
+<div class="tablewrap" style="margin-top:10px">
 <table>
 <thead><tr id="thead"></tr></thead>
 <tbody id="tbody"></tbody>
 </table>
 </div>
-<div class="card" style="margin:0">
-<div style="font-weight:700">Audit</div>
-<div class="tiny muted">What was run (settings + counts)</div>
-<div class="hr2"></div>
-<div class="mini muted" id="auditBox">Load a file to begin.</div>
 </div>
 </div>
-</div>
-<div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+<div style="margin-top:12px display:flex; gap:10px; flex-wrap:wrap;">
 <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
 <a class="btn" href="/docs/contact.html">Contact</a>
 </div>
