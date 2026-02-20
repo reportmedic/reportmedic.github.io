@@ -89,6 +89,7 @@
           <div class="tiny muted" style="margin-bottom:6px">Extraction options</div>
           <div class="chklist">
             <label class="chk"><input id="optDehyphen" type="checkbox" checked /> <span class="tiny">Fix broken words (de-hyphenate)</span></label>
+            <label class="chk"><input id="optFormat" type="checkbox" checked /> <span class="tiny">Preserve headings &amp; emphasis (beta)</span></label>
             <label class="chk"><input id="optMergeWrap" type="checkbox" /> <span class="tiny">Merge wrapped lines into paragraphs</span></label>
             <label class="chk"><input id="optPageSep" type="checkbox" /> <span class="tiny">Add page separators</span></label>
             <label class="chk"><input id="optPageHead" type="checkbox" /> <span class="tiny">Add “## Page N” headings</span></label>
@@ -184,6 +185,7 @@
     const optMergeWrap = $('#optMergeWrap');
     const optPageSep = $('#optPageSep');
     const optPageHead = $('#optPageHead');
+    const optFormat = $('#optFormat');
 
     let currentName = 'document.pdf';
     let currentBytes = 0;
@@ -245,15 +247,45 @@
       return /^\s*(?:[-*+]\s+|\d+\.|\u2022\s+)/.test(line);
     }
 
-    function buildLinesFromItems(items){
+    function buildLinesFromItems(items, styles, preserveFmt){
+      // PDFs are "painted" pages (x/y positioned glyphs), not structured docs.
+      // We can only *infer* Markdown from font names/sizes and layout.
+      const cleanItems = (items || []).filter(it => it && it.str && String(it.str).trim() !== '');
+      if(cleanItems.length === 0) return [];
+
+      function fontSizeFromTransform(t){
+        // t = [a,b,c,d,e,f] scale can be derived from (a,b) or (c,d)
+        const a = (t && t[0]) || 0, b = (t && t[1]) || 0, c = (t && t[2]) || 0, d = (t && t[3]) || 0;
+        const s1 = Math.hypot(a,b);
+        const s2 = Math.hypot(c,d);
+        const s = Math.max(s1, s2);
+        return Number.isFinite(s) && s > 0 ? s : 0;
+      }
+      function flagsFor(it){
+        const fn = (it && it.fontName) ? String(it.fontName) : '';
+        const st = (styles && fn && styles[fn]) ? styles[fn] : null;
+        const fam = st && st.fontFamily ? String(st.fontFamily) : '';
+        const ref = (fn + ' ' + fam).toLowerCase();
+        const bold = /bold|black|demi|semibold/.test(ref);
+        const italic = /italic|oblique/.test(ref);
+        return { bold, italic };
+      }
+      function wrap(text, bold, italic){
+        const t = String(text || '');
+        if(!t) return '';
+        if(bold && italic) return '***' + t + '***';
+        if(bold) return '**' + t + '**';
+        if(italic) return '*' + t + '*';
+        return t;
+      }
+
       // Group text items into lines using Y position tolerance.
       const out = [];
-      const sorted = items
-        .filter(it => it && it.str && String(it.str).trim() !== '')
+      const sorted = cleanItems
         .map(it => {
           const t = it.transform || [1,0,0,1,0,0];
-          // transform[5] is Y, [4] is X in viewport units.
-          return { str: String(it.str), x: t[4] || 0, y: t[5] || 0, w: it.width || 0 };
+          const f = flagsFor(it);
+          return { str: String(it.str), x: t[4] || 0, y: t[5] || 0, w: it.width || 0, size: fontSizeFromTransform(t), bold: f.bold, italic: f.italic };
         })
         .sort((a,b)=> (b.y - a.y) || (a.x - b.x));
 
@@ -272,22 +304,85 @@
       }
       if(cur.length) out.push(cur);
 
-      // Build line strings by X order.
-      const lines = out.map(group => {
+      // Build line objects
+      const lineObjs = out.map(group => {
         const g = group.sort((a,b)=> a.x - b.x);
-        let s = '';
+        let md = '';
+        let plain = '';
         let lastX = null;
+        let segText = '';
+        let segBold = false, segItalic = false;
+        let sizes = [];
+
+        function flushSeg(){
+          if(!segText) return;
+          md += wrap(segText, segBold, segItalic);
+          plain += segText;
+          segText = '';
+        }
+
         for(const it of g){
+          sizes.push(it.size || 0);
           const gap = (lastX == null) ? 0 : (it.x - lastX);
-          if(s && gap > 2.5) s += ' ';
-          s += it.str;
+          if((md || segText) && gap > 2.5){
+            // space boundary
+            segText += ' ';
+          }
+          // If style changes, flush current segment
+          if(preserveFmt){
+            if(segText && (it.bold !== segBold || it.italic !== segItalic)){
+              flushSeg();
+            }
+            if(!segText){
+              segBold = it.bold;
+              segItalic = it.italic;
+            }
+          }
+          segText += it.str;
           lastX = it.x + (it.w || 0);
         }
-        return s.replace(/\s+/g,' ').trim();
+        flushSeg();
+
+        plain = plain.replace(/\s+/g,' ').trim();
+        md = md.replace(/\s+/g,' ').trim();
+
+        // representative size for heading inference
+        const nonzero = sizes.filter(s => s > 0);
+        nonzero.sort((a,b)=>a-b);
+        const mid = nonzero.length ? nonzero[Math.floor(nonzero.length/2)] : 0;
+
+        return { md, plain, size: mid };
+      }).filter(o => o && o.md);
+
+      if(!preserveFmt){
+        // Keep legacy behavior: plain lines only
+        return lineObjs.map(o => o.plain).filter(Boolean);
+      }
+
+      // Infer headings from relative font sizes (best-effort).
+      const allSizes = lineObjs.map(o => o.size).filter(s => s > 0).sort((a,b)=>a-b);
+      const median = allSizes.length ? allSizes[Math.floor(allSizes.length/2)] : 0;
+
+      const lines = lineObjs.map(o => {
+        let s = o.md;
+        const txt = o.plain || o.md;
+        if(!s) return '';
+        // Don't re-wrap things that already look like Markdown structures.
+        if(/^\s*#{1,6}\s+/.test(s) || /^\s*(?:[-*+]\s+|\d+\.)/.test(s) || /^\s*>/.test(s)) return s;
+
+        if(median > 0){
+          const ratio = o.size / median;
+          const shortish = txt.length <= 90;
+          if(ratio >= 1.60 && shortish) s = '# ' + s;
+          else if(ratio >= 1.35 && shortish) s = '## ' + s;
+          else if(ratio >= 1.20 && txt.length <= 110) s = '### ' + s;
+        }
+        return s;
       }).filter(Boolean);
 
       return lines;
     }
+
 
     function dehyphenate(lines){
       const out = [];
@@ -341,7 +436,7 @@
         setStatus('Reading page '+p+' of '+pageCount+'…');
         const page = await pdf.getPage(p);
         const tc = await page.getTextContent({ normalizeWhitespace: true, disableCombineTextItems:false });
-        let lines = buildLinesFromItems(tc.items || []);
+        let lines = buildLinesFromItems(tc.items || [], tc.styles || {}, optFormat.checked);
         // Fallback: if line grouping fails, still return the raw extracted text.
         if((!lines || lines.length===0) && tc && Array.isArray(tc.items)){
           const raw = tc.items.map(it => (it && typeof it.str==='string') ? it.str : '')
