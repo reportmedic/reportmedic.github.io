@@ -12,6 +12,10 @@
 <style>
     /* Minimal page-specific styling; keeps your global /assets/css/styles.css as the source of truth. */
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    /* Prevent long unbroken output from shrinking the Input column */
+    .grid2 > *{min-width:0}
+    #preview, .diffbox{min-width:0; overflow-wrap:anywhere; word-break:break-word}
+    #preview pre, #preview code{white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word}
     @media (max-width: 880px){.grid2{grid-template-columns:1fr}}
     .card{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;background:rgba(0,0,0,.10)}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
