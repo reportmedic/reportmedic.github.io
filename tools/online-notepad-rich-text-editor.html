@@ -283,116 +283,82 @@
   }
   .npFullscreen .npEditor{ padding: 18px 18px; }
 
-  /* Learn more link sizing (consistent across tools) */
-  h1 .rm-lm-link{
-    font-size: 12px;
-    font-weight: 700;
-    color: rgba(255,255,255,.82);
-    text-decoration: none;
-    margin-left: 8px;
-    padding: 4px 8px;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,.14);
-    background: rgba(255,255,255,.03);
-    vertical-align: middle;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  h1 .rm-lm-link:hover{ background: rgba(255,255,255,.06); }
+  /* Find & replace */
+  .npBtn.npIcon{ padding: 0 10px; display:flex; align-items:center; justify-content:center; }
+  .npBtn.npIcon svg{ width:16px; height:16px; display:block; }
 
-  /* Learn-more modal fallback styles (in case global CSS is missing) */
-  .rm-lm-overlay{
-    position: fixed;
-    inset: 0;
-    z-index: 10050;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 14px;
-    background: rgba(0,0,0,.58);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .18s ease;
-  }
-  .rm-lm-overlay.show{ opacity: 1; pointer-events: auto; }
-  .rm-lm-modal{
-    width: min(740px, calc(100% - 18px));
-    border-radius: 18px;
-    border: 1px solid rgba(255,255,255,.14);
-    background: rgba(10,16,30,.96);
-    box-shadow: 0 18px 60px rgba(0,0,0,.55);
-    overflow: hidden;
-  }
-  .rm-lm-head{
-    display:flex;
+  .npFindOverlay{
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.55);
+    display:none;
     align-items:flex-start;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 14px 14px 10px 14px;
-    border-bottom: 1px solid rgba(255,255,255,.10);
+    justify-content:center;
+    padding: 72px 16px 16px;
+    z-index: 9999;
   }
-  .rm-lm-title{ font-weight: 900; font-size: 15px; color: rgba(255,255,255,.92); }
-  .rm-lm-sub{ margin-top: 4px; font-size: 13px; color: rgba(255,255,255,.66); }
-  .rm-lm-x{
-    width: 34px; height: 34px;
+  .npFindOverlay.open{ display:flex; }
+  .npFindModal{
+    width: min(720px, 100%);
+    background: #fff;
+    color: #111827;
     border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.14);
-    background: rgba(255,255,255,.03);
-    color: rgba(255,255,255,.9);
-    cursor: pointer;
+    box-shadow: 0 24px 80px rgba(0,0,0,.35);
+    border: 1px solid rgba(17,24,39,.12);
+    overflow:hidden;
   }
-  .rm-lm-x:hover{ background: rgba(255,255,255,.06); }
-  .rm-lm-body{ padding: 12px 14px 2px 14px; }
-  .rm-lm-list{ margin: 0 0 10px 16px; padding: 0; }
-  .rm-lm-list li{ margin: 8px 0; color: rgba(255,255,255,.86); font-size: 13px; line-height: 1.55; }
-  .rm-lm-callout{
-    margin: 10px 0 12px 0;
-    padding: 10px 12px;
-    border-radius: 14px;
-    border: 1px solid rgba(110,168,255,.22);
-    background: rgba(110,168,255,.10);
-    color: rgba(255,255,255,.88);
-    font-size: 13px;
+  .npFindHead{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(17,24,39,.12);
   }
-  .rm-lm-foot{
-    display:flex;
-    justify-content:flex-end;
-    gap: 10px;
-    padding: 12px 14px;
-    border-top: 1px solid rgba(255,255,255,.10);
-    background: rgba(255,255,255,.02);
-  }
-  body.rm-modal-open{ overflow:hidden; }
-
-  /* Notebook controls */
-  .npNotebookRow{
-    display:flex;
-    gap:8px;
-    align-items:center;
-    margin-bottom: 10px;
-  }
-  .npNotebookSel{
-    flex: 1;
-    max-width: none;
-  }
-  .npTinyIcon{
+  .npFindTitle{ font-size: 18px; font-weight: 800; }
+  .npFindX{
     width:34px; height:34px;
     border-radius: 10px;
+    border: 1px solid rgba(17,24,39,.18);
+    background: #fff;
+    cursor: pointer;
   }
+  .npFindBody{ padding: 14px 16px 16px; }
+  .npFindRow{ display:grid; grid-template-columns: 120px 1fr; gap: 12px; align-items:center; margin: 10px 0; }
+  .npFindLbl{ font-size: 13px; color:#374151; }
+  .npFindInput{
+    height: 38px; padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(17,24,39,.22);
+    background: #fff;
+    outline: none;
+    font-size: 14px;
+  }
+  .npFindInput:focus{ border-color: rgba(37,99,235,.6); box-shadow: 0 0 0 3px rgba(37,99,235,.18); }
+  .npFindOpts{ display:flex; gap: 18px; padding: 8px 0 6px; }
+  .npFindChk{ display:flex; gap: 8px; align-items:center; font-size: 13px; color:#111827; }
+  .npFindChk input{ width: 16px; height:16px; }
+  .npFindBtns{ display:flex; justify-content:space-between; gap: 12px; padding-top: 10px; flex-wrap:wrap; }
+  .npFindBtnsLeft, .npFindBtnsRight{ display:flex; gap: 8px; align-items:center; flex-wrap:wrap; }
+  .npFindBtn{
+    height: 34px; padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(17,24,39,.22);
+    background: #f8fafc;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .npFindBtn.primary{ background:#2563eb; color:#fff; border-color:#2563eb; }
+  .npFindBtn:disabled{ opacity:.45; cursor:not-allowed; }
+  .npFindCount{ font-size: 12px; color:#6b7280; min-width:52px; text-align:center; }
 
-  /* Color buttons with icons */
-  .npBtnIcon{
-    width: 16px;
-    height: 16px;
-    display: inline-block;
+  mark.npFindHit{
+    background: #fde68a;
+    padding: 0 .08em;
+    border-radius: .15em;
   }
-  .npSwatch{
-    width: 14px;
-    height: 14px;
-    border-radius: 5px;
-    border: 1px solid rgba(255,255,255,.16);
-    background: rgba(255,255,255,.18);
+  mark.npFindHit.active{
+    outline: 2px solid #2563eb;
+    background: #fbbf24;
+  }
+  @media (max-width: 520px){
+    .npFindRow{ grid-template-columns: 1fr; gap: 6px; }
   }
 
 </style>
@@ -421,13 +387,8 @@
       <!-- Left -->
       <aside class="npLeft" aria-label="Notes list">
         <div class="npLeftTop">
-          <div class="npNotebookRow">
-  <select class="npSelect npNotebookSel" id="npNotebookSel" aria-label="Notebook"></select>
-  <button class="npIconBtn npTinyIcon" id="npAddNotebookBtn" type="button" title="Add notebook">＋</button>
-  <button class="npIconBtn npTinyIcon" id="npDelNotebookBtn" type="button" title="Delete notebook">🗑</button>
-</div>
-<button class="npNewBtn" id="npNewBtn" type="button">＋ New Note</button>
-<input class="npSearch" id="npSearch" type="search" placeholder="Search notes…" autocomplete="off"/>
+          <button class="npNewBtn" id="npNewBtn" type="button">＋ New Note</button>
+          <input class="npSearch" id="npSearch" type="search" placeholder="Search notes…" autocomplete="off"/>
         </div>
         <div class="npList" id="npList"></div>
       </aside>
@@ -477,6 +438,15 @@
             <input class="npMini" id="npFontSize" type="number" min="10" max="36" value="14" title="Font size (px)"/>
             <button class="npBtn" id="npInc" type="button" title="Increase font size">＋</button>
             <button class="npBtn" id="npDec" type="button" title="Decrease font size">－</button>
+
+            <button class="npBtn npIcon" id="npFindBtn" type="button" title="Find &amp; replace" aria-label="Find &amp; replace">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M7 7h4v10H7a3 3 0 0 1-3-3V10a3 3 0 0 1 3-3zm10 0h-4v10h4a3 3 0 0 0 3-3V10a3 3 0 0 0-3-3z" fill="currentColor"/>
+                <path d="M11 10h2v4h-2z" fill="currentColor"/>
+                <path d="M6.5 5.5h4A2.5 2.5 0 0 1 13 8v1H11V8a.5.5 0 0 0-.5-.5h-4A.5.5 0 0 0 6 8v1H4V8a2.5 2.5 0 0 1 2.5-2.5zm7 0h4A2.5 2.5 0 0 1 20 8v1h-2V8a.5.5 0 0 0-.5-.5h-4A.5.5 0 0 0 13 8v1h-2V8a2.5 2.5 0 0 1 2.5-2.5z" fill="currentColor" opacity=".9"/>
+                <path d="M8 18.5h2V21H8zM14 18.5h2V21h-2z" fill="currentColor" opacity=".9"/>
+              </svg>
+            </button>
           </div>
 
           <div class="npSep"></div>
@@ -502,24 +472,9 @@
           <div class="npGroup">
             <button class="npBtn" id="npLink" type="button" title="Insert link">🔗</button>
             <button class="npBtn" id="npUnlink" type="button" title="Remove link">⨯</button>
-            <button class="npBtn" id="npTextColorBtn" type="button" title="Text color" aria-label="Text color">
-  <svg class="npBtnIcon" viewBox="0 0 24 24" aria-hidden="true">
-    <path fill="currentColor" d="M7.2 20h2.2l1.2-3h6.7l1.2 3H21L14.9 4h-2.8L7.2 20zm4.1-5 2.6-6.6 2.6 6.6h-5.2z"/>
-    <path fill="currentColor" d="M4 22h16v-2H4v2z"/>
-  </svg>
-  <span class="npSwatch" id="npTextSwatch" aria-hidden="true"></span>
-</button>
-<input id="npColor" type="color" class="npHidden" title="Text color"/>
-<button class="npBtn" id="npHiliteColorBtn" type="button" title="Highlight color" aria-label="Highlight color">
-  <svg class="npBtnIcon" viewBox="0 0 24 24" aria-hidden="true">
-    <path fill="currentColor" d="M3 17h18v2H3v-2zm3.2-2.2 9.9-9.9 2.1 2.1-9.9 9.9H6.2zM18.3 4.6 16.2 2.5 14.8 3.9l2.1 2.1 1.4-1.4z"/>
-  </svg>
-  <span class="npSwatch" id="npHiliteSwatch" aria-hidden="true"></span>
-</button>
-<input id="npHilite" type="color" class="npHidden" title="Highlight color"/>
-<button class="npBtn" id="npClear" type="button" title="Clear formatting" aria-label="Clear formatting">
-  <span style="font-weight:900;letter-spacing:.2px">Aa</span>
-</button>
+            <input class="npColor" id="npColor" type="color" title="Text color"/>
+            <input class="npColor" id="npHilite" type="color" title="Highlight color"/>
+            <button class="npBtn" id="npClear" type="button" title="Clear formatting">Aa</button>
           </div>
 
           <div class="npSep"></div>
@@ -543,6 +498,47 @@
     </div>
   </div>
 </div>
+
+<!-- Find & replace modal -->
+<div class="npFindOverlay" id="npFindOverlay" aria-hidden="true">
+  <div class="npFindModal" role="dialog" aria-modal="true" aria-labelledby="npFindTitle">
+    <div class="npFindHead">
+      <div class="npFindTitle" id="npFindTitle">Find and replace</div>
+      <button class="npFindX" type="button" id="npFindClose" aria-label="Close">✕</button>
+    </div>
+
+    <div class="npFindBody">
+      <label class="npFindRow">
+        <span class="npFindLbl">Find</span>
+        <input class="npFindInput" id="npFindText" type="text" autocomplete="off"/>
+      </label>
+
+      <label class="npFindRow">
+        <span class="npFindLbl">Replace with</span>
+        <input class="npFindInput" id="npReplaceText" type="text" autocomplete="off"/>
+      </label>
+
+      <div class="npFindOpts">
+        <label class="npFindChk"><input id="npFindMatchCase" type="checkbox"/> <span>Match case</span></label>
+        <label class="npFindChk"><input id="npFindWholeWords" type="checkbox"/> <span>Whole words</span></label>
+      </div>
+
+      <div class="npFindBtns">
+        <div class="npFindBtnsLeft">
+          <button class="npFindBtn" id="npFindDo" type="button">Find</button>
+          <button class="npFindBtn" id="npFindReplace" type="button">Replace</button>
+          <button class="npFindBtn" id="npFindReplaceAll" type="button">Replace all</button>
+        </div>
+        <div class="npFindBtnsRight">
+          <span class="npFindCount" id="npFindCount">0/0</span>
+          <button class="npFindBtn" id="npFindPrev" type="button">Prev</button>
+          <button class="npFindBtn" id="npFindNext" type="button">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <!-- Learn-more modal (matches other pages) -->
 <div class="rm-lm-overlay" id="rmLM" aria-hidden="true">
@@ -601,10 +597,9 @@
 </script>
 
 <script>
-/* Notepad — local-only, rich-text editor using contenteditable + execCommand + notebook support */
+/* Notepad — local-only, rich-text editor using contenteditable + execCommand */
 (function(){
-  const LEGACY_KEY = "rm_notepad_notes_v1";
-  const LS_KEY = "rm_notepad_notebooks_v1";
+  const LS_KEY = "rm_notepad_notes_v1";
   const $ = (id)=>document.getElementById(id);
 
   const elList = $("npList");
@@ -619,10 +614,6 @@
   const elCopy = $("npCopyBtn");
   const elDelete = $("npDeleteBtn");
   const elFull = $("npFullBtn");
-
-  const nbSel = $("npNotebookSel");
-  const nbAddBtn = $("npAddNotebookBtn");
-  const nbDelBtn = $("npDelNotebookBtn");
 
   const fontSel = $("npFont");
   const fmtSel = $("npFormat");
@@ -642,12 +633,6 @@
 
   const btnLink = $("npLink");
   const btnUnlink = $("npUnlink");
-
-  const textColorBtn = $("npTextColorBtn");
-  const hiliteColorBtn = $("npHiliteColorBtn");
-  const textSwatch = $("npTextSwatch");
-  const hiliteSwatch = $("npHiliteSwatch");
-
   const colorPick = $("npColor");
   const hilitePick = $("npHilite");
   const btnClear = $("npClear");
@@ -657,78 +642,48 @@
   const btnEmoji = $("npEmoji");
   const btnFormats = $("npFormats");
 
+  const btnFind = $("npFindBtn");
+  const findOverlay = $("npFindOverlay");
+  const findClose = $("npFindClose");
+  const findText = $("npFindText");
+  const replaceText = $("npReplaceText");
+  const findMatchCase = $("npFindMatchCase");
+  const findWholeWords = $("npFindWholeWords");
+  const findDo = $("npFindDo");
+  const findPrev = $("npFindPrev");
+  const findNext = $("npFindNext");
+  const findReplace = $("npFindReplace");
+  const findReplaceAll = $("npFindReplaceAll");
+  const findCount = $("npFindCount");
+
   const btnUndo = $("npUndo");
   const btnRedo = $("npRedo");
 
-  // ---- State (Notebooks + Notes) ----
-  // notebooks: [{id,name}], notes: [{id, notebookId, title, html, updated}]
-  let state = { notebooks: [], notes: [], activeNotebookId: null, activeNoteId: null };
+  let notes = [];
+  let activeId = null;
   let saveTimer = null;
   let dirty = false;
 
   function nowISO(){ return new Date().toISOString(); }
-  function uuid(prefix){
-    return (prefix || "id") + "_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
-  }
-
-  function safeParse(raw){
-    try{ return JSON.parse(raw); }catch(_){ return null; }
-  }
 
   function load(){
-    const raw = localStorage.getItem(LS_KEY);
-    const parsed = raw ? safeParse(raw) : null;
-
-    if(parsed && typeof parsed === "object" && Array.isArray(parsed.notebooks) && Array.isArray(parsed.notes)){
-      state = {
-        notebooks: parsed.notebooks,
-        notes: parsed.notes,
-        activeNotebookId: parsed.activeNotebookId || null,
-        activeNoteId: parsed.activeNoteId || null
-      };
-      // harden
-      if(state.notebooks.length === 0) state.notebooks = [];
-      if(state.notes.length === 0) state.notes = [];
-      return;
-    }
-
-    // Migrate legacy notes -> a default notebook
-    const legacyRaw = localStorage.getItem(LEGACY_KEY);
-    const legacy = legacyRaw ? safeParse(legacyRaw) : null;
-    if(Array.isArray(legacy) && legacy.length){
-      const nbId = uuid("nb");
-      state.notebooks = [{ id: nbId, name: "My Notebook" }];
-      state.notes = legacy.map(n => ({
-        id: n.id || uuid("n"),
-        notebookId: nbId,
-        title: n.title || "Untitled note",
-        html: n.html || "",
-        updated: n.updated || nowISO()
-      }));
-      state.activeNotebookId = nbId;
-      state.activeNoteId = state.notes.sort((a,b)=>(b.updated||"").localeCompare(a.updated||""))[0].id;
-      persist();
-      return;
-    }
-
-    // Fresh start
-    const nbId = uuid("nb");
-    state.notebooks = [{ id: nbId, name: "My Notebook" }];
-    state.activeNotebookId = nbId;
-    state.notes = [];
-    persist();
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      notes = raw ? JSON.parse(raw) : [];
+      if(!Array.isArray(notes)) notes = [];
+    }catch(_){ notes = []; }
   }
-
   function persist(){
-    localStorage.setItem(LS_KEY, JSON.stringify(state));
+    localStorage.setItem(LS_KEY, JSON.stringify(notes));
   }
-
+  function uuid(){
+    return "n_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+  }
   function plainTextFromHtml(html){
     const d=document.createElement("div");
     d.innerHTML = html || "";
     return (d.textContent || "").replace(/\s+/g," ").trim();
   }
-
   function relTime(iso){
     if(!iso) return "";
     const t = new Date(iso).getTime();
@@ -744,67 +699,14 @@
     return new Date(iso).toLocaleDateString();
   }
 
-  function setSavedBadge(stateLabel){
-    if(stateLabel==="saving"){ elSaved.textContent="Saving…"; elSaved.style.opacity="1"; }
-    else if(stateLabel==="unsaved"){ elSaved.textContent="Unsaved"; elSaved.style.opacity=".95"; }
-    else { elSaved.textContent="Saved"; elSaved.style.opacity=".75"; }
-  }
-
-  function scheduleSave(){
-    dirty = true;
-    setSavedBadge("unsaved");
-    if(saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(()=>saveActive(), 350);
-  }
-
   function sortNotes(){
-    state.notes.sort((a,b)=> (b.updated||"").localeCompare(a.updated||""));
-  }
-
-  function notesForNotebook(nbId){
-    return state.notes.filter(n => n.notebookId === nbId);
-  }
-
-  function getActiveNotebook(){
-    return state.notebooks.find(nb => nb.id === state.activeNotebookId) || null;
-  }
-
-  function getActiveNote(){
-    return state.notes.find(n => n.id === state.activeNoteId) || null;
-  }
-
-  function ensureNotebookSelection(){
-    if(!state.activeNotebookId || !state.notebooks.some(nb => nb.id === state.activeNotebookId)){
-      state.activeNotebookId = state.notebooks[0]?.id || null;
-    }
-  }
-
-  function ensureActiveNote(){
-    const nbId = state.activeNotebookId;
-    const list = notesForNotebook(nbId);
-    if(!state.activeNoteId || !list.some(n => n.id === state.activeNoteId)){
-      state.activeNoteId = list.sort((a,b)=> (b.updated||"").localeCompare(a.updated||""))[0]?.id || null;
-    }
-  }
-
-  // ---- UI rendering ----
-  function renderNotebooks(){
-    nbSel.innerHTML = "";
-    state.notebooks.forEach(nb=>{
-      const opt=document.createElement("option");
-      opt.value = nb.id;
-      opt.textContent = nb.name || "Notebook";
-      nbSel.appendChild(opt);
-    });
-    if(state.activeNotebookId) nbSel.value = state.activeNotebookId;
+    notes.sort((a,b)=> (b.updated||"").localeCompare(a.updated||""));
   }
 
   function filteredNotes(){
     const q = (elSearch.value || "").trim().toLowerCase();
-    const nbId = state.activeNotebookId;
-    let list = notesForNotebook(nbId);
-    if(!q) return list;
-    return list.filter(n=>{
+    if(!q) return notes;
+    return notes.filter(n=>{
       const t=(n.title||"").toLowerCase();
       const body=plainTextFromHtml(n.html||"").toLowerCase();
       return t.includes(q) || body.includes(q);
@@ -812,21 +714,21 @@
   }
 
   function renderList(){
-    const list = filteredNotes().sort((a,b)=> (b.updated||"").localeCompare(a.updated||""));
+    const list = filteredNotes();
     elList.innerHTML = "";
     if(list.length === 0){
       const empty = document.createElement("div");
       empty.style.padding="12px";
       empty.style.color="rgba(255,255,255,.55)";
       empty.style.fontSize="13px";
-      empty.textContent = state.notes.length ? "No matches in this notebook." : "No notes yet. Create your first note.";
+      empty.textContent = notes.length ? "No matches." : "No notes yet. Create your first note.";
       elList.appendChild(empty);
       return;
     }
 
     list.forEach(n=>{
       const item=document.createElement("div");
-      item.className="npItem" + (n.id===state.activeNoteId ? " active" : "");
+      item.className="npItem" + (n.id===activeId ? " active" : "");
       item.dataset.id=n.id;
 
       const title=document.createElement("div");
@@ -854,21 +756,26 @@
     });
   }
 
-  function openNote(id){
-    if(dirty) saveActive();
-    state.activeNoteId = id;
-    const n = getActiveNote();
-    if(!n) return;
-    elTitle.value = n.title || "";
-    elEditor.innerHTML = n.html || "";
-    setSavedBadge("saved");
-    persist();
-    renderList();
-    setTimeout(()=>elEditor.focus(), 0);
+  function getActive(){
+    return notes.find(n=>n.id===activeId) || null;
+  }
+
+  function setSavedBadge(state){
+    // state: "saved" | "saving" | "unsaved"
+    if(state==="saving"){ elSaved.textContent="Saving…"; elSaved.style.opacity="1"; }
+    else if(state==="unsaved"){ elSaved.textContent="Unsaved"; elSaved.style.opacity=".95"; }
+    else { elSaved.textContent="Saved"; elSaved.style.opacity=".75"; }
+  }
+
+  function scheduleSave(){
+    dirty = true;
+    setSavedBadge("unsaved");
+    if(saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=>saveActive(), 350);
   }
 
   function saveActive(){
-    const n=getActiveNote();
+    const n=getActive();
     if(!n) return;
     n.title = (elTitle.value || "").trim() || "Untitled note";
     n.html = elEditor.innerHTML || "";
@@ -880,27 +787,37 @@
     renderList();
   }
 
-  function newNote(){
-    const nbId = state.activeNotebookId;
-    const n = { id: uuid("n"), notebookId: nbId, title:"Untitled note", html:"", updated: nowISO() };
-    state.notes.unshift(n);
-    state.activeNoteId = n.id;
-    persist();
+  function selectNote(id){
+    if(dirty) saveActive();
+    activeId = id;
+    const n=getActive();
+    if(!n) return;
+    elTitle.value = n.title || "";
+    elEditor.innerHTML = n.html || "";
+    setSavedBadge("saved");
     renderList();
-    openNote(n.id);
+    setTimeout(()=>elEditor.focus(), 0);
   }
 
-  function deleteActiveNote(){
-    const n=getActiveNote();
+  function newNote(){
+    const n = { id: uuid(), title:"Untitled note", html:"", updated: nowISO() };
+    notes.unshift(n);
+    activeId = n.id;
+    persist();
+    renderList();
+    selectNote(n.id);
+  }
+
+  function deleteActive(){
+    const n=getActive();
     if(!n) return;
     const ok = confirm("Delete this note? This cannot be undone.");
     if(!ok) return;
-    state.notes = state.notes.filter(x=>x.id!==state.activeNoteId);
-    dirty = false;
-    ensureActiveNote();
+    notes = notes.filter(x=>x.id!==activeId);
     persist();
+    activeId = notes[0]?.id || null;
     renderList();
-    if(state.activeNoteId) openNote(state.activeNoteId);
+    if(activeId) selectNote(activeId);
     else{
       elTitle.value="";
       elEditor.innerHTML="";
@@ -909,7 +826,7 @@
   }
 
   function downloadActive(){
-    const n=getActiveNote();
+    const n=getActive();
     if(!n) return;
     saveActive();
     const safeName = (n.title || "note").replace(/[^a-z0-9\-_ ]/gi,"").trim().slice(0,60) || "note";
@@ -924,13 +841,14 @@
   }
 
   function copyActive(){
-    const n=getActiveNote();
+    const n=getActive();
     if(!n) return;
     saveActive();
     const plain = plainTextFromHtml(n.html||"");
     (navigator.clipboard?.writeText ? navigator.clipboard.writeText(plain) : Promise.reject())
       .then(()=>toast("Copied as text"))
       .catch(()=>{
+        // fallback
         const t=document.createElement("textarea");
         t.value=plain;
         document.body.appendChild(t);
@@ -945,58 +863,7 @@
     return (s||"").replace(/[&<>"]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
   }
 
-  // ---- Notebooks ----
-  function addNotebook(){
-    const name = (prompt("Notebook name:") || "").trim();
-    if(!name) return;
-    const nb = { id: uuid("nb"), name: name.slice(0, 60) };
-    state.notebooks.unshift(nb);
-    state.activeNotebookId = nb.id;
-    state.activeNoteId = null;
-    persist();
-    renderNotebooks();
-    renderList();
-    // Make a first note so the notebook isn't empty
-    newNote();
-  }
-
-  function deleteNotebook(){
-    const nb = getActiveNotebook();
-    if(!nb) return;
-    if(state.notebooks.length === 1){
-      alert("You need at least one notebook.");
-      return;
-    }
-    const ok = confirm(`Delete notebook "${nb.name}" and all notes inside it? This cannot be undone.`);
-    if(!ok) return;
-
-    // remove notes
-    state.notes = state.notes.filter(n => n.notebookId !== nb.id);
-    // remove notebook
-    state.notebooks = state.notebooks.filter(x => x.id !== nb.id);
-
-    // select next notebook
-    state.activeNotebookId = state.notebooks[0]?.id || null;
-    ensureActiveNote();
-    persist();
-    renderNotebooks();
-    renderList();
-    if(state.activeNoteId) openNote(state.activeNoteId);
-    else newNote();
-  }
-
-  function changeNotebook(nbId){
-    if(dirty) saveActive();
-    state.activeNotebookId = nbId;
-    state.activeNoteId = null;
-    ensureActiveNote();
-    persist();
-    renderList();
-    if(state.activeNoteId) openNote(state.activeNoteId);
-    else newNote();
-  }
-
-  // ---- Toast ----
+  /* Simple toast (matches site tone) */
   let toastTimer=null;
   function toast(msg){
     let t=document.getElementById("npToast");
@@ -1007,7 +874,7 @@
       t.style.left="50%";
       t.style.top="16px";
       t.style.transform="translateX(-50%)";
-      t.style.zIndex="10051";
+      t.style.zIndex="10001";
       t.style.padding="10px 12px";
       t.style.borderRadius="12px";
       t.style.border="1px solid rgba(255,255,255,.14)";
@@ -1023,42 +890,13 @@
     toastTimer=setTimeout(()=>{ t.style.opacity="0"; }, 1200);
   }
 
-  // ---- Editor commands (selection-first) ----
+  /* Editor commands */
   function focusEditor(){ elEditor.focus(); }
-
   function cmd(command, value=null){
     focusEditor();
-    try{ document.execCommand("styleWithCSS", false, true); }catch(_){}
-    try{ document.execCommand(command, false, value); }catch(_){}
-    scheduleSave();
-    reflectTogglesSoon();
-  }
-
-  function applyFontFamily(f){
-    // Applies to selection / caret (does NOT restyle entire doc)
-    cmd("fontName", f);
-  }
-
-  function applyFontSizePx(px){
-    focusEditor();
-    try{ document.execCommand("styleWithCSS", false, true); }catch(_){}
-    // Use the classic hack: apply a large fontSize to selection, then convert that markup to px
-    try{ document.execCommand("fontSize", false, "7"); }catch(_){}
-    // Convert any <font size="7"> into <span style="font-size:..px">
-    const fonts = elEditor.querySelectorAll('font[size="7"]');
-    fonts.forEach(font=>{
-      const span=document.createElement("span");
-      span.style.fontSize = px + "px";
-      span.innerHTML = font.innerHTML;
-      font.replaceWith(span);
-    });
-    scheduleSave();
-    reflectTogglesSoon();
-  }
-
-  function applyBlock(tag){
-    focusEditor();
-    try{ document.execCommand("formatBlock", false, tag); }catch(_){}
+    try{
+      document.execCommand(command, false, value);
+    }catch(_){}
     scheduleSave();
     reflectTogglesSoon();
   }
@@ -1072,6 +910,7 @@
       const node=document.createElement(tag);
       node.textContent = tag==="code" ? "code" : "";
       range.insertNode(node);
+      // move caret after
       range.setStartAfter(node); range.collapse(true);
       sel.removeAllRanges(); sel.addRange(range);
     }else{
@@ -1079,11 +918,51 @@
       try{
         range.surroundContents(node);
       }catch(_){
+        // fallback: insert as HTML
         const frag = range.extractContents();
         node.appendChild(frag);
         range.insertNode(node);
       }
     }
+    scheduleSave();
+    reflectTogglesSoon();
+  }
+
+  function applyFontFamily(f){
+    // execCommand uses CSS or deprecated font tags depending on browser; keep it simple.
+    cmd("fontName", f);
+    // ensure editor keeps default for new typing
+    elEditor.style.fontFamily = f;
+  }
+
+  function applyFontSizePx(px){
+    // For contenteditable, easiest is to apply as inline style on editor (for new typing),
+    // and for selection, use a span with style.
+    focusEditor();
+    const sel = window.getSelection();
+    if(sel && sel.rangeCount){
+      const range=sel.getRangeAt(0);
+      if(!range.collapsed){
+        const span=document.createElement("span");
+        span.style.fontSize = px + "px";
+        try{
+          range.surroundContents(span);
+        }catch(_){
+          const frag = range.extractContents();
+          span.appendChild(frag);
+          range.insertNode(span);
+        }
+      }
+    }
+    elEditor.style.fontSize = px + "px";
+    scheduleSave();
+  }
+
+  function applyBlock(tag){
+    focusEditor();
+    try{
+      document.execCommand("formatBlock", false, tag);
+    }catch(_){}
     scheduleSave();
     reflectTogglesSoon();
   }
@@ -1095,27 +974,6 @@
     cmd("createLink", url.trim());
   }
 
-  function clearFormattingSelection(){
-    focusEditor();
-    const sel = window.getSelection();
-    if(sel && sel.rangeCount){
-      const range = sel.getRangeAt(0);
-      if(!range.collapsed){
-        // replace selected HTML with plain text (keeps the content, drops styling)
-        const tmp = document.createElement("div");
-        tmp.appendChild(range.cloneContents());
-        const txt = tmp.textContent || "";
-        try{ document.execCommand("insertText", false, txt); }catch(_){}
-      }else{
-        try{ document.execCommand("removeFormat", false, null); }catch(_){}
-        try{ document.execCommand("unlink", false, null); }catch(_){}
-      }
-    }
-    scheduleSave();
-    reflectTogglesSoon();
-  }
-
-  // ---- Images ----
   function insertImageFromFile(file){
     if(!file) return;
     const reader=new FileReader();
@@ -1125,6 +983,7 @@
       const img=document.createElement("img");
       img.src = src;
       img.alt = "image";
+      // insert at caret
       const sel=window.getSelection();
       if(sel && sel.rangeCount){
         const range=sel.getRangeAt(0);
@@ -1139,6 +998,7 @@
     reader.readAsDataURL(file);
   }
 
+  /* Paste handling: image paste + keep HTML clean */
   elEditor.addEventListener("paste", (e)=>{
     const items = e.clipboardData && e.clipboardData.items ? Array.from(e.clipboardData.items) : [];
     const imgItem = items.find(it => it.type && it.type.startsWith("image/"));
@@ -1149,15 +1009,158 @@
       toast("Image pasted");
       return;
     }
+    // Allow normal paste; autosave shortly
     setTimeout(scheduleSave, 0);
   });
 
-  // ---- Popover menus ----
+  /* Autosave on edits */
+  elEditor.addEventListener("input", scheduleSave);
+  elTitle.addEventListener("input", scheduleSave);
+
+  /* Keyboard shortcuts */
+  document.addEventListener("keydown", (e)=>{
+    const mac = navigator.platform.toUpperCase().includes("MAC");
+    const mod = mac ? e.metaKey : e.ctrlKey;
+
+    if(mod && e.key.toLowerCase()==="k"){
+      e.preventDefault(); linkPrompt(); return;
+    }
+    if(mod && e.key.toLowerCase()==="s"){
+      e.preventDefault(); saveActive(); toast("Saved"); return;
+    }
+  });
+
+  /* Buttons */
+  elNew.addEventListener("click", newNote);
+  elSearch.addEventListener("input", renderList);
+  elList.addEventListener("click", (e)=>{
+    const item = e.target.closest(".npItem");
+    if(!item) return;
+    selectNote(item.dataset.id);
+  });
+
+  elDelete.addEventListener("click", deleteActive);
+  elDownload.addEventListener("click", downloadActive);
+  elCopy.addEventListener("click", copyActive);
+
+  elFull.addEventListener("click", ()=>{
+    const full = elRight.classList.toggle("npFullscreen");
+    if(full) toast("Fullscreen");
+    else toast("Exit fullscreen");
+  });
+
+  btnUndo.addEventListener("click", ()=>cmd("undo"));
+  btnRedo.addEventListener("click", ()=>cmd("redo"));
+
+  btnBold.addEventListener("click", ()=>cmd("bold"));
+  btnItalic.addEventListener("click", ()=>cmd("italic"));
+  btnUnderline.addEventListener("click", ()=>cmd("underline"));
+  btnStrike.addEventListener("click", ()=>cmd("strikeThrough"));
+  btnCode.addEventListener("click", ()=>wrapSelectionWith("code"));
+
+  btnBullets.addEventListener("click", ()=>cmd("insertUnorderedList"));
+  btnNumbers.addEventListener("click", ()=>cmd("insertOrderedList"));
+
+  btnLink.addEventListener("click", linkPrompt);
+  btnUnlink.addEventListener("click", ()=>cmd("unlink"));
+
+  btnClear.addEventListener("click", ()=>{
+    cmd("removeFormat");
+    // also clear inline styles for selection by toggling to paragraph
+    applyBlock("P");
+  });
+
+  btnAlign.addEventListener("click", (e)=>openMenu(e.currentTarget, buildAlignMenu()));
+  colorPick.addEventListener("input", ()=>cmd("foreColor", colorPick.value));
+  hilitePick.addEventListener("input", ()=>{
+    // hiliteColor works in most modern browsers; fallback to backColor
+    try{ document.execCommand("hiliteColor", false, hilitePick.value); }
+    catch(_){ cmd("backColor", hilitePick.value); }
+    scheduleSave();
+  });
+
+  btnImage.addEventListener("click", ()=>fileInput.click());
+  fileInput.addEventListener("change", ()=>{
+    const f=fileInput.files && fileInput.files[0];
+    if(f) insertImageFromFile(f);
+    fileInput.value="";
+  });
+
+  btnEmoji.addEventListener("click", (e)=>openMenu(e.currentTarget, buildEmojiMenu()));
+  btnFormats.addEventListener("click", (e)=>openMenu(e.currentTarget, buildFormatsMenu()));
+
+  btnFind.addEventListener("click", ()=>openFindOverlay(false));
+  findClose.addEventListener("click", ()=>closeFindOverlay());
+  findOverlay.addEventListener("click", (e)=>{ if(e.target===findOverlay) closeFindOverlay(); });
+
+  findDo.addEventListener("click", ()=>doFind(true));
+  findPrev.addEventListener("click", ()=>stepFind(-1));
+  findNext.addEventListener("click", ()=>stepFind(1));
+  findReplace.addEventListener("click", ()=>doReplace(false));
+  findReplaceAll.addEventListener("click", ()=>doReplace(true));
+
+  // Keyboard shortcuts: Ctrl/Cmd+F for find, Ctrl/Cmd+H for replace
+  document.addEventListener("keydown", (e)=>{
+    const mod = e.ctrlKey || e.metaKey;
+    if(!mod) return;
+    const k = (e.key||"").toLowerCase();
+    if(k === "f"){
+      e.preventDefault();
+      openFindOverlay(false);
+    }else if(k === "h"){
+      e.preventDefault();
+      openFindOverlay(true);
+    }else if(k === "g"){
+      // Ctrl/Cmd+G next
+      if(findOverlay.classList.contains("open")){
+        e.preventDefault();
+        stepFind(e.shiftKey ? -1 : 1);
+      }
+    }else if(k === "enter"){
+      if(findOverlay.classList.contains("open")){
+        e.preventDefault();
+        stepFind(e.shiftKey ? -1 : 1);
+      }
+    }
+    if(k === "escape" && findOverlay.classList.contains("open")){
+      e.preventDefault();
+      closeFindOverlay();
+    }
+  });
+
+  // Enter in the Find box triggers Find; Enter in Replace triggers Replace
+  findText.addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); doFind(true); } });
+  replaceText.addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); doReplace(false); } });
+
+  fontSel.addEventListener("change", ()=>applyFontFamily(fontSel.value));
+  fmtSel.addEventListener("change", ()=>applyBlock(fmtSel.value));
+  fontSize.addEventListener("change", ()=>{
+    const px = clampInt(fontSize.value, 10, 36);
+    fontSize.value = px;
+    applyFontSizePx(px);
+  });
+  incBtn.addEventListener("click", ()=>{
+    const px = clampInt(parseInt(fontSize.value||"14",10)+1, 10, 36);
+    fontSize.value = px;
+    applyFontSizePx(px);
+  });
+  decBtn.addEventListener("click", ()=>{
+    const px = clampInt(parseInt(fontSize.value||"14",10)-1, 10, 36);
+    fontSize.value = px;
+    applyFontSizePx(px);
+  });
+
+  function clampInt(v, a, b){
+    let n=parseInt(v,10);
+    if(!isFinite(n)) n=a;
+    return Math.max(a, Math.min(b, n));
+  }
+
+  /* Popover menus */
   let pop=null;
   function closeMenu(){
     if(pop){ pop.remove(); pop=null; }
   }
-
   function openMenu(anchor, contentNode){
     closeMenu();
     const r = anchor.getBoundingClientRect();
@@ -1165,7 +1168,7 @@
     pop.className="npPopover";
     pop.appendChild(contentNode);
     document.body.appendChild(pop);
-
+    // position
     const pad=10;
     let left = Math.min(window.innerWidth - pop.offsetWidth - pad, Math.max(pad, r.left));
     let top = Math.min(window.innerHeight - pop.offsetHeight - pad, r.bottom + 8);
@@ -1186,7 +1189,7 @@
     }, 0);
   }
 
-  function menuItem(label, hint, onClick, opts){
+  function menuItem(label, hint, onClick){
     const d=document.createElement("div");
     d.className="npMenuItem";
     const l=document.createElement("div");
@@ -1196,12 +1199,7 @@
     h.textContent=hint||"";
     d.appendChild(l);
     if(hint) d.appendChild(h);
-    d.addEventListener("click", ()=>{
-      // For submenu entries: close current menu BEFORE opening the next
-      if(opts && opts.closeFirst) closeMenu();
-      onClick();
-      if(!opts || opts.closeAfter !== false) closeMenu();
-    });
+    d.addEventListener("click", ()=>{ onClick(); closeMenu(); });
     return d;
   }
 
@@ -1233,7 +1231,7 @@
       b.textContent=em;
       b.addEventListener("click", ()=>{
         focusEditor();
-        try{ document.execCommand("insertText", false, em); }catch(_){}
+        document.execCommand("insertText", false, em);
         scheduleSave();
         closeMenu();
       });
@@ -1241,40 +1239,6 @@
     });
     wrap.appendChild(grid);
     return wrap;
-  }
-
-  function buildHeadingsSubmenu(){
-    const w=document.createElement("div");
-    ["H1","H2","H3","H4","H5","H6"].forEach(h=>{
-      w.appendChild(menuItem(h.replace("H","Heading "), "", ()=>applyBlock(h)));
-    });
-    return w;
-  }
-
-  function buildInlineSubmenu(){
-    const w=document.createElement("div");
-    w.appendChild(menuItem("Bold", "⌘/Ctrl+B", ()=>cmd("bold")));
-    w.appendChild(menuItem("Italic", "⌘/Ctrl+I", ()=>cmd("italic")));
-    w.appendChild(menuItem("Underline", "⌘/Ctrl+U", ()=>cmd("underline")));
-    w.appendChild(menuItem("Strikethrough", "", ()=>cmd("strikeThrough")));
-    w.appendChild(menuItem("Superscript", "", ()=>cmd("superscript")));
-    w.appendChild(menuItem("Subscript", "", ()=>cmd("subscript")));
-    w.appendChild(menuItem("Inline code", "", ()=>wrapSelectionWith("code")));
-    return w;
-  }
-
-  function buildBlocksSubmenu(){
-    const w=document.createElement("div");
-    w.appendChild(menuItem("Paragraph", "", ()=>applyBlock("P")));
-    w.appendChild(menuItem("Blockquote", "", ()=>applyBlock("BLOCKQUOTE")));
-    w.appendChild(menuItem("Div", "", ()=>applyBlock("DIV")));
-    w.appendChild(menuItem("Pre", "", ()=>applyBlock("PRE")));
-    w.appendChild(menuItem("Horizontal line", "", ()=>{
-      focusEditor();
-      try{ document.execCommand("insertHorizontalRule", false, null); }catch(_){}
-      scheduleSave();
-    }));
-    return w;
   }
 
   function buildFormatsMenu(){
@@ -1286,26 +1250,214 @@
     head.textContent="Formats";
     wrap.appendChild(head);
 
+    // Headings
     wrap.appendChild(menuItem("Headings →", "H1–H6", ()=>{
       openMenu(btnFormats, buildHeadingsSubmenu());
-    }, { closeFirst: true, closeAfter: false }));
-
+    }));
     wrap.appendChild(menuItem("Inline →", "bold/italic/…", ()=>{
       openMenu(btnFormats, buildInlineSubmenu());
-    }, { closeFirst: true, closeAfter: false }));
-
+    }));
     wrap.appendChild(menuItem("Blocks →", "quote/pre/div", ()=>{
       openMenu(btnFormats, buildBlocksSubmenu());
-    }, { closeFirst: true, closeAfter: false }));
-
+    }));
     wrap.appendChild(menuItem("Alignment →", "left/center/…", ()=>{
       openMenu(btnFormats, buildAlignMenu());
-    }, { closeFirst: true, closeAfter: false }));
-
+    }));
     return wrap;
   }
+  function buildHeadingsSubmenu(){
+    const w=document.createElement("div");
+    ["H1","H2","H3","H4","H5","H6"].forEach(h=>{
+      w.appendChild(menuItem(h.replace("H","Heading "), "", ()=>applyBlock(h)));
+    });
+    return w;
+  }
+  function buildInlineSubmenu(){
+    const w=document.createElement("div");
+    w.appendChild(menuItem("Bold", "⌘/Ctrl+B", ()=>cmd("bold")));
+    w.appendChild(menuItem("Italic", "⌘/Ctrl+I", ()=>cmd("italic")));
+    w.appendChild(menuItem("Underline", "⌘/Ctrl+U", ()=>cmd("underline")));
+    w.appendChild(menuItem("Strikethrough", "", ()=>cmd("strikeThrough")));
+    w.appendChild(menuItem("Superscript", "", ()=>cmd("superscript")));
+    w.appendChild(menuItem("Subscript", "", ()=>cmd("subscript")));
+    w.appendChild(menuItem("Inline code", "", ()=>wrapSelectionWith("code")));
+    return w;
+  }
+  function buildBlocksSubmenu(){
+    const w=document.createElement("div");
+    w.appendChild(menuItem("Paragraph", "", ()=>applyBlock("P")));
+    w.appendChild(menuItem("Blockquote", "", ()=>applyBlock("BLOCKQUOTE")));
+    w.appendChild(menuItem("Div", "", ()=>applyBlock("DIV")));
+    w.appendChild(menuItem("Pre", "", ()=>applyBlock("PRE")));
+    w.appendChild(menuItem("Horizontal line", "", ()=>{
+      focusEditor();
+      document.execCommand("insertHorizontalRule", false, null);
+      scheduleSave();
+    }));
+    return w;
+  }
 
-  // ---- Toggle reflection ----
+  /* Find & replace (highlights are temporary and removed on close) */
+  let findMarks = [];
+  let findActive = -1;
+
+  function escapeRegExp(s){ return (s||"").replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+  function openFindOverlay(focusReplace=false){
+    findOverlay.classList.add("open");
+    findOverlay.setAttribute("aria-hidden","false");
+    // Keep a clean slate each time the dialog opens
+    clearFindHighlights();
+    updateFindCount();
+    setTimeout(()=>{ (focusReplace ? replaceText : findText).focus(); (focusReplace ? replaceText : findText).select(); }, 0);
+  }
+  function closeFindOverlay(){
+    clearFindHighlights();
+    findOverlay.classList.remove("open");
+    findOverlay.setAttribute("aria-hidden","true");
+    focusEditor();
+  }
+
+  function clearFindHighlights(){
+    if(!findMarks.length) return;
+    // Replace marks with plain text nodes (preserves surrounding formatting)
+    findMarks.forEach(m=>{
+      if(!m || !m.parentNode) return;
+      m.replaceWith(document.createTextNode(m.textContent || ""));
+    });
+    findMarks = [];
+    findActive = -1;
+    // Merge adjacent text nodes
+    try{ elEditor.normalize(); }catch(_){}
+    updateFindCount();
+  }
+
+  function buildFindRegex(q){
+    const raw = (q||"").trim();
+    if(!raw) return null;
+    const esc = escapeRegExp(raw);
+    const body = findWholeWords.checked ? `\\b${esc}\\b` : esc;
+    const flags = "g" + (findMatchCase.checked ? "" : "i");
+    try{ return new RegExp(body, flags); }catch(_){ return null; }
+  }
+
+  function doFind(reset=true){
+    const q = (findText.value||"").trim();
+    const re = buildFindRegex(q);
+    clearFindHighlights();
+    if(!re){ updateFindCount(); return; }
+
+    // Walk text nodes and wrap matches with <mark>
+    const walker = document.createTreeWalker(elEditor, NodeFilter.SHOW_TEXT, {
+      acceptNode(node){
+        if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        if(node.parentElement && node.parentElement.closest && node.parentElement.closest("mark.npFindHit")) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+
+    const textNodes = [];
+    while(walker.nextNode()) textNodes.push(walker.currentNode);
+
+    textNodes.forEach(node=>{
+      const text = node.nodeValue;
+      re.lastIndex = 0;
+      let m, last = 0, hit = false;
+      const frag = document.createDocumentFragment();
+      while((m = re.exec(text)) !== null){
+        const start = m.index;
+        const end = start + (m[0] ? m[0].length : 0);
+        if(end < start) break;
+        if(start > last) frag.appendChild(document.createTextNode(text.slice(last, start)));
+        const mark = document.createElement("mark");
+        mark.className = "npFindHit";
+        mark.textContent = text.slice(start, end);
+        frag.appendChild(mark);
+        findMarks.push(mark);
+        hit = true;
+        last = end;
+        if(m[0].length === 0){ re.lastIndex++; } // safety
+      }
+      if(!hit) return;
+      if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      node.parentNode && node.parentNode.replaceChild(frag, node);
+    });
+
+    updateFindCount();
+
+    if(findMarks.length){
+      setActiveFind(reset ? 0 : Math.max(0, Math.min(findActive, findMarks.length-1)));
+    }
+  }
+
+  function setActiveFind(idx){
+    if(!findMarks.length){ findActive = -1; updateFindCount(); return; }
+    if(findActive >= 0 && findMarks[findActive]) findMarks[findActive].classList.remove("active");
+    findActive = ((idx % findMarks.length) + findMarks.length) % findMarks.length;
+    const m = findMarks[findActive];
+    if(!m) return;
+    m.classList.add("active");
+    try{ m.scrollIntoView({block:"center", behavior:"smooth"}); }catch(_){}
+
+    // Select the active match
+    try{
+      const r = document.createRange();
+      r.selectNodeContents(m);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(r);
+    }catch(_){}
+    updateFindCount();
+  }
+
+  function stepFind(dir){
+    if(!findMarks.length){ doFind(true); return; }
+    setActiveFind(findActive + dir);
+  }
+
+  function doReplace(all){
+    const q = (findText.value||"").trim();
+    const repl = (replaceText.value ?? "");
+    if(!q){ return; }
+
+    // Ensure we have current highlights before replacing
+    if(!findMarks.length) doFind(true);
+    if(!findMarks.length) return;
+
+    if(all){
+      findMarks.forEach(m=>{ if(m && m.parentNode) m.replaceWith(document.createTextNode(repl)); });
+      findMarks = [];
+      findActive = -1;
+      try{ elEditor.normalize(); }catch(_){}
+      scheduleSave();
+      // Re-scan (optional): keep updated navigation
+      doFind(true);
+      return;
+    }
+
+    // Replace current active match only
+    if(findActive < 0 || !findMarks[findActive]) setActiveFind(0);
+    const m = findMarks[findActive];
+    if(!m || !m.parentNode) return;
+    m.replaceWith(document.createTextNode(repl));
+    try{ elEditor.normalize(); }catch(_){}
+    scheduleSave();
+    // Rebuild matches and keep user near where they were
+    doFind(false);
+  }
+
+  function updateFindCount(){
+    const total = findMarks.length;
+    const cur = total ? (findActive + 1) : 0;
+    if(findCount) findCount.textContent = `${cur}/${total}`;
+    const has = total > 0;
+    if(findPrev) findPrev.disabled = !has;
+    if(findNext) findNext.disabled = !has;
+    if(findReplace) findReplace.disabled = !has;
+    if(findReplaceAll) findReplaceAll.disabled = !has;
+  }
+
+  /* Toggle reflection (best-effort) */
   let reflectTimer=null;
   function reflectTogglesSoon(){
     if(reflectTimer) cancelAnimationFrame(reflectTimer);
@@ -1324,141 +1476,18 @@
     if(document.activeElement===elEditor) reflectTogglesSoon();
   });
 
-  // ---- Wiring ----
-  elEditor.addEventListener("input", scheduleSave);
-  elTitle.addEventListener("input", scheduleSave);
-
-  document.addEventListener("keydown", (e)=>{
-    const mac = navigator.platform.toUpperCase().includes("MAC");
-    const mod = mac ? e.metaKey : e.ctrlKey;
-    if(mod && e.key.toLowerCase()==="k"){
-      e.preventDefault(); linkPrompt(); return;
-    }
-    if(mod && e.key.toLowerCase()==="s"){
-      e.preventDefault(); saveActive(); toast("Saved"); return;
-    }
-  });
-
-  elNew.addEventListener("click", newNote);
-  elSearch.addEventListener("input", renderList);
-
-  elList.addEventListener("click", (e)=>{
-    const item = e.target.closest(".npItem");
-    if(!item) return;
-    openNote(item.dataset.id);
-  });
-
-  elDelete.addEventListener("click", deleteActiveNote);
-  elDownload.addEventListener("click", downloadActive);
-  elCopy.addEventListener("click", copyActive);
-
-  elFull.addEventListener("click", ()=>{
-    const full = elRight.classList.toggle("npFullscreen");
-    toast(full ? "Fullscreen" : "Exit fullscreen");
-  });
-
-  nbAddBtn.addEventListener("click", addNotebook);
-  nbDelBtn.addEventListener("click", deleteNotebook);
-  nbSel.addEventListener("change", ()=>changeNotebook(nbSel.value));
-
-  btnUndo.addEventListener("click", ()=>cmd("undo"));
-  btnRedo.addEventListener("click", ()=>cmd("redo"));
-
-  btnBold.addEventListener("click", ()=>cmd("bold"));
-  btnItalic.addEventListener("click", ()=>cmd("italic"));
-  btnUnderline.addEventListener("click", ()=>cmd("underline"));
-  btnStrike.addEventListener("click", ()=>cmd("strikeThrough"));
-  btnCode.addEventListener("click", ()=>wrapSelectionWith("code"));
-
-  btnBullets.addEventListener("click", ()=>cmd("insertUnorderedList"));
-  btnNumbers.addEventListener("click", ()=>cmd("insertOrderedList"));
-
-  btnAlign.addEventListener("click", (e)=>openMenu(e.currentTarget, buildAlignMenu()));
-  btnLink.addEventListener("click", linkPrompt);
-  btnUnlink.addEventListener("click", ()=>cmd("unlink"));
-
-  btnClear.addEventListener("click", clearFormattingSelection);
-
-  // Color pickers (hidden) + icon buttons
-  function syncSwatches(){
-    textSwatch.style.background = colorPick.value || "#ffffff";
-    hiliteSwatch.style.background = hilitePick.value || "#ffff00";
+  /* Bootstrap */
+  load();
+  if(notes.length===0) newNote();
+  else{
+    sortNotes();
+    activeId = notes[0].id;
+    renderList();
+    selectNote(activeId);
   }
-  syncSwatches();
-
-  textColorBtn.addEventListener("click", ()=>colorPick.click());
-  hiliteColorBtn.addEventListener("click", ()=>hilitePick.click());
-
-  colorPick.addEventListener("input", ()=>{
-    cmd("foreColor", colorPick.value);
-    syncSwatches();
-  });
-
-  hilitePick.addEventListener("input", ()=>{
-    focusEditor();
-    try{ document.execCommand("styleWithCSS", false, true); }catch(_){}
-    try{ document.execCommand("hiliteColor", false, hilitePick.value); }
-    catch(_){ try{ document.execCommand("backColor", false, hilitePick.value); }catch(__){} }
-    scheduleSave();
-    syncSwatches();
-  });
-
-  btnImage.addEventListener("click", ()=>fileInput.click());
-  fileInput.addEventListener("change", ()=>{
-    const f=fileInput.files && fileInput.files[0];
-    if(f) insertImageFromFile(f);
-    fileInput.value="";
-  });
-
-  btnEmoji.addEventListener("click", (e)=>openMenu(e.currentTarget, buildEmojiMenu()));
-  btnFormats.addEventListener("click", (e)=>openMenu(e.currentTarget, buildFormatsMenu()));
-
-  fontSel.addEventListener("change", ()=>applyFontFamily(fontSel.value));
-
-  fmtSel.addEventListener("change", ()=>applyBlock(fmtSel.value));
-
-  function clampInt(v, a, b){
-    let n=parseInt(v,10);
-    if(!isFinite(n)) n=a;
-    return Math.max(a, Math.min(b, n));
-  }
-
-  fontSize.addEventListener("change", ()=>{
-    const px = clampInt(fontSize.value, 10, 36);
-    fontSize.value = px;
-    applyFontSizePx(px);
-  });
-
-  incBtn.addEventListener("click", ()=>{
-    const px = clampInt(parseInt(fontSize.value||"14",10)+1, 10, 36);
-    fontSize.value = px;
-    applyFontSizePx(px);
-  });
-
-  decBtn.addEventListener("click", ()=>{
-    const px = clampInt(parseInt(fontSize.value||"14",10)-1, 10, 36);
-    fontSize.value = px;
-    applyFontSizePx(px);
-  });
 
   // Save before unload
   window.addEventListener("beforeunload", ()=>{ if(dirty) saveActive(); });
-
-  // Bootstrap
-  load();
-  ensureNotebookSelection();
-  renderNotebooks();
-
-  sortNotes();
-  ensureActiveNote();
-
-  renderList();
-
-  if(!state.activeNoteId){
-    newNote();
-  }else{
-    openNote(state.activeNoteId);
-  }
 })();
 </script>
 
