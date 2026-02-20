@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="Online notepad with rich-text formatting. Create, search, and organize notes on the left. Write on the right with fonts, headings, lists, alignment, links, inline images, and emojis. Autosaves locally in your browser."/>
+<title>Online Notepad — Rich Text Notes (Fonts, Images, Emojis) — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+
+<style>
+  /* Page layout */
+  .panel {max-width: 1220px;}
+  .npShell{
+    display:grid;
+    grid-template-columns: 320px 1fr;
+    gap:14px;
+    margin-top:14px;
+  }
+  @media (max-width: 900px){
+    .npShell{grid-template-columns:1fr; }
+  }
+  .npLeft, .npRight{
+    background: rgba(16,26,47,.65);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow:hidden;
+  }
+  .npLeft{
+    display:flex;
+    flex-direction:column;
+    min-height: 560px;
+  }
+  .npLeftTop{
+    padding:12px;
+    border-bottom:1px solid var(--border);
+    background: rgba(255,255,255,.02);
+  }
+  .npNewBtn{
+    width:100%;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:11px 12px;border-radius:12px;border:1px solid var(--border);
+    background: rgba(110,168,255,.18);
+    color: var(--text);
+    font-weight: 700;
+    cursor:pointer;
+  }
+  .npNewBtn:hover{ background: rgba(110,168,255,.24); }
+  .npSearch{
+    margin-top:10px;
+    width:100%;
+    padding:10px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,.04);
+    color: var(--text);
+    outline:none;
+    font-size: 13px;
+  }
+  .npList{
+    padding:10px;
+    overflow:auto;
+  }
+  .npItem{
+    padding:10px 10px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    cursor:pointer;
+    user-select:none;
+  }
+  .npItem:hover{ background: rgba(255,255,255,.04); }
+  .npItem.active{
+    background: rgba(110,168,255,.12);
+    border-color: rgba(110,168,255,.25);
+  }
+  .npItemTitle{
+    font-weight: 800;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .npItemMeta{
+    display:flex;justify-content:space-between;gap:8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .npItemSnippet{
+    font-size: 12px;
+    color: var(--muted);
+    opacity: .95;
+    margin-top: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Right side */
+  .npRight{
+    display:flex;
+    flex-direction:column;
+    min-height: 560px;
+  }
+  .npTopBar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 12px;
+    border-bottom:1px solid var(--border);
+    background: rgba(255,255,255,.02);
+  }
+  .npTitleInput{
+    flex:1;
+    border:none;
+    outline:none;
+    background: transparent;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 800;
+    padding: 8px 8px;
+    border-radius: 10px;
+  }
+  .npTitleInput:focus{ background: rgba(255,255,255,.04); }
+  .npTopActions{ display:flex; gap:8px; }
+  .npIconBtn{
+    width:34px;height:34px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background: rgba(255,255,255,.02);
+    color: var(--text);
+    cursor:pointer;
+    font-size: 14px;
+  }
+  .npIconBtn:hover{ background: rgba(255,255,255,.05); }
+  .npSaved{ font-size:12px; color: var(--muted); margin-left:8px; white-space:nowrap;}
+  @media (max-width: 900px){ .npSaved{ display:none; } }
+
+  /* Toolbar */
+  .npToolbar{
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+    padding:10px 12px;
+    border-bottom:1px solid var(--border);
+    background: rgba(10,16,30,.92);
+    backdrop-filter: blur(10px);
+  }
+  .npGroup{ display:flex; gap:6px; align-items:center; }
+  .npSelect, .npBtn, .npNum{
+    height:34px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,.02);
+    color: var(--text);
+    font-size: 13px;
+  }
+  .npSelect{
+    padding: 0 10px;
+    cursor:pointer;
+    max-width: 220px;
+  }
+  .npBtn{
+    padding: 0 10px;
+    cursor:pointer;
+    min-width: 34px;
+    display:flex;align-items:center;justify-content:center;
+    gap:6px;
+  }
+  .npBtn:hover{ background: rgba(255,255,255,.05); }
+  .npBtn.on{
+    background: rgba(110,168,255,.18);
+    border-color: rgba(110,168,255,.35);
+  }
+  .npSep{
+    width:1px;height:26px;background: rgba(255,255,255,.10);
+    margin: 0 2px;
+  }
+  .npColor{
+    width:34px; height:34px;
+    padding:0;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background: rgba(255,255,255,.02);
+    cursor:pointer;
+  }
+  .npMini{
+    height:34px;
+    width:42px;
+    text-align:center;
+    border-radius:10px;border:1px solid var(--border);
+    background: rgba(255,255,255,.02);color:var(--text);
+    font-size: 13px;
+    outline:none;
+  }
+
+  /* Editor */
+  .npEditorWrap{ padding: 0; flex:1; display:flex; flex-direction:column; }
+  .npEditor{
+    flex:1;
+    padding: 18px 18px;
+    outline:none;
+    overflow:auto;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .npEditor:empty:before{
+    content:"Start typing your note…";
+    color: rgba(255,255,255,.35);
+  }
+  .npEditor img{
+    max-width: 100%;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.10);
+  }
+  .npFoot{
+    padding:10px 12px;
+    border-top:1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    background: rgba(255,255,255,.02);
+  }
+  .npKbd{
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.18);
+    color: rgba(255,255,255,.85);
+  }
+
+  /* Menus / popovers */
+  .npPopover{
+    position: fixed;
+    z-index: 9999;
+    background: rgba(10,16,30,.98);
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 14px;
+    padding: 10px;
+    box-shadow: 0 14px 50px rgba(0,0,0,.45);
+    min-width: 240px;
+    max-width: 340px;
+  }
+  .npMenuItem{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:10px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    cursor:pointer;
+    color: rgba(255,255,255,.92);
+    font-size: 13px;
+  }
+  .npMenuItem:hover{ background: rgba(255,255,255,.06); }
+  .npMenuMuted{ color: rgba(255,255,255,.55); font-size: 12px; }
+  .npEmojiGrid{
+    display:grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
+    padding-top: 6px;
+  }
+  .npEmojiBtn{
+    width: 30px;height:30px;
+    border-radius: 10px;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.03);
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .npEmojiBtn:hover{ background: rgba(255,255,255,.06); }
+  .npHidden{ display:none !important; }
+
+  /* Fullscreen */
+  .npFullscreen{
+    position: fixed !important;
+    inset: 10px !important;
+    z-index: 10000 !important;
+    border-radius: 18px !important;
+  }
+  .npFullscreen .npEditor{ padding: 18px 18px; }
+</style>
+</head>
+
+<body>
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Online Notepad <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Create and search notes on the left. Write on the right with fonts, headings, lists, alignment, links, inline images, and emojis. Everything autosaves locally in your browser.</p>
+
+    <div class="npShell" id="npShell">
+      <!-- Left -->
+      <aside class="npLeft" aria-label="Notes list">
+        <div class="npLeftTop">
+          <button class="npNewBtn" id="npNewBtn" type="button">＋ New Note</button>
+          <input class="npSearch" id="npSearch" type="search" placeholder="Search notes…" autocomplete="off"/>
+        </div>
+        <div class="npList" id="npList"></div>
+      </aside>
+
+      <!-- Right -->
+      <section class="npRight" id="npRight" aria-label="Editor">
+        <div class="npTopBar">
+          <input class="npTitleInput" id="npTitle" type="text" value="" placeholder="Untitled note" maxlength="120" />
+          <div class="npSaved" id="npSaved">Saved</div>
+          <div class="npTopActions">
+            <button class="npIconBtn" id="npDownloadBtn" type="button" title="Download note">⇩</button>
+            <button class="npIconBtn" id="npCopyBtn" type="button" title="Copy note">⧉</button>
+            <button class="npIconBtn" id="npDeleteBtn" type="button" title="Delete note">🗑</button>
+            <button class="npIconBtn" id="npFullBtn" type="button" title="Fullscreen">⤢</button>
+          </div>
+        </div>
+
+        <div class="npToolbar" role="toolbar" aria-label="Formatting toolbar">
+          <div class="npGroup">
+            <button class="npBtn" id="npUndo" type="button" title="Undo">↶</button>
+            <button class="npBtn" id="npRedo" type="button" title="Redo">↷</button>
+          </div>
+          <div class="npSep"></div>
+
+          <div class="npGroup">
+            <select class="npSelect" id="npFont">
+              <option value="Arial, Helvetica, sans-serif">Arial</option>
+              <option value="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">System</option>
+              <option value="'Times New Roman', Times, serif">Times New Roman</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace">Monospace</option>
+            </select>
+
+            <select class="npSelect" id="npFormat" style="max-width:170px">
+              <option value="P">Normal</option>
+              <option value="H1">Heading 1</option>
+              <option value="H2">Heading 2</option>
+              <option value="H3">Heading 3</option>
+              <option value="H4">Heading 4</option>
+              <option value="H5">Heading 5</option>
+              <option value="H6">Heading 6</option>
+              <option value="BLOCKQUOTE">Blockquote</option>
+              <option value="PRE">Pre</option>
+              <option value="DIV">Div</option>
+            </select>
+
+            <input class="npMini" id="npFontSize" type="number" min="10" max="36" value="14" title="Font size (px)"/>
+            <button class="npBtn" id="npInc" type="button" title="Increase font size">＋</button>
+            <button class="npBtn" id="npDec" type="button" title="Decrease font size">－</button>
+          </div>
+
+          <div class="npSep"></div>
+
+          <div class="npGroup">
+            <button class="npBtn" id="npBold" type="button" title="Bold"><b>B</b></button>
+            <button class="npBtn" id="npItalic" type="button" title="Italic"><i>I</i></button>
+            <button class="npBtn" id="npUnderline" type="button" title="Underline"><u>U</u></button>
+            <button class="npBtn" id="npStrike" type="button" title="Strikethrough"><s>S</s></button>
+            <button class="npBtn" id="npCode" type="button" title="Inline code">&lt;&gt;</button>
+          </div>
+
+          <div class="npSep"></div>
+
+          <div class="npGroup">
+            <button class="npBtn" id="npBullets" type="button" title="Bulleted list">• List</button>
+            <button class="npBtn" id="npNumbers" type="button" title="Numbered list">1. List</button>
+            <button class="npBtn" id="npAlign" type="button" title="Alignment">☰</button>
+          </div>
+
+          <div class="npSep"></div>
+
+          <div class="npGroup">
+            <button class="npBtn" id="npLink" type="button" title="Insert link">🔗</button>
+            <button class="npBtn" id="npUnlink" type="button" title="Remove link">⨯</button>
+            <input class="npColor" id="npColor" type="color" title="Text color"/>
+            <input class="npColor" id="npHilite" type="color" title="Highlight color"/>
+            <button class="npBtn" id="npClear" type="button" title="Clear formatting">Aa</button>
+          </div>
+
+          <div class="npSep"></div>
+
+          <div class="npGroup">
+            <button class="npBtn" id="npImage" type="button" title="Insert image">🖼</button>
+            <input id="npImageFile" type="file" accept="image/*" class="npHidden"/>
+            <button class="npBtn" id="npEmoji" type="button" title="Emoji">😊</button>
+            <button class="npBtn" id="npFormats" type="button" title="Formats menu">Formats ▾</button>
+          </div>
+        </div>
+
+        <div class="npEditorWrap">
+          <div class="npEditor" id="npEditor" contenteditable="true" spellcheck="true"></div>
+        </div>
+
+        <div class="npFoot">
+          Tips: paste images directly • <span class="npKbd">⌘/Ctrl</span>+<span class="npKbd">B</span> bold • <span class="npKbd">⌘/Ctrl</span>+<span class="npKbd">K</span> link • notes stay on this device (local storage).
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- Learn-more modal (matches other pages) -->
+<div class="rm-lm-overlay" id="rmLM" aria-hidden="true">
+  <div class="rm-lm-modal" role="dialog" aria-modal="true" aria-labelledby="rmLMTitle">
+    <div class="rm-lm-head">
+      <div>
+        <div class="rm-lm-title" id="rmLMTitle">Online Notepad</div>
+        <div class="rm-lm-sub">Rich-text notes, saved locally in your browser.</div>
+      </div>
+      <button class="rm-lm-x" data-rm-lm-close="rmLM" aria-label="Close">✕</button>
+    </div>
+    <div class="rm-lm-body">
+      <ul class="rm-lm-list">
+        <li><b>Left panel</b>: create notes, search instantly, and jump between notes.</li>
+        <li><b>Right panel</b>: format text with headings, lists, alignment, links, colors, and inline code.</li>
+        <li><b>Images & emojis</b>: paste screenshots or insert images; add emojis with one click.</li>
+        <li><b>Privacy</b>: notes autosave to your device (local storage). Nothing is uploaded.</li>
+      </ul>
+      <div class="rm-lm-callout">
+        If a note contains sensitive content, this tool keeps it local — no server involved.
+      </div>
+    </div>
+    <div class="rm-lm-foot">
+      <button class="btn" data-rm-lm-close="rmLM" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Learn more modal helpers (shared behavior across tools) */
+(function(){
+  function open(id){
+    const o=document.getElementById(id);
+    if(!o) return;
+    o.setAttribute("aria-hidden","false");
+    o.classList.add("show");
+    document.body.classList.add("rm-modal-open");
+  }
+  function close(id){
+    const o=document.getElementById(id);
+    if(!o) return;
+    o.setAttribute("aria-hidden","true");
+    o.classList.remove("show");
+    document.body.classList.remove("rm-modal-open");
+  }
+  document.addEventListener("click",(e)=>{
+    const a=e.target.closest("[data-rm-lm-open]");
+    if(a){ e.preventDefault(); open(a.getAttribute("data-rm-lm-open")); }
+    const c=e.target.closest("[data-rm-lm-close]");
+    if(c){ e.preventDefault(); close(c.getAttribute("data-rm-lm-close")); }
+    const overlay=e.target.classList && e.target.classList.contains("rm-lm-overlay") ? e.target : null;
+    if(overlay && overlay.id){ close(overlay.id); }
+  });
+  document.addEventListener("keydown",(e)=>{ if(e.key==="Escape"){ document.querySelectorAll(".rm-lm-overlay.show").forEach(o=>close(o.id)); }});
+})();
+</script>
+
+<script>
+/* Notepad — local-only, rich-text editor using contenteditable + execCommand */
+(function(){
+  const LS_KEY = "rm_notepad_notes_v1";
+  const $ = (id)=>document.getElementById(id);
+
+  const elList = $("npList");
+  const elSearch = $("npSearch");
+  const elNew = $("npNewBtn");
+  const elTitle = $("npTitle");
+  const elEditor = $("npEditor");
+  const elSaved = $("npSaved");
+  const elRight = $("npRight");
+
+  const elDownload = $("npDownloadBtn");
+  const elCopy = $("npCopyBtn");
+  const elDelete = $("npDeleteBtn");
+  const elFull = $("npFullBtn");
+
+  const fontSel = $("npFont");
+  const fmtSel = $("npFormat");
+  const fontSize = $("npFontSize");
+  const incBtn = $("npInc");
+  const decBtn = $("npDec");
+
+  const btnBold = $("npBold");
+  const btnItalic = $("npItalic");
+  const btnUnderline = $("npUnderline");
+  const btnStrike = $("npStrike");
+  const btnCode = $("npCode");
+
+  const btnBullets = $("npBullets");
+  const btnNumbers = $("npNumbers");
+  const btnAlign = $("npAlign");
+
+  const btnLink = $("npLink");
+  const btnUnlink = $("npUnlink");
+  const colorPick = $("npColor");
+  const hilitePick = $("npHilite");
+  const btnClear = $("npClear");
+
+  const btnImage = $("npImage");
+  const fileInput = $("npImageFile");
+  const btnEmoji = $("npEmoji");
+  const btnFormats = $("npFormats");
+
+  const btnUndo = $("npUndo");
+  const btnRedo = $("npRedo");
+
+  let notes = [];
+  let activeId = null;
+  let saveTimer = null;
+  let dirty = false;
+
+  function nowISO(){ return new Date().toISOString(); }
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      notes = raw ? JSON.parse(raw) : [];
+      if(!Array.isArray(notes)) notes = [];
+    }catch(_){ notes = []; }
+  }
+  function persist(){
+    localStorage.setItem(LS_KEY, JSON.stringify(notes));
+  }
+  function uuid(){
+    return "n_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+  }
+  function plainTextFromHtml(html){
+    const d=document.createElement("div");
+    d.innerHTML = html || "";
+    return (d.textContent || "").replace(/\s+/g," ").trim();
+  }
+  function relTime(iso){
+    if(!iso) return "";
+    const t = new Date(iso).getTime();
+    const s = Math.max(0, (Date.now()-t)/1000);
+    if(s < 30) return "Just now";
+    if(s < 90) return "1 min";
+    if(s < 3600) return Math.round(s/60) + " min";
+    if(s < 5400) return "1 hr";
+    if(s < 86400) return Math.round(s/3600) + " hr";
+    const d = Math.round(s/86400);
+    if(d === 1) return "Yesterday";
+    if(d < 10) return d + " days";
+    return new Date(iso).toLocaleDateString();
+  }
+
+  function sortNotes(){
+    notes.sort((a,b)=> (b.updated||"").localeCompare(a.updated||""));
+  }
+
+  function filteredNotes(){
+    const q = (elSearch.value || "").trim().toLowerCase();
+    if(!q) return notes;
+    return notes.filter(n=>{
+      const t=(n.title||"").toLowerCase();
+      const body=plainTextFromHtml(n.html||"").toLowerCase();
+      return t.includes(q) || body.includes(q);
+    });
+  }
+
+  function renderList(){
+    const list = filteredNotes();
+    elList.innerHTML = "";
+    if(list.length === 0){
+      const empty = document.createElement("div");
+      empty.style.padding="12px";
+      empty.style.color="rgba(255,255,255,.55)";
+      empty.style.fontSize="13px";
+      empty.textContent = notes.length ? "No matches." : "No notes yet. Create your first note.";
+      elList.appendChild(empty);
+      return;
+    }
+
+    list.forEach(n=>{
+      const item=document.createElement("div");
+      item.className="npItem" + (n.id===activeId ? " active" : "");
+      item.dataset.id=n.id;
+
+      const title=document.createElement("div");
+      title.className="npItemTitle";
+      title.textContent=(n.title || "Untitled note").trim() || "Untitled note";
+
+      const meta=document.createElement("div");
+      meta.className="npItemMeta";
+      const left=document.createElement("span");
+      left.textContent = plainTextFromHtml(n.html||"") ? "" : "Empty note";
+      const right=document.createElement("span");
+      right.textContent = relTime(n.updated);
+      meta.appendChild(left);
+      meta.appendChild(right);
+
+      const sn=document.createElement("div");
+      sn.className="npItemSnippet";
+      const pt=plainTextFromHtml(n.html||"");
+      sn.textContent = pt ? pt : " ";
+
+      item.appendChild(title);
+      item.appendChild(meta);
+      item.appendChild(sn);
+      elList.appendChild(item);
+    });
+  }
+
+  function getActive(){
+    return notes.find(n=>n.id===activeId) || null;
+  }
+
+  function setSavedBadge(state){
+    // state: "saved" | "saving" | "unsaved"
+    if(state==="saving"){ elSaved.textContent="Saving…"; elSaved.style.opacity="1"; }
+    else if(state==="unsaved"){ elSaved.textContent="Unsaved"; elSaved.style.opacity=".95"; }
+    else { elSaved.textContent="Saved"; elSaved.style.opacity=".75"; }
+  }
+
+  function scheduleSave(){
+    dirty = true;
+    setSavedBadge("unsaved");
+    if(saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=>saveActive(), 350);
+  }
+
+  function saveActive(){
+    const n=getActive();
+    if(!n) return;
+    n.title = (elTitle.value || "").trim() || "Untitled note";
+    n.html = elEditor.innerHTML || "";
+    n.updated = nowISO();
+    sortNotes();
+    persist();
+    dirty = false;
+    setSavedBadge("saved");
+    renderList();
+  }
+
+  function selectNote(id){
+    if(dirty) saveActive();
+    activeId = id;
+    const n=getActive();
+    if(!n) return;
+    elTitle.value = n.title || "";
+    elEditor.innerHTML = n.html || "";
+    setSavedBadge("saved");
+    renderList();
+    setTimeout(()=>elEditor.focus(), 0);
+  }
+
+  function newNote(){
+    const n = { id: uuid(), title:"Untitled note", html:"", updated: nowISO() };
+    notes.unshift(n);
+    activeId = n.id;
+    persist();
+    renderList();
+    selectNote(n.id);
+  }
+
+  function deleteActive(){
+    const n=getActive();
+    if(!n) return;
+    const ok = confirm("Delete this note? This cannot be undone.");
+    if(!ok) return;
+    notes = notes.filter(x=>x.id!==activeId);
+    persist();
+    activeId = notes[0]?.id || null;
+    renderList();
+    if(activeId) selectNote(activeId);
+    else{
+      elTitle.value="";
+      elEditor.innerHTML="";
+      setSavedBadge("saved");
+    }
+  }
+
+  function downloadActive(){
+    const n=getActive();
+    if(!n) return;
+    saveActive();
+    const safeName = (n.title || "note").replace(/[^a-z0-9\-_ ]/gi,"").trim().slice(0,60) || "note";
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(n.title||"Note")}</title></head><body>${n.html||""}</body></html>`;
+    const blob = new Blob([html], {type:"text/html;charset=utf-8"});
+    const a=document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = safeName + ".html";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 0);
+  }
+
+  function copyActive(){
+    const n=getActive();
+    if(!n) return;
+    saveActive();
+    const plain = plainTextFromHtml(n.html||"");
+    (navigator.clipboard?.writeText ? navigator.clipboard.writeText(plain) : Promise.reject())
+      .then(()=>toast("Copied as text"))
+      .catch(()=>{
+        // fallback
+        const t=document.createElement("textarea");
+        t.value=plain;
+        document.body.appendChild(t);
+        t.select();
+        document.execCommand("copy");
+        t.remove();
+        toast("Copied as text");
+      });
+  }
+
+  function escapeHtml(s){
+    return (s||"").replace(/[&<>"]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+  }
+
+  /* Simple toast (matches site tone) */
+  let toastTimer=null;
+  function toast(msg){
+    let t=document.getElementById("npToast");
+    if(!t){
+      t=document.createElement("div");
+      t.id="npToast";
+      t.style.position="fixed";
+      t.style.left="50%";
+      t.style.top="16px";
+      t.style.transform="translateX(-50%)";
+      t.style.zIndex="10001";
+      t.style.padding="10px 12px";
+      t.style.borderRadius="12px";
+      t.style.border="1px solid rgba(255,255,255,.14)";
+      t.style.background="rgba(10,16,30,.95)";
+      t.style.color="rgba(255,255,255,.92)";
+      t.style.fontSize="13px";
+      t.style.boxShadow="0 14px 50px rgba(0,0,0,.45)";
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity="1";
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer=setTimeout(()=>{ t.style.opacity="0"; }, 1200);
+  }
+
+  /* Editor commands */
+  function focusEditor(){ elEditor.focus(); }
+  function cmd(command, value=null){
+    focusEditor();
+    try{
+      document.execCommand(command, false, value);
+    }catch(_){}
+    scheduleSave();
+    reflectTogglesSoon();
+  }
+
+  function wrapSelectionWith(tag){
+    focusEditor();
+    const sel = window.getSelection();
+    if(!sel || sel.rangeCount===0) return;
+    const range = sel.getRangeAt(0);
+    if(range.collapsed){
+      const node=document.createElement(tag);
+      node.textContent = tag==="code" ? "code" : "";
+      range.insertNode(node);
+      // move caret after
+      range.setStartAfter(node); range.collapse(true);
+      sel.removeAllRanges(); sel.addRange(range);
+    }else{
+      const node=document.createElement(tag);
+      try{
+        range.surroundContents(node);
+      }catch(_){
+        // fallback: insert as HTML
+        const frag = range.extractContents();
+        node.appendChild(frag);
+        range.insertNode(node);
+      }
+    }
+    scheduleSave();
+    reflectTogglesSoon();
+  }
+
+  function applyFontFamily(f){
+    // execCommand uses CSS or deprecated font tags depending on browser; keep it simple.
+    cmd("fontName", f);
+    // ensure editor keeps default for new typing
+    elEditor.style.fontFamily = f;
+  }
+
+  function applyFontSizePx(px){
+    // For contenteditable, easiest is to apply as inline style on editor (for new typing),
+    // and for selection, use a span with style.
+    focusEditor();
+    const sel = window.getSelection();
+    if(sel && sel.rangeCount){
+      const range=sel.getRangeAt(0);
+      if(!range.collapsed){
+        const span=document.createElement("span");
+        span.style.fontSize = px + "px";
+        try{
+          range.surroundContents(span);
+        }catch(_){
+          const frag = range.extractContents();
+          span.appendChild(frag);
+          range.insertNode(span);
+        }
+      }
+    }
+    elEditor.style.fontSize = px + "px";
+    scheduleSave();
+  }
+
+  function applyBlock(tag){
+    focusEditor();
+    try{
+      document.execCommand("formatBlock", false, tag);
+    }catch(_){}
+    scheduleSave();
+    reflectTogglesSoon();
+  }
+
+  function linkPrompt(){
+    focusEditor();
+    const url = prompt("Paste a link (https://…):");
+    if(!url) return;
+    cmd("createLink", url.trim());
+  }
+
+  function insertImageFromFile(file){
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload = ()=>{
+      const src = reader.result;
+      focusEditor();
+      const img=document.createElement("img");
+      img.src = src;
+      img.alt = "image";
+      // insert at caret
+      const sel=window.getSelection();
+      if(sel && sel.rangeCount){
+        const range=sel.getRangeAt(0);
+        range.insertNode(img);
+        range.setStartAfter(img); range.collapse(true);
+        sel.removeAllRanges(); sel.addRange(range);
+      }else{
+        elEditor.appendChild(img);
+      }
+      scheduleSave();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  /* Paste handling: image paste + keep HTML clean */
+  elEditor.addEventListener("paste", (e)=>{
+    const items = e.clipboardData && e.clipboardData.items ? Array.from(e.clipboardData.items) : [];
+    const imgItem = items.find(it => it.type && it.type.startsWith("image/"));
+    if(imgItem){
+      e.preventDefault();
+      const file = imgItem.getAsFile();
+      insertImageFromFile(file);
+      toast("Image pasted");
+      return;
+    }
+    // Allow normal paste; autosave shortly
+    setTimeout(scheduleSave, 0);
+  });
+
+  /* Autosave on edits */
+  elEditor.addEventListener("input", scheduleSave);
+  elTitle.addEventListener("input", scheduleSave);
+
+  /* Keyboard shortcuts */
+  document.addEventListener("keydown", (e)=>{
+    const mac = navigator.platform.toUpperCase().includes("MAC");
+    const mod = mac ? e.metaKey : e.ctrlKey;
+
+    if(mod && e.key.toLowerCase()==="k"){
+      e.preventDefault(); linkPrompt(); return;
+    }
+    if(mod && e.key.toLowerCase()==="s"){
+      e.preventDefault(); saveActive(); toast("Saved"); return;
+    }
+  });
+
+  /* Buttons */
+  elNew.addEventListener("click", newNote);
+  elSearch.addEventListener("input", renderList);
+  elList.addEventListener("click", (e)=>{
+    const item = e.target.closest(".npItem");
+    if(!item) return;
+    selectNote(item.dataset.id);
+  });
+
+  elDelete.addEventListener("click", deleteActive);
+  elDownload.addEventListener("click", downloadActive);
+  elCopy.addEventListener("click", copyActive);
+
+  elFull.addEventListener("click", ()=>{
+    const full = elRight.classList.toggle("npFullscreen");
+    if(full) toast("Fullscreen");
+    else toast("Exit fullscreen");
+  });
+
+  btnUndo.addEventListener("click", ()=>cmd("undo"));
+  btnRedo.addEventListener("click", ()=>cmd("redo"));
+
+  btnBold.addEventListener("click", ()=>cmd("bold"));
+  btnItalic.addEventListener("click", ()=>cmd("italic"));
+  btnUnderline.addEventListener("click", ()=>cmd("underline"));
+  btnStrike.addEventListener("click", ()=>cmd("strikeThrough"));
+  btnCode.addEventListener("click", ()=>wrapSelectionWith("code"));
+
+  btnBullets.addEventListener("click", ()=>cmd("insertUnorderedList"));
+  btnNumbers.addEventListener("click", ()=>cmd("insertOrderedList"));
+
+  btnLink.addEventListener("click", linkPrompt);
+  btnUnlink.addEventListener("click", ()=>cmd("unlink"));
+
+  btnClear.addEventListener("click", ()=>{
+    cmd("removeFormat");
+    // also clear inline styles for selection by toggling to paragraph
+    applyBlock("P");
+  });
+
+  btnAlign.addEventListener("click", (e)=>openMenu(e.currentTarget, buildAlignMenu()));
+  colorPick.addEventListener("input", ()=>cmd("foreColor", colorPick.value));
+  hilitePick.addEventListener("input", ()=>{
+    // hiliteColor works in most modern browsers; fallback to backColor
+    try{ document.execCommand("hiliteColor", false, hilitePick.value); }
+    catch(_){ cmd("backColor", hilitePick.value); }
+    scheduleSave();
+  });
+
+  btnImage.addEventListener("click", ()=>fileInput.click());
+  fileInput.addEventListener("change", ()=>{
+    const f=fileInput.files && fileInput.files[0];
+    if(f) insertImageFromFile(f);
+    fileInput.value="";
+  });
+
+  btnEmoji.addEventListener("click", (e)=>openMenu(e.currentTarget, buildEmojiMenu()));
+  btnFormats.addEventListener("click", (e)=>openMenu(e.currentTarget, buildFormatsMenu()));
+
+  fontSel.addEventListener("change", ()=>applyFontFamily(fontSel.value));
+  fmtSel.addEventListener("change", ()=>applyBlock(fmtSel.value));
+  fontSize.addEventListener("change", ()=>{
+    const px = clampInt(fontSize.value, 10, 36);
+    fontSize.value = px;
+    applyFontSizePx(px);
+  });
+  incBtn.addEventListener("click", ()=>{
+    const px = clampInt(parseInt(fontSize.value||"14",10)+1, 10, 36);
+    fontSize.value = px;
+    applyFontSizePx(px);
+  });
+  decBtn.addEventListener("click", ()=>{
+    const px = clampInt(parseInt(fontSize.value||"14",10)-1, 10, 36);
+    fontSize.value = px;
+    applyFontSizePx(px);
+  });
+
+  function clampInt(v, a, b){
+    let n=parseInt(v,10);
+    if(!isFinite(n)) n=a;
+    return Math.max(a, Math.min(b, n));
+  }
+
+  /* Popover menus */
+  let pop=null;
+  function closeMenu(){
+    if(pop){ pop.remove(); pop=null; }
+  }
+  function openMenu(anchor, contentNode){
+    closeMenu();
+    const r = anchor.getBoundingClientRect();
+    pop=document.createElement("div");
+    pop.className="npPopover";
+    pop.appendChild(contentNode);
+    document.body.appendChild(pop);
+    // position
+    const pad=10;
+    let left = Math.min(window.innerWidth - pop.offsetWidth - pad, Math.max(pad, r.left));
+    let top = Math.min(window.innerHeight - pop.offsetHeight - pad, r.bottom + 8);
+    pop.style.left = left + "px";
+    pop.style.top = top + "px";
+
+    setTimeout(()=>{
+      const onDoc=(e)=>{
+        if(!pop) return;
+        if(e.target===anchor || anchor.contains(e.target)) return;
+        if(pop.contains(e.target)) return;
+        closeMenu();
+        document.removeEventListener("mousedown", onDoc);
+        document.removeEventListener("scroll", closeMenu, true);
+      };
+      document.addEventListener("mousedown", onDoc);
+      document.addEventListener("scroll", closeMenu, true);
+    }, 0);
+  }
+
+  function menuItem(label, hint, onClick){
+    const d=document.createElement("div");
+    d.className="npMenuItem";
+    const l=document.createElement("div");
+    l.textContent=label;
+    const h=document.createElement("div");
+    h.className="npMenuMuted";
+    h.textContent=hint||"";
+    d.appendChild(l);
+    if(hint) d.appendChild(h);
+    d.addEventListener("click", ()=>{ onClick(); closeMenu(); });
+    return d;
+  }
+
+  function buildAlignMenu(){
+    const wrap=document.createElement("div");
+    wrap.appendChild(menuItem("Left", "", ()=>cmd("justifyLeft")));
+    wrap.appendChild(menuItem("Center", "", ()=>cmd("justifyCenter")));
+    wrap.appendChild(menuItem("Right", "", ()=>cmd("justifyRight")));
+    wrap.appendChild(menuItem("Justify", "", ()=>cmd("justifyFull")));
+    return wrap;
+  }
+
+  function buildEmojiMenu(){
+    const wrap=document.createElement("div");
+    const title=document.createElement("div");
+    title.style.fontWeight="800";
+    title.style.fontSize="13px";
+    title.style.padding="2px 2px 8px 2px";
+    title.textContent="Emojis";
+    wrap.appendChild(title);
+
+    const grid=document.createElement("div");
+    grid.className="npEmojiGrid";
+    const emojis = ["😀","😄","😊","😉","😍","🤝","✅","⚠️","🧠","📌","🗒️","📝","📎","📷","🧾","📊","🔎","💡","🧪","🛠","🚀","🎯","⏱️","📅","🔒","✨","🔥","💬","📤","📥","➕","➖","➡️","⬅️","⬆️","⬇️"];
+    emojis.forEach(em=>{
+      const b=document.createElement("button");
+      b.className="npEmojiBtn";
+      b.type="button";
+      b.textContent=em;
+      b.addEventListener("click", ()=>{
+        focusEditor();
+        document.execCommand("insertText", false, em);
+        scheduleSave();
+        closeMenu();
+      });
+      grid.appendChild(b);
+    });
+    wrap.appendChild(grid);
+    return wrap;
+  }
+
+  function buildFormatsMenu(){
+    const wrap=document.createElement("div");
+    const head=document.createElement("div");
+    head.style.fontWeight="800";
+    head.style.fontSize="13px";
+    head.style.padding="2px 2px 8px 2px";
+    head.textContent="Formats";
+    wrap.appendChild(head);
+
+    // Headings
+    wrap.appendChild(menuItem("Headings →", "H1–H6", ()=>{
+      openMenu(btnFormats, buildHeadingsSubmenu());
+    }));
+    wrap.appendChild(menuItem("Inline →", "bold/italic/…", ()=>{
+      openMenu(btnFormats, buildInlineSubmenu());
+    }));
+    wrap.appendChild(menuItem("Blocks →", "quote/pre/div", ()=>{
+      openMenu(btnFormats, buildBlocksSubmenu());
+    }));
+    wrap.appendChild(menuItem("Alignment →", "left/center/…", ()=>{
+      openMenu(btnFormats, buildAlignMenu());
+    }));
+    return wrap;
+  }
+  function buildHeadingsSubmenu(){
+    const w=document.createElement("div");
+    ["H1","H2","H3","H4","H5","H6"].forEach(h=>{
+      w.appendChild(menuItem(h.replace("H","Heading "), "", ()=>applyBlock(h)));
+    });
+    return w;
+  }
+  function buildInlineSubmenu(){
+    const w=document.createElement("div");
+    w.appendChild(menuItem("Bold", "⌘/Ctrl+B", ()=>cmd("bold")));
+    w.appendChild(menuItem("Italic", "⌘/Ctrl+I", ()=>cmd("italic")));
+    w.appendChild(menuItem("Underline", "⌘/Ctrl+U", ()=>cmd("underline")));
+    w.appendChild(menuItem("Strikethrough", "", ()=>cmd("strikeThrough")));
+    w.appendChild(menuItem("Superscript", "", ()=>cmd("superscript")));
+    w.appendChild(menuItem("Subscript", "", ()=>cmd("subscript")));
+    w.appendChild(menuItem("Inline code", "", ()=>wrapSelectionWith("code")));
+    return w;
+  }
+  function buildBlocksSubmenu(){
+    const w=document.createElement("div");
+    w.appendChild(menuItem("Paragraph", "", ()=>applyBlock("P")));
+    w.appendChild(menuItem("Blockquote", "", ()=>applyBlock("BLOCKQUOTE")));
+    w.appendChild(menuItem("Div", "", ()=>applyBlock("DIV")));
+    w.appendChild(menuItem("Pre", "", ()=>applyBlock("PRE")));
+    w.appendChild(menuItem("Horizontal line", "", ()=>{
+      focusEditor();
+      document.execCommand("insertHorizontalRule", false, null);
+      scheduleSave();
+    }));
+    return w;
+  }
+
+  /* Toggle reflection (best-effort) */
+  let reflectTimer=null;
+  function reflectTogglesSoon(){
+    if(reflectTimer) cancelAnimationFrame(reflectTimer);
+    reflectTimer=requestAnimationFrame(reflectToggles);
+  }
+  function toggle(btn, isOn){ btn.classList.toggle("on", !!isOn); }
+  function reflectToggles(){
+    try{
+      toggle(btnBold, document.queryCommandState("bold"));
+      toggle(btnItalic, document.queryCommandState("italic"));
+      toggle(btnUnderline, document.queryCommandState("underline"));
+      toggle(btnStrike, document.queryCommandState("strikeThrough"));
+    }catch(_){}
+  }
+  document.addEventListener("selectionchange", ()=>{
+    if(document.activeElement===elEditor) reflectTogglesSoon();
+  });
+
+  /* Bootstrap */
+  load();
+  if(notes.length===0) newNote();
+  else{
+    sortNotes();
+    activeId = notes[0].id;
+    renderList();
+    selectNote(activeId);
+  }
+
+  // Save before unload
+  window.addEventListener("beforeunload", ()=>{ if(dirty) saveActive(); });
+})();
+</script>
+
+<script src="/assets/js/rm-tools-drawer.js"></script>
+</body>
+</html>
