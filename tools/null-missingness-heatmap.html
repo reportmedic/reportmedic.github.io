@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="See missingness per column and by segment with a quick heatmap, so you can spot broken fields before reporting."/>
+<title>Null & Missingness Heatmap — Data quality gaps — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+<script defer src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script defer src="/assets/js/rm-dropzone.js"></script>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width: 880px){.grid2{grid-template-columns:1fr}}
+
+  .card{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;background:rgba(0,0,0,.10)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .muted{opacity:.82}
+  .tiny{font-size:12px;opacity:.80}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+  .hr2{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
+
+  .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px}
+  .pill b{font-size:12px}
+
+  .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;border:1px solid rgba(255,255,255,.12)}
+  .b-info{background:rgba(52, 152, 219, .10)}
+  .b-ok{background:rgba(46, 204, 113, .12)}
+  .b-warn{background:rgba(241, 196, 15, .12)}
+  .b-bad{background:rgba(231, 76, 60, .12)}
+
+  .input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.16);color:inherit}
+  .btn.small{padding:8px 10px;font-size:13px}
+
+  .tablewrap{overflow:auto;border:1px solid rgba(255,255,255,.10);border-radius:14px}
+  table{border-collapse:separate;border-spacing:0;width:100%;min-width:940px}
+  th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+  th{position:sticky;top:0;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);text-align:left;font-size:12px;letter-spacing:.02em;opacity:.9}
+  tr:last-child td{border-bottom:none}
+  .tablewrap td{font-size:12px;padding:8px 10px}
+
+  .note{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
+  .mini{font-size:12px;line-height:1.35;opacity:.9}
+
+  .heat td, .heat th{white-space:nowrap}
+  .heat td{font-variant-numeric:tabular-nums}
+  .cell{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .bar{height:8px; border-radius:999px; background:rgba(255,255,255,.10); overflow:hidden; flex:1}
+  .fill{height:100%; background:rgba(255,255,255,.55)}
+  .pct{min-width:56px; text-align:right;}
+</style>
+
+<style>
+/* ReportMedic Learn-more modal (lightweight, page-local) */
+.rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+.rm-lm-link:hover{opacity:1;}
+.rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;}
+.rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+.rm-lm-dialog{color:#111;max-width:560px; width:100%; background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.25); overflow:hidden;}
+.rm-lm-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08);}
+.rm-lm-title{margin:0; font-size:1.05rem;}
+.rm-lm-close{border:0; background:transparent; font-size:1.25rem; line-height:1; padding:6px 10px; cursor:pointer; opacity:.7;}
+.rm-lm-close:hover{opacity:1;}
+.rm-lm-body{font-size:.95rem; line-height:1.45; color:#111;padding:14px 16px;}
+.rm-lm-body h3{margin:12px 0 6px; font-size:.95rem;}
+.rm-lm-body ul{margin:0 0 6px 18px;}
+.rm-lm-body li{margin:4px 0;}
+</style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Null & Missingness Heatmap <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">See missing values by column (and by segment) so you can spot broken fields fast. Runs locally in your browser.</p>
+    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+
+    <div class="hr"></div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <div style="font-weight:700">Upload</div>
+            <div class="tiny muted">CSV / TSV / Excel (XLSX/XLS)</div>
+          </div>
+          <span class="pill tiny" id="meta"><b>File:</b><span class="muted">not loaded</span></span>
+        </div>
+        <div style="margin-top:10px">
+          <input accept=".csv,.tsv,.xlsx,.xls,.txt" class="input" id="file" type="file"/>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <label class="tiny muted">Delimiter</label>
+          <select class="input" id="delimiter" style="width:auto;min-width:190px">
+            <option selected value="auto">Auto-detect</option>
+            <option value=",">Comma (,)</option>
+            <option value="\t">Tab (TSV)</option>
+            <option value=";">Semicolon (;)</option>
+            <option value="|">Pipe (|)</option>
+          </select>
+          <label class="tiny muted">Max rows to scan</label>
+          <select class="input" id="maxRows" style="width:auto;min-width:190px">
+            <option selected value="50000">50,000</option>
+            <option value="100000">100,000</option>
+            <option value="250000">250,000</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:700">Options</div>
+        <div class="tiny muted" style="margin-top:6px">Group-by lets you spot segments where missingness suddenly spikes (optional).</div>
+        <div class="hr2"></div>
+        <div class="row">
+          <label class="tiny muted">Group by</label>
+          <select class="input" id="groupBy" style="width:auto;min-width:320px" disabled>
+            <option value="">(none)</option>
+          </select>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <label class="tiny muted">Top groups</label>
+          <select class="input" id="topGroups" style="width:auto;min-width:200px">
+            <option selected value="12">12</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+          </select>
+          <label class="tiny muted">Columns in heatmap</label>
+          <select class="input" id="topCols" style="width:auto;min-width:240px">
+            <option selected value="12">12 (most missing)</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <div style="font-weight:700">Run</div>
+          <div class="tiny muted">Computes missingness (blank / null / NaN) per column. Download a report if needed.</div>
+        </div>
+        <span class="badge b-info" id="status">Waiting for a file</span>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary" id="run" type="button">Analyze missingness</button>
+        <button class="btn" id="download" type="button" disabled>Download missingness CSV</button>
+        <button class="btn danger" id="reset" type="button">Reset</button>
+      </div>
+      <div class="note mini muted" style="margin-top:10px">
+        Missing means: empty string, whitespace-only, <span class="mono">null</span>, <span class="mono">undefined</span>, or <span class="mono">NaN</span>.
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <div style="font-weight:700">Column summary</div>
+          <div class="tiny muted">Sorted by highest missingness.</div>
+        </div>
+        <span class="pill tiny"><b>Rows:</b><span class="muted" id="statRows">—</span></span>
+        <span class="pill tiny"><b>Columns:</b><span class="muted" id="statCols">—</span></span>
+      </div>
+      <div class="hr2"></div>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Missing</th>
+              <th>Missing %</th>
+              <th>Preview</th>
+            </tr>
+          </thead>
+          <tbody id="colBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card" style="margin:12px 0 0 0">
+        <div style="font-weight:700">How to read results</div>
+        <div class="hr2"></div>
+        <div class="mini muted">
+          <div><span class="badge b-bad">High missing %</span> usually means an upstream export/pipeline dropped a field or changed a join.</div>
+          <div style="margin-top:6px"><span class="badge b-warn">Sudden spikes by segment</span> often point to a filter, timezone boundary, or key mismatch.</div>
+          <div style="margin-top:6px">If this affects a key metric, consider reconciling totals and checking duplicates next.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <div style="font-weight:700">Segment heatmap (optional)</div>
+          <div class="tiny muted">If you choose a group-by column, this highlights where missingness concentrates.</div>
+        </div>
+        <span class="badge b-info" id="heatStatus">No group-by selected</span>
+      </div>
+      <div class="hr2"></div>
+      <div class="tablewrap">
+        <table class="heat">
+          <thead>
+            <tr id="heatHead"></tr>
+          </thead>
+          <tbody id="heatBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+      <a class="btn" href="/docs/contact.html">Contact</a>
+    </div>
+
+    <div class="footer">© 2026 ReportMedic</div>
+  </div>
+</div>
+
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Null & Missingness Heatmap details">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Null & Missingness Heatmap</h2>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Find columns that silently stopped populating</li>
+        <li>Spot segments where missingness spikes (group-by)</li>
+        <li>Catch export/pipeline issues before you share a report</li>
+      </ul>
+
+      <h3>Common causes</h3>
+      <ul>
+        <li>Join keys changed, causing partial dropouts</li>
+        <li>Filters removed a segment (stores, regions, channels)</li>
+        <li>Date/time boundary issues (timezone/DST)</li>
+      </ul>
+
+      <h3>What to do next</h3>
+      <ul>
+        <li>Validate schema (required fields) first</li>
+        <li>Check duplicates on business keys if totals inflate</li>
+        <li>Use Reconciliation when totals drift</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $ = (id)=>document.getElementById(id);
+
+  const el = {
+    file: $("file"), meta: $("meta"),
+    delimiter: $("delimiter"), maxRows: $("maxRows"),
+    groupBy: $("groupBy"), topGroups: $("topGroups"), topCols: $("topCols"),
+    status: $("status"), heatStatus: $("heatStatus"),
+    run: $("run"), download: $("download"), reset: $("reset"),
+    statRows: $("statRows"), statCols: $("statCols"),
+    colBody: $("colBody"),
+    heatHead: $("heatHead"), heatBody: $("heatBody"),
+  };
+
+  let state = { file: null, rows: [], cols: [], missingSummary: null, heat: null };
+
+  function escapeHtml(s){
+    return String(s ?? "").replace(/[&<>\"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function isMissing(v){
+    if(v == null) return true;
+    const s = String(v);
+    if(s.trim() === "") return true;
+    const t = s.trim().toLowerCase();
+    return (t === "null" || t === "undefined" || t === "nan");
+  }
+
+  function detectDelimiter(text){
+    const candidates = [',','\t',';','|'];
+    const sample = text.slice(0, 20000);
+    let best = {d:',', score:-1};
+    candidates.forEach(d=>{
+      const lines = sample.split(/\r?\n/).slice(0, 25).filter(Boolean);
+      if(lines.length < 2) return;
+      const counts = lines.map(l => l.split(d).length);
+      const avg = counts.reduce((a,b)=>a+b,0)/counts.length;
+      const varr = counts.reduce((a,c)=>a + (c-avg)*(c-avg),0)/counts.length;
+      const score = avg - varr; // prefer many columns with consistency
+      if(score > best.score) best = {d, score};
+    });
+    return best.d;
+  }
+
+  async function readFile(file){
+    const name = (file && file.name || "").toLowerCase();
+    const buf = await file.arrayBuffer();
+    if(name.endsWith('.xlsx') || name.endsWith('.xls')){
+      const wb = XLSX.read(buf, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {defval:"", raw:false});
+      const cols = rows.length ? Object.keys(rows[0]) : [];
+      return { rows, cols };
+    }
+    const text = new TextDecoder().decode(buf);
+    const delim = (el.delimiter.value === 'auto') ? detectDelimiter(text) : el.delimiter.value;
+    const parsed = Papa.parse(text, {header:true, skipEmptyLines:true, delimiter: delim});
+    const rows = parsed.data || [];
+    const cols = (parsed.meta && parsed.meta.fields) ? parsed.meta.fields : (rows[0] ? Object.keys(rows[0]) : []);
+    return { rows, cols };
+  }
+
+  function setMeta(){
+    if(!state.file){
+      el.meta.innerHTML = '<b>File:</b><span class="muted">not loaded</span>';
+      return;
+    }
+    el.meta.innerHTML = '<b>File:</b><span class="muted">'+escapeHtml(state.file.name)+'</span>';
+  }
+
+  function setStatus(kind, text){
+    el.status.className = 'badge ' + (kind || 'b-info');
+    el.status.textContent = text;
+  }
+
+  function uniqTop(values, limit){
+    const counts = new Map();
+    for(const v of values){
+      const key = String(v ?? "");
+      counts.set(key, (counts.get(key)||0)+1);
+    }
+    const arr = Array.from(counts.entries()).sort((a,b)=>b[1]-a[1]);
+    return arr.slice(0, limit).map(([k,c])=>({key:k,count:c}));
+  }
+
+  function buildGroupOptions(){
+    el.groupBy.innerHTML = '<option value="">(none)</option>';
+    state.cols.forEach(c=>{
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      el.groupBy.appendChild(opt);
+    });
+    el.groupBy.disabled = !state.cols.length;
+  }
+
+  function pct(n, d){
+    if(!d) return 0;
+    return (n*100)/d;
+  }
+
+  function formatPct(x){
+    return (Math.round(x*10)/10).toFixed(1) + '%';
+  }
+
+  function renderColumnSummary(summary){
+    el.colBody.innerHTML = '';
+    summary.forEach(item=>{
+      const tr = document.createElement('tr');
+      const p = pct(item.missing, item.total);
+      const barPct = Math.max(0, Math.min(100, p));
+      const preview = item.examples.length ? item.examples.map(v=>`<span class="tag mono">${escapeHtml(v)}</span>`).join(' ') : '<span class="muted">(all missing)</span>';
+      tr.innerHTML = `
+        <td class="mono">${escapeHtml(item.col)}</td>
+        <td>${item.missing.toLocaleString()} / ${item.total.toLocaleString()}</td>
+        <td>${formatPct(p)}</td>
+        <td>
+          <div class="cell">
+            <div class="bar" aria-hidden="true"><div class="fill" style="width:${barPct.toFixed(1)}%"></div></div>
+            <div class="pct">${formatPct(p)}</div>
+          </div>
+          <div class="tiny muted" style="margin-top:6px">Examples (non-missing): ${preview}</div>
+        </td>
+      `;
+      el.colBody.appendChild(tr);
+    });
+  }
+
+  function computeMissingSummary(rows, cols, maxRows){
+    const n = Math.min(rows.length, maxRows);
+    const summary = cols.map(col=>{
+      let missing = 0;
+      const examples = [];
+      for(let i=0;i<n;i++){
+        const v = rows[i] ? rows[i][col] : "";
+        if(isMissing(v)) missing++;
+        else if(examples.length < 3){
+          const s = String(v);
+          const shown = s.length > 28 ? (s.slice(0,28)+'…') : s;
+          if(shown.trim() !== '') examples.push(shown);
+        }
+      }
+      return { col, missing, total:n, examples };
+    }).sort((a,b)=> (b.missing/b.total) - (a.missing/a.total));
+    return summary;
+  }
+
+  function renderHeatmap(rows, cols, groupCol, maxRows, topGroupsN, topColsN){
+    if(!groupCol){
+      el.heatStatus.textContent = 'No group-by selected';
+      el.heatHead.innerHTML = '<th>Group</th>';
+      el.heatBody.innerHTML = '<tr><td class="muted">Choose a group-by column to see segment spikes.</td></tr>';
+      return;
+    }
+
+    const n = Math.min(rows.length, maxRows);
+    const groupVals = [];
+    for(let i=0;i<n;i++) groupVals.push(rows[i] ? rows[i][groupCol] : "");
+
+    const topGroups = uniqTop(groupVals, topGroupsN);
+
+    // pick top columns by missingness overall
+    const overall = computeMissingSummary(rows, cols, maxRows);
+    const heatCols = overall.slice(0, topColsN).map(x=>x.col);
+
+    const groupIndex = new Map(topGroups.map(g=>[g.key, {count:0, miss:new Map(heatCols.map(c=>[c,0]))}]));
+
+    for(let i=0;i<n;i++){
+      const r = rows[i] || {};
+      const g = String(r[groupCol] ?? "");
+      const bucket = groupIndex.get(g);
+      if(!bucket) continue;
+      bucket.count++;
+      for(const c of heatCols){
+        if(isMissing(r[c])) bucket.miss.set(c, bucket.miss.get(c)+1);
+      }
+    }
+
+    el.heatHead.innerHTML = '';
+    const th0 = document.createElement('th');
+    th0.textContent = `Group (${escapeHtml(groupCol)})`;
+    el.heatHead.appendChild(th0);
+    heatCols.forEach(c=>{
+      const th = document.createElement('th');
+      th.textContent = c;
+      el.heatHead.appendChild(th);
+    });
+
+    // determine max missing % for shading
+    let maxP = 0;
+    const matrix = [];
+    topGroups.forEach(g=>{
+      const bucket = groupIndex.get(g.key);
+      const row = { key:g.key, count: bucket ? bucket.count : 0, cells: [] };
+      heatCols.forEach(c=>{
+        const miss = bucket ? bucket.miss.get(c) : 0;
+        const p = bucket && bucket.count ? (miss*100/bucket.count) : 0;
+        if(p > maxP) maxP = p;
+        row.cells.push({col:c, miss, p});
+      });
+      matrix.push(row);
+    });
+    maxP = Math.max(maxP, 1);
+
+    el.heatBody.innerHTML = '';
+    matrix.forEach(r=>{
+      const tr = document.createElement('tr');
+      const td0 = document.createElement('td');
+      td0.innerHTML = `<div class="mono">${escapeHtml(r.key)}</div><div class="tiny muted">n=${r.count.toLocaleString()}</div>`;
+      tr.appendChild(td0);
+
+      r.cells.forEach(cell=>{
+        const td = document.createElement('td');
+        const alpha = Math.max(0.06, Math.min(0.55, (cell.p / maxP) * 0.55));
+        td.style.background = `rgba(255,255,255,${alpha.toFixed(3)})`;
+        td.innerHTML = `<div class="mono">${formatPct(cell.p)}</div><div class="tiny muted">${cell.miss.toLocaleString()}/${r.count.toLocaleString()}</div>`;
+        tr.appendChild(td);
+      });
+
+      el.heatBody.appendChild(tr);
+    });
+
+    el.heatStatus.textContent = `Showing ${topGroups.length} groups × ${heatCols.length} columns`;
+  }
+
+  function toCsv(rows){
+    return Papa.unparse(rows);
+  }
+
+  function downloadText(filename, text, mime){
+    const blob = new Blob([text], {type: mime || 'text/plain'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 250);
+  }
+
+  async function onFileChange(){
+    const f = el.file.files && el.file.files[0];
+    state = { file: f || null, rows: [], cols: [], missingSummary: null, heat: null };
+    setMeta();
+    el.download.disabled = true;
+    el.colBody.innerHTML = '';
+    el.heatHead.innerHTML = '<th>Group</th>';
+    el.heatBody.innerHTML = '<tr><td class="muted">Choose a group-by column to see segment spikes.</td></tr>';
+
+    if(!f){
+      setStatus('b-info', 'Waiting for a file');
+      el.groupBy.disabled = true;
+      return;
+    }
+
+    setStatus('b-info', 'Loaded — ready to analyze');
+    try{
+      const {rows, cols} = await readFile(f);
+      state.rows = rows || [];
+      state.cols = cols || [];
+      el.statRows.textContent = state.rows.length.toLocaleString();
+      el.statCols.textContent = state.cols.length.toLocaleString();
+      buildGroupOptions();
+    } catch(err){
+      setStatus('b-bad', 'Could not read file');
+      console.error(err);
+    }
+  }
+
+  async function run(){
+    if(!state.file) return;
+    setStatus('b-info', 'Analyzing…');
+
+    const maxRows = parseInt(el.maxRows.value, 10) || 50000;
+    const cols = state.cols || [];
+    const rows = state.rows || [];
+
+    const summary = computeMissingSummary(rows, cols, maxRows);
+    state.missingSummary = summary;
+    renderColumnSummary(summary);
+
+    const g = el.groupBy.value || '';
+    renderHeatmap(rows, cols, g, maxRows, parseInt(el.topGroups.value,10)||12, parseInt(el.topCols.value,10)||12);
+
+    // enable download
+    const out = summary.map(s=>({column:s.col, missing:s.missing, total:s.total, missing_pct: (s.total ? (Math.round((s.missing*10000)/s.total)/100) : 0)}));
+    state.heat = out;
+    el.download.disabled = false;
+
+    // decision badge
+    const worst = summary[0];
+    const worstPct = worst ? (worst.total ? (worst.missing*100/worst.total) : 0) : 0;
+    if(worstPct >= 20) setStatus('b-warn', 'Missingness is significant');
+    else setStatus('b-ok', 'Looks reasonably complete');
+  }
+
+  function download(){
+    if(!state.heat) return;
+    const name = (state.file && state.file.name) ? state.file.name.replace(/\.[^.]+$/, '') : 'missingness';
+    const csv = toCsv(state.heat);
+    downloadText(`${name}_missingness.csv`, csv, 'text/csv');
+  }
+
+  function reset(){
+    el.file.value = '';
+    onFileChange();
+    setStatus('b-info', 'Waiting for a file');
+  }
+
+  el.file.addEventListener('change', onFileChange);
+  el.run.addEventListener('click', run);
+  el.download.addEventListener('click', download);
+  el.reset.addEventListener('click', reset);
+
+  el.groupBy.addEventListener('change', ()=>{
+    if(!state.file || !state.missingSummary) return;
+    const maxRows = parseInt(el.maxRows.value, 10) || 50000;
+    renderHeatmap(state.rows, state.cols, el.groupBy.value || '', maxRows, parseInt(el.topGroups.value,10)||12, parseInt(el.topCols.value,10)||12);
+  });
+  [el.topGroups, el.topCols].forEach(sel=>sel.addEventListener('change', ()=>{
+    if(!state.file || !state.missingSummary) return;
+    const maxRows = parseInt(el.maxRows.value, 10) || 50000;
+    renderHeatmap(state.rows, state.cols, el.groupBy.value || '', maxRows, parseInt(el.topGroups.value,10)||12, parseInt(el.topCols.value,10)||12);
+  }));
+
+  setMeta();
+})();
+</script>
+
+<script>
+(function(){
+  function openLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','false');
+    const btn=bd.querySelector('.rm-lm-close');
+    if(btn) btn.focus();
+  }
+  function closeLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','true');
+  }
+  document.addEventListener('click', function(e){
+    const a=e.target.closest('[data-rm-lm-open]');
+    if(a){
+      e.preventDefault();
+      openLM(a.getAttribute('data-rm-lm-open'));
+      return;
+    }
+    const close=e.target.closest('[data-rm-lm-close]');
+    if(close){
+      e.preventDefault();
+      closeLM(close.getAttribute('data-rm-lm-close'));
+      return;
+    }
+    const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+    if(bd){
+      closeLM(bd.id);
+    }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute('aria-hidden','true'));
+  });
+})();
+</script>
+
+</body>
+</html>

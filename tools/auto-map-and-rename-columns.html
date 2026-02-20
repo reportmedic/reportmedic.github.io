@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="Auto-suggest column mappings between two files and generate a renamed copy + mapping JSON so reports line up."/>
+<title>Column Mapping Helper — Rename headers across files — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+<script defer src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script defer src="/assets/js/rm-dropzone.js"></script>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width: 880px){.grid2{grid-template-columns:1fr}}
+
+  .card{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;background:rgba(0,0,0,.10)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .muted{opacity:.82}
+  .tiny{font-size:12px;opacity:.80}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+  .hr2{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
+
+  .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px}
+  .pill b{font-size:12px}
+
+  .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;border:1px solid rgba(255,255,255,.12)}
+  .b-info{background:rgba(52, 152, 219, .10)}
+  .b-ok{background:rgba(46, 204, 113, .12)}
+  .b-warn{background:rgba(241, 196, 15, .12)}
+  .b-bad{background:rgba(231, 76, 60, .12)}
+
+  .input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.16);color:inherit}
+  .btn.small{padding:8px 10px;font-size:13px}
+
+  .tablewrap{overflow:auto;border:1px solid rgba(255,255,255,.10);border-radius:14px}
+  table{border-collapse:separate;border-spacing:0;width:100%;min-width:960px}
+  th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+  th{position:sticky;top:0;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);text-align:left;font-size:12px;letter-spacing:.02em;opacity:.9}
+  tr:last-child td{border-bottom:none}
+  .tablewrap td{font-size:12px;padding:8px 10px}
+
+  .note{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
+  .mini{font-size:12px;line-height:1.35;opacity:.9}
+
+  .score{font-variant-numeric:tabular-nums}
+</style>
+
+<style>
+/* ReportMedic Learn-more modal (lightweight, page-local) */
+.rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+.rm-lm-link:hover{opacity:1;}
+.rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;}
+.rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+.rm-lm-dialog{color:#111;max-width:560px; width:100%; background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.25); overflow:hidden;}
+.rm-lm-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08);}
+.rm-lm-title{margin:0; font-size:1.05rem;}
+.rm-lm-close{border:0; background:transparent; font-size:1.25rem; line-height:1; padding:6px 10px; cursor:pointer; opacity:.7;}
+.rm-lm-close:hover{opacity:1;}
+.rm-lm-body{font-size:.95rem; line-height:1.45; color:#111;padding:14px 16px;}
+.rm-lm-body h3{margin:12px 0 6px; font-size:.95rem;}
+.rm-lm-body ul{margin:0 0 6px 18px;}
+.rm-lm-body li{margin:4px 0;}
+</style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Column Mapping Helper <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Upload two files, auto-suggest column matches, and generate a renamed copy so exports line up. Runs locally in your browser.</p>
+    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+
+    <div class="hr"></div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <div style="font-weight:700">Upload A (source)</div>
+            <div class="tiny muted">CSV / TSV / Excel (XLSX/XLS)</div>
+          </div>
+          <span class="pill tiny" id="metaA"><b>File:</b><span class="muted">not loaded</span></span>
+        </div>
+        <div style="margin-top:10px">
+          <input accept=".csv,.tsv,.xlsx,.xls,.txt" class="input" id="fileA" type="file"/>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <label class="tiny muted">Delimiter</label>
+          <select class="input" id="delimA" style="width:auto;min-width:190px">
+            <option selected value="auto">Auto-detect</option>
+            <option value=",">Comma (,)</option>
+            <option value="\t">Tab (TSV)</option>
+            <option value=";">Semicolon (;)</option>
+            <option value="|">Pipe (|)</option>
+          </select>
+          <label class="tiny muted">Header row</label>
+          <select class="input" id="headerRowA" style="width:auto;min-width:150px">
+            <option selected value="1">Row 1</option>
+            <option value="2">Row 2</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <div style="font-weight:700">Upload B (target)</div>
+            <div class="tiny muted">CSV / TSV / Excel (XLSX/XLS)</div>
+          </div>
+          <span class="pill tiny" id="metaB"><b>File:</b><span class="muted">not loaded</span></span>
+        </div>
+        <div style="margin-top:10px">
+          <input accept=".csv,.tsv,.xlsx,.xls,.txt" class="input" id="fileB" type="file"/>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <label class="tiny muted">Delimiter</label>
+          <select class="input" id="delimB" style="width:auto;min-width:190px">
+            <option selected value="auto">Auto-detect</option>
+            <option value=",">Comma (,)</option>
+            <option value="\t">Tab (TSV)</option>
+            <option value=";">Semicolon (;)</option>
+            <option value="|">Pipe (|)</option>
+          </select>
+          <label class="tiny muted">Header row</label>
+          <select class="input" id="headerRowB" style="width:auto;min-width:150px">
+            <option selected value="1">Row 1</option>
+            <option value="2">Row 2</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <div style="font-weight:700">Actions</div>
+          <div class="tiny muted">Generate suggestions, then download a renamed copy of File A (header renamed to match File B).</div>
+        </div>
+        <span class="badge b-info" id="status">Waiting for files</span>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary" id="run" type="button">Suggest mapping</button>
+        <button class="btn" id="downloadJson" type="button" disabled>Download mapping JSON</button>
+        <button class="btn" id="downloadCsv" type="button" disabled>Download renamed CSV (A → B)</button>
+        <button class="btn danger" id="reset" type="button">Reset</button>
+      </div>
+      <div class="note mini muted" style="margin-top:10px">
+        Tip: If a match looks wrong, change it in the dropdown before downloading.
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <div style="font-weight:700">Suggested mappings</div>
+          <div class="tiny muted">One row per source column. Score is a rough similarity (higher is better).</div>
+        </div>
+        <span class="pill tiny"><b>A cols:</b><span class="muted" id="statA">—</span></span>
+        <span class="pill tiny"><b>B cols:</b><span class="muted" id="statB">—</span></span>
+      </div>
+      <div class="hr2"></div>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Source (A)</th>
+              <th>Suggested target (B)</th>
+              <th class="score">Score</th>
+              <th>Decision</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="card" style="margin:12px 0 0 0">
+        <div style="font-weight:700">How to read results</div>
+        <div class="hr2"></div>
+        <div class="mini muted">
+          <div><span class="badge b-ok">High score</span> usually means the headers match once you ignore casing, underscores, and spacing.</div>
+          <div style="margin-top:6px"><span class="badge b-warn">Medium score</span> is a “reasonable guess” — verify quickly.</div>
+          <div style="margin-top:6px"><span class="badge b-bad">No match</span> means nothing in B looked similar; pick a target or choose “(leave as-is)”.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+      <a class="btn" href="/docs/contact.html">Contact</a>
+    </div>
+
+    <div class="footer">© 2026 ReportMedic</div>
+  </div>
+</div>
+
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Column Mapping Helper details">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Column Mapping Helper</h2>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Different column names across exports</li>
+        <li>Standardizing headers before validation or reconciliation</li>
+        <li>Creating a reusable mapping you can share with teammates</li>
+      </ul>
+
+      <h3>Common causes</h3>
+      <ul>
+        <li>Vendor tools rename fields between versions</li>
+        <li>CSV exports use friendly names; warehouse uses snake_case</li>
+        <li>Spaces / punctuation / casing differences hide “same” columns</li>
+      </ul>
+
+      <h3>What to do next</h3>
+      <ul>
+        <li>Download the mapping JSON and keep it with your report pipeline</li>
+        <li>Use the renamed CSV as input to Schema Validator or Quick Pivot</li>
+        <li>If the mapping is unclear, use Live Agent for a fast second opinion</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  function openLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','false');
+    const btn=bd.querySelector('.rm-lm-close');
+    if(btn) btn.focus();
+  }
+  function closeLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','true');
+  }
+  document.addEventListener('click', function(e){
+    const a=e.target.closest('[data-rm-lm-open]');
+    if(a){
+      e.preventDefault();
+      openLM(a.getAttribute('data-rm-lm-open'));
+      return;
+    }
+    const close=e.target.closest('[data-rm-lm-close]');
+    if(close){
+      e.preventDefault();
+      closeLM(close.getAttribute('data-rm-lm-close'));
+      return;
+    }
+    const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+    if(bd){
+      closeLM(bd.id);
+    }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute('aria-hidden','true'));
+  });
+})();
+</script>
+
+<script>
+(function(){
+  const $ = (id)=>document.getElementById(id);
+
+  const el = {
+    fileA: $('fileA'), fileB: $('fileB'),
+    metaA: $('metaA'), metaB: $('metaB'),
+    delimA: $('delimA'), delimB: $('delimB'),
+    headerRowA: $('headerRowA'), headerRowB: $('headerRowB'),
+    run: $('run'), reset: $('reset'),
+    tbody: $('tbody'),
+    downloadJson: $('downloadJson'),
+    downloadCsv: $('downloadCsv'),
+    statA: $('statA'), statB: $('statB'),
+    status: $('status')
+  };
+
+  let state = {
+    a: null, // {name, headers, rows}
+    b: null, // {name, headers}
+    mapping: null // [{aCol, bCol, score}]
+  };
+
+  function setStatus(kind, text){
+    el.status.className = 'badge ' + (kind || 'b-info');
+    el.status.textContent = text;
+  }
+
+  function formatBytes(bytes){
+    if(!Number.isFinite(bytes)) return '';
+    const u=['B','KB','MB','GB'];
+    let i=0, b=bytes;
+    while(b>=1024 && i<u.length-1){ b/=1024; i++; }
+    const v = i===0 ? Math.round(b) : Math.round(b*10)/10;
+    return v + ' ' + u[i];
+  }
+
+  function updateMeta(){
+    const a = el.fileA.files && el.fileA.files[0];
+    const b = el.fileB.files && el.fileB.files[0];
+    el.metaA.querySelector('.muted').textContent = a ? (a.name + ' • ' + formatBytes(a.size)) : 'not loaded';
+    el.metaB.querySelector('.muted').textContent = b ? (b.name + ' • ' + formatBytes(b.size)) : 'not loaded';
+  }
+
+  function normalize(s){
+    return String(s ?? '')
+      .toLowerCase()
+      .replace(/[\u200B-\u200D\uFEFF]/g,'')
+      .replace(/\([^\)]*\)/g,'')
+      .replace(/[^a-z0-9]+/g,' ')
+      .trim()
+      .replace(/\s+/g,' ');
+  }
+
+  function levenshtein(a, b){
+    a = String(a||'');
+    b = String(b||'');
+    const m=a.length, n=b.length;
+    if(m===0) return n;
+    if(n===0) return m;
+    const dp = new Array(n+1);
+    for(let j=0;j<=n;j++) dp[j]=j;
+    for(let i=1;i<=m;i++){
+      let prev = dp[0];
+      dp[0]=i;
+      for(let j=1;j<=n;j++){
+        const tmp = dp[j];
+        const cost = a[i-1] === b[j-1] ? 0 : 1;
+        dp[j] = Math.min(
+          dp[j] + 1,
+          dp[j-1] + 1,
+          prev + cost
+        );
+        prev = tmp;
+      }
+    }
+    return dp[n];
+  }
+
+  function similarity(a, b){
+    const na = normalize(a);
+    const nb = normalize(b);
+    if(!na || !nb) return 0;
+    if(na === nb) return 1;
+
+    // token overlap
+    const ta = new Set(na.split(' '));
+    const tb = new Set(nb.split(' '));
+    let inter = 0;
+    ta.forEach(t=>{ if(tb.has(t)) inter++; });
+    const union = ta.size + tb.size - inter;
+    const j = union ? inter/union : 0;
+
+    // edit similarity
+    const dist = levenshtein(na, nb);
+    const maxLen = Math.max(na.length, nb.length) || 1;
+    const e = 1 - (dist / maxLen);
+
+    // weighted blend
+    return Math.max(0, Math.min(1, 0.55*e + 0.45*j));
+  }
+
+  function download(filename, blob){
+    const a = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 300);
+  }
+
+  function readAsArrayBuffer(file){
+    return new Promise((resolve, reject)=>{
+      const fr = new FileReader();
+      fr.onload = ()=>resolve(fr.result);
+      fr.onerror = ()=>reject(fr.error);
+      fr.readAsArrayBuffer(file);
+    });
+  }
+
+  function parseFileHeadersAndRows(file, delimiter, headerRow){
+    const name = file.name || 'file';
+    const ext = (name.split('.').pop()||'').toLowerCase();
+
+    // Excel
+    if(ext === 'xlsx' || ext === 'xls'){
+      return readAsArrayBuffer(file).then(buf=>{
+        const wb = XLSX.read(buf, { type: 'array' });
+        const wsName = wb.SheetNames[0];
+        const ws = wb.Sheets[wsName];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+        const hr = Math.max(1, parseInt(headerRow||'1',10));
+        const header = (rows[hr-1] || []).map(c=>String(c ?? '').trim());
+        const dataRows = rows.slice(hr).map(r=>{
+          const obj = {};
+          header.forEach((h, i)=>{ obj[h] = r[i]; });
+          return obj;
+        });
+        return { name, headers: header.filter(h=>h!==''), rows: dataRows };
+      });
+    }
+
+    // Text / CSV
+    return new Promise((resolve, reject)=>{
+      const fr = new FileReader();
+      fr.onload = ()=>{
+        const text = String(fr.result || '');
+        const hr = Math.max(1, parseInt(headerRow||'1',10));
+        const config = {
+          skipEmptyLines: true,
+          dynamicTyping: false,
+          delimiter: delimiter === 'auto' ? '' : delimiter,
+        };
+        const parsed = Papa.parse(text, config);
+        if(parsed.errors && parsed.errors.length){
+          // still try to proceed if data exists
+        }
+        const rows = parsed.data || [];
+        const header = (rows[hr-1] || []).map(c=>String(c ?? '').trim());
+        const dataRows = rows.slice(hr).map(r=>{
+          const obj = {};
+          header.forEach((h,i)=>{ obj[h] = r[i]; });
+          return obj;
+        });
+        resolve({ name, headers: header.filter(h=>h!==''), rows: dataRows });
+      };
+      fr.onerror = ()=>reject(fr.error);
+      fr.readAsText(file);
+    });
+  }
+
+  function buildMapping(aHeaders, bHeaders){
+    const bNorm = bHeaders.map(h=>({h, n: normalize(h)}));
+    return aHeaders.map(aCol=>{
+      let best = { bCol: '', score: 0 };
+      for(const b of bNorm){
+        const s = similarity(aCol, b.h);
+        if(s > best.score){ best = { bCol: b.h, score: s }; }
+      }
+      if(best.score < 0.35) best.bCol = ''; // treat as no match
+      return { aCol, bCol: best.bCol, score: best.score };
+    });
+  }
+
+  function renderTable(mapping, bHeaders){
+    el.tbody.innerHTML = '';
+
+    function buildSelect(current){
+      const sel = document.createElement('select');
+      sel.className = 'input';
+      sel.style.minWidth = '260px';
+      const opt0 = document.createElement('option');
+      opt0.value = '';
+      opt0.textContent = '(leave as-is)';
+      sel.appendChild(opt0);
+      bHeaders.forEach(h=>{
+        const o = document.createElement('option');
+        o.value = h;
+        o.textContent = h;
+        if(h === current) o.selected = true;
+        sel.appendChild(o);
+      });
+      return sel;
+    }
+
+    mapping.forEach((m, idx)=>{
+      const tr = document.createElement('tr');
+
+      const tdA = document.createElement('td');
+      tdA.innerHTML = '<span class="mono">' + escapeHtml(m.aCol) + '</span>';
+
+      const tdB = document.createElement('td');
+      tdB.textContent = m.bCol || '—';
+
+      const tdS = document.createElement('td');
+      tdS.className = 'score mono';
+      tdS.textContent = (Math.round(m.score * 1000) / 10).toFixed(1) + '%';
+
+      const tdD = document.createElement('td');
+      const sel = buildSelect(m.bCol || '');
+      sel.addEventListener('change', ()=>{
+        state.mapping[idx].bCol = sel.value;
+        // re-render just the suggested target cell
+        tdB.textContent = sel.value || '—';
+      });
+      tdD.appendChild(sel);
+
+      tr.appendChild(tdA);
+      tr.appendChild(tdB);
+      tr.appendChild(tdS);
+      tr.appendChild(tdD);
+      el.tbody.appendChild(tr);
+    });
+  }
+
+  function escapeHtml(s){
+    return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function mappingJson(){
+    const out = {};
+    (state.mapping || []).forEach(m=>{
+      if(!m.aCol) return;
+      out[m.aCol] = m.bCol || null;
+    });
+    return {
+      sourceFile: state.a?.name || null,
+      targetFile: state.b?.name || null,
+      createdAt: new Date().toISOString(),
+      mapping: out
+    };
+  }
+
+  function renamedCsv(){
+    const rows = state.a?.rows || [];
+    const headersA = state.a?.headers || [];
+    const map = mappingJson().mapping;
+
+    const newHeaders = headersA.map(h=> map[h] || h);
+
+    // Build data with new headers
+    const data = rows.map(r=>{
+      const o = {};
+      headersA.forEach((h, i)=>{ o[newHeaders[i]] = r[h]; });
+      return o;
+    });
+
+    const csv = Papa.unparse(data, { columns: newHeaders });
+    return csv;
+  }
+
+  async function suggest(){
+    const fa = el.fileA.files && el.fileA.files[0];
+    const fb = el.fileB.files && el.fileB.files[0];
+    if(!fa || !fb){
+      setStatus('b-bad', 'Upload both files');
+      return;
+    }
+
+    setStatus('b-info', 'Reading files…');
+    el.downloadJson.disabled = true;
+    el.downloadCsv.disabled = true;
+
+    try{
+      const a = await parseFileHeadersAndRows(fa, el.delimA.value, el.headerRowA.value);
+      const b = await parseFileHeadersAndRows(fb, el.delimB.value, el.headerRowB.value);
+      if(!a.headers.length || !b.headers.length){
+        setStatus('b-bad', 'Could not read headers');
+        return;
+      }
+      state.a = a;
+      state.b = b;
+      state.mapping = buildMapping(a.headers, b.headers);
+
+      el.statA.textContent = String(a.headers.length);
+      el.statB.textContent = String(b.headers.length);
+
+      renderTable(state.mapping, b.headers);
+
+      setStatus('b-ok', 'Suggestions ready');
+      el.downloadJson.disabled = false;
+      el.downloadCsv.disabled = false;
+    }catch(err){
+      console.error(err);
+      setStatus('b-bad', 'Failed to parse files');
+    }
+  }
+
+  function resetAll(){
+    state = { a:null, b:null, mapping:null };
+    el.tbody.innerHTML = '';
+    el.statA.textContent = '—';
+    el.statB.textContent = '—';
+    setStatus('b-info', 'Waiting for files');
+    el.downloadJson.disabled = true;
+    el.downloadCsv.disabled = true;
+
+    // keep file inputs; user can re-upload
+  }
+
+  el.fileA.addEventListener('change', updateMeta);
+  el.fileB.addEventListener('change', updateMeta);
+
+  el.run.addEventListener('click', suggest);
+  el.reset.addEventListener('click', resetAll);
+
+  el.downloadJson.addEventListener('click', ()=>{
+    const obj = mappingJson();
+    const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+    const base = (state.a?.name || 'mapping').replace(/\.[^.]+$/, '');
+    download(base + '_column_mapping.json', blob);
+  });
+
+  el.downloadCsv.addEventListener('click', ()=>{
+    const csv = renamedCsv();
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const base = (state.a?.name || 'renamed').replace(/\.[^.]+$/, '');
+    download(base + '_renamed.csv', blob);
+  });
+
+  updateMeta();
+})();
+</script>
+
+</body>
+</html>
