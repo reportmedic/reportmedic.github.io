@@ -282,46 +282,91 @@
   $('#downloadBtn').addEventListener('click', ()=>{
     if(!preview.innerHTML.trim()){ setStatus('Convert first to build the preview.'); return; }
 
-    // Inject a temporary <style> that forces light-mode on the preview and all
-    // its descendants. Using !important beats any dark-theme rules from styles.css.
-    // We remove this style tag immediately after html2pdf finishes.
+    // Build an offscreen export node with no scroll/height constraints so the PDF includes all Markdown.
+    const exportWrap = document.createElement('div');
+    exportWrap.style.position = 'fixed';
+    exportWrap.style.left = '-10000px';
+    exportWrap.style.top = '0';
+    exportWrap.style.width = '0';
+    exportWrap.style.height = '0';
+    exportWrap.style.overflow = 'visible';
+    exportWrap.style.zIndex = '-1';
+
+    const exportNode = preview.cloneNode(true);
+    exportNode.id = '__rm_pdf_export';
+    exportNode.style.overflow = 'visible';
+    exportNode.style.maxHeight = 'none';
+    exportNode.style.height = 'auto';
+    exportNode.style.background = '#ffffff';
+    exportNode.style.color = '#111111';
+    exportNode.style.border = 'none';
+    exportNode.style.padding = '24px';
+    exportNode.style.width = '794px'; /* A4-ish at 96dpi */
+    exportNode.style.boxSizing = 'border-box';
+
+    exportWrap.appendChild(exportNode);
+    document.body.appendChild(exportWrap);
+
+    // Light-mode + print-safe styles scoped to the export node only.
     const tempStyle = document.createElement('style');
     tempStyle.id = '__rm_pdf_reset';
     tempStyle.textContent = `
-      #preview, #preview * {
+      #__rm_pdf_export, #__rm_pdf_export * {
         color: #111111 !important;
-        background: #ffffff !important;
+        background: transparent !important;
         border-color: #cccccc !important;
       }
-      #preview { padding: 16px !important; }
-      #preview a { color: #1a56db !important; }
-      #preview pre, #preview code {
+      #__rm_pdf_export { background:#ffffff !important; }
+      #__rm_pdf_export a { color: #1a56db !important; }
+      #__rm_pdf_export pre, #__rm_pdf_export code {
         background: #f4f4f4 !important;
         color: #111111 !important;
       }
-      #preview blockquote {
+      #__rm_pdf_export blockquote {
         border-left: 3px solid #aaaaaa !important;
         color: #444444 !important;
       }
-      #preview th { background: #f0f0f0 !important; }
+      #__rm_pdf_export table { width: 100% !important; border-collapse: collapse !important; }
+      #__rm_pdf_export th, #__rm_pdf_export td { border: 1px solid #dddddd !important; padding: 6px 8px !important; }
+      #__rm_pdf_export img { max-width: 100% !important; }
+      #__rm_pdf_export h1, #__rm_pdf_export h2, #__rm_pdf_export h3 { page-break-after: avoid; }
+      #__rm_pdf_export pre, #__rm_pdf_export blockquote, #__rm_pdf_export table { page-break-inside: avoid; }
     `;
     document.head.appendChild(tempStyle);
 
+    // Dynamically reduce scale for very long documents to avoid browser canvas limits.
+    const h = exportNode.scrollHeight || 0;
+    let scale = 2;
+    if(h > 14000) scale = 1.5;
+    if(h > 20000) scale = 1.25;
+    if(h > 26000) scale = 1.0;
+    if(h > 34000) scale = 0.85;
+
     const opt = {
-      margin:       10,
+      margin:       [12, 12, 12, 12],
       filename:     lastOutName,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+      html2canvas:  {
+        scale,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        windowWidth: exportNode.scrollWidth || 794
+      },
+      pagebreak:    { mode: ['css','legacy'] },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
+
     setStatus('Generating PDF…');
-    window.html2pdf().set(opt).from(preview).save().then(()=>{
+    window.html2pdf().set(opt).from(exportNode).save().then(()=>{
       tempStyle.remove();
+      exportWrap.remove();
       setStatus('Downloaded.');
       setTimeout(()=>setStatus(''), 1000);
-    }).catch(()=>{
+    }).catch((err)=>{
       tempStyle.remove();
-      setStatus('Could not generate PDF. Try shorter content.');
+      exportWrap.remove();
+      console.error(err);
+      setStatus('PDF generation failed (browser render limit). Try exporting in smaller sections.');
     });
   });
 })();
