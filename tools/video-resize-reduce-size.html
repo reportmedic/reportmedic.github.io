@@ -359,17 +359,14 @@
       setStatus('loading engine…');
       appendLog('Loading FFmpeg (first time can be ~30–40MB)…');
       try{
-                const coreBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd';
+                const coreBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm';
                 // Use blob URLs for core + wasm (avoids cross-origin Worker restrictions)
                 const coreURL = await toBlobURL(`${coreBase}/ffmpeg-core.js`, 'text/javascript');
                 const wasmURL = await toBlobURL(`${coreBase}/ffmpeg-core.wasm`, 'application/wasm');
-                // Worker must be same-origin on many browsers
-                const workerURL = '/assets/vendor/ffmpeg/ffmpeg-esm/worker.js';
 
                 await ffmpeg.load({
                   coreURL,
-                  wasmURL,
-                  workerURL,
+                  wasmURL
                 });
         loaded = true;
         appendLog('Engine ready.');
