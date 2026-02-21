@@ -3,460 +3,341 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<meta name="description" content="Extract text tables from PDFs into Excel or CSV — preview rows before downloading."/>
-<title>PDF to Excel / CSV — ReportMedic</title>
+<meta name="description" content="Extract embedded text tables from a PDF and export to CSV or Excel locally in your browser."/>
+<title>PDF to Excel/CSV — Extract Tables — ReportMedic</title>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
-<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
-<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
 <link href="/assets/css/styles.css" rel="stylesheet"/>
 
 <style>
-  .rm-modebar{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
-  .rm-modebar .btn{border:1px solid rgba(255,255,255,.14)}
-  .rm-modebar .btn.is-active{outline:2px solid rgba(124,247,212,.35)}
-  .rm-mini{font-size:12px}
-  .rm-list{list-style:none; padding:0; margin:10px 0 0;}
-  .rm-item{display:flex; gap:10px; align-items:center; padding:10px; border:1px solid rgba(255,255,255,.12); border-radius:14px; margin:8px 0; background:rgba(255,255,255,.03)}
-  .rm-handle{cursor:grab; user-select:none; font-size:14px; padding:6px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18)}
-  .rm-thumb{width:64px; height:64px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.10); display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.22)}
-  .rm-thumb img,.rm-thumb canvas{max-width:100%; max-height:100%; display:block}
-  .rm-item .rm-grow{flex:1; min-width:0}
-  .rm-k{font-weight:700}
-  .rm-v{color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-  .rm-gridThumbs{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-top:12px}
-  .rm-pageCard{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.03)}
-  .rm-pageCard .rm-pageTop{display:flex; justify-content:space-between; align-items:center; gap:10px}
-  .rm-pageCard .rm-pageNo{font-weight:700; font-size:12px; color:var(--muted)}
-  .rm-dropHint{font-size:12px; color:var(--muted); margin-top:8px}
-  .rm-status{min-height:20px}
-  .rm-bad{color:#ffb4b4}
-  .rm-good{color:#b7ffd7}
-  .rm-warn{color:#ffe7a8}
-  .rm-hidden{display:none !important}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  @media (max-width: 980px){.grid3{grid-template-columns:1fr}}
+  @media (max-width: 880px){.grid2{grid-template-columns:1fr}}
+  .card{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;background:rgba(0,0,0,.10)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .muted{opacity:.8}
+  .tiny{font-size:12px;opacity:.78}
+  .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px}
+  .pill b{font-size:12px}
+  .hr2{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
+  .input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.16);color:inherit}
+  .btn.small{padding:8px 10px;font-size:13px}
+  .note{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+  canvas.preview{width:100%;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(0,0,0,.15)}
+  .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;border:1px solid rgba(255,255,255,.12)}
+  .b-info{background:rgba(52, 152, 219, .10)}
+  .b-warn{background:rgba(241, 196, 15, .12)}
+  .b-ok{background:rgba(46, 204, 113, .12)}
+  .b-bad{background:rgba(231, 76, 60, .12)}
 </style>
+
+<script defer src="/assets/js/rm-dropzone.js"></script>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+<style>
+.rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+.rm-lm-link:hover{opacity:1;}
+.rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;}
+.rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+.rm-lm-dialog{color:#111;max-width:560px; width:100%; background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.25); overflow:hidden;}
+.rm-lm-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08);}
+.rm-lm-title{margin:0; font-size:1.05rem;}
+.rm-lm-close{border:0; background:transparent; font-size:1.25rem; line-height:1; padding:6px 10px; cursor:pointer; opacity:.7;}
+.rm-lm-close:hover{opacity:1;}
+.rm-lm-body{font-size:.95rem; line-height:1.45; color:#111;padding:14px 16px;}
+.rm-lm-body h3{margin:12px 0 6px; font-size:.95rem;}
+.rm-lm-body ul{margin:0 0 6px 18px;}
+.rm-lm-body li{margin:4px 0;}
+</style>
+
 </head>
-<body>
+<body class="tools-page">
 <header>
-<div class="nav">
-<a class="logo" href="/" style="text-decoration:none;">
-<div class="mark"></div>
-<div>ReportMedic</div>
-</a>
-<div class="spacer"></div>
-<a class="btn" href="/">Home</a>
-<button class="btn" id="openDrawerBtn" type="button">All Tools</button>
-<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
-</div>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
 </header>
+
 <div class="wrap">
   <div class="panel">
-  <div class="wrap">
-<div class="panel">
-<h1>PDF to Excel / CSV <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
-
-<p class="sub">Extract text-based tables from a PDF and download as Excel/CSV.</p>
-<hr class="hr"/>
-
-
+    <h1>PDF → Excel/CSV (Extract Tables) <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Extract embedded text from PDFs and export best‑effort tables as CSV or Excel — runs locally in your browser.</p>
+    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+    <div class="hr"></div>
+    
 <div class="grid2">
   <div class="card">
-    <div class="tiny muted">Upload PDF</div>
-    <div class="hr2"></div>
-    <input class="input" id="p2xFile" type="file" accept="application/pdf"/>
-    <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:12px">
-      <label class="tiny muted">Pages</label>
-      <input class="input" id="p2xPages" type="text" value="1" style="max-width:220px" placeholder="e.g., 1 or 1-5"/>
-      <label class="tiny muted">Output</label>
-      <select class="input" id="p2xFmt" style="max-width:220px">
-        <option value="xlsx" selected>Excel (.xlsx)</option>
-        <option value="csv">CSV (.csv)</option>
+    <div style="font-weight:700">Upload PDF</div>
+    <div class="tiny muted">Best-effort table extraction: groups text by row and exports CSV/Excel.</div>
+    <div style="margin-top:10px">
+      <input class="input" id="file" type="file" accept="application/pdf"/>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <label class="tiny muted">Password (if needed)</label>
+      <input class="input" id="pwd" type="password" placeholder="Leave blank if not encrypted" style="min-width:240px"/>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <label class="tiny muted">Row tolerance</label>
+      <input id="ytol" type="range" min="1" max="10" value="3" style="width:180px"/>
+      <span class="pill tiny"><b id="ytolV">3</b></span>
+
+      <label class="tiny muted">Delimiter</label>
+      <select class="input" id="delim" style="width:auto;min-width:180px">
+        <option value="," selected>CSV (comma)</option>
+        <option value="\t">TSV (tab)</option>
       </select>
-      <label class="tiny muted">Column tolerance</label>
-      <input class="input" id="p2xTol" type="number" min="2" max="40" step="1" value="12" style="max-width:140px"/>
     </div>
-    <div class="hr2"></div>
-    <div class="row" style="gap:10px; flex-wrap:wrap;">
-      <button class="btn primary" id="p2xRun" type="button">Extract</button>
-      <button class="btn" id="p2xDownload" type="button" disabled>Download</button>
-      <span class="tiny muted rm-status" id="p2xStatus"></span>
+
+    <div class="row" style="margin-top:12px">
+      <button class="btn primary" id="run" type="button" disabled>Extract</button>
+      <button class="btn" id="csv" type="button" disabled>Download CSV/TSV</button>
+      <button class="btn" id="xlsx" type="button" disabled>Download Excel</button>
+      <button class="btn" id="clear" type="button" disabled>Clear</button>
     </div>
-    <div class="rm-dropHint">Best for text‑based tables. Scanned PDFs need OCR first.</div>
+
+    <div class="tiny muted" id="msg" style="margin-top:10px"></div>
+    <div class="note tiny muted">If your PDF is scanned (image-only), run OCR first. This tool reads embedded text.</div>
   </div>
 
   <div class="card">
-    <div class="tiny muted">Preview (first 50 rows)</div>
+    <div style="font-weight:700">Preview</div>
+    <div class="tiny muted">First ~200 lines of extracted rows.</div>
     <div class="hr2"></div>
-    <div style="overflow:auto; border:1px solid rgba(148,163,184,.18); border-radius:16px;">
-      <table id="p2xTable" style="width:100%; border-collapse:collapse; font-size:13px;"></table>
-    </div>
+    <textarea class="input mono" id="preview" style="min-height:420px;resize:vertical" placeholder="Extracted rows will appear here…"></textarea>
+  </div>
+</div>
+
   </div>
 </div>
 
 
-</div>
-</div>
-ooter-inner">
-<div class="rm-footer-brand">
-<div class="rm-footer-name">ReportMedic</div>
-<div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
-</div>
-<div class="rm-footer-links">
-<a href="/fix-my-report.html">Fix My Report</a>
-<a href="/#tools">Tools</a>
-<a href="/docs/">Docs</a>
-<a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
-</div>
-<div class="rm-footer-meta">© 2026 ReportMedic</div>
-</div>
-</footer>
-<div aria-hidden="true" aria-label="PDF Organizer details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
-  <div class="rm-lm-dialog">
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="rm-lm-dialog" role="document">
     <div class="rm-lm-head">
-      <h2 class="rm-lm-title">PDF Organizer</h2>
-      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+      <h2 class="rm-lm-title">PDF → Excel/CSV (Extract Tables)</h2>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
     </div>
     <div class="rm-lm-body">
-      <h3>What this helps with</h3>
+      
+<p>Extracts <b>embedded text</b> from a PDF and formats it into rows suitable for CSV/Excel.</p>
+<h3>Best for</h3>
 <ul>
-  <li>Combine multiple PDFs into one file (in the right order)</li>
-  <li>Extract only the pages you need for upload portals</li>
-  <li>Reorder pages before you send or archive</li>
+  <li>Digitally generated PDFs (exports from Excel/BI tools)</li>
+  <li>Simple tables with consistent row alignment</li>
 </ul>
-<h3>Good to know</h3>
+<h3>Not ideal for</h3>
 <ul>
-  <li>Everything runs locally in your browser — files are not uploaded.</li>
-  <li>Reorder keeps the original pages (no quality loss).</li>
-  <li>Splitting can export a single PDF or a ZIP of multiple PDFs.</li>
+  <li>Scanned PDFs (use OCR first)</li>
+  <li>Very complex multi-column layouts</li>
 </ul>
-<h3>What to do next</h3>
-<ul>
-  <li>If you’re working with scans or huge files, try “Compress PDF” afterwards.</li>
-  <li>If a portal rejects your document, split to isolate the failing pages.</li>
-</ul>
+
     </div>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+
 <script>
 (function(){
-  'use strict';
-  const { PDFDocument } = window.PDFLib;
+  const $=(id)=>document.getElementById(id);
+  const fileEl=$('file');
+  const pwdEl=$('pwd');
+  const ytolEl=$('ytol');
+  const ytolV=$('ytolV');
+  const delimEl=$('delim');
+  const runBtn=$('run');
+  const csvBtn=$('csv');
+  const xlsxBtn=$('xlsx');
+  const clearBtn=$('clear');
+  const msg=$('msg');
+  const preview=$('preview');
 
-  // PDF.js worker
-  if (window['pdfjsLib']) {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js';
+  try{ pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; }catch(_){}
+
+  let rows=[]; // array of array cells (strings)
+  let flatText='';
+
+  function setMsg(t){ msg.textContent=t||''; }
+  function enableOut(on){
+    csvBtn.disabled=!on;
+    xlsxBtn.disabled=!on;
   }
 
-  const $ = (id) => document.getElementById(id);
-  const humanBytes = (n) => {
-    if (!Number.isFinite(n)) return '';
-    const u=['B','KB','MB','GB']; let i=0; let v=n;
-    while(v>=1024 && i<u.length-1){ v/=1024; i++; }
-    const s = i===0 ? String(Math.round(v)) : String(Math.round(v*10)/10);
-    return s+' '+u[i];
-  };
-  const downloadBlob = (blob, name) => {
+  ytolEl.addEventListener('input',()=>{ ytolV.textContent=String(ytolEl.value); });
+
+  fileEl.addEventListener('change', ()=>{
+    const f=fileEl.files && fileEl.files[0];
+    runBtn.disabled=!f;
+    clearBtn.disabled=!f && !preview.value;
+    enableOut(false);
+    preview.value='';
+    setMsg(f?'Ready.':'');
+  });
+
+  clearBtn.addEventListener('click', ()=>{
+    fileEl.value=''; preview.value=''; rows=[]; flatText='';
+    runBtn.disabled=true; clearBtn.disabled=true; enableOut(false); setMsg('');
+  });
+
+  function sanitizeCell(s){
+    s = (s||'').replace(/\s+/g,' ').trim();
+    return s;
+  }
+
+  function toDelimited(delim){
+    return rows.map(r=>{
+      return r.map(c=>{
+        const cell = String(c||'');
+        // basic CSV quoting
+        if(delim===',' && /[",\n]/.test(cell)) return '"'+cell.replace(/"/g,'""')+'"';
+        if(delim==='\t' && /[\n\t]/.test(cell)) return cell.replace(/[\n\t]/g,' ');
+        return cell;
+      }).join(delim);
+    }).join('\n');
+  }
+
+  async function extract(){
+    const f=fileEl.files && fileEl.files[0];
+    if(!f) return;
+    const password=(pwdEl.value||'').trim();
+    setMsg('Loading PDF…');
+    runBtn.disabled=true;
+    rows=[];
+    const ab=await f.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({data:ab, password: password||undefined}).promise;
+    const ytol = Number(ytolEl.value||'3');
+
+    // We'll build rows by page; within each page, group by Y buckets
+    for(let p=1;p<=pdf.numPages;p++){
+      setMsg('Reading page '+p+' / '+pdf.numPages+'…');
+      const page=await pdf.getPage(p);
+      const tc=await page.getTextContent();
+      const items = tc.items.map(it=>{
+        const t = it.transform; // [a,b,c,d,e,f]
+        return { str: sanitizeCell(it.str), x: t[4], y: t[5] };
+      }).filter(it=>it.str);
+
+      // group by y (rounded to tolerance)
+      items.sort((a,b)=> b.y - a.y || a.x - b.x);
+      const buckets=[];
+      for(const it of items){
+        let b = buckets.find(k=>Math.abs(k.y - it.y) <= ytol);
+        if(!b){ b={y:it.y, items:[]}; buckets.push(b); }
+        b.items.push(it);
+      }
+      buckets.sort((a,b)=> b.y - a.y);
+      for(const b of buckets){
+        b.items.sort((a,b)=>a.x-b.x);
+        const row = b.items.map(it=>it.str);
+        if(row.join(' ').trim()) rows.push(row);
+      }
+      // page break marker
+      rows.push(['--- page '+p+' ---']);
+    }
+
+    // Build preview
+    const del = delimEl.value === '\t' ? '\t' : ',';
+    const text = toDelimited(del);
+    preview.value = text.split('\n').slice(0,200).join('\n');
+    flatText = text;
+    enableOut(true);
+    setMsg('Done. Rows: '+rows.length);
+    runBtn.disabled=false;
+    clearBtn.disabled=false;
+  }
+
+  runBtn.addEventListener('click', ()=>{
+    extract().catch(e=>{
+      setMsg('Failed: '+(e&&e.message?e.message:String(e)));
+      runBtn.disabled=false;
+    });
+  });
+
+  csvBtn.addEventListener('click', ()=>{
+    if(!flatText) return;
+    const del = delimEl.value === '\t' ? '\t' : ',';
+    const ext = del==='\t' ? 'tsv' : 'csv';
+    const blob = new Blob([flatText], {type:'text/plain'});
     const a=document.createElement('a');
-    const url=URL.createObjectURL(blob);
-    a.href=url; a.download=name;
-    document.body.appendChild(a); a.click();
-    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 250);
-  };
+    a.href=URL.createObjectURL(blob);
+    a.download = 'pdf-extract.'+ext;
+    document.body.appendChild(a); a.click(); a.remove();
+  });
 
-  // Mode switching
-  const modeBtns = { merge:$('modeMerge'), split:$('modeSplit'), reorder:$('modeReorder') };
-  const panes = { merge:$('paneMerge'), split:$('paneSplit'), reorder:$('paneReorder') };
+  xlsxBtn.addEventListener('click', ()=>{
+    if(!rows.length) return;
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, 'Extract');
+    XLSX.writeFile(wb, 'pdf-extract.xlsx');
+  });
 
-  function setMode(m){
-    Object.keys(modeBtns).forEach(k => modeBtns[k].classList.toggle('is-active', k===m));
-    Object.keys(panes).forEach(k => panes[k].classList.toggle('rm-hidden', k!==m));
+})();
+</script>
+
+
+<script>
+(function(){
+  function openLM(id){
+    var b=document.getElementById(id); if(!b) return;
+    b.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    var btn=b.querySelector('[data-rm-lm-close="'+id+'"]'); if(btn) btn.focus();
   }
-  modeBtns.merge.addEventListener('click', ()=>setMode('merge'));
-  modeBtns.split.addEventListener('click', ()=>setMode('split'));
-  modeBtns.reorder.addEventListener('click', ()=>setMode('reorder'));
+  function closeLM(id){
+    var b=document.getElementById(id); if(!b) return;
+    b.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+  }
+  document.addEventListener('click', function(e){
+    var a=e.target.closest && e.target.closest('[data-rm-lm-open]'); 
+    if(a){ e.preventDefault(); openLM(a.getAttribute('data-rm-lm-open')); return; }
+    var c=e.target.closest && e.target.closest('[data-rm-lm-close]');
+    if(c){ e.preventDefault(); closeLM(c.getAttribute('data-rm-lm-close')); return; }
+    var bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+    if(bd){ closeLM(bd.id); }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key==='Escape'){
+      var b=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+      if(b) closeLM(b.id);
+    }
+  });
+})();
+</script>
 
-  // ---------- MERGE ----------
-  let mergeFiles = [];
-  const mergeInput = $('mergeFiles');
-  const mergeList = $('mergeList');
-  const mergeMeta = $('mergeMeta')<div aria-hidden="true" aria-label="PDF to Excel / CSV details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
-  <div class="rm-lm-dialog">
-    <div class="rm-lm-head">
-      <h2 class="rm-lm-title">PDF to Excel / CSV</h2>
-      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div class="footer-brand">
+      <div class="logo-row">
+        <div class="mark"></div>
+        <div class="name">ReportMedic</div>
+      </div>
+      <div class="tiny muted">Local-first tools for report sanity checks.</div>
     </div>
-    <div class="rm-lm-body">
-      <h3>What this helps with</h3>
-      <ul>
-        <li>Extract text tables from PDFs into Excel/CSV for analysis</li>
-<li>Works best on real (selectable-text) PDFs</li>
-<li>Preview rows before downloading</li>
-      </ul>
-      <h3>Tips</h3><ul><li>If the PDF is a scan (image), run OCR first and then try again.</li><li>Tweak “Column tolerance” if columns merge or split incorrectly.</li></ul>
+    <div class="footer-links">
+      <a href="/tools/">All Tools</a>
+      <a href="/fix-my-report.html">Live Agent</a>
+      <a href="/about.html">About</a>
     </div>
   </div>
-</div>
-
-extContent='Remove';
-      del.addEventListener('click', ()=>{
-        mergeFiles.splice(idx,1);
-        renderMergeList();
-      });
-
-      li.appendChild(handle);
-      li.appendChild(thumb);
-      li.appendChild(grow);
-      li.appendChild(del);
-
-      // Drag reor<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script>
-
-  const $ = (id)=>document.getElementById(id);
-  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
-  function toast(msg){
-    // Reuse existing toast style if present; fallback to alert-like pill.
-    let el = document.getElementById('rmToast');
-    if(!el){
-      el = document.createElement('div');
-      el.id='rmToast';
-      el.style.position='fixed';
-      el.style.left='50%';
-      el.style.bottom='18px';
-      el.style.transform='translateX(-50%)';
-      el.style.padding='10px 12px';
-      el.style.borderRadius='12px';
-      el.style.background='rgba(15,23,42,.92)';
-      el.style.color='#fff';
-      el.style.fontSize='13px';
-      el.style.zIndex='9999';
-      el.style.boxShadow='0 10px 30px rgba(0,0,0,.35)';
-      el.style.maxWidth='min(92vw,720px)';
-      el.style.textAlign='center';
-      el.style.opacity='0';
-      el.style.transition='opacity .18s ease';
-      document.body.appendChild(el);
-    }
-    el.textContent = msg;
-    el.style.opacity='1';
-    clearTimeout(el._t);
-    el._t=setTimeout(()=>{el.style.opacity='0';}, 2200);
-  }
-  function downloadBlob(blob, filename){
-    const a=document.createElement('a');
-    const url=URL.createObjectURL(blob);
-    a.href=url; a.download=filename;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url), 2500);
-  }
-  async function fileToArrayBuffer(file){
-    return await file.arrayBuffer();
-  }
-
-  const pdfjsLib = window['pdfjs-dist/build/pdf'];
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js';
-
-  let extractedRows=null; // array of arrays
-  function parsePages(str, maxPages){
-    str=(str||'1').trim();
-    if(/^\d+$/.test(str)) return [Math.max(1, Math.min(maxPages, parseInt(str,10)))];
-    const m=str.match(/^(\d+)\s*-\s*(\d+)$/);
-    if(m){
-      let a=parseInt(m[1],10), b=parseInt(m[2],10);
-      a=Math.max(1,Math.min(maxPages,a)); b=Math.max(1,Math.min(maxPages,b));
-      if(b<a) [a,b]=[b,a];
-      const out=[];
-      for(let i=a;i<=b;i++) out.push(i);
-      return out;
-    }
-    return [1];
-  }
-
-  function clusterColumns(xs, tol){
-    xs = xs.slice().sort((a,b)=>a-b);
-    const cols=[];
-    for(const x of xs){
-      let placed=false;
-      for(const c of cols){
-        if(Math.abs(c.x - x) <= tol){
-          // update running average
-          c.n++; c.x = c.x + (x - c.x)/c.n;
-          placed=true; break;
-        }
-      }
-      if(!placed) cols.push({x, n:1});
-    }
-    cols.sort((a,b)=>a.x-b.x);
-    return cols.map(c=>c.x);
-  }
-
-  function assignToCol(x, cols){
-    let best=0, bestd=Infinity;
-    for(let i=0;i<cols.length;i++){
-      const d=Math.abs(cols[i]-x);
-      if(d<bestd){ bestd=d; best=i; }
-    }
-    return best;
-  }
-
-  function groupLines(items){
-    // items: {str, x, y}
-    // sort top->bottom (y desc), then x asc
-    items.sort((a,b)=> (b.y-a.y) || (a.x-b.x));
-    const lines=[];
-    const yTol=2.5;
-    for(const it of items){
-      let line=lines.find(l=>Math.abs(l.y-it.y)<=yTol);
-      if(!line){
-        line={y:it.y, items:[]};
-        lines.push(line);
-      }
-      line.items.push(it);
-    }
-    // sort each line by x
-    lines.forEach(l=>l.items.sort((a,b)=>a.x-b.x));
-    // sort lines by y desc
-    lines.sort((a,b)=>b.y-a.y);
-    return lines;
-  }
-
-  function renderPreview(rows){
-    const tbl=$('p2xTable');
-    tbl.innerHTML='';
-    const max=50;
-    const shown=rows.slice(0,max);
-    const colCount=Math.max(1,...shown.map(r=>r.length));
-    shown.forEach((r,ri)=>{
-      const tr=document.createElement('tr');
-      for(let ci=0;ci<colCount;ci++){
-        const td=document.createElement(ri===0?'th':'td');
-        td.textContent=(r[ci]||'').trim();
-        td.style.borderBottom='1px solid rgba(148,163,184,.14)';
-        td.style.padding='8px 10px';
-        td.style.textAlign='left';
-        td.style.verticalAlign='top';
-        if(ri===0) td.style.position='sticky';
-        tr.appendChild(td);
-      }
-      tbl.appendChild(tr);
-    });
-  }
-
-  $('p2xRun').addEventListener('click', async ()=>{
-    const f=$('p2xFile').files && $('p2xFile').files[0];
-    if(!f){ toast('Choose a PDF first.'); return; }
-    $('p2xStatus').textContent='Loading…';
-    $('p2xDownload').disabled=true;
-    extractedRows=null;
-
-    try{
-      const ab=await fileToArrayBuffer(f);
-      const pdf=await pdfjsLib.getDocument({ data: ab }).promise;
-      const pages=parsePages($('p2xPages').value, pdf.numPages);
-      const tol = Math.max(2, Math.min(40, parseInt($('p2xTol').value||'12',10)));
-
-      let allRows=[];
-      for(const pNo of pages){
-        $('p2xStatus').textContent=`Reading page ${pNo}/${pdf.numPages}…`;
-        const page=await pdf.getPage(pNo);
-        const tc=await page.getTextContent();
-        const items = tc.items
-          .filter(it=>it.str && it.str.trim().length)
-          .map(it=>{
-            const [a,b,c,d,e,f]=it.transform;
-            return { str: it.str, x: e, y: f };
-          });
-
-        const lines=groupLines(items);
-        const xs = items.map(it=>it.x);
-        const cols = clusterColumns(xs, tol);
-        for(const line of lines){
-          const row = new Array(cols.length).fill('');
-          for(const it of line.items){
-            const ci = assignToCol(it.x, cols);
-            row[ci] = (row[ci] ? (row[ci] + ' ' + it.str) : it.str);
-          }
-          // trim trailing empties
-          while(row.length && !row[row.length-1].trim()) row.pop();
-          allRows.push(row);
-        }
-        allRows.push([]); // blank line between pages
-        await sleep(0);
-      }
-
-      extractedRows = allRows;
-      renderPreview(allRows);
-      $('p2xDownload').disabled = allRows.length===0;
-      $('p2xStatus').textContent = allRows.length ? 'Ready.' : 'No text found.';
-      toast('Extraction complete.');
-    }catch(e){
-      console.error(e);
-      $('p2xStatus').textContent='Failed.';
-      toast('Could not extract tables from this PDF.');
-    }
-  });
-
-  $('p2xDownload').addEventListener('click', ()=>{
-    if(!extractedRows) return;
-    const fmt=$('p2xFmt').value;
-    if(fmt==='csv'){
-      const csv = extractedRows.map(r=>r.map(v=>{
-        const s=(v||'').replaceAll('"','""');
-        return `"${s}"`;
-      }).join(',')).join('\n');
-      downloadBlob(new Blob([csv], {type:'text/csv;charset=utf-8'}), 'extracted.csv');
-    }else{
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet(extractedRows);
-      XLSX.utils.book_append_sheet(wb, ws, 'Extracted');
-      const out = XLSX.write(wb, { bookType:'xlsx', type:'array' });
-      downloadBlob(new Blob([out], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), 'extracted.xlsx');
-    }
-  });
-
-</script>
-<script>
-  (function(){
-    function openLM(id){
-      const bd=document.getElementById(id);
-      if(!bd) return;
-      bd.setAttribute('aria-hidden','false');
-      const btn=bd.querySelector('.rm-lm-close');
-      if(btn) btn.focus();
-    }
-    function closeLM(id){
-      const bd=document.getElementById(id);
-      if(!bd) return;
-      bd.setAttribute('aria-hidden','true');
-    }
-    document.addEventListener('click', function(e){
-      const a=e.target.closest('[data-rm-lm-open]');
-      if(a){
-        e.preventDefault();
-        openLM(a.getAttribute('data-rm-lm-open'));
-        return;
-      }
-      const close=e.target.closest('[data-rm-lm-close]');
-      if(close){
-        e.preventDefault();
-        closeLM(close.getAttribute('data-rm-lm-close'));
-        return;
-      }
-      const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
-      if(bd){
-        e.preventDefault();
-        closeLM(bd.id);
-      }
-    });
-    document.addEventListener('keydown', function(e){
-      if(e.key==='Escape'){
-        const open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
-        if(open) open.setAttribute('aria-hidden','true');
-      }
-    });
-  })();
-</script>
-<script src="/assets/js/rm-dropzone.js"></script>
-<script src="/assets/js/rm-tools-drawer.js"></script>
+</footer>
+</body>
+</html>

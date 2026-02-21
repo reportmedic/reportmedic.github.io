@@ -3,381 +3,495 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<meta name="description" content="Create passport-style ID photos and a printable 4×6 sheet — adjust framing and background."/>
-<title>ID Photo Maker — ReportMedic</title>
+<meta name="description" content="Create passport and ID photos by cropping to standard sizes and downloading ready-to-print images."/>
+<title>ID Photo Maker / Passport Photo — ReportMedic</title>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
-<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
-<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
 <link href="/assets/css/styles.css" rel="stylesheet"/>
 
 <style>
-  .rm-modebar{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
-  .rm-modebar .btn{border:1px solid rgba(255,255,255,.14)}
-  .rm-modebar .btn.is-active{outline:2px solid rgba(124,247,212,.35)}
-  .rm-mini{font-size:12px}
-  .rm-list{list-style:none; padding:0; margin:10px 0 0;}
-  .rm-item{display:flex; gap:10px; align-items:center; padding:10px; border:1px solid rgba(255,255,255,.12); border-radius:14px; margin:8px 0; background:rgba(255,255,255,.03)}
-  .rm-handle{cursor:grab; user-select:none; font-size:14px; padding:6px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18)}
-  .rm-thumb{width:64px; height:64px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.10); display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.22)}
-  .rm-thumb img,.rm-thumb canvas{max-width:100%; max-height:100%; display:block}
-  .rm-item .rm-grow{flex:1; min-width:0}
-  .rm-k{font-weight:700}
-  .rm-v{color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-  .rm-gridThumbs{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-top:12px}
-  .rm-pageCard{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.03)}
-  .rm-pageCard .rm-pageTop{display:flex; justify-content:space-between; align-items:center; gap:10px}
-  .rm-pageCard .rm-pageNo{font-weight:700; font-size:12px; color:var(--muted)}
-  .rm-dropHint{font-size:12px; color:var(--muted); margin-top:8px}
-  .rm-status{min-height:20px}
-  .rm-bad{color:#ffb4b4}
-  .rm-good{color:#b7ffd7}
-  .rm-warn{color:#ffe7a8}
-  .rm-hidden{display:none !important}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  @media (max-width: 980px){.grid3{grid-template-columns:1fr}}
+  @media (max-width: 880px){.grid2{grid-template-columns:1fr}}
+  .card{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;background:rgba(0,0,0,.10)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .muted{opacity:.8}
+  .tiny{font-size:12px;opacity:.78}
+  .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px}
+  .pill b{font-size:12px}
+  .hr2{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
+  .input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.16);color:inherit}
+  .btn.small{padding:8px 10px;font-size:13px}
+  .note{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+  canvas.preview{width:100%;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(0,0,0,.15)}
+  .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;border:1px solid rgba(255,255,255,.12)}
+  .b-info{background:rgba(52, 152, 219, .10)}
+  .b-warn{background:rgba(241, 196, 15, .12)}
+  .b-ok{background:rgba(46, 204, 113, .12)}
+  .b-bad{background:rgba(231, 76, 60, .12)}
 </style>
+
+<script defer src="/assets/js/rm-dropzone.js"></script>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+<style>
+.rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+.rm-lm-link:hover{opacity:1;}
+.rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;}
+.rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+.rm-lm-dialog{color:#111;max-width:560px; width:100%; background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.25); overflow:hidden;}
+.rm-lm-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08);}
+.rm-lm-title{margin:0; font-size:1.05rem;}
+.rm-lm-close{border:0; background:transparent; font-size:1.25rem; line-height:1; padding:6px 10px; cursor:pointer; opacity:.7;}
+.rm-lm-close:hover{opacity:1;}
+.rm-lm-body{font-size:.95rem; line-height:1.45; color:#111;padding:14px 16px;}
+.rm-lm-body h3{margin:12px 0 6px; font-size:.95rem;}
+.rm-lm-body ul{margin:0 0 6px 18px;}
+.rm-lm-body li{margin:4px 0;}
+</style>
+
 </head>
-<body>
+<body class="tools-page">
 <header>
-<div class="nav">
-<a class="logo" href="/" style="text-decoration:none;">
-<div class="mark"></div>
-<div>ReportMedic</div>
-</a>
-<div class="spacer"></div>
-<a class="btn" href="/">Home</a>
-<button class="btn" id="openDrawerBtn" type="button">All Tools</button>
-<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
-</div>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
 </header>
+
 <div class="wrap">
-  <div class="panel"<div class="wrap">
-<div class="panel">
-<h1>ID Photo Maker <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
-
-<p class="sub">Generate a clean ID photo and a 4×6 printable sheet in minutes.</p>
-<hr class="hr"/>
-
-
+  <div class="panel">
+    <h1>ID Photo Maker (Passport Photo) <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Crop a photo to standard passport/ID sizes, set a clean background, and download a print‑ready image.</p>
+    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+    <div class="hr"></div>
+    
 <div class="grid2">
   <div class="card">
-    <div class="tiny muted">Upload a portrait photo</div>
-    <div class="hr2"></div>
-    <input class="input" id="idFile" type="file" accept="image/*"/>
-    <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:12px">
-      <label class="tiny muted">Size</label>
-      <select class="input" id="idSize" style="max-width:240px">
-        <option value="2x2" selected>2×2 inch (US passport)</option>
-        <option value="35x45">35×45 mm (many visas)</option>
+    <div style="font-weight:700">Upload photo</div>
+    <div class="tiny muted">Crop to a standard ID/passport size and download a ready-to-print image.</div>
+    <div style="margin-top:10px">
+      <input class="input" id="file" type="file" accept="image/*"/>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <label class="tiny muted">Preset</label>
+      <select class="input" id="preset" style="width:auto;min-width:280px">
+        <option value="us_2x2" selected>US Passport (2×2 in)</option>
+        <option value="in_35x45">India Passport (35×45 mm)</option>
+        <option value="visa_35x50">Visa / Schengen (35×50 mm)</option>
+        <option value="custom">Custom (px)</option>
       </select>
+    </div>
+
+    <div class="grid2" style="margin-top:10px">
+      <div>
+        <div class="tiny muted">Width (px)</div>
+        <input class="input" id="w" type="number" value="600" min="100" step="10" disabled/>
+      </div>
+      <div>
+        <div class="tiny muted">Height (px)</div>
+        <input class="input" id="h" type="number" value="600" min="100" step="10" disabled/>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:10px">
       <label class="tiny muted">Background</label>
-      <select class="input" id="idBg" style="max-width:220px">
-        <option value="#ffffff" selected>White</option>
-        <option value="#eaf2ff">Light blue</option>
-        <option value="#f3f4f6">Light gray</option>
-      </select>
+      <input class="input" id="bg" type="color" value="#ffffff" style="width:70px;padding:6px"/>
+      <span class="pill tiny"><b>Zoom</b>
+        <input id="zoom" type="range" min="0.6" max="2.2" step="0.01" value="1" style="width:180px"/>
+        <span class="mono" id="zv">1.00</span>
+      </span>
     </div>
-    <div class="hr2"></div>
-    <div class="tiny muted">Adjust framing</div>
-    <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:8px">
-      <label class="tiny muted">Zoom</label><input class="input" id="idZoom" type="range" min="1" max="3" step="0.01" value="1.4" style="flex:1">
+
+    <div class="row" style="margin-top:12px">
+      <button class="btn primary" id="render" type="button" disabled>Render</button>
+      <button class="btn" id="download" type="button" disabled>Download</button>
+      <button class="btn" id="sheet" type="button" disabled>4×6 Sheet</button>
+      <button class="btn" id="clear" type="button" disabled>Clear</button>
     </div>
-    <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:8px">
-      <label class="tiny muted">X</label><input class="input" id="idX" type="range" min="-1" max="1" step="0.001" value="0" style="flex:1">
-    </div>
-    <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:8px">
-      <label class="tiny muted">Y</label><input class="input" id="idY" type="range" min="-1" max="1" step="0.001" value="-0.05" style="flex:1">
-    </div>
-    <div class="hr2"></div>
-    <div class="row" style="gap:10px; flex-wrap:wrap;">
-      <button class="btn primary" id="idMake" type="button">Generate</button>
-      <button class="btn" id="idDownload" type="button" disabled>Download 4×6 sheet</button>
-      <span class="tiny muted rm-status" id="idStatus"></span>
-    </div>
-    <div class="rm-dropHint">This is a quick maker. Official requirements vary — verify your country’s rules before submitting.</div>
+
+    <div class="tiny muted" id="msg" style="margin-top:10px"></div>
+    <div class="note tiny muted">Tip: Drag the photo inside the preview to align your face.</div>
   </div>
 
   <div class="card">
-    <div class="tiny muted">Preview</div>
+    <div style="font-weight:700">Preview</div>
+    <div class="tiny muted">Drag to reposition. Use zoom to fit.</div>
     <div class="hr2"></div>
-    <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px;">
-      <div>
-        <div class="tiny muted">Single photo</div>
-        <div style="border:1px solid rgba(148,163,184,.18); border-radius:16px; overflow:hidden; background:#0b1220;">
-          <canvas id="idSingle" width="600" height="600" style="width:100%; display:block;"></canvas>
-        </div>
-      </div>
-      <div>
-        <div class="tiny muted">4×6 print sheet</div>
-        <div style="border:1px solid rgba(148,163,184,.18); border-radius:16px; overflow:hidden; background:#0b1220;">
-          <canvas id="idSheet" width="1200" height="1800" style="width:100%; display:block;"></canvas>
-        </div>
-      </div>
-    </div>
+    <canvas class="preview" id="canvas" height="520"></canvas>
+  </div>
+</div>
+
   </div>
 </div>
 
 
-</div>
-</div>
-rm-footer-inner">
-<div class="rm-footer-brand">
-<div class="rm-footer-name">ReportMedic</div>
-<div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
-</div>
-<div class="rm-footer-links">
-<a href="/fix-my-report.html">Fix My Report</a>
-<a href="/#tools">Tools</a>
-<a href="/docs/">Docs</a>
-<a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
-</div>
-<div class="rm-footer-meta">© 2026 ReportMedic</div>
-</div>
-</footer>
-<div aria-hidden="true" aria-label="PDF Organizer details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
-  <div class="rm-lm-dialog">
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="rm-lm-dialog" role="document">
     <div class="rm-lm-head">
-      <h2 class="rm-lm-title">PDF Organizer</h2>
-      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+      <h2 class="rm-lm-title">ID Photo Maker (Passport Photo)</h2>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
     </div>
     <div class="rm-lm-body">
-      <h3>What this helps with</h3>
+      
+<p>Create a passport/ID photo by cropping to a standard size and exporting a clean image.</p>
+<h3>Tips</h3>
 <ul>
-  <li>Combine multiple PDFs into one file (in the right order)</li>
-  <li>Extract only the pages you need for upload portals</li>
-  <li>Reorder pages before you send or archive</li>
+  <li>Use a plain background. If needed, remove background first, then set a solid color here.</li>
+  <li>Keep head centered with a little space above.</li>
 </ul>
-<h3>Good to know</h3>
-<ul>
-  <li>Everything runs locally in your browser — files are not uploaded.</li>
-  <li>Reorder keeps the original pages (no quality loss).</li>
-  <li>Splitting can export a single PDF or a ZIP of multiple PDFs.</li>
-</ul>
-<h3>What to do next</h3>
-<ul>
-  <li>If you’re working with scans or huge files, try “Compress PDF” afterwards.</li>
-  <li>If a portal rejects your document, split to isolate the failing pages.</li>
-</ul>
+
     </div>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+
+
+
 <script>
 (function(){
-  'use strict';
-  const { PDFDocument } = window.PDFLib;
-
-  // PDF.js worker
-  if (window['pdfjsLib']) {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js';
-  }
-
-  const $ = (id) => document.getElementById(id);
-  const humanBytes = (n) => {
-    <div aria-hidden="true" aria-label="ID Photo Maker details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
-  <div class="rm-lm-dialog">
-    <div class="rm-lm-head">
-      <h2 class="rm-lm-title">ID Photo Maker</h2>
-      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
-    </div>
-    <div class="rm-lm-body">
-      <h3>What this helps with</h3>
-      <ul>
-        <li>Create a passport-style ID photo with a clean background</li>
-<li>Generate a 4×6 inch printable sheet with multiple copies</li>
-<li>Adjust zoom and framing</li>
-      </ul>
-      <h3>Privacy</h3><p>Your photo stays on your device. Export is generated in your browser.</p>
-    </div>
-  </div>
-</div>
-
-entListener('click', ()=>setMode('reorder'));
-
-  // ---------- MERGE ----------
-  let mergeFiles = [];
-  const mergeInput = $('mergeFiles');
-  const mergeList = $('mergeList');
-  const mergeMeta = $('mergeMeta');
-  const mergeStatus = $('mergeStatus');
-
-  function renderMergeList(){
-    mergeList.innerHTML='';
-    if(!mergeFiles.length){
-    <script>
-
-  const $ = (id)=>document.getElementById(id);
-  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
-  function toast(msg){
-    // Reuse existing toast style if present; fallback to alert-like pill.
-    let el = document.getElementById('rmToast');
-    if(!el){
-      el = document.createElement('div');
-      el.id='rmToast';
-      el.style.position='fixed';
-      el.style.left='50%';
-      el.style.bottom='18px';
-      el.style.transform='translateX(-50%)';
-      el.style.padding='10px 12px';
-      el.style.borderRadius='12px';
-      el.style.background='rgba(15,23,42,.92)';
-      el.style.color='#fff';
-      el.style.fontSize='13px';
-      el.style.zIndex='9999';
-      el.style.boxShadow='0 10px 30px rgba(0,0,0,.35)';
-      el.style.maxWidth='min(92vw,720px)';
-      el.style.textAlign='center';
-      el.style.opacity='0';
-      el.style.transition='opacity .18s ease';
-      document.body.appendChild(el);
-    }
-    el.textContent = msg;
-    el.style.opacity='1';
-    clearTimeout(el._t);
-    el._t=setTimeout(()=>{el.style.opacity='0';}, 2200);
-  }
-  function downloadBlob(blob, filename){
-    const a=document.createElement('a');
-    const url=URL.createObjectURL(blob);
-    a.href=url; a.download=filename;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url), 2500);
-  }
-  async function fileToArrayBuffer(file){
-    return await file.arrayBuffer();
-  }
+  const $=(id)=>document.getElementById(id);
+  const fileEl=$('file');
+  const preset=$('preset');
+  const wEl=$('w');
+  const hEl=$('h');
+  const bgEl=$('bg');
+  const zoomEl=$('zoom');
+  const zv=$('zv');
+  const renderBtn=$('render');
+  const dlBtn=$('download');
+  const sheetBtn=$('sheet');
+  const clearBtn=$('clear');
+  const msg=$('msg');
+  const canvas=$('canvas');
+  const ctx=canvas.getContext('2d');
 
   let img=null;
-  const single=$('idSingle'), sheet=$('idSheet');
-  const sctx=single.getContext('2d');
-  const shctx=sheet.getContext('2d');
+  let imgUrl=null;
+  let outBlob=null;
+  let pan={x:0,y:0};
+  let dragging=false;
+  let last=null;
 
-  function spec(){
-    const size=$('idSize').value;
-    if(size==='2x2'){
-      return { w:600, h:600, // preview pixels
-               ratio:1, copies:[ [100,100],[700,100],[100,700],[700,700],[100,1300],[700,1300] ] };
-    }
-    // 35x45mm => ratio 35/45 = 0.777...
-    return { w:560, h:720, ratio:35/45, copies:[ [120,120],[640,120],[120,960],[640,960],[120,1800-720-120],[640,1800-720-120] ] };
+  const presets={
+    us_2x2:{w:600,h:600},
+    in_35x45:{w:413,h:531},
+    visa_35x50:{w:413,h:591}
+  };
+
+  function setMsg(t){ msg.textContent=t||''; }
+  function setDims(w,h){
+    wEl.value=String(w); hEl.value=String(h);
   }
 
+  function enable(on){
+    renderBtn.disabled=!on;
+    dlBtn.disabled=true;
+    sheetBtn.disabled=true;
+    clearBtn.disabled=!on && !outBlob;
+  }
+
+  function fitCanvas(){
+    const maxW = canvas.parentElement.clientWidth || 640;
+    canvas.width = Math.floor(maxW);
+    canvas.height = 520;
+  }
+  window.addEventListener('resize', ()=>{ fitCanvas(); draw(); });
+  fitCanvas();
+
   function draw(){
-    const bg=$('idBg').value;
-    const z=parseFloat($('idZoom').value);
-    const ox=parseFloat($('idX').value);
-    const oy=parseFloat($('idY').value);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    // background
+    ctx.fillStyle = bgEl.value;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
 
     if(!img){
-      // clear
-      sctx.clearRect(0,0,single.width,single.height);
-      shctx.clearRect(0,0,sheet.width,sheet.height);
+      ctx.fillStyle='rgba(255,255,255,0.55)';
+      ctx.font='14px ui-sans-serif, system-ui';
+      ctx.fillText('Upload a photo to start', 16, 30);
       return;
     }
 
-    const sp=spec();
-    single.width=sp.w; single.height=sp.h;
-    // single
-    sctx.fillStyle=bg; sctx.fillRect(0,0,single.width,single.height);
-    // Compute crop box in source coordinates
-    const targetW = img.naturalWidth / z;
-    const targetH = (targetW / sp.ratio);
-    const cx = img.naturalWidth/2 + ox*img.naturalWidth*0.2;
-    const cy = img.naturalHeight/2 + oy*img.naturalHeight*0.2;
-    const sx = Math.max(0, Math.min(img.naturalWidth-targetW, cx - targetW/2));
-    const sy = Math.max(0, Math.min(img.naturalHeight-targetH, cy - targetH/2));
-    sctx.drawImage(img, sx, sy, targetW, targetH, 0, 0, single.width, single.height);
+    const targetW = Number(wEl.value||600);
+    const targetH = Number(hEl.value||600);
+    const aspect = targetW/targetH;
 
-    // sheet 4x6 at 300dpi => 1200x1800
-    sheet.width=1200; sheet.height=1800;
-    shctx.fillStyle='#ffffff';
-    shctx.fillRect(0,0,sheet.width,sheet.height);
+    // define crop frame inside canvas with margins
+    const margin=18;
+    let frameW = canvas.width - margin*2;
+    let frameH = Math.floor(frameW / aspect);
+    if(frameH > canvas.height - margin*2){
+      frameH = canvas.height - margin*2;
+      frameW = Math.floor(frameH * aspect);
+    }
+    const fx = Math.floor((canvas.width-frameW)/2);
+    const fy = Math.floor((canvas.height-frameH)/2);
 
-    // copies
-    sp.copies.forEach(([x,y])=>{
-      shctx.fillStyle=bg;
-      shctx.fillRect(x,y,single.width*0.5,single.height*0.5);
-      shctx.drawImage(img, sx, sy, targetW, targetH, x, y, single.width*0.5, single.height*0.5);
-    });
+    // draw image inside frame with pan/zoom
+    const zoom = Number(zoomEl.value||1);
+    const iw = img.naturalWidth * zoom;
+    const ih = img.naturalHeight * zoom;
 
-    // cut guides
-    shctx.strokeStyle='rgba(0,0,0,.25)';
-    sp.copies.forEach(([x,y])=>{
-      shctx.strokeRect(x+.5,y+.5,single.width*0.5,single.height*0.5);
+    const cx = fx + frameW/2 + pan.x;
+    const cy = fy + frameH/2 + pan.y;
+
+    ctx.save();
+    // clip to frame
+    ctx.beginPath();
+    ctx.rect(fx,fy,frameW,frameH);
+    ctx.clip();
+    ctx.drawImage(img, cx - iw/2, cy - ih/2, iw, ih);
+    ctx.restore();
+
+    // frame border
+    ctx.strokeStyle='rgba(255,255,255,0.85)';
+    ctx.lineWidth=2;
+    ctx.strokeRect(fx+0.5,fy+0.5,frameW-1,frameH-1);
+
+    // guide text
+    ctx.fillStyle='rgba(0,0,0,0.35)';
+    ctx.fillRect(fx, fy-22, 220, 20);
+    ctx.fillStyle='rgba(255,255,255,0.9)';
+    ctx.font='12px ui-sans-serif, system-ui';
+    ctx.fillText(targetW+'×'+targetH+' px', fx+8, fy-8);
+  }
+
+  function frameInfo(){
+    const targetW = Number(wEl.value||600);
+    const targetH = Number(hEl.value||600);
+    const aspect = targetW/targetH;
+    const margin=18;
+    let frameW = canvas.width - margin*2;
+    let frameH = Math.floor(frameW / aspect);
+    if(frameH > canvas.height - margin*2){
+      frameH = canvas.height - margin*2;
+      frameW = Math.floor(frameH * aspect);
+    }
+    const fx = Math.floor((canvas.width-frameW)/2);
+    const fy = Math.floor((canvas.height-frameH)/2);
+    return {fx,fy,frameW,frameH,targetW,targetH};
+  }
+
+  function pos(e){
+    const r=canvas.getBoundingClientRect();
+    return {x:(e.clientX-r.left)*(canvas.width/r.width), y:(e.clientY-r.top)*(canvas.height/r.height)};
+  }
+
+  canvas.addEventListener('pointerdown',(e)=>{
+    if(!img) return;
+    dragging=true;
+    canvas.setPointerCapture(e.pointerId);
+    last=pos(e);
+  });
+  canvas.addEventListener('pointermove',(e)=>{
+    if(!dragging || !last) return;
+    const p=pos(e);
+    pan.x += (p.x-last.x);
+    pan.y += (p.y-last.y);
+    last=p;
+    draw();
+  });
+  canvas.addEventListener('pointerup',()=>{ dragging=false; last=null; });
+
+  zoomEl.addEventListener('input', ()=>{ zv.textContent=Number(zoomEl.value).toFixed(2); draw(); });
+  bgEl.addEventListener('input', draw);
+
+  preset.addEventListener('change', ()=>{
+    const v=preset.value;
+    if(v==='custom'){
+      wEl.disabled=false; hEl.disabled=false;
+    }else{
+      wEl.disabled=true; hEl.disabled=true;
+      setDims(presets[v].w, presets[v].h);
+    }
+    draw();
+  });
+
+  function loadImage(file){
+    return new Promise((res,rej)=>{
+      const u=URL.createObjectURL(file);
+      imgUrl=u;
+      const i=new Image();
+      i.onload=()=>res(i);
+      i.onerror=rej;
+      i.src=u;
     });
   }
 
-  $('idFile').addEventListener('change', ()=>{
-    const f=$('idFile').files && $('idFile').files[0];
-    if(!f){ img=null; draw(); return; }
-    const url=URL.createObjectURL(f);
-    const i=new Image();
-    i.onload=()=>{ img=i; URL.revokeObjectURL(url); draw(); $('idDownload').disabled=false; $('idStatus').textContent='Ready.'; };
-    i.onerror=()=>{ URL.revokeObjectURL(url); toast('Could not read image.'); };
-    i.src=url;
+  fileEl.addEventListener('change', async ()=>{
+    const f=fileEl.files && fileEl.files[0];
+    outBlob=null;
+    dlBtn.disabled=true;
+    sheetBtn.disabled=true;
+    if(!f){ img=null; enable(false); setMsg(''); draw(); return; }
+    setMsg('Loading…');
+    try{
+      img=await loadImage(f);
+      pan={x:0,y:0};
+      enable(true);
+      setMsg('Ready. Drag to reposition, then Render.');
+      draw();
+    }catch(e){
+      setMsg('Could not load image.');
+      img=null;
+      enable(false);
+      draw();
+    }
   });
 
-  ['idSize','idBg','idZoom','idX','idY'].forEach(id=>{
-    $(id).addEventListener('input', draw);
-    $(id).addEventListener('change', draw);
-  });
+  wEl.addEventListener('input', draw);
+  hEl.addEventListener('input', draw);
 
-  $('idMake').addEventListener('click', ()=>{
-    if(!img){ toast('Choose a photo first.'); return; }
-    draw();
-    $('idStatus').textContent='Generated.';
-    toast('Generated.');
-  });
-
-  $('idDownload').addEventListener('click', ()=>{
+  async function renderOutput(){
     if(!img) return;
-    sheet.toBlob(b=>{
-      if(!b) return;
-      downloadBlob(b, 'id_photo_4x6.png');
-    }, 'image/png');
+    const {fx,fy,frameW,frameH,targetW,targetH} = frameInfo();
+    // create output canvas at exact target pixels
+    const oc=document.createElement('canvas');
+    oc.width=targetW; oc.height=targetH;
+    const octx=oc.getContext('2d');
+    octx.fillStyle=bgEl.value;
+    octx.fillRect(0,0,targetW,targetH);
+
+    const zoom = Number(zoomEl.value||1);
+    const iw = img.naturalWidth * zoom;
+    const ih = img.naturalHeight * zoom;
+    const cx = fx + frameW/2 + pan.x;
+    const cy = fy + frameH/2 + pan.y;
+
+    // compute which part of the source image is inside the frame, then map to output
+    // We drew image on preview at (cx-iw/2, cy-ih/2) with size (iw,ih) in preview px.
+    // Frame rect is (fx,fy,frameW,frameH).
+    const sx = (fx - (cx - iw/2)) / iw * img.naturalWidth;
+    const sy = (fy - (cy - ih/2)) / ih * img.naturalHeight;
+    const sw = frameW / iw * img.naturalWidth;
+    const sh = frameH / ih * img.naturalHeight;
+
+    octx.drawImage(img, sx, sy, sw, sh, 0,0,targetW,targetH);
+
+    outBlob = await new Promise(res=>oc.toBlob(res,'image/jpeg',0.95));
+    dlBtn.disabled=!outBlob;
+    sheetBtn.disabled=!outBlob;
+    setMsg('Rendered. Download when ready.');
+  }
+
+  renderBtn.addEventListener('click', ()=>{ renderOutput().catch(e=>setMsg('Render failed: '+(e&&e.message?e.message:String(e)))); });
+
+  dlBtn.addEventListener('click', ()=>{
+    if(!outBlob) return;
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(outBlob);
+    a.download='id-photo.jpg';
+    document.body.appendChild(a); a.click(); a.remove();
   });
 
+  sheetBtn.addEventListener('click', async ()=>{
+    if(!img) return;
+    // create 4x6 inch at 300dpi => 1200x1800 px
+    const sheetW=1200, sheetH=1800;
+    const sc=document.createElement('canvas');
+    sc.width=sheetW; sc.height=sheetH;
+    const sctx=sc.getContext('2d');
+    sctx.fillStyle='#fff'; sctx.fillRect(0,0,sheetW,sheetH);
+
+    const targetW=Number(wEl.value||600);
+    const targetH=Number(hEl.value||600);
+
+    // Render output image into an Image
+    await renderOutput();
+    const url=URL.createObjectURL(outBlob);
+    const im=new Image();
+    await new Promise((res,rej)=>{im.onload=res;im.onerror=rej;im.src=url;});
+
+    // place copies with padding
+    const pad=40;
+    const cols = Math.max(1, Math.floor((sheetW-pad) / (targetW+pad)));
+    const rows = Math.max(1, Math.floor((sheetH-pad) / (targetH+pad)));
+    let count=0;
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        const x=pad + c*(targetW+pad);
+        const y=pad + r*(targetH+pad);
+        if(x+targetW<=sheetW-pad && y+targetH<=sheetH-pad){
+          sctx.drawImage(im, x, y, targetW, targetH);
+          count++;
+        }
+      }
+    }
+
+    const blob=await new Promise(res=>sc.toBlob(res,'image/jpeg',0.95));
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='id-photo_4x6_sheet.jpg';
+    document.body.appendChild(a); a.click(); a.remove();
+    setMsg('Downloaded 4×6 sheet with '+count+' copy(ies).');
+  });
+
+  clearBtn.addEventListener('click', ()=>{
+    fileEl.value=''; img=null; outBlob=null; pan={x:0,y:0}; setMsg(''); enable(false); draw();
+    dlBtn.disabled=true; sheetBtn.disabled=true; clearBtn.disabled=true;
+  });
+
+  draw();
+})();
 </script>
+
+
 <script>
-  (function(){
-    function openLM(id){
-      const bd=document.getElementById(id);
-      if(!bd) return;
-      bd.setAttribute('aria-hidden','false');
-      const btn=bd.querySelector('.rm-lm-close');
-      if(btn) btn.focus();
+(function(){
+  function openLM(id){
+    var b=document.getElementById(id); if(!b) return;
+    b.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    var btn=b.querySelector('[data-rm-lm-close="'+id+'"]'); if(btn) btn.focus();
+  }
+  function closeLM(id){
+    var b=document.getElementById(id); if(!b) return;
+    b.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+  }
+  document.addEventListener('click', function(e){
+    var a=e.target.closest && e.target.closest('[data-rm-lm-open]'); 
+    if(a){ e.preventDefault(); openLM(a.getAttribute('data-rm-lm-open')); return; }
+    var c=e.target.closest && e.target.closest('[data-rm-lm-close]');
+    if(c){ e.preventDefault(); closeLM(c.getAttribute('data-rm-lm-close')); return; }
+    var bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+    if(bd){ closeLM(bd.id); }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key==='Escape'){
+      var b=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+      if(b) closeLM(b.id);
     }
-    function closeLM(id){
-      const bd=document.getElementById(id);
-      if(!bd) return;
-      bd.setAttribute('aria-hidden','true');
-    }
-    document.addEventListener('click', function(e){
-      const a=e.target.closest('[data-rm-lm-open]');
-      if(a){
-        e.preventDefault();
-        openLM(a.getAttribute('data-rm-lm-open'));
-        return;
-      }
-      const close=e.target.closest('[data-rm-lm-close]');
-      if(close){
-        e.preventDefault();
-        closeLM(close.getAttribute('data-rm-lm-close'));
-        return;
-      }
-      const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
-      if(bd){
-        e.preventDefault();
-        closeLM(bd.id);
-      }
-    });
-    document.addEventListener('keydown', function(e){
-      if(e.key==='Escape'){
-        const open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
-        if(open) open.setAttribute('aria-hidden','true');
-      }
-    });
-  })();
+  });
+})();
 </script>
-<script src="/assets/js/rm-dropzone.js"></script>
-<script src="/assets/js/rm-tools-drawer.js"></script>
+
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div class="footer-brand">
+      <div class="logo-row">
+        <div class="mark"></div>
+        <div class="name">ReportMedic</div>
+      </div>
+      <div class="tiny muted">Local-first tools for report sanity checks.</div>
+    </div>
+    <div class="footer-links">
+      <a href="/tools/">All Tools</a>
+      <a href="/fix-my-report.html">Live Agent</a>
+      <a href="/about.html">About</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
