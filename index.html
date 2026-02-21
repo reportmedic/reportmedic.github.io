@@ -131,7 +131,7 @@
 <aside aria-label="All Tools Drawer" class="drawer" id="drawer">
 <div class="drawerHeader">
 <button class="btn" id="closeDrawerBtn">Close</button>
-<strong>All Tools (17)</strong>
+<strong>All Tools (42)</strong>
 <div class="spacer"></div>
 </div>
 <div class="drawerList" id="drawerList"></div>
@@ -147,18 +147,40 @@
     { id:"summarize-data-by-group-pivot-online", name:"Quick Pivot", icon:"▦", cat:["Analyze"], desc:"Instant pivot tables & group summaries (counts/sums/avg).", tags:["groupby","summary"] },
     { id:"why-two-reports-dont-match", name:"Why Reports Don’t Match", icon:"✎", cat:["Analyze"], desc:"Turn mismatches into a clear, audit-ready explanation.", tags:["explain","audit"] },
     { id:"compare-two-texts-side-by-side", name:"Text Compare", icon:"↔", cat:["Compare"], desc:"Compare two texts side-by-side and spot exactly what changed.", tags:["text","diff"] },
-
     { id:"online-notepad-rich-text-editor", name:"Online Notepad", icon:"🗒", cat:["Write"], desc:"Notebooks + rich-text notes with find/replace (saved locally).", tags:["notes","richtext"] },
-
     { id:"mask-sensitive-data-before-sharing", name:"PII Masker", icon:"◎", cat:["Clean","Export"], desc:"Mask sensitive fields for safe sharing.", tags:["pii","redact"] },
     { id:"fix-export-formatting-errors", name:"Export Fixer", icon:"⇣", cat:["Export"], desc:"Repair export formatting and generate clean outputs.", tags:["csv","xlsx"] },
     { id:"schedule-data-validation-checks", name:"Run Scheduler", icon:"⏱", cat:["Export","Validate"], desc:"Save a run config and repeat it on new files.", tags:["repeat","config"] },
-
     { id:"markdown-to-html", name:"Markdown → HTML", icon:"⌁", cat:["Convert"], desc:"Convert Markdown into clean HTML.", tags:["md","html"] },
     { id:"html-to-markdown", name:"HTML → Markdown", icon:"⌁", cat:["Convert"], desc:"Convert HTML into Markdown.", tags:["html","md"] },
     { id:"markdown-to-pdf", name:"Markdown → PDF", icon:"⎙", cat:["Convert"], desc:"Turn Markdown into a printable PDF.", tags:["pdf","print"] },
     { id:"markdown-to-word-docx", name:"Markdown → Word", icon:"W", cat:["Convert"], desc:"Convert Markdown into a .docx file.", tags:["docx","word"] },
     { id:"word-docx-to-markdown", name:"Word → Markdown", icon:"W", cat:["Convert"], desc:"Convert a .docx file into Markdown.", tags:["docx","md"] },
+    { id:"compare-two-spreadsheets", name:"Spreadsheet Compare", icon:"▦", cat:["Compare"], desc:"Compare two spreadsheets (XLSX/CSV) to spot changed cells, added/removed rows and columns, and export a dif…", tags:["diff","audit"] },
+    { id:"check-date-timezone-drift", name:"Date & Timezone Drift Checker", icon:"🕒", cat:["Validate"], desc:"Detect day/hour shifts and timezone drift between two exports by comparing date distributions and likely of…", tags:["rules","checks"] },
+    { id:"auto-map-and-rename-columns", name:"Column Mapping Helper", icon:"⇄", cat:["Analyze"], desc:"Auto-suggest column mappings between two files and generate a renamed copy + mapping JSON so reports line up.", tags:["insights","debug"] },
+    { id:"null-missingness-heatmap", name:"Null & Missingness Heatmap", icon:"▧", cat:["Analyze"], desc:"See missingness per column and by segment with a quick heatmap, so you can spot broken fields before report…", tags:["insights","debug"] },
+    { id:"remove-image-background", name:"Background Remover", icon:"✂", cat:["Export"], desc:"Remove backgrounds and download transparent PNGs.", tags:["image","compress"] },
+    { id:"compress-pdf-reduce-file-size", name:"Compress PDF", icon:"🗜", cat:["Export"], desc:"Compress a PDF to reduce file size for email and upload portals. Runs locally in your browser.", tags:["pdf","tools"] },
+    { id:"csv-to-pdf", name:"CSV to PDF", icon:"⎙", cat:["Export"], desc:"Convert CSV/TSV exports to a clean, shareable PDF snapshot. Runs locally in your browser.", tags:["csv","pdf"] },
+    { id:"excel-to-pdf", name:"Excel to PDF", icon:"X", cat:["Export"], desc:"Convert Excel (XLSX/XLS) to a clean PDF snapshot you can share. Runs locally in your browser.", tags:["xlsx","pdf"] },
+    { id:"heic-heif-to-jpg-png", name:"HEIC → JPG/PNG", icon:"⧉", cat:["Export"], desc:"Convert iPhone HEIC photos to JPG/PNG (batch + ZIP).", tags:["convert","download"] },
+    { id:"id-photo-maker-passport-photo", name:"ID Photo Maker", icon:"🪪", cat:["Export"], desc:"Make passport-style photos and a 4×6 print sheet.", tags:["convert","download"] },
+    { id:"image-metadata-remover-exif-stripper", name:"Image Metadata Remover", icon:"⛭", cat:["Export"], desc:"Strip EXIF/GPS metadata from photos.", tags:["image","compress"] },
+    { id:"image-resize-compress", name:"Image Resize / Compress", icon:"🖼", cat:["Export"], desc:"Resize and compress images (JPG/PNG/WebP) locally in your browser. Choose dimensions, format, and quality,…", tags:["image","compress"] },
+    { id:"link-shortener-with-qr", name:"Link Shortener + QR", icon:"🔗", cat:["Export"], desc:"Shorten a link (optional) and generate a QR.", tags:["qr","code"] },
+    { id:"ocr-image-pdf-to-text", name:"OCR (Image/PDF → Text)", icon:"⌁", cat:["Export"], desc:"Extract text from scans and images locally.", tags:["image","compress"] },
+    { id:"office-file-viewer-excel-docx-pptx", name:"Office File Viewer", icon:"👁", cat:["Export"], desc:"View Excel (XLSX), Word (DOCX), and PowerPoint (PPTX) files directly in your browser. Runs locally.", tags:["xlsx","docx"] },
+    { id:"strong-password-generator", name:"Password Generator", icon:"🔑", cat:["Export"], desc:"Generate strong passwords with crypto randomness.", tags:["password","security"] },
+    { id:"pdf-organizer-merge-split-reorder", name:"PDF Organizer", icon:"🗂", cat:["Export"], desc:"Merge PDFs, split/extract page ranges, and reorder pages. Fast, private, and runs locally in your browser.", tags:["pdf","tools"] },
+    { id:"pdf-password-protect-unlock", name:"PDF Password Protect / Unlock", icon:"🔒", cat:["Export"], desc:"Add or remove PDF passwords (qpdf‑wasm).", tags:["pdf","docx"] },
+    { id:"pdf-redact-blackout-sensitive-info", name:"PDF Redactor", icon:"█", cat:["Export"], desc:"Black out sensitive areas and export a redacted PDF.", tags:["pdf","tools"] },
+    { id:"pdf-to-markdown", name:"PDF to Markdown", icon:"⌁", cat:["Export"], desc:"Convert a PDF into editable Markdown. Extracts selectable text locally in your browser (no upload).", tags:["md","pdf"] },
+    { id:"pdf-to-word-docx", name:"PDF to Word (DOCX)", icon:"W", cat:["Export"], desc:"Convert a PDF into an editable Word (.docx) by extracting text locally in your browser. Best for text-based…", tags:["pdf","docx"] },
+    { id:"pdf-to-excel-csv-extract-tables", name:"PDF → Excel/CSV", icon:"▦", cat:["Export"], desc:"Extract text tables to Excel/CSV with preview.", tags:["xlsx","pdf"] },
+    { id:"pdf-to-jpg-and-jpg-to-pdf", name:"PDF ⇄ Images", icon:"🖼", cat:["Export"], desc:"Convert PDF pages to images (JPG/PNG) and convert images to a single PDF. Runs locally in your browser.", tags:["pdf","jpg"] },
+    { id:"qr-code-generator-and-scanner", name:"QR Code Generator & Scanner", icon:"▣", cat:["Export"], desc:"Generate QR codes or scan them from camera/image.", tags:["qr","code"] },
+    { id:"sign-pdf-add-signature", name:"Sign PDF", icon:"✍", cat:["Export"], desc:"Draw a signature and stamp it onto a PDF.", tags:["pdf","tools"] },
   ];
 
   const routes = Object.fromEntries(tools.map(t => [t.id, `/tools/${t.id}.html`]));
