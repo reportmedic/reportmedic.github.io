@@ -254,7 +254,7 @@
   </script>
 
   <script type="module">
-    import { FFmpeg } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.15/dist/esm/index.js';
+    import { FFmpeg } from '/assets/vendor/ffmpeg/ffmpeg-esm/index.js';
     import { fetchFile, toBlobURL } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.2/dist/esm/index.js';
 
     const $ = (id)=>document.getElementById(id);
@@ -359,11 +359,11 @@
       setStatus('loading engine…');
       appendLog('Loading FFmpeg (first time can be ~30–40MB)…');
       try{
-        const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd';
+        const coreJS = '/assets/vendor/ffmpeg/core/ffmpeg-core.js';
+        const wasmCDN = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm';
         await ffmpeg.load({
-          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-          workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
+          coreURL: await toBlobURL(coreJS, 'text/javascript'),
+          wasmURL: await toBlobURL(wasmCDN, 'application/wasm'),
         });
         loaded = true;
         appendLog('Engine ready.');
