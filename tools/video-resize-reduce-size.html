@@ -359,14 +359,17 @@
       setStatus('loading engine…');
       appendLog('Loading FFmpeg (first time can be ~30–40MB)…');
       try{
-                const coreBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm';
+                const coreBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd';
                 // Use blob URLs for core + wasm (avoids cross-origin Worker restrictions)
                 const coreURL = await toBlobURL(`${coreBase}/ffmpeg-core.js`, 'text/javascript');
                 const wasmURL = await toBlobURL(`${coreBase}/ffmpeg-core.wasm`, 'application/wasm');
+                // Worker must be same-origin on many browsers
+                const workerURL = '/assets/vendor/ffmpeg/ffmpeg-esm/worker.js';
 
                 await ffmpeg.load({
                   coreURL,
-                  wasmURL
+                  wasmURL,
+                  workerURL,
                 });
         loaded = true;
         appendLog('Engine ready.');
@@ -420,7 +423,44 @@
       return `scale=${W}:${H}`;
     }
 
-    async function convert(){
+    
+    async function readAsUint8(file){
+      // Some browsers fail on very large videos with FileReader-based helpers.
+      // This stream-based reader is often more reliable.
+      if(file && typeof file.stream === 'function'){
+        try{
+          const reader = file.stream().getReader();
+          const chunks = [];
+          let total = 0;
+          let nextLog = 20 * 1024 * 1024; // log every ~20MB
+          while(true){
+            const { done, value } = await reader.read();
+            if(done) break;
+            if(value){
+              chunks.push(value);
+              total += value.byteLength;
+              if(total >= nextLog){
+                appendLog(`Reading input… ${humanBytes(total)} loaded`);
+                nextLog += 20 * 1024 * 1024;
+              }
+            }
+          }
+          const out = new Uint8Array(total);
+          let off = 0;
+          for(const c of chunks){
+            out.set(c, off);
+            off += c.byteLength;
+          }
+          return out;
+        }catch(e){
+          appendLog('Stream read failed, trying fallback reader…');
+        }
+      }
+      // Fallback (may fail on very large files in some browsers)
+      return await fetchFile(file);
+    }
+
+async function convert(){
       if(!currentFile){ setStatus('select a video'); return; }
       if(!loaded){ await loadEngine(); if(!loaded) return; }
 
@@ -437,7 +477,9 @@
       const outFile = 'output.mp4';
 
       try{
-        await ffmpeg.writeFile(inName, await fetchFile(currentFile));
+        appendLog(`Reading input… (${humanBytes(currentFile.size)})`);
+        const inputData = await readAsUint8(currentFile);
+        await ffmpeg.writeFile(inName, inputData);
 
         const args = ['-i', inName];
         const vf = [];
@@ -492,6 +534,9 @@
       } catch (e) {
         console.error(e);
         appendLog(String(e));
+        if(String(e).toLowerCase().includes('file could not be read')){
+          appendLog('Tip: This is usually a browser memory limit on very large videos. Try trimming the clip, using 720p, or converting a shorter segment first.');
+        }
         setStatus('error (see log)');
       } finally {
         // best-effort cleanup
