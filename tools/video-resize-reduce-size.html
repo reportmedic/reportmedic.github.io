@@ -375,10 +375,6 @@
       } catch (e) {
         console.error(e);
         appendLog(String(e));
-        const em = String(e || '');
-        if(/could not be read/i.test(em) || /Code=-1/.test(em) || /fetchFile/i.test(em)){
-          appendLog('Tip: If this is a very large GoPro/4K file, some browsers may fail to load it into memory. Try a smaller clip first, close other tabs/apps, or use a shorter export.');
-        }
         setStatus('failed to load engine');
         loadBtn.disabled = false;
       }
@@ -424,47 +420,7 @@
       return `scale=${W}:${H}`;
     }
 
-    
-
-// Read a File into a Uint8Array reliably across browsers (large files can still hit memory limits).
-async function readFileToUint8(file){
-  // Fast path: native arrayBuffer (avoids some FileReader/worker edge cases)
-  try{
-    const ab = await file.arrayBuffer();
-    return new Uint8Array(ab);
-  }catch(e1){
-    // Fallback: ffmpeg util helper
-    try{
-      return await fetchFile(file);
-    }catch(e2){
-      // Last resort: stream → concat
-      if(file && file.stream){
-        try{
-          const reader = file.stream().getReader();
-          const chunks = [];
-          let total = 0;
-          while(true){
-            const { done, value } = await reader.read();
-            if(done) break;
-            chunks.push(value);
-            total += value.length;
-          }
-          const out = new Uint8Array(total);
-          let offset = 0;
-          for(const c of chunks){
-            out.set(c, offset);
-            offset += c.length;
-          }
-          return out;
-        }catch(e3){
-          throw e3;
-        }
-      }
-      throw e2;
-    }
-  }
-}
-async function convert(){
+    async function convert(){
       if(!currentFile){ setStatus('select a video'); return; }
       if(!loaded){ await loadEngine(); if(!loaded) return; }
 
@@ -480,9 +436,15 @@ async function convert(){
       outName = (currentFile.name.replace(/\.[^.]+$/, '') || 'video') + `_rm_${mode.value === 'custom' ? 'custom' : mode.value}.mp4`;
       const outFile = 'output.mp4';
 
-      try{
-        await ffmpeg.writeFile(inName, await readFileToUint8(currentFile));
-const args = ['-i', inName];
+      try{        // Avoid loading huge videos fully into JS memory (can throw RangeError on large GoPro/4K files).
+        // Mount the selected file with WORKERFS so ffmpeg can read it without a giant ArrayBuffer copy.
+        const mountPoint = '/input';
+        try{ await ffmpeg.createDir(mountPoint); }catch(e){}
+        try{ await ffmpeg.unmount(mountPoint); }catch(e){} // in case a previous run left it mounted
+        await ffmpeg.mount('WORKERFS', { files: [currentFile] }, mountPoint);
+
+        const inputPath = `${mountPoint}/${currentFile.name}`;
+        const args = ['-i', inputPath];
         const vf = [];
 
         const sf = scaleFilter();
@@ -538,7 +500,8 @@ const args = ['-i', inName];
         setStatus('error (see log)');
       } finally {
         // best-effort cleanup
-        try{ await ffmpeg.deleteFile(inName); }catch(e){}
+        try{ await ffmpeg.unmount('/input'); }catch(e){}
+        try{ await ffmpeg.deleteDir('/input'); }catch(e){}
         try{ await ffmpeg.deleteFile('output.mp4'); }catch(e){}
 
         goBtn.disabled = false;
