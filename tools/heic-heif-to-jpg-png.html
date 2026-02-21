@@ -3,63 +3,30 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<meta name="description" content="Convert HEIC/HEIF photos to JPG or PNG in your browser. Batch convert and download as ZIP. Runs locally."/>
-<title>HEIC to JPG/PNG Converter — ReportMedic</title>
+<meta name="description" content="Convert HEIC/HEIF photos to JPG or PNG. Batch convert and download a ZIP. Runs locally in your browser."/>
+<title>HEIC/HEIF to JPG/PNG — ReportMedic</title>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
-<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
-<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
 <link href="/assets/css/styles.css" rel="stylesheet"/>
-
 <style>
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-  @media (max-width: 980px){.grid3{grid-template-columns:1fr}}
-  @media (max-width: 880px){.grid2{grid-template-columns:1fr}}
-  .card{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;background:rgba(0,0,0,.10)}
-  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  .muted{opacity:.8}
-  .tiny{font-size:12px;opacity:.78}
-  .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px}
-  .pill b{font-size:12px}
-  .hr2{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
-  .input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.16);color:inherit}
-  .btn.small{padding:8px 10px;font-size:13px}
-  .note{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
-  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
-  canvas.preview{width:100%;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(0,0,0,.15)}
-  .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;border:1px solid rgba(255,255,255,.12)}
-  .b-info{background:rgba(52, 152, 219, .10)}
-  .b-warn{background:rgba(241, 196, 15, .12)}
-  .b-ok{background:rgba(46, 204, 113, .12)}
-  .b-bad{background:rgba(231, 76, 60, .12)}
+  .rm-row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+  .rm-status{min-height:20px}
+  .rm-good{color:#b7ffd7}
+  .rm-bad{color:#ffb4b4}
+  .rm-warn{color:#ffe7a8}
+  .rm-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-top:12px}
+  .rm-thumb{border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.03); padding:10px}
+  .rm-thumb img{max-width:100%; height:auto; border-radius:12px; border:1px solid rgba(255,255,255,.10)}
+  .rm-mini{font-size:12px; color:var(--muted)}
+  .rm-hidden{display:none!important}
 </style>
-
-<script defer src="/assets/js/rm-dropzone.js"></script>
-<script defer src="/assets/js/rm-tools-drawer.js"></script>
-
-<style>
-.rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
-.rm-lm-link:hover{opacity:1;}
-.rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;}
-.rm-lm-backdrop[aria-hidden="false"]{display:flex;}
-.rm-lm-dialog{color:#111;max-width:560px; width:100%; background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.25); overflow:hidden;}
-.rm-lm-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08);}
-.rm-lm-title{margin:0; font-size:1.05rem;}
-.rm-lm-close{border:0; background:transparent; font-size:1.25rem; line-height:1; padding:6px 10px; cursor:pointer; opacity:.7;}
-.rm-lm-close:hover{opacity:1;}
-.rm-lm-body{font-size:.95rem; line-height:1.45; color:#111;padding:14px 16px;}
-.rm-lm-body h3{margin:12px 0 6px; font-size:.95rem;}
-.rm-lm-body ul{margin:0 0 6px 18px;}
-.rm-lm-body li{margin:4px 0;}
-</style>
-
 </head>
-<body class="tools-page">
+<body>
 <header>
   <div class="nav">
     <a class="logo" href="/" style="text-decoration:none;">
-      <div class="mark"></div>
-      <div>ReportMedic</div>
+      <div class="mark"></div><div>ReportMedic</div>
     </a>
     <div class="spacer"></div>
     <a class="btn" href="/">Home</a>
@@ -70,261 +37,280 @@
 
 <div class="wrap">
   <div class="panel">
-    <h1>HEIC → JPG/PNG <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
-    <p class="sub">Convert iPhone HEIC/HEIF photos into JPG or PNG. Batch convert and download a ZIP — runs locally in your browser.</p>
-    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+    <h1>HEIC / HEIF to JPG / PNG <a class="rm-lm-link" data-rm-lm-open="rmLM" href="#">Learn more</a></h1>
+    <p class="sub">Convert iPhone HEIC photos to JPG/PNG. Batch convert and download as a ZIP — runs locally in your browser.</p>
     <div class="hr"></div>
-    
-<div class="grid2">
-  <div class="card">
-    <div class="row" style="justify-content:space-between">
-      <div>
+
+    <div class="grid2">
+      <div class="card">
         <div style="font-weight:700">Upload</div>
-        <div class="tiny muted">HEIC / HEIF images</div>
+        <div class="tiny muted" style="margin-top:4px">Tip: Safari can decode HEIC natively. Chrome may need the HEIC decoder library.</div>
+        <div class="hr2"></div>
+        <input id="fileInput" class="input" type="file" accept=".heic,.heif,image/heic,image/heif" multiple/>
+
+        <div class="hr2"></div>
+        <div class="rm-row">
+          <label class="tiny muted">Output</label>
+          <select id="outType" class="input" style="width:auto; min-width:220px">
+            <option value="image/jpeg" selected>JPG</option>
+            <option value="image/png">PNG</option>
+          </select>
+          <label class="tiny muted">Quality (JPG)</label>
+          <input id="jpgQ" class="input" type="number" min="0.1" max="1" step="0.05" value="0.92" style="width:120px"/>
+        </div>
+
+        <div class="rm-row" style="margin-top:12px">
+          <button class="btn primary" id="btnConvert" type="button">Convert</button>
+          <button class="btn" id="btnClear" type="button">Clear</button>
+          <button class="btn" id="btnDownloadZip" type="button" disabled>Download ZIP</button>
+          <span class="tiny muted rm-status" id="status"></span>
+        </div>
+        <div class="rm-mini" style="margin-top:8px">
+          If you see <b>ERR_LIBHEIF format not supported</b>, your HEIC variant isn’t decodable in this browser + decoder combo. Try Safari, or export JPG from Photos (File → Export).
+        </div>
       </div>
-      <span class="pill tiny" id="meta"><b>Files:</b><span class="muted" id="fileCount">0</span></span>
-    </div>
-    <div style="margin-top:10px">
-      <input class="input" id="file" type="file" accept=".heic,.heif,image/heic,image/heif" multiple />
-    </div>
 
-    <div class="row" style="margin-top:10px">
-      <label class="tiny muted">Output</label>
-      <select class="input" id="fmt" style="width:auto;min-width:180px">
-        <option value="image/jpeg" selected>JPG</option>
-        <option value="image/png">PNG</option>
-      </select>
-
-      <label class="tiny muted">Quality</label>
-      <input class="input" id="q" type="range" min="0.6" max="1" step="0.05" value="0.9" style="width:220px"/>
-      <span class="pill tiny"><b id="qv">0.90</b></span>
-    </div>
-
-    <div class="row" style="margin-top:12px">
-      <button class="btn primary" id="convert" disabled>Convert</button>
-      <button class="btn" id="downloadZip" disabled>Download ZIP</button>
-      <button class="btn" id="clear" disabled>Clear</button>
-    </div>
-    <div class="tiny muted" id="msg" style="margin-top:10px"></div>
-    <div class="note tiny muted">Privacy: conversion runs locally in your browser.</div>
-  </div>
-
-  <div class="card">
-    <div style="font-weight:700">Results</div>
-    <div class="tiny muted">Converted files will appear here.</div>
-    <div class="hr2"></div>
-    <div id="out" class="tiny muted">No output yet.</div>
-  </div>
-</div>
-
-  </div>
-</div>
-
-
-<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
-  <div class="rm-lm-dialog" role="document">
-    <div class="rm-lm-head">
-      <h2 class="rm-lm-title">HEIC → JPG/PNG</h2>
-      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
-    </div>
-    <div class="rm-lm-body">
-      
-<p>This tool converts <b>HEIC/HEIF</b> photos (common on iPhone) into <b>JPG</b> or <b>PNG</b>.</p>
-<h3>Good for</h3>
-<ul>
-  <li>Sharing photos to apps that don’t accept HEIC</li>
-  <li>Batch converting many files at once</li>
-  <li>Keeping everything local (no uploads)</li>
-</ul>
-<h3>Notes</h3>
-<ul>
-  <li>JPG is smaller; PNG is better for graphics/screenshots.</li>
-  <li>If a file fails, it may be an unsupported HEIC variant—try PNG or re-export from Photos.</li>
-</ul>
-
-    </div>
-  </div>
-</div>
-
-
-
-<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-
-
-<script>
-(function(){
-  const $ = (id)=>document.getElementById(id);
-  const fileEl = $('file');
-  const fmtEl = $('fmt');
-  const qEl = $('q');
-  const qvEl = $('qv');
-  const convertBtn = $('convert');
-  const zipBtn = $('downloadZip');
-  const clearBtn = $('clear');
-  const out = $('out');
-  const msg = $('msg');
-  const fileCount = $('fileCount');
-
-  let results = []; // {name, blob}
-
-  function setMsg(t){ msg.textContent = t || ''; }
-  function setBusy(b){
-    convertBtn.disabled = b || !(fileEl.files && fileEl.files.length);
-    clearBtn.disabled = b || !(fileEl.files && fileEl.files.length || results.length);
-    zipBtn.disabled = b || !results.length;
-  }
-
-  qEl.addEventListener('input', ()=>{ qvEl.textContent = Number(qEl.value).toFixed(2); });
-
-  fileEl.addEventListener('change', ()=>{
-    results = [];
-    out.innerHTML = 'No output yet.';
-    const n = fileEl.files ? fileEl.files.length : 0;
-    fileCount.textContent = String(n);
-    setMsg(n ? 'Ready to convert.' : '');
-    setBusy(false);
-    convertBtn.disabled = !n;
-    clearBtn.disabled = !n;
-    zipBtn.disabled = true;
-  });
-
-  clearBtn.addEventListener('click', ()=>{
-    fileEl.value = '';
-    results = [];
-    out.textContent = 'No output yet.';
-    fileCount.textContent = '0';
-    setMsg('');
-    setBusy(false);
-    convertBtn.disabled = true;
-    zipBtn.disabled = true;
-    clearBtn.disabled = true;
-  });
-
-  async function blobToDataURL(blob){
-    return await new Promise((res)=>{
-      const r = new FileReader();
-      r.onload = ()=>res(r.result);
-      r.readAsDataURL(blob);
-    });
-  }
-
-  convertBtn.addEventListener('click', async ()=>{
-    const files = fileEl.files ? Array.from(fileEl.files) : [];
-    if(!files.length) return;
-
-    const mime = fmtEl.value;
-    const quality = Number(qEl.value);
-    results = [];
-    out.innerHTML = '';
-    setMsg('Converting…');
-    setBusy(true);
-
-    for(let i=0;i<files.length;i++){
-      const f = files[i];
-      try{
-        const ab = await f.arrayBuffer();
-        const conv = await heic2any({ blob: new Blob([ab]), toType: mime, quality });
-        const blob = Array.isArray(conv) ? conv[0] : conv;
-
-        const base = f.name.replace(/\.(heic|heif)$/i,'');
-        const ext = mime === 'image/png' ? '.png' : '.jpg';
-        const name = base + ext;
-
-        results.push({name, blob});
-
-        const url = URL.createObjectURL(blob);
-        const row = document.createElement('div');
-        row.className = 'row';
-        row.style.justifyContent='space-between';
-        row.style.marginBottom='8px';
-        row.innerHTML = '<span class="mono">'+name+'</span>' +
-                        '<a class="btn small" href="'+url+'" download="'+name+'">Download</a>';
-        out.appendChild(row);
-      }catch(e){
-        const row = document.createElement('div');
-        row.className = 'tiny';
-        row.style.marginBottom='6px';
-        row.innerHTML = '<span class="badge b-bad">Failed</span> <span class="mono">'+(f.name||'file')+'</span> — '+(e && e.message ? e.message : String(e));
-        out.appendChild(row);
-      }
-      setMsg('Converted '+(i+1)+' / '+files.length);
-    }
-
-    setMsg('Done. Converted '+results.length+' file(s).');
-    setBusy(false);
-    zipBtn.disabled = !results.length;
-  });
-
-  zipBtn.addEventListener('click', async ()=>{
-    if(!results.length) return;
-    setMsg('Building ZIP…');
-    setBusy(true);
-    const zip = new JSZip();
-    results.forEach(r=> zip.file(r.name, r.blob));
-    const blob = await zip.generateAsync({type:'blob'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'heic-converted.zip';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setMsg('ZIP downloaded.');
-    setBusy(false);
-  });
-
-  setBusy(false);
-})();
-</script>
-
-
-<script>
-(function(){
-  function openLM(id){
-    var b=document.getElementById(id); if(!b) return;
-    b.setAttribute('aria-hidden','false');
-    document.body.style.overflow='hidden';
-    var btn=b.querySelector('[data-rm-lm-close="'+id+'"]'); if(btn) btn.focus();
-  }
-  function closeLM(id){
-    var b=document.getElementById(id); if(!b) return;
-    b.setAttribute('aria-hidden','true');
-    document.body.style.overflow='';
-  }
-  document.addEventListener('click', function(e){
-    var a=e.target.closest && e.target.closest('[data-rm-lm-open]'); 
-    if(a){ e.preventDefault(); openLM(a.getAttribute('data-rm-lm-open')); return; }
-    var c=e.target.closest && e.target.closest('[data-rm-lm-close]');
-    if(c){ e.preventDefault(); closeLM(c.getAttribute('data-rm-lm-close')); return; }
-    var bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
-    if(bd){ closeLM(bd.id); }
-  });
-  document.addEventListener('keydown', function(e){
-    if(e.key==='Escape'){
-      var b=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
-      if(b) closeLM(b.id);
-    }
-  });
-})();
-</script>
-
-
-<footer class="site-footer">
-  <div class="wrap footer-inner">
-    <div class="footer-brand">
-      <div class="logo-row">
-        <div class="mark"></div>
-        <div class="name">ReportMedic</div>
+      <div class="card">
+        <div style="font-weight:700">Preview</div>
+        <div class="tiny muted" style="margin-top:4px">Your converted images appear here. Nothing is uploaded.</div>
+        <div class="hr2"></div>
+        <div id="preview" class="rm-grid"></div>
       </div>
-      <div class="tiny muted">Local-first tools for report sanity checks.</div>
     </div>
-    <div class="footer-links">
-      <a href="/tools/">All Tools</a>
-      <a href="/fix-my-report.html">Live Agent</a>
-      <a href="/about.html">About</a>
+  </div>
+</div>
+
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
     </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
   </div>
 </footer>
+
+<div aria-hidden="true" aria-label="HEIC / HEIF to JPG / PNG details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">HEIC / HEIF to JPG / PNG</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Convert HEIC/HEIF photos to JPG/PNG for portals that don’t accept HEIC</li>
+        <li>Batch convert and download a ZIP</li>
+        <li>Runs locally in your browser</li>
+      </ul>
+      <h3>Good to know</h3>
+      <ul>
+        <li>Some HEIC variants may fail in some browsers/decoders. Safari often works best.</li>
+        <li>JPG quality controls file size; PNG is larger but lossless.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  const $ = (id)=>document.getElementById(id);
+  const input = $('fileInput');
+  const outType = $('outType');
+  const jpgQ = $('jpgQ');
+  const status = $('status');
+  const preview = $('preview');
+  const btnZip = $('btnDownloadZip');
+
+  /** @type {{name:string, blob:Blob, url:string}[]} */
+  let outputs = [];
+
+  function setStatus(msg, cls){
+    status.className = 'tiny muted rm-status ' + (cls||'');
+    status.textContent = msg || '';
+  }
+
+  function clearAll(){
+    outputs.forEach(o=>URL.revokeObjectURL(o.url));
+    outputs = [];
+    preview.innerHTML='';
+    btnZip.disabled = true;
+    input.value = '';
+    setStatus('', '');
+  }
+
+  async function blobFromNativeDecode(file, mime, quality){
+    // If the browser can decode HEIC itself (Safari often can), this is the most reliable.
+    const url = URL.createObjectURL(file);
+    try{
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = url;
+      // wait decode
+      if (img.decode) await img.decode();
+      else await new Promise((res, rej)=>{ img.onload=res; img.onerror=rej; });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth || img.width;
+      canvas.height = img.naturalHeight || img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img,0,0);
+      return await new Promise((res)=>canvas.toBlob(res, mime, mime==='image/jpeg'?quality:undefined));
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  async function convertOne(file){
+    const mime = outType.value;
+    const quality = Math.max(0.1, Math.min(1, parseFloat(jpgQ.value || '0.92')));
+
+    // 1) Try native decode first (fast path, avoids libheif limitations when supported)
+    try {
+      const b = await blobFromNativeDecode(file, mime, quality);
+      if (b && b.size > 0) return b;
+    } catch (e) {
+      // ignore and fall back to heic2any
+    }
+
+    // 2) Fall back to heic2any
+    if (!window.heic2any) throw new Error('HEIC decoder library failed to load.');
+    const b = await window.heic2any({
+      blob: file,
+      toType: mime,
+      quality: mime==='image/jpeg' ? quality : undefined
+    });
+    // heic2any may return Blob or Array of Blobs
+    const blob = Array.isArray(b) ? b[0] : b;
+    if (!(blob instanceof Blob)) throw new Error('Conversion returned no image.');
+    return blob;
+  }
+
+  function extFor(mime){
+    return mime==='image/png' ? '.png' : '.jpg';
+  }
+
+  function addPreview(name, blob){
+    const url = URL.createObjectURL(blob);
+    outputs.push({name, blob, url});
+
+    const card = document.createElement('div');
+    card.className = 'rm-thumb';
+
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = name;
+
+    const meta = document.createElement('div');
+    meta.className = 'rm-mini';
+    meta.style.marginTop = '8px';
+    meta.textContent = name;
+
+    const row = document.createElement('div');
+    row.className = 'rm-row';
+    row.style.marginTop = '8px';
+
+    const dl = document.createElement('button');
+    dl.className = 'btn';
+    dl.type = 'button';
+    dl.textContent = 'Download';
+    dl.onclick = ()=>{
+      const a=document.createElement('a');
+      a.href=url;
+      a.download=name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    };
+
+    row.appendChild(dl);
+    card.appendChild(img);
+    card.appendChild(meta);
+    card.appendChild(row);
+
+    preview.appendChild(card);
+  }
+
+  async function convertAll(){
+    const files = input.files ? Array.from(input.files) : [];
+    if (!files.length) { setStatus('Pick one or more HEIC files.', 'rm-warn'); return; }
+
+    clearAll();
+    // keep selected files in UI by restoring input? rm-dropzone handles label; ok.
+    const mime = outType.value;
+
+    setStatus('Converting…', '');
+    let ok = 0;
+
+    for (const f of files){
+      try{
+        const blob = await convertOne(f);
+        const base = (f.name || 'photo').replace(/\.(heic|heif)$/i,'');
+        const name = base + extFor(mime);
+        addPreview(name, blob);
+        ok++;
+      } catch (err){
+        const msg = (err && err.message) ? err.message : String(err);
+        addPreview((f.name||'file') + ' — FAILED.txt', new Blob([msg], {type:'text/plain'}));
+      }
+    }
+
+    btnZip.disabled = outputs.length === 0;
+    if (ok === files.length) setStatus('Done. Converted ' + ok + ' file(s).', 'rm-good');
+    else setStatus('Done with warnings. Converted ' + ok + ' of ' + files.length + '.', 'rm-warn');
+  }
+
+  async function downloadZip(){
+    if (!outputs.length) return;
+    const zip = new JSZip();
+    outputs.forEach(o=>zip.file(o.name, o.blob));
+    setStatus('Building ZIP…', '');
+    const blob = await zip.generateAsync({type:'blob'});
+    const a=document.createElement('a');
+    const url=URL.createObjectURL(blob);
+    a.href=url; a.download='heic-converted.zip';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 250);
+    setStatus('ZIP downloaded.', 'rm-good');
+  }
+
+  $('btnConvert').addEventListener('click', convertAll);
+  $('btnClear').addEventListener('click', clearAll);
+  btnZip.addEventListener('click', downloadZip);
+})();
+</script>
+
+<script>
+  (function(){
+    'use strict';
+    function openLM(id){ var el=document.getElementById(id); if(el) el.setAttribute('aria-hidden','false'); }
+    function closeLM(id){ var el=document.getElementById(id); if(el) el.setAttribute('aria-hidden','true'); }
+    document.addEventListener('click', function(e){
+      var a=e.target.closest('[data-rm-lm-open]');
+      if(a){ e.preventDefault(); openLM(a.getAttribute('data-rm-lm-open')); return; }
+      var c=e.target.closest('[data-rm-lm-close]');
+      if(c){ e.preventDefault(); closeLM(c.getAttribute('data-rm-lm-close')); return; }
+      var bd = (e.target.classList && e.target.classList.contains('rm-lm-backdrop')) ? e.target : null;
+      if(bd){ e.preventDefault(); closeLM(bd.id); }
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Escape'){
+        var open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        if(open) open.setAttribute('aria-hidden','true');
+      }
+    });
+  })();
+</script>
+<script src="/assets/js/rm-dropzone.js"></script>
+<script src="/assets/js/rm-tools-drawer.js"></script>
 </body>
 </html>

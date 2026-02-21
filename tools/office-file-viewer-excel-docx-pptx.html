@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="View Excel (XLSX), Word (DOCX), and PowerPoint (PPTX) files directly in your browser. Runs locally."/>
+<title>Office File Viewer (XLSX / DOCX / PPTX) — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+<style>
+  .rm-tabs{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+  .rm-tabs .btn{border:1px solid rgba(255,255,255,.14)}
+  .rm-tabs .btn.is-active{outline:2px solid rgba(124,247,212,.35)}
+  .rm-hidden{display:none !important}
+  .rm-view{max-height:70vh; overflow:auto; border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:12px; background:rgba(255,255,255,.03)}
+  .rm-table{border-collapse:collapse; width:100%; font-size:13px}
+  .rm-table th,.rm-table td{border:1px solid rgba(255,255,255,.12); padding:6px 8px; vertical-align:top}
+  .rm-table th{position:sticky; top:0; background:rgba(10,16,24,.92); backdrop-filter: blur(6px)}
+  .rm-slide{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:12px; margin:10px 0; background:rgba(0,0,0,.18)}
+  .rm-slide .rm-slideNo{font-weight:800; font-size:12px; color:var(--muted)}
+  .rm-doc p{margin:0 0 10px}
+  .rm-doc h1,.rm-doc h2,.rm-doc h3{margin:14px 0 10px}
+</style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Office File Viewer <a class="rm-lm-link" data-rm-lm-open="rmLM" href="#">Learn more</a></h1>
+    <p class="sub">Preview <b>XLSX</b>, <b>DOCX</b>, and <b>PPTX</b> files in your browser. Nothing is uploaded — it stays on your device.</p>
+    <div class="hr"></div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between; align-items:flex-start">
+        <div>
+          <div style="font-weight:700">Upload a file</div>
+          <div class="tiny muted">Supports .xlsx, .docx, .pptx</div>
+        </div>
+        <span class="pill tiny" id="meta"><b>FILE:</b><span class="muted">not loaded</span></span>
+      </div>
+      <div style="margin-top:10px">
+        <input class="input" id="file" type="file" accept=".xlsx,.xlsm,.docx,.pptx"/>
+      </div>
+
+      <div class="rm-tabs">
+        <button class="btn is-active" type="button" id="tabXlsx">Excel</button>
+        <button class="btn" type="button" id="tabDocx">Word</button>
+        <button class="btn" type="button" id="tabPptx">PowerPoint</button>
+      </div>
+
+      <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap">
+        <button class="btn" id="clear" type="button">Clear</button>
+        <span class="tiny muted" id="status"></span>
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:12px">
+      <div class="card">
+        <div style="font-weight:700">Preview</div>
+        <div class="tiny muted" style="margin-top:4px">Excel: first 200 rows per sheet. Word: clean HTML preview. PowerPoint: slide text outline preview.</div>
+        <div class="hr2"></div>
+
+        <div id="paneXlsx">
+          <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+            <label class="tiny muted">Sheet</label>
+            <select class="input" id="sheetSel" style="width:auto; min-width:220px"></select>
+          </div>
+          <div class="hr2"></div>
+          <div id="xlsxView" class="rm-view"></div>
+        </div>
+
+        <div id="paneDocx" class="rm-hidden">
+          <div id="docxView" class="rm-view rm-doc"></div>
+        </div>
+
+        <div id="panePptx" class="rm-hidden">
+          <div id="pptxView" class="rm-view"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:700">Notes</div>
+        <div class="tiny muted" style="margin-top:6px">
+          This viewer is designed for <b>quick inspection</b>.
+          If you need pixel-perfect slide rendering for PPTX, that typically requires a server-side renderer.
+        </div>
+        <div class="hr2"></div>
+        <ul class="tiny muted" style="margin:0; padding-left:18px">
+          <li><b>XLSX</b>: we render a table view (no formulas recalculated).</li>
+          <li><b>DOCX</b>: layout is best-effort (headings/paragraphs/lists/images).</li>
+          <li><b>PPTX</b>: we show slide text extracted from the file.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
+<div aria-hidden="true" aria-label="Office File Viewer details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Office File Viewer</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Open an Excel, Word, or PowerPoint file quickly in the browser</li>
+        <li>Verify content before sending / uploading</li>
+        <li>Stay private — files are read locally</li>
+      </ul>
+      <h3>Good to know</h3>
+      <ul>
+        <li>PPTX preview is text-outline (fast + private). For slide-perfect rendering, use a dedicated viewer.</li>
+        <li>Large spreadsheets are capped to keep the page responsive.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  const $ = (id)=>document.getElementById(id);
+  const meta=$('meta');
+  const status=$('status');
+  const file=$('file');
+
+  const panes = { xlsx:$('paneXlsx'), docx:$('paneDocx'), pptx:$('panePptx') };
+  const tabs = { xlsx:$('tabXlsx'), docx:$('tabDocx'), pptx:$('tabPptx') };
+
+  function setTab(which){
+    Object.keys(tabs).forEach(k=>tabs[k].classList.toggle('is-active', k===which));
+    Object.keys(panes).forEach(k=>panes[k].classList.toggle('rm-hidden', k!==which));
+  }
+  tabs.xlsx.onclick=()=>setTab('xlsx');
+  tabs.docx.onclick=()=>setTab('docx');
+  tabs.pptx.onclick=()=>setTab('pptx');
+
+  function setStatus(msg, cls){
+    status.className = 'tiny muted ' + (cls||'');
+    status.textContent = msg || '';
+  }
+
+  function setMeta(name, type, size){
+    meta.innerHTML = '<b>FILE:</b><span class="muted"> ' + (name||'not loaded') + '</span>';
+  }
+
+  function clearAll(){
+    file.value='';
+    $('sheetSel').innerHTML='';
+    $('xlsxView').innerHTML='';
+    $('docxView').innerHTML='';
+    $('pptxView').innerHTML='';
+    setStatus('', '');
+    setMeta(null);
+    setTab('xlsx');
+  }
+  $('clear').onclick=clearAll;
+
+  function escapeHtml(s){
+    return String(s??'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  // --- XLSX ---
+  function renderSheet(wb, sheetName){
+    const ws = wb.Sheets[sheetName];
+    if(!ws){ $('xlsxView').textContent='Sheet not found.'; return; }
+
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:A1');
+    const maxRows = Math.min(range.e.r, 199); // 0-indexed
+    const maxCols = Math.min(range.e.c, 49);
+
+    let html = '<table class="rm-table"><thead><tr>';
+    for(let c=0;c<=maxCols;c++){ html += '<th>' + escapeHtml(XLSX.utils.encode_col(c)) + '</th>'; }
+    html += '</tr></thead><tbody>';
+
+    for(let r=0;r<=maxRows;r++){
+      html += '<tr>';
+      for(let c=0;c<=maxCols;c++){
+        const addr = XLSX.utils.encode_cell({r,c});
+        const cell = ws[addr];
+        const v = cell ? (cell.w ?? cell.v ?? '') : '';
+        html += '<td>' + escapeHtml(v) + '</td>';
+      }
+      html += '</tr>';
+    }
+
+    html += '</tbody></table>';
+    if(range.e.r > 199) html += '<div class="tiny muted" style="margin-top:10px">Showing first 200 rows (to keep the page fast).</div>';
+    $('xlsxView').innerHTML = html;
+  }
+
+  async function handleXlsx(buf){
+    const wb = XLSX.read(buf, {type:'array'});
+    const names = wb.SheetNames || [];
+    const sel = $('sheetSel');
+    sel.innerHTML='';
+    names.forEach(n=>{
+      const o=document.createElement('option');
+      o.value=n; o.textContent=n; sel.appendChild(o);
+    });
+    if(!names.length){ $('xlsxView').textContent='No sheets found.'; return; }
+    sel.onchange=()=>renderSheet(wb, sel.value);
+    renderSheet(wb, names[0]);
+  }
+
+  // --- DOCX ---
+  async function handleDocx(buf){
+    const res = await mammoth.convertToHtml({arrayBuffer: buf}, {styleMap: []});
+    $('docxView').innerHTML = res.value || '<div class="tiny muted">No content.</div>';
+    if(res.messages && res.messages.length){
+      const warn = res.messages.slice(0,5).map(m=>escapeHtml(m.message)).join('<br>');
+      $('docxView').innerHTML += '<div class="tiny muted" style="margin-top:12px">Preview notes:<br>'+warn+'</div>';
+    }
+  }
+
+  // --- PPTX (text outline) ---
+  function getTextFromSlideXml(xmlText){
+    // Pull <a:t>text</a:t> nodes
+    const out=[];
+    const re = /<a:t>([\s\S]*?)<\/a:t>/g;
+    let m;
+    while((m=re.exec(xmlText))){
+      const t = m[1]
+        .replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&')
+        .replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+      const cleaned = t.replace(/\s+/g,' ').trim();
+      if(cleaned) out.push(cleaned);
+    }
+    return out;
+  }
+
+  async function handlePptx(buf){
+    const zip = await JSZip.loadAsync(buf);
+    const slideFiles = Object.keys(zip.files)
+      .filter(p=>/^ppt\/slides\/slide\d+\.xml$/.test(p))
+      .sort((a,b)=>{
+        const na = parseInt(a.match(/slide(\d+)\.xml/)[1],10);
+        const nb = parseInt(b.match(/slide(\d+)\.xml/)[1],10);
+        return na-nb;
+      });
+
+    if(!slideFiles.length){
+      $('pptxView').innerHTML = '<div class="tiny muted">No slides found.</div>';
+      return;
+    }
+
+    let html='';
+    for(let i=0;i<slideFiles.length;i++){
+      const p = slideFiles[i];
+      const xml = await zip.files[p].async('text');
+      const texts = getTextFromSlideXml(xml);
+      html += '<div class="rm-slide">';
+      html += '<div class="rm-slideNo">Slide ' + (i+1) + '</div>';
+      if(!texts.length){
+        html += '<div class="tiny muted" style="margin-top:8px">(No text found on this slide)</div>';
+      } else {
+        html += '<ul style="margin:8px 0 0; padding-left:18px">' + texts.slice(0,80).map(t=>'<li>'+escapeHtml(t)+'</li>').join('') + '</ul>';
+        if(texts.length>80) html += '<div class="tiny muted" style="margin-top:8px">Showing first 80 text items.</div>';
+      }
+      html += '</div>';
+    }
+    $('pptxView').innerHTML = html;
+  }
+
+  async function handleFile(f){
+    if(!f){ clearAll(); return; }
+    setMeta(f.name);
+    setStatus('Loading…','');
+
+    const buf = await f.arrayBuffer();
+    const name = (f.name||'').toLowerCase();
+
+    try{
+      if(name.endsWith('.xlsx') || name.endsWith('.xlsm')){
+        setTab('xlsx');
+        await handleXlsx(buf);
+      } else if(name.endsWith('.docx')){
+        setTab('docx');
+        await handleDocx(buf);
+      } else if(name.endsWith('.pptx')){
+        setTab('pptx');
+        await handlePptx(buf);
+      } else {
+        setStatus('Unsupported file type.','rm-warn');
+        return;
+      }
+      setStatus('Ready.','rm-good');
+    } catch(err){
+      setStatus('Could not preview this file. ' + (err && err.message ? err.message : String(err)), 'rm-bad');
+    }
+  }
+
+  file.addEventListener('change', ()=>handleFile(file.files && file.files[0]));
+})();
+</script>
+
+<script>
+  // Learn more modal
+  (function(){
+    function openLM(id){ var el=document.getElementById(id); if(!el) return; el.setAttribute('aria-hidden','false'); }
+    function closeLM(id){ var el=document.getElementById(id); if(!el) return; el.setAttribute('aria-hidden','true'); }
+    document.addEventListener('click', function(e){
+      var a=e.target.closest('[data-rm-lm-open]');
+      if(a){ e.preventDefault(); openLM(a.getAttribute('data-rm-lm-open')); return; }
+      var c=e.target.closest('[data-rm-lm-close]');
+      if(c){ e.preventDefault(); closeLM(c.getAttribute('data-rm-lm-close')); return; }
+      var bd=(e.target.classList && e.target.classList.contains('rm-lm-backdrop'))?e.target:null;
+      if(bd){ e.preventDefault(); closeLM(bd.id); }
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Escape'){
+        var open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        if(open) open.setAttribute('aria-hidden','true');
+      }
+    });
+  })();
+</script>
+<script src="/assets/js/rm-dropzone.js"></script>
+<script src="/assets/js/rm-tools-drawer.js"></script>
+</body>
+</html>

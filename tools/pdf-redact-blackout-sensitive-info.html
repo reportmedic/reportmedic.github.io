@@ -3,478 +3,416 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<meta name="description" content="Black out sensitive text in a PDF by drawing redaction boxes and exporting a new PDF locally in your browser."/>
+<meta name="description" content="Redact sensitive info from a PDF by blacking out areas and exporting a flattened, safe-to-share PDF. Runs locally."/>
 <title>PDF Redact / Blackout Sensitive Info — ReportMedic</title>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
-<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
-<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
 <link href="/assets/css/styles.css" rel="stylesheet"/>
-
 <style>
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-  @media (max-width: 980px){.grid3{grid-template-columns:1fr}}
-  @media (max-width: 880px){.grid2{grid-template-columns:1fr}}
-  .card{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;background:rgba(0,0,0,.10)}
-  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  .muted{opacity:.8}
-  .tiny{font-size:12px;opacity:.78}
-  .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px}
-  .pill b{font-size:12px}
-  .hr2{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
-  .input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.16);color:inherit}
-  .btn.small{padding:8px 10px;font-size:13px}
-  .note{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
-  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
-  canvas.preview{width:100%;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(0,0,0,.15)}
-  .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;border:1px solid rgba(255,255,255,.12)}
-  .b-info{background:rgba(52, 152, 219, .10)}
-  .b-warn{background:rgba(241, 196, 15, .12)}
-  .b-ok{background:rgba(46, 204, 113, .12)}
-  .b-bad{background:rgba(231, 76, 60, .12)}
+  .rm-canvasWrap{position:relative; border:1px solid rgba(255,255,255,.12); border-radius:14px; overflow:hidden; background:rgba(0,0,0,.22)}
+  #pdfCanvas{display:block; width:100%; height:auto}
+  #overlay{position:absolute; inset:0; pointer-events:none}
+  .rm-row2{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+  .rm-pill{padding:6px 10px; border:1px solid rgba(255,255,255,.14); border-radius:999px; font-size:12px; color:var(--muted)}
+  .rm-list{margin-top:10px; max-height:220px; overflow:auto; border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:8px; background:rgba(255,255,255,.03)}
+  .rm-item{display:flex; gap:10px; align-items:center; justify-content:space-between; padding:8px; border-bottom:1px solid rgba(255,255,255,.08)}
+  .rm-item:last-child{border-bottom:0}
+  .rm-k{font-weight:700; font-size:12px}
 </style>
-
-<script defer src="/assets/js/rm-dropzone.js"></script>
-<script defer src="/assets/js/rm-tools-drawer.js"></script>
-
-<style>
-.rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
-.rm-lm-link:hover{opacity:1;}
-.rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;}
-.rm-lm-backdrop[aria-hidden="false"]{display:flex;}
-.rm-lm-dialog{color:#111;max-width:560px; width:100%; background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.25); overflow:hidden;}
-.rm-lm-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08);}
-.rm-lm-title{margin:0; font-size:1.05rem;}
-.rm-lm-close{border:0; background:transparent; font-size:1.25rem; line-height:1; padding:6px 10px; cursor:pointer; opacity:.7;}
-.rm-lm-close:hover{opacity:1;}
-.rm-lm-body{font-size:.95rem; line-height:1.45; color:#111;padding:14px 16px;}
-.rm-lm-body h3{margin:12px 0 6px; font-size:.95rem;}
-.rm-lm-body ul{margin:0 0 6px 18px;}
-.rm-lm-body li{margin:4px 0;}
-</style>
-
 </head>
-<body class="tools-page">
+<body>
 <header>
-  <div class="nav">
-    <a class="logo" href="/" style="text-decoration:none;">
-      <div class="mark"></div>
-      <div>ReportMedic</div>
-    </a>
-    <div class="spacer"></div>
-    <a class="btn" href="/">Home</a>
-    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
-    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
-  </div>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none;">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+  <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div>
 </header>
-
 <div class="wrap">
   <div class="panel">
-    <h1>PDF Redact (Blackout) <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
-    <p class="sub">Black out sensitive info in a PDF by drawing redaction boxes, then export a new file. Runs locally in your browser.</p>
-    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+    <h1>PDF Redact / Blackout <a class="rm-lm-link" data-rm-lm-open="rmLM" href="#">Learn more</a></h1>
+    <p class="sub">Draw blackout boxes over sensitive areas, then export a <b>flattened</b> PDF that’s safe to share. Runs locally in your browser.</p>
     <div class="hr"></div>
-    
-<div class="grid2">
-  <div class="card">
-    <div style="font-weight:700">Upload PDF</div>
-    <div class="tiny muted">Draw blackout boxes on the preview, then export a new PDF with the redactions burned in.</div>
-    <div style="margin-top:10px">
-      <input class="input" id="file" type="file" accept="application/pdf"/>
-    </div>
 
-    <div class="row" style="margin-top:10px">
-      <label class="tiny muted">Password (if needed)</label>
-      <input class="input" id="pwd" type="password" placeholder="Leave blank if not encrypted" style="min-width:240px"/>
-    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="row" style="justify-content:space-between; align-items:flex-start">
+          <div>
+            <div style="font-weight:700">Input PDF</div>
+            <div class="tiny muted">Tip: zoom your browser for precision. Drag to draw a redaction rectangle.</div>
+          </div>
+          <span class="pill tiny" id="meta"><b>IN:</b><span class="muted">not loaded</span></span>
+        </div>
+        <div style="margin-top:10px">
+          <input accept=".pdf" class="input" id="fileInput" type="file"/>
+        </div>
 
-    <div class="row" style="margin-top:10px">
-      <label class="tiny muted">Page</label>
-      <select class="input" id="pageSel" style="width:auto;min-width:140px" disabled></select>
-      <button class="btn small" id="clearPage" type="button" disabled>Clear this page</button>
-      <button class="btn small" id="clearAll" type="button" disabled>Clear all</button>
-    </div>
+        <div class="hr2"></div>
+        <div class="rm-row2">
+          <button class="btn" id="prev" type="button" disabled>Prev</button>
+          <button class="btn" id="next" type="button" disabled>Next</button>
+          <span class="rm-pill" id="pagePill">Page: —</span>
+          <button class="btn" id="clearPage" type="button" disabled>Clear page boxes</button>
+          <button class="btn" id="clearAll" type="button" disabled>Clear all</button>
+        </div>
 
-    <div class="row" style="margin-top:12px">
-      <button class="btn primary" id="apply" type="button" disabled>Apply & Download</button>
-    </div>
+        <div class="hr2"></div>
+        <div class="rm-canvasWrap">
+          <canvas id="pdfCanvas"></canvas>
+          <canvas id="overlay"></canvas>
+        </div>
+        <div class="tiny muted" style="margin-top:10px">Click & drag on the page to add a blackout rectangle. (Boxes are stored per page.)</div>
+      </div>
 
-    <div class="tiny muted" id="msg" style="margin-top:10px"></div>
-    <div class="note tiny muted">Privacy: the PDF stays in your browser. Redactions are applied locally.</div>
-  </div>
-
-  <div class="card">
-    <div style="font-weight:700">Preview</div>
-    <div class="tiny muted">Drag to draw a rectangle. Click a rectangle to delete it.</div>
-    <div class="hr2"></div>
-    <div style="position:relative">
-      <canvas class="preview" id="canvas" height="520"></canvas>
-      <canvas class="preview" id="overlay" height="520" style="position:absolute;left:0;top:0;pointer-events:auto;"></canvas>
+      <div class="card">
+        <div style="font-weight:700">Export</div>
+        <div class="tiny muted" style="margin-top:4px">This export re-renders each page as an image with black boxes — so the hidden text is not recoverable.</div>
+        <div class="hr2"></div>
+        <div class="row" style="gap:10px; flex-wrap:wrap">
+          <button class="btn primary" id="export" type="button" disabled>Export Redacted PDF</button>
+          <button class="btn" id="download" type="button" disabled>Download</button>
+          <span class="tiny muted rm-status" id="status"></span>
+        </div>
+        <div class="hr2"></div>
+        <div style="font-weight:700; margin-top:6px">Redaction list</div>
+        <div class="rm-list" id="list"></div>
+      </div>
     </div>
-    <div class="hr2"></div>
-    <div class="tiny muted" id="list">No redactions yet.</div>
   </div>
 </div>
 
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
   </div>
-</div>
+</footer>
 
-
-<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
-  <div class="rm-lm-dialog" role="document">
+<div aria-hidden="true" aria-label="PDF Redaction details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
     <div class="rm-lm-head">
-      <h2 class="rm-lm-title">PDF Redact (Blackout)</h2>
-      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
+      <h2 class="rm-lm-title">PDF Redact / Blackout</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
     </div>
     <div class="rm-lm-body">
-      
-<p>This tool lets you <b>black out sensitive info</b> in a PDF (names, IDs, account numbers) and export a new file.</p>
-<h3>How to use</h3>
-<ul>
-  <li>Upload a PDF</li>
-  <li>Select a page, then drag on the preview to draw blackout rectangles</li>
-  <li>Export a new PDF (redactions are burned into the pages)</li>
-</ul>
-<h3>Important</h3>
-<ul>
-  <li>This burns in black boxes. It does not attempt to remove underlying text objects.</li>
-  <li>For high-stakes redaction, always double-check the exported PDF.</li>
-</ul>
-
+      <h3>What this does</h3>
+      <ul>
+        <li>Lets you draw blackout rectangles over sensitive areas (SSN, account numbers, addresses)</li>
+        <li>Exports a <b>flattened</b> PDF (pages are re-rendered as images with the blackout applied)</li>
+        <li>Runs locally — your PDF isn’t uploaded</li>
+      </ul>
+      <h3>Good to know</h3>
+      <ul>
+        <li>Because the output is flattened, text will not remain selectable/searchable.</li>
+        <li>If you need to keep selectable text, use a dedicated “text redaction” workflow (harder to do safely in-browser).</li>
+      </ul>
     </div>
   </div>
 </div>
 
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdf-lib-plus-encrypt@1.1.0/dist/pdf-lib-plus-encrypt.min.js"></script>
-
-
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.js"></script>
 <script>
 (function(){
+  'use strict';
   const $ = (id)=>document.getElementById(id);
-  const fileEl = $('file');
-  const pwdEl = $('pwd');
-  const pageSel = $('pageSel');
-  const clearPageBtn = $('clearPage');
-  const clearAllBtn = $('clearAll');
-  const applyBtn = $('apply');
-  const msg = $('msg');
-  const listEl = $('list');
+  const status = $('status');
+  const setStatus=(t,cls)=>{ status.textContent=t||''; status.className='tiny muted rm-status ' + (cls||''); };
+  const humanBytes=(n)=>{ if(!Number.isFinite(n)) return '—'; const u=['B','KB','MB','GB']; let i=0; let v=n; while(v>=1024 && i<u.length-1){v/=1024;i++;} const s=i===0?String(Math.round(v)):String(Math.round(v*10)/10); return s+' '+u[i]; };
 
-  const canvas = $('canvas');
+  // PDF.js worker
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js';
+  }
+
+  const canvas = $('pdfCanvas');
   const overlay = $('overlay');
-  const ctx = canvas.getContext('2d');
   const octx = overlay.getContext('2d');
+  const ctx = canvas.getContext('2d');
 
-  let pdfjsDoc = null;
-  let pdfBytes = null;
-  let pageCount = 0;
-  let currentPage = 1;
+  let pdfDoc = null;
+  let pdfBytes = null; // Uint8Array
+  let pageNo = 1;
   let viewport = null;
-  let scale = 1.2;
+  let renderedScale = 1.25;
+  const boxesByPage = new Map(); // pageNo -> [{x,y,w,h}] in PDF coords (points)
+  let exportBlob = null;
 
-  // redactions: {page, x, y, w, h} in canvas pixels (origin top-left)
-  let boxes = [];
-  let drawing = false;
-  let start = null;
+  function boxesFor(p){
+    if(!boxesByPage.has(p)) boxesByPage.set(p, []);
+    return boxesByPage.get(p);
+  }
 
-  function setMsg(t){ msg.textContent = t || ''; }
-  function redrawOverlay(){
-    octx.clearRect(0,0,overlay.width, overlay.height);
-    // draw existing boxes
-    octx.save();
-    octx.fillStyle = 'rgba(0,0,0,0.78)';
-    octx.strokeStyle = 'rgba(255,255,255,0.35)';
-    const here = boxes.filter(b=>b.page===currentPage);
-    for(const b of here){
-      octx.fillRect(b.x,b.y,b.w,b.h);
-      octx.strokeRect(b.x+0.5,b.y+0.5,b.w,b.h);
+  function resizeOverlay(){
+    overlay.width = canvas.width;
+    overlay.height = canvas.height;
+    overlay.style.width = canvas.style.width;
+    overlay.style.height = canvas.style.height;
+  }
+
+  function drawOverlay(){
+    octx.clearRect(0,0,overlay.width,overlay.height);
+    if(!viewport) return;
+    const boxes = boxesFor(pageNo);
+    octx.fillStyle = 'rgba(0,0,0,0.75)';
+    octx.strokeStyle = 'rgba(255,255,255,0.25)';
+    octx.lineWidth = 2;
+    for(const b of boxes){
+      // Convert PDF box (bottom-left origin) to viewport points
+      const p1 = viewport.convertToViewportPoint(b.x, b.y);
+      const p2 = viewport.convertToViewportPoint(b.x + b.w, b.y + b.h);
+      const left = Math.min(p1[0], p2[0]);
+      const top = Math.min(p1[1], p2[1]);
+      const width = Math.abs(p2[0]-p1[0]);
+      const height = Math.abs(p2[1]-p1[1]);
+      octx.fillRect(left, top, width, height);
+      octx.strokeRect(left, top, width, height);
     }
-    // drawing box
-    if(drawing && start && start.cur){
-      const b = normRect(start.x, start.y, start.cur.x, start.cur.y);
-      octx.fillRect(b.x,b.y,b.w,b.h);
-      octx.strokeRect(b.x+0.5,b.y+0.5,b.w,b.h);
-    }
-    octx.restore();
-    renderList();
   }
 
   function renderList(){
-    if(!boxes.length){ listEl.textContent = 'No redactions yet.'; return; }
-    const counts = {};
-    boxes.forEach(b=>{ counts[b.page]=(counts[b.page]||0)+1; });
-    const parts = Object.keys(counts).sort((a,b)=>Number(a)-Number(b)).map(p=>`Page ${p}: ${counts[p]}`);
-    listEl.innerHTML = '<span class="pill tiny"><b>Boxes</b><span class="muted">'+parts.join(' • ')+'</span></span>';
-  }
-
-  function normRect(x1,y1,x2,y2){
-    const x = Math.min(x1,x2);
-    const y = Math.min(y1,y2);
-    const w = Math.abs(x2-x1);
-    const h = Math.abs(y2-y1);
-    return {x,y,w,h};
-  }
-
-  async function loadPdf(arrayBuffer){
-    const password = (pwdEl.value||'').trim();
-    setMsg('Loading…');
-    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer, password: password || undefined });
-    pdfjsDoc = await loadingTask.promise;
-    pageCount = pdfjsDoc.numPages;
-    pageSel.innerHTML = '';
-    for(let i=1;i<=pageCount;i++){
-      const opt=document.createElement('option');
-      opt.value=String(i);
-      opt.textContent='Page '+i;
-      pageSel.appendChild(opt);
+    const list = $('list');
+    const all = [];
+    for(const [p, arr] of boxesByPage.entries()){
+      arr.forEach((b, idx)=>all.push({p, idx, b}));
     }
-    pageSel.disabled = false;
-    clearPageBtn.disabled = false;
-    clearAllBtn.disabled = false;
-    applyBtn.disabled = false;
-    currentPage = 1;
-    pageSel.value = '1';
-    setMsg('Loaded '+pageCount+' page(s). Draw boxes on the preview.');
-    await renderPage();
+    all.sort((a,b)=>a.p-b.p || a.idx-b.idx);
+    if(!all.length){ list.innerHTML = '<div class="tiny muted">No boxes yet.</div>'; return; }
+    list.innerHTML='';
+    for(const item of all){
+      const row=document.createElement('div');
+      row.className='rm-item';
+      const left=document.createElement('div');
+      left.innerHTML = '<div class="rm-k">Page '+item.p+'</div><div class="tiny muted">'+
+        'x:'+item.b.x.toFixed(1)+' y:'+item.b.y.toFixed(1)+' w:'+item.b.w.toFixed(1)+' h:'+item.b.h.toFixed(1)+
+        '</div>';
+      const del=document.createElement('button');
+      del.className='btn'; del.type='button'; del.textContent='Remove';
+      del.onclick=()=>{ boxesFor(item.p).splice(item.idx,1); renderList(); if(item.p===pageNo) drawOverlay(); };
+      row.appendChild(left); row.appendChild(del);
+      list.appendChild(row);
+    }
   }
 
   async function renderPage(){
-    if(!pdfjsDoc) return;
-    const page = await pdfjsDoc.getPage(currentPage);
-    viewport = page.getViewport({ scale });
-    // fit width to container if needed
-    const maxW = canvas.parentElement.clientWidth || 640;
-    const s2 = Math.min(scale, maxW / viewport.width);
-    viewport = page.getViewport({ scale: s2 });
+    if(!pdfDoc) return;
+    setStatus('Rendering page '+pageNo+'…','');
+    const page = await pdfDoc.getPage(pageNo);
+    viewport = page.getViewport({ scale: renderedScale });
     canvas.width = Math.floor(viewport.width);
     canvas.height = Math.floor(viewport.height);
-    overlay.width = canvas.width;
-    overlay.height = canvas.height;
+    canvas.style.width = '100%';
+    canvas.style.height = 'auto';
+    resizeOverlay();
 
     await page.render({ canvasContext: ctx, viewport }).promise;
-    redrawOverlay();
+    drawOverlay();
+    $('pagePill').textContent = 'Page: ' + pageNo + ' / ' + pdfDoc.numPages;
+    $('prev').disabled = pageNo<=1;
+    $('next').disabled = pageNo>=pdfDoc.numPages;
+    $('clearPage').disabled = boxesFor(pageNo).length===0;
+    $('clearAll').disabled = boxesByPage.size===0;
+    $('export').disabled = false;
+    setStatus('Drag on the page to add a blackout box.','');
   }
 
-  function pointerPos(e){
-    const r = overlay.getBoundingClientRect();
-    return { x: Math.max(0, Math.min(overlay.width, (e.clientX - r.left) * (overlay.width / r.width))),
-             y: Math.max(0, Math.min(overlay.height,(e.clientY - r.top) * (overlay.height / r.height))) };
-  }
+  async function loadPdf(file){
+    exportBlob = null;
+    $('download').disabled = true;
 
-  overlay.addEventListener('pointerdown', (e)=>{
-    if(!pdfjsDoc) return;
-    overlay.setPointerCapture(e.pointerId);
-    const p = pointerPos(e);
-    // if click inside existing box => delete it
-    const here = boxes.map((b,idx)=>({b,idx})).filter(x=>x.b.page===currentPage);
-    for(let i=here.length-1;i>=0;i--){
-      const {b,idx} = here[i];
-      if(p.x>=b.x && p.x<=b.x+b.w && p.y>=b.y && p.y<=b.y+b.h){
-        boxes.splice(idx,1);
-        redrawOverlay();
-        return;
-      }
-    }
-    drawing = true;
-    start = {x:p.x, y:p.y, cur:{x:p.x,y:p.y}};
-    redrawOverlay();
-  });
+    const buf = await file.arrayBuffer();
+    // IMPORTANT: keep independent copies to avoid detached ArrayBuffer issues
+    const bytes = new Uint8Array(buf);
+    pdfBytes = bytes.slice();
 
-  overlay.addEventListener('pointermove', (e)=>{
-    if(!drawing || !start) return;
-    const p = pointerPos(e);
-    start.cur = p;
-    redrawOverlay();
-  });
+    $('meta').innerHTML = '<b>IN:</b><span class="muted">'+file.name+' • '+humanBytes(file.size)+'</span>';
 
-  overlay.addEventListener('pointerup', ()=>{
-    if(!drawing || !start) return;
-    drawing = false;
-    const b = normRect(start.x,start.y,start.cur.x,start.cur.y);
-    start = null;
-    if(b.w >= 6 && b.h >= 6){
-      boxes.push({page: currentPage, ...b});
-    }
-    redrawOverlay();
-  });
-
-  pageSel.addEventListener('change', async ()=>{
-    currentPage = Number(pageSel.value || '1');
+    pdfDoc = await pdfjsLib.getDocument({ data: pdfBytes.slice() }).promise;
+    pageNo = 1;
+    boxesByPage.clear();
+    renderList();
     await renderPage();
+  }
+
+  // Drawing interaction
+  let dragging=false;
+  let startX=0, startY=0;
+
+  function canvasPointFromEvent(e){
+    const rect = overlay.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (overlay.width / rect.width);
+    const y = (e.clientY - rect.top) * (overlay.height / rect.height);
+    return {x,y};
+  }
+
+  overlay.style.pointerEvents = 'auto';
+  overlay.addEventListener('mousedown', (e)=>{
+    if(!viewport) return;
+    dragging=true;
+    const p = canvasPointFromEvent(e);
+    startX=p.x; startY=p.y;
   });
 
-  clearPageBtn.addEventListener('click', ()=>{
-    boxes = boxes.filter(b=>b.page!==currentPage);
-    redrawOverlay();
-  });
-  clearAllBtn.addEventListener('click', ()=>{
-    boxes = [];
-    redrawOverlay();
-  });
-
-  fileEl.addEventListener('change', async ()=>{
-    const f = fileEl.files && fileEl.files[0];
-    boxes = [];
-    pdfjsDoc = null;
-    pageSel.disabled = true;
-    clearPageBtn.disabled = true;
-    clearAllBtn.disabled = true;
-    applyBtn.disabled = true;
-    if(!f){ setMsg(''); return; }
-    pdfBytes = await f.arrayBuffer();
-    try{
-      await loadPdf(pdfBytes);
-    }catch(e){
-      setMsg('Could not open PDF. If it is encrypted, enter the password and re-load. ('+(e&&e.message?e.message:String(e))+')');
-    }
+  overlay.addEventListener('mousemove', (e)=>{
+    if(!dragging || !viewport) return;
+    const p = canvasPointFromEvent(e);
+    octx.clearRect(0,0,overlay.width,overlay.height);
+    drawOverlay();
+    const x = Math.min(startX, p.x);
+    const y = Math.min(startY, p.y);
+    const w = Math.abs(p.x-startX);
+    const h = Math.abs(p.y-startY);
+    octx.fillStyle='rgba(0,0,0,0.65)';
+    octx.strokeStyle='rgba(255,255,255,0.35)';
+    octx.lineWidth=2;
+    octx.fillRect(x,y,w,h);
+    octx.strokeRect(x,y,w,h);
   });
 
-  applyBtn.addEventListener('click', async ()=>{
-    const f = fileEl.files && fileEl.files[0];
-    if(!f || !pdfBytes) return;
-    if(!boxes.length){
-      setMsg('No redactions added yet.');
-      return;
-    }
-    applyBtn.disabled = true;
-    setMsg('Applying redactions…');
+  function finishBox(end){
+    if(!viewport) return;
+    dragging=false;
+    const x = Math.min(startX, end.x);
+    const y = Math.min(startY, end.y);
+    const w = Math.abs(end.x-startX);
+    const h = Math.abs(end.y-startY);
+    if(w < 6 || h < 6){ drawOverlay(); return; }
 
-    const password = (pwdEl.value||'').trim();
-    const { PDFDocument, rgb } = PDFLib;
+    // Convert viewport coords to PDF coords
+    const p1 = viewport.convertToPdfPoint(x, y);
+    const p2 = viewport.convertToPdfPoint(x+w, y+h);
 
-    let pdfDoc;
-    try{
-      pdfDoc = await PDFDocument.load(pdfBytes, password ? { password } : undefined);
-    }catch(e){
-      setMsg('Could not load with pdf-lib. Check password. ('+(e&&e.message?e.message:String(e))+')');
-      applyBtn.disabled = false;
-      return;
-    }
+    const left = Math.min(p1[0], p2[0]);
+    const bottom = Math.min(p1[1], p2[1]);
+    const width = Math.abs(p2[0]-p1[0]);
+    const height = Math.abs(p2[1]-p1[1]);
 
-    // for each page, overlay rectangles
-    for(let p=1;p<=pdfDoc.getPageCount();p++){
-      const page = pdfDoc.getPage(p-1);
-      const size = page.getSize();
-      const pageBoxes = boxes.filter(b=>b.page===p);
-      if(!pageBoxes.length) continue;
+    boxesFor(pageNo).push({x:left, y:bottom, w:width, h:height});
+    renderList();
+    $('clearPage').disabled = false;
+    $('clearAll').disabled = false;
+    drawOverlay();
+  }
 
-      // render viewport for this page at same scale used for drawing
-      // we rely on current viewport sizes by re-rendering via pdf.js to get correct dims for each page
-      let v;
-      try{
-        const pdfPage = await pdfjsDoc.getPage(p);
-        v = pdfPage.getViewport({ scale: (canvas.width / viewport.width) * (viewport.scale || 1) }); // fallback
-        // Actually easier: match using pdfPage.getViewport with scale that makes width==canvas.width (but canvas is current page). So compute per page:
-        const v0 = pdfPage.getViewport({ scale: 1 });
-        const s = size.width / v0.width; // points per px if scale=1 produces px ~ points? not stable
-      }catch(_){}
+  overlay.addEventListener('mouseup', (e)=>{ if(!dragging) return; finishBox(canvasPointFromEvent(e)); });
+  overlay.addEventListener('mouseleave', (e)=>{ if(!dragging) return; finishBox(canvasPointFromEvent(e)); });
 
-      // We'll compute mapping based on pdf.js viewport for that page at scale 1:
-      const pdfPage = await pdfjsDoc.getPage(p);
-      const v1 = pdfPage.getViewport({ scale: 1 });
-      // v1.width/height are in CSS pixels for scale=1. Map boxes drawn in pixels of rendered canvas for that page.
-      // We need the canvas pixel width/height for that page; re-render to temp canvas at the same scale we used when user drew boxes.
-      // We'll approximate with: scalePx = canvasWidth / vCur.width for the current page; use same scale for all pages by scaling based on v1.
-      // To keep consistent, compute target scale so that v1.width * targetScale == canvas.width when p==currentPage.
-      const curPage = await pdfjsDoc.getPage(currentPage);
-      const curV1 = curPage.getViewport({ scale: 1 });
-      const targetScale = canvas.width / curV1.width;
-      const v = pdfPage.getViewport({ scale: targetScale });
+  $('prev').addEventListener('click', async()=>{ if(!pdfDoc || pageNo<=1) return; pageNo--; await renderPage(); drawOverlay(); });
+  $('next').addEventListener('click', async()=>{ if(!pdfDoc || pageNo>=pdfDoc.numPages) return; pageNo++; await renderPage(); drawOverlay(); });
 
-      const pxToPtX = size.width / v.width;
-      const pxToPtY = size.height / v.height;
+  $('clearPage').addEventListener('click', ()=>{ if(!pdfDoc) return; boxesFor(pageNo).length=0; renderList(); drawOverlay(); $('clearPage').disabled=true; if(boxesByPage.size===0) $('clearAll').disabled=true; });
+  $('clearAll').addEventListener('click', ()=>{ if(!pdfDoc) return; boxesByPage.clear(); renderList(); drawOverlay(); $('clearPage').disabled=true; $('clearAll').disabled=true; });
 
-      for(const b of pageBoxes){
-        const xPt = b.x * pxToPtX;
-        const wPt = b.w * pxToPtX;
-        // convert from top-left canvas to bottom-left pdf
-        const yTopPt = b.y * pxToPtY;
-        const hPt = b.h * pxToPtY;
-        const yPt = size.height - yTopPt - hPt;
+  async function exportRedacted(){
+    if(!pdfDoc || !pdfBytes) return;
 
-        page.drawRectangle({
-          x: xPt,
-          y: yPt,
-          width: wPt,
-          height: hPt,
-          color: rgb(0,0,0),
-          borderColor: rgb(0,0,0),
-          borderWidth: 0
-        });
+    setStatus('Exporting… (this can take a moment)','');
+    $('export').disabled=true;
+
+    const { PDFDocument } = window.PDFLib;
+    const out = await PDFDocument.create();
+
+    for(let p=1; p<=pdfDoc.numPages; p++){
+      const page = await pdfDoc.getPage(p);
+      const vp = page.getViewport({ scale: renderedScale });
+      const w = Math.floor(vp.width), h = Math.floor(vp.height);
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const cctx = c.getContext('2d');
+      await page.render({ canvasContext: cctx, viewport: vp }).promise;
+
+      // Apply boxes for page p
+      const boxes = boxesFor(p);
+      cctx.fillStyle='black';
+      for(const b of boxes){
+        const q1 = vp.convertToViewportPoint(b.x, b.y);
+        const q2 = vp.convertToViewportPoint(b.x+b.w, b.y+b.h);
+        const left = Math.min(q1[0], q2[0]);
+        const top = Math.min(q1[1], q2[1]);
+        const ww = Math.abs(q2[0]-q1[0]);
+        const hh = Math.abs(q2[1]-q1[1]);
+        cctx.fillRect(left, top, ww, hh);
       }
+
+      const pngDataUrl = c.toDataURL('image/png');
+      const png = await out.embedPng(pngDataUrl);
+
+      const size = page.getViewport({ scale: 1 }).viewBox;
+      const pageWidth = size[2];
+      const pageHeight = size[3];
+      const newPage = out.addPage([pageWidth, pageHeight]);
+      newPage.drawImage(png, { x:0, y:0, width: pageWidth, height: pageHeight });
     }
 
-    const outBytes = await pdfDoc.save();
-    const blob = new Blob([outBytes], {type:'application/pdf'});
+    const bytes = await out.save();
+    exportBlob = new Blob([bytes], {type:'application/pdf'});
+    $('download').disabled=false;
+    setStatus('Ready. Download your redacted PDF.','rm-good');
+    $('export').disabled=false;
+  }
+
+  $('export').addEventListener('click', exportRedacted);
+  $('download').addEventListener('click', ()=>{
+    if(!exportBlob) return;
     const a=document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'redacted.pdf';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-
-    setMsg('Downloaded redacted.pdf');
-    applyBtn.disabled = false;
+    const url=URL.createObjectURL(exportBlob);
+    a.href=url; a.download='redacted.pdf';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 250);
   });
 
-  // pdf.js worker
-  try{
-    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-  }catch(_){}
-
-})();
-</script>
-
-
-<script>
-(function(){
-  function openLM(id){
-    var b=document.getElementById(id); if(!b) return;
-    b.setAttribute('aria-hidden','false');
-    document.body.style.overflow='hidden';
-    var btn=b.querySelector('[data-rm-lm-close="'+id+'"]'); if(btn) btn.focus();
-  }
-  function closeLM(id){
-    var b=document.getElementById(id); if(!b) return;
-    b.setAttribute('aria-hidden','true');
-    document.body.style.overflow='';
-  }
-  document.addEventListener('click', function(e){
-    var a=e.target.closest && e.target.closest('[data-rm-lm-open]'); 
-    if(a){ e.preventDefault(); openLM(a.getAttribute('data-rm-lm-open')); return; }
-    var c=e.target.closest && e.target.closest('[data-rm-lm-close]');
-    if(c){ e.preventDefault(); closeLM(c.getAttribute('data-rm-lm-close')); return; }
-    var bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
-    if(bd){ closeLM(bd.id); }
-  });
-  document.addEventListener('keydown', function(e){
-    if(e.key==='Escape'){
-      var b=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
-      if(b) closeLM(b.id);
+  $('fileInput').addEventListener('change', async(e)=>{
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    try{
+      setStatus('Loading…','');
+      $('prev').disabled=$('next').disabled=true;
+      $('clearPage').disabled=$('clearAll').disabled=true;
+      $('export').disabled=true;
+      await loadPdf(file);
+    }catch(err){
+      setStatus('Could not load PDF. ' + ((err && err.message) ? err.message : String(err)), 'rm-bad');
     }
   });
 })();
 </script>
-
-
-<footer class="site-footer">
-  <div class="wrap footer-inner">
-    <div class="footer-brand">
-      <div class="logo-row">
-        <div class="mark"></div>
-        <div class="name">ReportMedic</div>
-      </div>
-      <div class="tiny muted">Local-first tools for report sanity checks.</div>
-    </div>
-    <div class="footer-links">
-      <a href="/tools/">All Tools</a>
-      <a href="/fix-my-report.html">Live Agent</a>
-      <a href="/about.html">About</a>
-    </div>
-  </div>
-</footer>
+<script>
+  // Learn more modal behavior (shared pattern)
+  (function(){
+    function openLM(id){ var el=document.getElementById(id); if(!el) return; el.setAttribute('aria-hidden','false'); }
+    function closeLM(id){ var el=document.getElementById(id); if(!el) return; el.setAttribute('aria-hidden','true'); }
+    document.addEventListener('click', function(e){
+      var a=e.target.closest('[data-rm-lm-open]');
+      if(a){ e.preventDefault(); openLM(a.getAttribute('data-rm-lm-open')); return; }
+      var c=e.target.closest('[data-rm-lm-close]');
+      if(c){ e.preventDefault(); closeLM(c.getAttribute('data-rm-lm-close')); return; }
+      var bd = (e.target.classList && e.target.classList.contains('rm-lm-backdrop')) ? e.target : null;
+      if(bd){ e.preventDefault(); closeLM(bd.id); }
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Escape'){
+        var open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        if(open) open.setAttribute('aria-hidden','true');
+      }
+    });
+  })();
+</script>
+<script src="/assets/js/rm-dropzone.js"></script>
+<script src="/assets/js/rm-tools-drawer.js"></script>
 </body>
 </html>

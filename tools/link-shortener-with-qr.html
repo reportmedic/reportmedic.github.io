@@ -3,63 +3,26 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<meta name="description" content="Generate a local short link and QR code without external APIs. Includes a redirect page you can host."/>
-<title>Link Shortener with QR Code — ReportMedic</title>
+<meta name="description" content="Create a short link and generate a QR code for flyers and sharing. Local mode uses go.html so it works on your own site."/>
+<title>Link Shortener + QR — ReportMedic</title>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
-<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
-<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
 <link href="/assets/css/styles.css" rel="stylesheet"/>
-
 <style>
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-  @media (max-width: 980px){.grid3{grid-template-columns:1fr}}
-  @media (max-width: 880px){.grid2{grid-template-columns:1fr}}
-  .card{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;background:rgba(0,0,0,.10)}
-  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  .muted{opacity:.8}
-  .tiny{font-size:12px;opacity:.78}
-  .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px}
-  .pill b{font-size:12px}
-  .hr2{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
-  .input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.16);color:inherit}
-  .btn.small{padding:8px 10px;font-size:13px}
-  .note{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
-  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
-  canvas.preview{width:100%;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(0,0,0,.15)}
-  .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;border:1px solid rgba(255,255,255,.12)}
-  .b-info{background:rgba(52, 152, 219, .10)}
-  .b-warn{background:rgba(241, 196, 15, .12)}
-  .b-ok{background:rgba(46, 204, 113, .12)}
-  .b-bad{background:rgba(231, 76, 60, .12)}
+  .rm-status{min-height:20px}
+  .rm-good{color:#b7ffd7}
+  .rm-warn{color:#ffe7a8}
+  .rm-bad{color:#ffb4b4}
+  .rm-qrWrap{display:flex; justify-content:center; padding:14px 0; min-height:180px}
+  .rm-pillrow{display:flex; gap:10px; flex-wrap:wrap}
 </style>
-
-<script defer src="/assets/js/rm-dropzone.js"></script>
-<script defer src="/assets/js/rm-tools-drawer.js"></script>
-
-<style>
-.rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
-.rm-lm-link:hover{opacity:1;}
-.rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;}
-.rm-lm-backdrop[aria-hidden="false"]{display:flex;}
-.rm-lm-dialog{color:#111;max-width:560px; width:100%; background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.25); overflow:hidden;}
-.rm-lm-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08);}
-.rm-lm-title{margin:0; font-size:1.05rem;}
-.rm-lm-close{border:0; background:transparent; font-size:1.25rem; line-height:1; padding:6px 10px; cursor:pointer; opacity:.7;}
-.rm-lm-close:hover{opacity:1;}
-.rm-lm-body{font-size:.95rem; line-height:1.45; color:#111;padding:14px 16px;}
-.rm-lm-body h3{margin:12px 0 6px; font-size:.95rem;}
-.rm-lm-body ul{margin:0 0 6px 18px;}
-.rm-lm-body li{margin:4px 0;}
-</style>
-
 </head>
-<body class="tools-page">
+<body>
 <header>
   <div class="nav">
     <a class="logo" href="/" style="text-decoration:none;">
-      <div class="mark"></div>
-      <div>ReportMedic</div>
+      <div class="mark"></div><div>ReportMedic</div>
     </a>
     <div class="spacer"></div>
     <a class="btn" href="/">Home</a>
@@ -70,251 +33,232 @@
 
 <div class="wrap">
   <div class="panel">
-    <h1>Link Shortener + QR <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
-    <p class="sub">Generate a shareable “short-ish” link and QR code locally — no external API calls.</p>
-    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+    <h1>Link Shortener + QR <a class="rm-lm-link" data-rm-lm-open="rmLM" href="#">Learn more</a></h1>
+    <p class="sub">Create a short link and instantly generate a QR code. Local mode works with your own ReportMedic site (no 3rd‑party service).</p>
     <div class="hr"></div>
-    
-<div class="grid2">
-  <div class="card">
-    <div style="font-weight:700">Link shortener (local)</div>
-    <div class="tiny muted">Creates a compact, shareable link + QR code (no server calls).</div>
-    <div style="margin-top:10px">
-      <input class="input" id="url" type="text" placeholder="Paste a long URL here…"/>
-    </div>
 
-    <div class="row" style="margin-top:10px">
-      <label class="tiny muted">Base path</label>
-      <input class="input" id="base" type="text" value="https://reportmedic.org/go/#" style="min-width:320px"/>
-      <button class="btn small" id="make" type="button">Generate</button>
-      <button class="btn small" id="copy" type="button" disabled>Copy</button>
-    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="tiny muted">Long URL</div>
+        <div class="hr2"></div>
+        <input class="input" id="inUrl" type="text" placeholder="https://…"/>
 
-    <div class="hr2"></div>
+        <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:12px; align-items:center">
+          <label class="tiny muted">Shortening mode</label>
+          <select class="input" id="mode" style="max-width:320px">
+            <option value="rm" selected>ReportMedic local short link (go.html)</option>
+            <option value="none">No shortening (QR only)</option>
+            <option value="isgd">Online: is.gd</option>
+            <option value="tinyurl">Online: TinyURL</option>
+          </select>
+        </div>
 
-    <div class="tiny muted">Short link</div>
-    <div class="row" style="margin-top:6px">
-      <input class="input mono" id="short" type="text" readonly placeholder="Generated link will appear here"/>
-    </div>
+        <div class="rm-dropHint" style="margin-top:8px">
+          <b>Local short link</b> generates <code>go.html#…</code>. Make sure <code>/go.html</code> exists in your repo (this ZIP includes it).
+          Online modes send your URL to the selected service.
+        </div>
 
-    <div class="row" style="margin-top:10px">
-      <button class="btn" id="downloadGo" type="button">Download go.html (redirect page)</button>
-    </div>
-
-    <div class="tiny muted" id="msg" style="margin-top:10px"></div>
-    <div class="note tiny muted">How it works: your long URL is encoded after the <span class="mono">#</span>. The redirect page reads it and forwards.</div>
-  </div>
-
-  <div class="card">
-    <div style="font-weight:700">QR Code</div>
-    <div class="tiny muted">Scan to open the short link.</div>
-    <div class="hr2"></div>
-    <div id="qr" style="display:flex;justify-content:center;padding:10px"></div>
-    <div class="hr2"></div>
-    <textarea class="input mono" id="goCode" style="min-height:200px;resize:vertical" readonly></textarea>
-  </div>
-</div>
-
-  </div>
-</div>
-
-
-<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
-  <div class="rm-lm-dialog" role="document">
-    <div class="rm-lm-head">
-      <h2 class="rm-lm-title">Link Shortener + QR</h2>
-      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
-    </div>
-    <div class="rm-lm-body">
-      
-<p>Generates a shareable “short” link and a QR code <b>without calling any external API</b>.</p>
-<h3>How to publish</h3>
-<ul>
-  <li>Download <b>go.html</b></li>
-  <li>Upload it to your site as <span class="mono">/go/index.html</span> (or link directly to <span class="mono">/go.html</span>)</li>
-  <li>Use the generated base path accordingly</li>
-</ul>
-<h3>Note</h3>
-<ul>
-  <li>This is “short-ish” and private. It’s not a database-backed shortener like Bitly.</li>
-</ul>
-
-    </div>
-  </div>
-</div>
-
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-
-<script>
-(function(){
-  const $=(id)=>document.getElementById(id);
-  const urlEl=$('url');
-  const baseEl=$('base');
-  const makeBtn=$('make');
-  const copyBtn=$('copy');
-  const shortEl=$('short');
-  const msg=$('msg');
-  const qrEl=$('qr');
-  const goCode=$('goCode');
-  const downloadGo=$('downloadGo');
-
-  let qr=null;
-
-  function setMsg(t){ msg.textContent=t||''; }
-
-  function base64urlEncode(str){
-    const utf8 = new TextEncoder().encode(str);
-    let bin = '';
-    utf8.forEach(b=> bin += String.fromCharCode(b));
-    const b64 = btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-    return b64;
-  }
-  function base64urlDecode(b64url){
-    let b64 = b64url.replace(/-/g,'+').replace(/_/g,'/');
-    while(b64.length%4) b64 += '=';
-    const bin = atob(b64);
-    const bytes = new Uint8Array(bin.length);
-    for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
-    return new TextDecoder().decode(bytes);
-  }
-
-  function buildGoHtml(){
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Go</title>
-</head>
-<body style="font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding:24px">
-<h2>Redirecting…</h2>
-<p>If you’re not redirected, copy the decoded URL shown below.</p>
-<pre id="out" style="white-space:pre-wrap;word-break:break-word;background:#f5f5f5;padding:12px;border-radius:10px"></pre>
-<script>
-(function(){
-  function decode(b64url){
-    try{
-      var b64=b64url.replace(/-/g,'+').replace(/_/g,'/');
-      while(b64.length%4) b64+='=';
-      var bin=atob(b64);
-      var bytes=new Uint8Array(bin.length);
-      for(var i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
-      return new TextDecoder().decode(bytes);
-    }catch(e){ return null; }
-  }
-  var hash=(location.hash||'').replace(/^#/,'').trim();
-  var url=hash?decode(hash):null;
-  document.getElementById('out').textContent = url || '(no URL in hash)';
-  if(url){
-    try{ location.replace(url); }catch(e){ location.href=url; }
-  }
-})();
-<\/script>
-</body>
-</html>`;
-  }
-
-  function renderQR(text){
-    qrEl.innerHTML='';
-    try{
-      qr = new QRCode(qrEl, { text, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M });
-    }catch(e){
-      setMsg('QR library not loaded. Check your network.');
-    }
-  }
-
-  makeBtn.addEventListener('click', ()=>{
-    const u=(urlEl.value||'').trim();
-    const base=(baseEl.value||'').trim();
-    if(!u){ setMsg('Paste a URL first.'); return; }
-    let full;
-    try{
-      // validate
-      new URL(u);
-      const token = base64urlEncode(u);
-      full = base.replace(/#+$/,'#') + token;
-    }catch(e){
-      setMsg('That doesn’t look like a valid URL.');
-      return;
-    }
-    shortEl.value=full;
-    copyBtn.disabled=false;
-    setMsg('Generated.');
-    renderQR(full);
-    goCode.value = buildGoHtml();
-  });
-
-  copyBtn.addEventListener('click', async ()=>{
-    try{
-      await navigator.clipboard.writeText(shortEl.value||'');
-      setMsg('Copied.');
-    }catch(e){
-      setMsg('Copy failed. Select and copy manually.');
-    }
-  });
-
-  downloadGo.addEventListener('click', ()=>{
-    const blob=new Blob([buildGoHtml()],{type:'text/html'});
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download='go.html';
-    document.body.appendChild(a); a.click(); a.remove();
-    setMsg('Downloaded go.html');
-  });
-
-})();
-</script>
-
-
-<script>
-(function(){
-  function openLM(id){
-    var b=document.getElementById(id); if(!b) return;
-    b.setAttribute('aria-hidden','false');
-    document.body.style.overflow='hidden';
-    var btn=b.querySelector('[data-rm-lm-close="'+id+'"]'); if(btn) btn.focus();
-  }
-  function closeLM(id){
-    var b=document.getElementById(id); if(!b) return;
-    b.setAttribute('aria-hidden','true');
-    document.body.style.overflow='';
-  }
-  document.addEventListener('click', function(e){
-    var a=e.target.closest && e.target.closest('[data-rm-lm-open]'); 
-    if(a){ e.preventDefault(); openLM(a.getAttribute('data-rm-lm-open')); return; }
-    var c=e.target.closest && e.target.closest('[data-rm-lm-close]');
-    if(c){ e.preventDefault(); closeLM(c.getAttribute('data-rm-lm-close')); return; }
-    var bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
-    if(bd){ closeLM(bd.id); }
-  });
-  document.addEventListener('keydown', function(e){
-    if(e.key==='Escape'){
-      var b=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
-      if(b) closeLM(b.id);
-    }
-  });
-})();
-</script>
-
-
-<footer class="site-footer">
-  <div class="wrap footer-inner">
-    <div class="footer-brand">
-      <div class="logo-row">
-        <div class="mark"></div>
-        <div class="name">ReportMedic</div>
+        <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap">
+          <button class="btn primary" id="btnMake" type="button">Create</button>
+          <button class="btn" id="btnCopy" type="button" disabled>Copy</button>
+          <button class="btn" id="btnOpen" type="button" disabled>Open</button>
+          <span class="tiny muted rm-status" id="status"></span>
+        </div>
       </div>
-      <div class="tiny muted">Local-first tools for report sanity checks.</div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap">
+          <div>
+            <div style="font-weight:700">Result</div>
+            <div class="tiny muted" style="margin-top:4px">QR is generated in your browser.</div>
+          </div>
+          <button class="btn" id="btnDlQR" type="button" disabled>Download QR PNG</button>
+        </div>
+        <div class="hr2"></div>
+        <div class="tiny muted">Output</div>
+        <input class="input" id="outUrl" type="text" readonly placeholder="—"/>
+        <div class="rm-qrWrap"><div id="qr"></div></div>
+      </div>
     </div>
-    <div class="footer-links">
-      <a href="/tools/">All Tools</a>
-      <a href="/fix-my-report.html">Live Agent</a>
-      <a href="/about.html">About</a>
+  </div>
+</div>
+
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
     </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
   </div>
 </footer>
+
+<div aria-hidden="true" aria-label="Link Shortener + QR details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Link Shortener + QR</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Turn a long link into a shorter share link (optional)</li>
+        <li>Generate a QR code you can download as PNG</li>
+        <li>Local mode keeps everything on your own site</li>
+      </ul>
+      <h3>Good to know</h3>
+      <ul>
+        <li><b>Local mode</b> creates a link like <code>go.html#…</code>. Anyone opening it will be redirected.</li>
+        <li><b>Online modes</b> send your URL to the external service you choose.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+  var statusEl = $('status');
+  var outEl = $('outUrl');
+  var qrEl = $('qr');
+  var btnCopy = $('btnCopy');
+  var btnOpen = $('btnOpen');
+  var btnDl = $('btnDlQR');
+  var current = '';
+  var qr = null;
+
+  function setStatus(msg, cls){
+    statusEl.className = 'tiny muted rm-status' + (cls ? (' ' + cls) : '');
+    statusEl.textContent = msg || '';
+  }
+
+  function clearQR(){
+    qrEl.innerHTML = '';
+    qr = null;
+  }
+
+  function buildQR(text){
+    clearQR();
+    if (!window.QRCode) throw new Error('QR library failed to load.');
+    qr = new QRCode(qrEl, { text: text, width: 180, height: 180, correctLevel: QRCode.CorrectLevel.M });
+  }
+
+  function makeLocal(url){
+    if(!window.LZString) throw new Error('LZString failed to load.');
+    var code = LZString.compressToEncodedURIComponent(url);
+    // absolute on same origin
+    var base = window.location.origin;
+    return base + '/go.html#' + code;
+  }
+
+  async function shortenOnline(url, svc){
+    if(svc==='isgd'){
+      var api = 'https://is.gd/create.php?format=simple&url=' + encodeURIComponent(url);
+      var r = await fetch(api, {method:'GET'});
+      if(!r.ok) throw new Error('is.gd request failed');
+      return (await r.text()).trim();
+    }
+    if(svc==='tinyurl'){
+      var api2 = 'https://tinyurl.com/api-create.php?url=' + encodeURIComponent(url);
+      var r2 = await fetch(api2, {method:'GET'});
+      if(!r2.ok) throw new Error('TinyURL request failed');
+      return (await r2.text()).trim();
+    }
+    return url;
+  }
+
+  function enableActions(on){
+    btnCopy.disabled = !on;
+    btnOpen.disabled = !on;
+    btnDl.disabled = !on;
+  }
+
+  $('btnMake').addEventListener('click', async function(){
+    try{
+      setStatus('', '');
+      enableActions(false);
+      clearQR();
+
+      var url = ($('inUrl').value || '').trim();
+      if(!url){ setStatus('Paste a URL first.', 'rm-warn'); return; }
+      // Basic normalization: add https:// if missing
+      if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+      var mode = $('mode').value;
+      setStatus('Working…', '');
+
+      var out = url;
+      if(mode==='rm') out = makeLocal(url);
+      else if(mode==='none') out = url;
+      else out = await shortenOnline(url, mode);
+
+      current = out;
+      outEl.value = out;
+      buildQR(out);
+      enableActions(true);
+      setStatus('Done.', 'rm-good');
+    } catch(e){
+      setStatus((e && e.message) ? e.message : String(e), 'rm-bad');
+    }
+  });
+
+  btnCopy.addEventListener('click', async function(){
+    try{
+      if(!current) return;
+      await navigator.clipboard.writeText(current);
+      setStatus('Copied.', 'rm-good');
+    } catch(e){
+      setStatus('Could not copy (browser blocked clipboard).', 'rm-warn');
+    }
+  });
+
+  btnOpen.addEventListener('click', function(){
+    if(current) window.open(current, '_blank', 'noopener');
+  });
+
+  btnDl.addEventListener('click', function(){
+    if(!qrEl.querySelector('canvas')) return;
+    var canvas = qrEl.querySelector('canvas');
+    var a = document.createElement('a');
+    a.download = 'qr.png';
+    a.href = canvas.toDataURL('image/png');
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  });
+})();
+</script>
+<script>
+  // Learn more modal wiring (shared pattern)
+  (function(){
+    function openLM(id){ var d=document.getElementById(id); if(d) d.setAttribute('aria-hidden','false'); }
+    function closeLM(id){ var d=document.getElementById(id); if(d) d.setAttribute('aria-hidden','true'); }
+    document.addEventListener('click', function(e){
+      var a=e.target.closest('[data-rm-lm-open]');
+      if(a){ e.preventDefault(); openLM(a.getAttribute('data-rm-lm-open')); return; }
+      var c=e.target.closest('[data-rm-lm-close]');
+      if(c){ e.preventDefault(); closeLM(c.getAttribute('data-rm-lm-close')); return; }
+      var bd = (e.target.classList && e.target.classList.contains('rm-lm-backdrop')) ? e.target : null;
+      if(bd){ e.preventDefault(); closeLM(bd.id); }
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Escape'){
+        var open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        if(open) open.setAttribute('aria-hidden','true');
+      }
+    });
+  })();
+</script>
+<script src="/assets/js/rm-dropzone.js"></script>
+<script src="/assets/js/rm-tools-drawer.js"></script>
 </body>
 </html>

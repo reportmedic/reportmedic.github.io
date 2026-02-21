@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Redirect — ReportMedic</title>
+<meta name="robots" content="noindex,nofollow"/>
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; margin:0; padding:24px; background:#0b0f14; color:#e9eef7}
+  a{color:#7cf7d4}
+  .card{max-width:860px; margin:0 auto; padding:18px 18px; border:1px solid rgba(255,255,255,.12); border-radius:16px; background:rgba(255,255,255,.03)}
+  code{background:rgba(255,255,255,.08); padding:2px 6px; border-radius:8px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1 style="margin:0 0 8px">Redirecting…</h1>
+  <div id="msg" style="opacity:.85">If nothing happens, scroll down for the decoded link.</div>
+  <div style="margin-top:14px">
+    <div class="tiny" style="opacity:.7">Target</div>
+    <div id="target" style="word-break:break-all"></div>
+  </div>
+  <div style="margin-top:14px">
+    <a id="open" href="#">Open link</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  const $=id=>document.getElementById(id);
+  function decode(){
+    // Expected formats:
+    // 1) #u=<compressed>
+    // 2) #<compressed>
+    const h=(location.hash||'').replace(/^#/,'');
+    let payload=h;
+    if(!payload){ return null; }
+    if(payload.startsWith('u=')) payload=payload.slice(2);
+    // base64url-ish may contain % escapes
+    try{ payload=decodeURIComponent(payload); }catch(e){}
+    let url=null;
+    try{
+      if(window.LZString){
+        url = LZString.decompressFromEncodedURIComponent(payload);
+      }
+    }catch(e){}
+    // Fallback: raw url
+    if(!url && (payload.startsWith('http://') || payload.startsWith('https://'))) url=payload;
+    if(!url) return null;
+    if(!/^https?:\/\//i.test(url)) return null;
+    return url;
+  }
+
+  const url=decode();
+  if(!url){
+    $('msg').textContent='No valid link found in the URL.';
+    $('target').innerHTML='<code>Expected: go.html#&lt;code&gt;</code>';
+    $('open').style.display='none';
+    return;
+  }
+
+  $('target').textContent=url;
+  $('open').href=url;
+
+  // Auto-redirect (small delay so users can cancel)
+  setTimeout(()=>{ location.href=url; }, 250);
+})();
+</script>
+</body>
+</html>
