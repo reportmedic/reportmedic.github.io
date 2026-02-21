@@ -157,24 +157,33 @@
     }
     throw new Error('pdf-lib not available');
   }
-  async function ensurePdfJs(){
-    if(window.pdfjsLib) return;
-    const urls = [
-      'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.js',
-      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.js',
-      'https://unpkg.com/pdfjs-dist@4.10.38/build/pdf.min.js'
-    ];
-    for(const u of urls){
-      try{ await loadScript(u); if(window.pdfjsLib) return; }catch(e){}
+async function ensurePdfJs(){
+  if (window.pdfjsLib) return;
+
+  // Classic "global" builds that expose window.pdfjsLib (more reliable than v4 module builds)
+  const urls = [
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/legacy/build/pdf.min.js',
+    'https://unpkg.com/pdfjs-dist@3.4.120/legacy/build/pdf.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js'
+  ];
+
+  let lastErr = null;
+  for (const u of urls) {
+    try {
+      await loadScript(u);
+      if (window.pdfjsLib) return;
+    } catch (e) {
+      lastErr = e;
     }
-    throw new Error('PDF.js not available (pdfjsLib missing)');
   }
+  throw lastErr || new Error('Failed to load PDF.js');
+}
 
   try{
     await ensurePdfLib();
     await ensurePdfJs();
     pdfjsLib.GlobalWorkerOptions.workerSrc =
-      'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js';
+      'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/legacy/build/pdf.worker.min.js';
   }catch(e){
     setStatus('Required library failed to load. ' + (e && e.message ? e.message : String(e)), 'rm-bad');
     return;
