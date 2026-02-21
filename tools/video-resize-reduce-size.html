@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Video Resize / Reduce Size (4K → 1080p/720p) — ReportMedic</title>
+  <meta name="description" content="Downscale 2K/4K videos to a smaller resolution to reduce file size (great for GoPro exports). Runs locally in your browser (no upload)." />
+
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+
+  <script defer src="/assets/js/rm-dropzone.js"></script>
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+  <style>
+    /* Learn-more modal (page-local) */
+    .rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+    .rm-lm-link:hover{opacity:1;}
+    .rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:16px; z-index:9999;}
+    .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+    .rm-lm{width:min(900px, 100%); background:rgba(20,20,24,.96); border:1px solid rgba(255,255,255,.12); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35);}
+    .rm-lm header{display:flex; align-items:center; justify-content:space-between; padding:14px 14px 10px; border-bottom:1px solid rgba(255,255,255,.10);}
+    .rm-lm header .t{font-weight:800; letter-spacing:.2px;}
+    .rm-lm .rm-lm-close{background:transparent; border:1px solid rgba(255,255,255,.18); color:inherit; border-radius:10px; padding:8px 10px; cursor:pointer;}
+    .rm-lm .rm-lm-close:hover{border-color:rgba(255,255,255,.28);}
+    .rm-lm .body{padding:14px;}
+    .rm-lm .body ul{margin:8px 0 0 18px;}
+    .rm-lm .body li{margin:6px 0;}
+
+    .rm-kv{display:grid; grid-template-columns:160px 1fr; gap:8px; margin-top:10px;}
+    .rm-kv .k{opacity:.8;}
+    .rm-kv .v{word-break:break-word;}
+
+    .rm-log{height:140px; overflow:auto; border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:10px; background:rgba(255,255,255,.03); font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px; color:rgba(255,255,255,.88);}
+    .rm-progress{width:100%; height:10px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden; border:1px solid rgba(255,255,255,.10);}
+    .rm-progress > div{height:100%; width:0%; background:linear-gradient(135deg, rgba(110,168,255,.95), rgba(124,247,212,.95));}
+  </style>
+</head>
+
+<body class="tools-page">
+  <header>
+    <div class="nav">
+      <a class="logo" href="/" style="text-decoration:none;">
+        <div class="mark"></div>
+        <div>ReportMedic</div>
+      </a>
+      <div class="spacer"></div>
+      <a class="btn" href="/">Home</a>
+      <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+      <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="panel">
+      <h1>Video Resize / Reduce Size <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+      <p class="sub">Downscale big GoPro / 2K / 4K videos to a smaller resolution to shrink size — private and local. Runs in your browser (no upload).</p>
+      <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+      <div class="hr"></div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="row" style="justify-content:space-between; align-items:flex-start">
+            <div>
+              <div style="font-weight:800">Upload video</div>
+              <div class="tiny muted">MP4/MOV/WebM (large files may take time)</div>
+            </div>
+            <span class="pill tiny" id="meta"><b>Video:</b><span class="muted">not loaded</span></span>
+          </div>
+
+          <div style="margin-top:10px">
+            <input id="file" class="input" type="file" accept="video/*" />
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+            <span class="tiny muted" style="min-width:130px">Target resolution</span>
+            <select id="mode" class="input" style="width:auto; min-width:260px">
+              <option value="1080" selected>1080p (1920×1080)</option>
+              <option value="720">720p (1280×720)</option>
+              <option value="480">480p (854×480)</option>
+              <option value="keep">Keep original</option>
+              <option value="custom">Custom…</option>
+            </select>
+          </div>
+
+          <div class="row" id="customRow" style="margin-top:12px; gap:10px; flex-wrap:wrap; display:none">
+            <div class="row" style="gap:10px; align-items:center">
+              <span class="tiny muted" style="min-width:110px">Width</span>
+              <input id="w" class="input" type="number" min="1" step="1" style="max-width:180px" placeholder="px" />
+            </div>
+            <div class="row" style="gap:10px; align-items:center">
+              <span class="tiny muted" style="min-width:110px">Height</span>
+              <input id="h" class="input" type="number" min="1" step="1" style="max-width:180px" placeholder="px" />
+            </div>
+            <label class="row tiny muted" style="gap:8px; align-items:center">
+              <input id="lock" type="checkbox" checked />
+              Keep aspect ratio
+            </label>
+          </div>
+
+          <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap; align-items:center">
+            <span class="tiny muted" style="min-width:130px">Quality (CRF)</span>
+            <input id="crf" type="range" min="18" max="35" value="28" step="1" style="width:240px" />
+            <span class="pill tiny" id="crfLbl"><b>CRF:</b><span class="muted">28</span></span>
+            <span class="tiny muted">Higher → smaller (a bit more loss)</span>
+          </div>
+
+          <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap; align-items:center">
+            <span class="tiny muted" style="min-width:130px">Speed</span>
+            <select id="preset" class="input" style="width:auto; min-width:220px">
+              <option value="ultrafast">Ultra fast (largest)</option>
+              <option value="veryfast" selected>Very fast (recommended)</option>
+              <option value="faster">Faster</option>
+              <option value="fast">Fast</option>
+              <option value="medium">Medium (slower)</option>
+            </select>
+
+            <span class="tiny muted" style="min-width:90px">FPS</span>
+            <select id="fps" class="input" style="width:auto; min-width:160px">
+              <option value="keep" selected>Keep</option>
+              <option value="30">30 fps</option>
+              <option value="24">24 fps</option>
+            </select>
+          </div>
+
+          <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap; align-items:center">
+            <span class="tiny muted" style="min-width:130px">Audio</span>
+            <select id="ab" class="input" style="width:auto; min-width:220px">
+              <option value="96k">AAC 96 kbps</option>
+              <option value="128k" selected>AAC 128 kbps</option>
+              <option value="160k">AAC 160 kbps</option>
+            </select>
+            <label class="row tiny muted" style="gap:8px; align-items:center">
+              <input id="mute" type="checkbox" />
+              Mute
+            </label>
+          </div>
+
+          <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap">
+            <button class="btn" id="loadBtn" type="button">Load video engine</button>
+            <button class="btn primary" id="goBtn" type="button" disabled>Convert</button>
+            <button class="btn" id="downloadBtn" type="button" disabled>Download MP4</button>
+            <span class="pill tiny" id="status"><b>Status:</b><span class="muted">select a video</span></span>
+          </div>
+
+          <div style="margin-top:12px">
+            <div class="rm-progress" aria-label="progress"><div id="bar"></div></div>
+            <div class="tiny muted" style="margin-top:8px">This runs locally in your browser — nothing is uploaded. Big 4K clips may require a strong machine and lots of RAM.</div>
+          </div>
+
+          <div class="hr"></div>
+          <div style="font-weight:800; margin-bottom:6px">Engine log</div>
+          <div class="rm-log" id="log" aria-label="ffmpeg log"></div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:800; margin-bottom:6px">Preview</div>
+          <div class="tiny muted">Output preview appears after conversion.</div>
+          <div class="hr"></div>
+
+          <video id="out" controls style="width:100%; border-radius:14px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.25);"></video>
+
+          <div class="hr"></div>
+
+          <div style="font-weight:800; margin-bottom:6px">File details</div>
+          <div class="row" style="gap:10px; flex-wrap:wrap">
+            <span class="pill tiny" id="before"><b>Before:</b><span class="muted">—</span></span>
+            <span class="pill tiny" id="after"><b>After:</b><span class="muted">—</span></span>
+            <span class="pill tiny" id="saved"><b>Saved:</b><span class="muted">—</span></span>
+          </div>
+
+          <div class="hr"></div>
+          <div class="tiny muted" id="tips">
+            Tip: If you only need something “easy to share”, try 1080p + CRF 28 + Very fast.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="rm-footer">
+    <div class="rm-footer-inner">
+      <div class="rm-footer-brand">
+        <div class="rm-footer-name">ReportMedic</div>
+        <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+      </div>
+      <div class="rm-footer-links">
+        <a href="/fix-my-report.html">Fix My Report</a>
+        <a href="/#tools">Tools</a>
+        <a href="/docs/">Docs</a>
+        <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+      </div>
+      <div class="rm-footer-meta">© 2026 ReportMedic</div>
+    </div>
+  </footer>
+
+  <div class="rm-lm-backdrop" id="rmLM" aria-hidden="true">
+    <div class="rm-lm" role="dialog" aria-modal="true" aria-label="Video Resize / Reduce Size">
+      <header>
+        <div class="t">Video Resize / Reduce Size</div>
+        <button class="rm-lm-close" type="button" data-rm-lm-close="rmLM">Close</button>
+      </header>
+      <div class="body">
+        <ul>
+          <li>Best for reducing GoPro-style 2K/4K exports for sharing.</li>
+          <li>Nothing is uploaded — your file stays on your machine.</li>
+          <li>Choose a target resolution, then fine-tune quality with CRF (higher = smaller).</li>
+          <li>If a very large file fails, try 720p or split the clip before converting.</li>
+        </ul>
+        <div class="rm-kv">
+          <div class="k">Good default</div>
+          <div class="v">1080p • CRF 28 • Very fast • AAC 128k</div>
+          <div class="k">Smaller</div>
+          <div class="v">720p • CRF 30–32</div>
+          <div class="k">Better quality</div>
+          <div class="v">1080p • CRF 22–26 (bigger files)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    function openLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','false');
+      const btn=bd.querySelector('.rm-lm-close');
+      if(btn) btn.focus();
+    }
+    function closeLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','true');
+    }
+    document.addEventListener('click', function(e){
+      const a=e.target.closest('[data-rm-lm-open]');
+      if(a){ e.preventDefault(); openLM(a.getAttribute('data-rm-lm-open')); return; }
+      const c=e.target.closest('[data-rm-lm-close]');
+      if(c){ e.preventDefault(); closeLM(c.getAttribute('data-rm-lm-close')); return; }
+      const bd=(e.target && e.target.classList && e.target.classList.contains('rm-lm-backdrop')) ? e.target : null;
+      if(bd) closeLM(bd.id);
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key !== 'Escape') return;
+      document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute('aria-hidden','true'));
+    });
+  })();
+  </script>
+
+  <script type="module">
+    import { FFmpeg } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.15/dist/esm/index.js';
+    import { fetchFile, toBlobURL } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.2/dist/esm/index.js';
+
+    const $ = (id)=>document.getElementById(id);
+    const fileEl = $('file');
+    const meta = $('meta');
+    const status = $('status');
+    const loadBtn = $('loadBtn');
+    const goBtn = $('goBtn');
+    const dlBtn = $('downloadBtn');
+    const out = $('out');
+    const log = $('log');
+    const bar = $('bar');
+
+    const mode = $('mode');
+    const customRow = $('customRow');
+    const wEl = $('w');
+    const hEl = $('h');
+    const lock = $('lock');
+    const crf = $('crf');
+    const crfLbl = $('crfLbl');
+    const preset = $('preset');
+    const fps = $('fps');
+    const ab = $('ab');
+    const mute = $('mute');
+
+    const beforeP = $('before');
+    const afterP  = $('after');
+    const savedP  = $('saved');
+
+    const ffmpeg = new FFmpeg();
+    let loaded = false;
+    let currentFile = null;
+    let outBlob = null;
+    let outName = 'output.mp4';
+    let lastUrl = null;
+
+    const humanBytes = (n) => {
+      if(!Number.isFinite(n)) return '—';
+      const u=['B','KB','MB','GB']; let i=0; let v=n;
+      while(v>=1024 && i<u.length-1){ v/=1024; i++; }
+      const s = i===0 ? String(Math.round(v)) : String(Math.round(v*10)/10);
+      return s+' '+u[i];
+    };
+
+    function setPill(pill, label, value){
+      pill.innerHTML = `<b>${label}:</b><span class="muted">${value}</span>`;
+    }
+    function setStatus(msg){
+      status.innerHTML = `<b>Status:</b><span class="muted">${msg}</span>`;
+    }
+    function appendLog(line){
+      const s = String(line || '').trim();
+      if(!s) return;
+      log.textContent += (log.textContent ? '\n' : '') + s;
+      log.scrollTop = log.scrollHeight;
+    }
+    function resetOutput(){
+      outBlob = null;
+      dlBtn.disabled = true;
+      setPill(afterP,'After','—');
+      setPill(savedP,'Saved','—');
+      if(lastUrl){ URL.revokeObjectURL(lastUrl); lastUrl = null; }
+      out.removeAttribute('src');
+      out.load();
+      bar.style.width = '0%';
+    }
+
+    mode.addEventListener('change', ()=>{
+      customRow.style.display = (mode.value === 'custom') ? '' : 'none';
+    });
+    crf.addEventListener('input', ()=>{
+      crfLbl.innerHTML = `<b>CRF:</b><span class="muted">${crf.value}</span>`;
+    });
+
+    fileEl.addEventListener('change', ()=>{
+      currentFile = fileEl.files && fileEl.files[0] ? fileEl.files[0] : null;
+      resetOutput();
+      log.textContent = '';
+      if(!currentFile){
+        meta.innerHTML = '<b>Video:</b><span class="muted">not loaded</span>';
+        setStatus('select a video');
+        goBtn.disabled = true;
+        return;
+      }
+      meta.innerHTML = `<b>Video:</b><span class="muted">${currentFile.name}</span>`;
+      setPill(beforeP,'Before', humanBytes(currentFile.size));
+      setStatus(loaded ? 'ready to convert' : 'load engine, then convert');
+      goBtn.disabled = !loaded;
+    });
+
+    ffmpeg.on('log', ({ message }) => appendLog(message));
+    ffmpeg.on('progress', ({ ratio }) => {
+      if(!Number.isFinite(ratio)) return;
+      const pct = Math.max(0, Math.min(100, Math.round(ratio * 100)));
+      bar.style.width = pct + '%';
+    });
+
+    async function loadEngine(){
+      if(loaded) return;
+      loadBtn.disabled = true;
+      goBtn.disabled = true;
+      setStatus('loading engine…');
+      appendLog('Loading FFmpeg (first time can be ~30–40MB)…');
+      try{
+        const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd';
+        await ffmpeg.load({
+          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+        });
+        loaded = true;
+        appendLog('Engine ready.');
+        setStatus(currentFile ? 'ready to convert' : 'select a video');
+        goBtn.disabled = !currentFile;
+      } catch (e) {
+        console.error(e);
+        appendLog(String(e));
+        setStatus('failed to load engine');
+        loadBtn.disabled = false;
+      }
+    }
+
+    function scaleFilter(){
+      const m = mode.value;
+      const keepAR = (m !== 'keep') ? (m === 'custom' ? !!lock.checked : true) : true;
+
+      let W = null, H = null;
+      if(m === '1080'){ W=1920; H=1080; }
+      else if(m === '720'){ W=1280; H=720; }
+      else if(m === '480'){ W=854; H=480; }
+      else if(m === 'custom'){
+        const wv = parseInt(wEl.value, 10);
+        const hv = parseInt(hEl.value, 10);
+        W = Number.isFinite(wv) && wv > 0 ? wv : null;
+        H = Number.isFinite(hv) && hv > 0 ? hv : null;
+      }
+
+      if(m === 'keep' || (!W && !H)) return null;
+
+      // Make sure output dims are even (video codecs prefer this).
+      const even = (n)=> (n && n > 0 ? (n % 2 === 0 ? n : n - 1) : n);
+      W = even(W); H = even(H);
+
+      if(m === 'custom'){
+        if(keepAR){
+          if(W && !H) return `scale=${W}:-2`;
+          if(H && !W) return `scale=-2:${H}`;
+          if(W && H)  return `scale=${W}:${H}:force_original_aspect_ratio=decrease`;
+          return null;
+        }
+        if(W && H) return `scale=${W}:${H}`;
+        return null;
+      }
+
+      // Presets: scale down but never upscale.
+      if(keepAR){
+        // Escape comma inside min() with \,. FFmpeg filter syntax requirement.
+        return `scale=w=min(${W}\\,iw):h=min(${H}\\,ih):force_original_aspect_ratio=decrease`;
+      }
+      return `scale=${W}:${H}`;
+    }
+
+    async function convert(){
+      if(!currentFile){ setStatus('select a video'); return; }
+      if(!loaded){ await loadEngine(); if(!loaded) return; }
+
+      resetOutput();
+      goBtn.disabled = true;
+      dlBtn.disabled = true;
+      loadBtn.disabled = true;
+      setStatus('processing…');
+      appendLog('---');
+
+      const ext = (currentFile.name.split('.').pop() || 'mp4').toLowerCase().replace(/[^a-z0-9]/g,'');
+      const inName = `input.${ext || 'mp4'}`;
+      outName = (currentFile.name.replace(/\.[^.]+$/, '') || 'video') + `_rm_${mode.value === 'custom' ? 'custom' : mode.value}.mp4`;
+      const outFile = 'output.mp4';
+
+      try{
+        await ffmpeg.writeFile(inName, await fetchFile(currentFile));
+
+        const args = ['-i', inName];
+        const vf = [];
+
+        const sf = scaleFilter();
+        if(sf) vf.push(sf);
+
+        const fpsv = fps.value;
+        if(fpsv !== 'keep') vf.push(`fps=${fpsv}`);
+
+        if(vf.length){
+          args.push('-vf', vf.join(','));
+        }
+
+        args.push(
+          '-c:v','libx264',
+          '-preset', preset.value,
+          '-crf', String(crf.value),
+          '-pix_fmt','yuv420p'
+        );
+
+        if(mute.checked){
+          args.push('-an');
+        } else {
+          args.push('-c:a','aac','-b:a', ab.value);
+        }
+
+        args.push('-movflags','+faststart', outFile);
+        appendLog('ffmpeg ' + args.join(' '));
+
+        await ffmpeg.exec(args);
+
+        const data = await ffmpeg.readFile(outFile);
+        outBlob = new Blob([data.buffer], { type: 'video/mp4' });
+
+        const afterSize = outBlob.size;
+        setPill(afterP,'After', humanBytes(afterSize));
+        if(Number.isFinite(currentFile.size)){
+          const saved = currentFile.size - afterSize;
+          const pct = currentFile.size ? Math.round((saved / currentFile.size) * 100) : 0;
+          setPill(savedP,'Saved', (saved > 0 ? `${humanBytes(saved)} (${pct}%)` : '—'));
+        }
+
+        if(lastUrl) URL.revokeObjectURL(lastUrl);
+        lastUrl = URL.createObjectURL(outBlob);
+        out.src = lastUrl;
+        out.load();
+
+        dlBtn.disabled = false;
+        setStatus('done');
+        appendLog('Done.');
+      } catch (e) {
+        console.error(e);
+        appendLog(String(e));
+        setStatus('error (see log)');
+      } finally {
+        // best-effort cleanup
+        try{ await ffmpeg.deleteFile(inName); }catch(e){}
+        try{ await ffmpeg.deleteFile('output.mp4'); }catch(e){}
+
+        goBtn.disabled = false;
+        loadBtn.disabled = loaded; // once loaded, keep it disabled
+      }
+    }
+
+    function download(){
+      if(!outBlob) return;
+      const a = document.createElement('a');
+      const url = URL.createObjectURL(outBlob);
+      a.href = url;
+      a.download = outName;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 250);
+    }
+
+    loadBtn.addEventListener('click', loadEngine);
+    goBtn.addEventListener('click', convert);
+    dlBtn.addEventListener('click', download);
+
+    // Sensible initial UI
+    setPill(beforeP,'Before','—');
+    setPill(afterP,'After','—');
+    setPill(savedP,'Saved','—');
+    setStatus('select a video');
+    appendLog('Tip: Click “Load video engine” once, then convert.');
+  </script>
+</body>
+</html>
