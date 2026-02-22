@@ -300,7 +300,14 @@
     function appendLog(line){
       const s = String(line || '').trim();
       if(!s) return;
-      log.textContent += (log.textContent ? '\n' : '') + s;
+
+      // ffmpeg.wasm (Emscripten) sometimes prints a terminal "Aborted()" even when output is valid.
+      // It's confusing noise for users, so we hide that one line.
+      if(s === 'Aborted()') return;
+      if(s.startsWith('RuntimeError: Aborted')) return;
+
+      log.textContent += (log.textContent ? '
+' : '') + s;
       log.scrollTop = log.scrollHeight;
     }
     function resetOutput(){
@@ -447,6 +454,8 @@
       const mountPoint = '/input';
       const outFile = 'output.mp4';
 
+      let execErr = null;
+
       try{
         try{ await ffmpeg.createDir(mountPoint); }catch(e){}
         try{ await ffmpeg.unmount(mountPoint); }catch(e){}
@@ -473,7 +482,9 @@
           args.push(outFile);
 
           appendLog('ffmpeg ' + args.join(' '));
-          await ffmpeg.exec(args);
+          execErr = null;
+          try{ await ffmpeg.exec(args); }
+          catch(e){ execErr = e; }
         } else {
           const N = files.length;
 
@@ -518,10 +529,14 @@ args.push('-filter_complex', filter, '-map', '[outv]');
           args.push('-movflags','+faststart', outFile);
 
           appendLog('ffmpeg ' + args.join(' '));
-          await ffmpeg.exec(args);
+          execErr = null;
+          try{ await ffmpeg.exec(args); }
+          catch(e){ execErr = e; }
         }
 
-        const data = await ffmpeg.readFile(outFile);
+        let data;
+        try{ data = await ffmpeg.readFile(outFile); }
+        catch(e){ throw (execErr || e); }
         outBlob = new Blob([data], { type:'video/mp4' });
         setPill(afterP,'Output', humanBytes(outBlob.size));
         outUrl = URL.createObjectURL(outBlob);
