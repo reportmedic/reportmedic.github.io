@@ -49,12 +49,12 @@
   
 
     /* Tighten vertical rhythm (reduce perceived empty space) */
-    .panel .card{gap:6px; justify-content:flex-start !important; padding:12px !important}
+    .wrap .panel .card{display:flex !important;flex-direction:column !important;gap:8px !important;justify-content:flex-start !important;align-items:stretch !important;padding:12px !important;height:auto !important;min-height:0 !important}
     .panel label{margin:6px 0 5px !important}
     .panel .row.wrap{row-gap:8px}
     .panel .hr{margin:10px 0}
     .grid2{align-items:start !important}
-    .grid2 > .card{height:auto !important}
+    .grid2 > .card{height:auto !important;min-height:0 !important}
     /* Compact file dropzone further for this tool */
     .rm-dropzone--compact{padding:8px 12px}
     .rm-dropzone--compact .rm-dz-inner{gap:8px}
@@ -237,7 +237,20 @@ LIMIT 50;"></textarea>
         <div class="pill mono" id="queryPill">No query run yet.</div>
         <div class="right tiny muted" id="queryMsg"></div>
       </div>
-      <details class="rm-guide" id="guide" open>
+      
+
+
+      <div class="hr"></div>
+      <div class="tableWrap" id="resultWrap" style="display:none">
+        <table id="resultTable">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="tiny muted" id="resultNote" style="margin-top:10px;display:none"></div>
+
+      <div class="hr"></div>
+<details class="rm-guide" id="guide" open>
         <summary>
           <div>
             <div class="rm-guide-title">Query guide</div>
@@ -373,15 +386,6 @@ CREATE INDEX idx_a_id ON table_a(id);</div>
         </div>
       </details>
 
-
-      <div class="hr"></div>
-      <div class="tableWrap" id="resultWrap" style="display:none">
-        <table id="resultTable">
-          <thead></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <div class="tiny muted" id="resultNote" style="margin-top:10px;display:none"></div>
     </div>
   </div>
 </div>
