@@ -46,11 +46,11 @@
     .right{margin-left:auto}
     .progress{height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid rgba(255,255,255,.12)}
     .progress > div{height:100%;width:0%;background:linear-gradient(90deg, var(--brand), var(--brand2));}
-  
-
     /* Tighten vertical rhythm (reduce perceived empty space) */
     .wrap .panel .card{
       display:block !important;
+      flex-direction:unset !important;
+      gap:0 !important;
       padding:12px !important;
       height:auto !important;
       min-height:0 !important;
@@ -58,12 +58,15 @@
     }
     .wrap .panel .card > * + *{ margin-top:8px !important; }
     .wrap .panel .card .row{ margin-top:0 !important; }
+    /* Ensure hidden utility elements leave zero footprint */
+    .wrap .panel .card [style*="display:none"],
+    .wrap .panel .card [style*="display: none"]{ margin:0 !important; padding:0 !important; }
 
     .panel label{margin:6px 0 5px !important}
     .panel .row.wrap{row-gap:8px}
     .panel .hr{margin:10px 0}
     .grid2{align-items:start !important}
-    .grid2 > .card{height:auto !important;min-height:0 !important}
+    .grid2 > .card{display:block !important;gap:0 !important;height:auto !important;min-height:0 !important}
     /* Compact file dropzone further for this tool */
     .rm-dropzone--compact{padding:8px 12px}
     .rm-dropzone--compact .rm-dz-inner{gap:8px}
@@ -87,9 +90,21 @@
     .rm-guide-card{border:1px solid rgba(255,255,255,.12); border-radius:12px; background:rgba(0,0,0,.14); padding:10px}
     .rm-guide-card .t{font-weight:800; margin-bottom:6px}
     .rm-guide-card .tiny{margin:0 0 8px}
-    .rm-guide-code{font-size:12px; line-height:1.35; background:rgba(0,0,0,.20); border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:10px; white-space:pre; overflow:auto}
+    /* Ensure progress/kpi hidden sections truly collapse */
+    #loadProgWrap[style*="display:none"],
+    #kpiHrTop[style*="display:none"],
+    #kpis[style*="display:none"],
+    #kpiHrBottom[style*="display:none"],
+    #resultWrap[style*="display:none"],
+    #resultNote[style*="display:none"]{
+      display:none !important;
+      margin:0 !important;
+      padding:0 !important;
+      height:0 !important;
+      min-height:0 !important;
+      overflow:hidden !important;
+    }
 
-</style>
 
   <style>
 /* ReportMedic Learn-more modal (lightweight, page-local) */
@@ -130,7 +145,7 @@
     <div class="hr"></div>
 
     <div class="grid2">
-      <div class="card">
+      <div class="card" style="display:block;min-height:0;gap:0">
         <div class="row" style="justify-content:space-between;align-items:flex-start">
           <div>
             <div style="font-weight:800">Load data</div>
@@ -182,14 +197,13 @@
 
         <div class="hr" id="kpiHrTop" style="display:none"></div>
         <div class="kpi" id="kpis" style="display:none"></div>
-
         <div class="hr" id="kpiHrBottom" style="display:none"></div>
         <div style="font-weight:800">Loaded tables</div>
         <div class="tiny muted">Table names are derived from filenames. Columns are cleaned to be SQL-friendly (see “Schema”).</div>
         <div class="codebox mono" id="tablesOut" style="margin-top:8px">No tables loaded yet.</div>
       </div>
 
-      <div class="card">
+      <div class="card" style="display:block;min-height:0;gap:0">
         <div style="font-weight:800">Schema & helpers</div>
         <div class="tiny muted">Inspect tables, insert common queries, and sanity-check types.</div>
 
@@ -222,7 +236,7 @@
       </div>
     </div>
 
-    <div class="card" style="margin-top:8px">
+    <div class="card" style="margin-top:8px;display:block;min-height:0;gap:0">
       <div class="row" style="justify-content:space-between;align-items:flex-start">
         <div>
           <div style="font-weight:800">SQL editor</div>
@@ -246,9 +260,6 @@ LIMIT 50;"></textarea>
         <div class="pill mono" id="queryPill">No query run yet.</div>
         <div class="right tiny muted" id="queryMsg"></div>
       </div>
-      
-
-
       <div class="hr"></div>
       <div class="tableWrap" id="resultWrap" style="display:none">
         <table id="resultTable">
