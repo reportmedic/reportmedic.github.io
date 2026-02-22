@@ -1295,16 +1295,13 @@ function renderChart(){
     }
 
     function startStreamingParse(text, delim){
-      // Normalize line-endings so -only, -only, and  all work reliably.
-      const normalized = String(text || "").replace(/
-/g, "
-").replace(/
-/g, "
-");
+      // Normalize line-endings so CRLF/CR/LF all work reliably.
+      const normalized = String(text || "")
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n");
       lastText = normalized;
       currentDelimiter = delim || ",";
-      allLines = normalized.split("
-");
+      allLines = normalized.split("\n");
       headerLineIndex = 0;
       while (headerLineIndex < allLines.length &&
              allLines[headerLineIndex].trim() === ""){
