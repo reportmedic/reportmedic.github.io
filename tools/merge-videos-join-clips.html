@@ -484,32 +484,33 @@
 
           const wantAudio = (audioMode.value === 'keep');
 
-          const vLabels = [];
-          const aLabels = [];
+// IMPORTANT: concat expects inputs interleaved per segment:
+//   [v0][a0][v1][a1]... (not all video then all audio)
+const segLabels = [];
 
-          const doNorm = norm.value;
-          let vf = 'setsar=1';
-          if(doNorm === '1080') vf = buildNormalizeFilter(1920,1080);
-          else if(doNorm === '720') vf = buildNormalizeFilter(1280,720);
-          else vf = 'setsar=1';
+const doNorm = norm.value;
+let vf = 'setsar=1';
+if(doNorm === '1080') vf = buildNormalizeFilter(1920,1080);
+else if(doNorm === '720') vf = buildNormalizeFilter(1280,720);
+else vf = 'setsar=1';
 
-          let filter = '';
-          for(let i=0;i<N;i++){
-            filter += `[${i}:v]${vf}[v${i}];`;
-            vLabels.push(`[v${i}]`);
-            if(wantAudio){
-              filter += `[${i}:a]aformat=sample_fmts=fltp:channel_layouts=stereo,aresample=48000[a${i}];`;
-              aLabels.push(`[a${i}]`);
-            }
-          }
+let filter = '';
+for(let i=0;i<N;i++){
+  filter += `[${i}:v]${vf}[v${i}];`;
+  if(wantAudio){
+    filter += `[${i}:a]aformat=sample_fmts=fltp:channel_layouts=stereo,aresample=48000[a${i}];`;
+    segLabels.push(`[v${i}]`, `[a${i}]`);
+  } else {
+    segLabels.push(`[v${i}]`);
+  }
+}
 
-          if(wantAudio){
-            filter += `${vLabels.join('')}${aLabels.join('')}concat=n=${N}:v=1:a=1[outv][outa]`;
-          } else {
-            filter += `${vLabels.join('')}concat=n=${N}:v=1:a=0[outv]`;
-          }
-
-          args.push('-filter_complex', filter, '-map', '[outv]');
+if(wantAudio){
+  filter += `${segLabels.join('')}concat=n=${N}:v=1:a=1[outv][outa]`;
+} else {
+  filter += `${segLabels.join('')}concat=n=${N}:v=1:a=0[outv]`;
+}
+args.push('-filter_complex', filter, '-map', '[outv]');
           if(wantAudio) args.push('-map','[outa]');
           args.push('-c:v','libx264','-preset', preset.value, '-crf', String(crf.value), '-pix_fmt','yuv420p');
           if(wantAudio) args.push('-c:a','aac','-b:a', ab.value);
