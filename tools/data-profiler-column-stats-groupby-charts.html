@@ -231,22 +231,6 @@
 
       <div class="fa-root">
 <div class="fa-wrap">
-  <div class="fa-header">
-    <div>
-      <div class="fa-kicker">ReportMedic · Data Profiling · Data Modeling</div>
-      <div class="fa-title">File Analyzer</div>
-      <div class="fa-sub">
-        Local-first CSV/TXT profiler for data modellers. Upload a file, then explore rows, filters, group-by summaries, pivots, and auto charts — no cloud, no internet.
-      </div>
-    </div>
-    <div>
-      <div class="fa-badge-row">
-        <span class="fa-badge">📄 <span id="faMetaRows">0 rows</span></span>
-        <span class="fa-badge">🔢 <span id="faMetaCols">0 columns</span></span>
-        <span class="fa-badge">🧪 <span id="faMetaTypes">0 numeric / 0 text</span></span>
-      </div>
-    </div>
-  </div>
 
   <div class="fa-main">
     <!-- LEFT: data + filters -->
@@ -255,32 +239,41 @@
         <div>
           <div class="fa-panel-title">Data preview</div>
           <div class="fa-panel-sub">Upload a CSV/TXT, choose a delimiter, then browse and sort instantly.</div>
+        
+          <div class="fa-badge-row" style="margin-top:8px;">
+            <span class="fa-badge">📄 <span id="faMetaRows">0 rows</span></span>
+            <span class="fa-badge">🔢 <span id="faMetaCols">0 columns</span></span>
+            <span class="fa-badge">🧪 <span id="faMetaTypes">0 numeric / 0 text</span></span>
+          </div>
         </div>
       </div>
 
+      
       <div class="fa-row">
-        <div style="flex:1 1 220px;">
+        <div style="flex:1 1 100%; min-width:0;">
           <label>File (CSV / TXT)</label>
 
           <!-- Drop zone (click to open picker OR drop file) -->
           <input id="faFile" type="file" accept=".csv,.txt,text/plain,text/csv" data-rm-dropzone-size="compact">
         </div>
+      </div>
 
-        <div>
+      <div class="fa-row">
+        <div style="flex:0 0 170px; min-width:150px;">
           <label>Delimiter</label>
           <select id="faDelim">
             <option value=",">Comma (,)</option>
             <option value=";">Semicolon (;)</option>
-            <option value="\\t">Tab (\\t)</option>
+            <option value="\\t">Tab (	)</option>
             <option value="|">Pipe (|)</option>
             <option value="custom">Custom</option>
           </select>
         </div>
-        <div>
+        <div style="flex:0 0 90px;">
           <label>&nbsp;</label>
-          <input id="faDelimCustom" type="text" maxlength="3" placeholder="e.g. ^" style="width:70px;display:none;">
+          <input id="faDelimCustom" type="text" maxlength="3" placeholder="e.g. ^" style="width:100%;display:none;">
         </div>
-        <div>
+        <div style="flex:0 0 150px; min-width:140px;">
           <label>Show rows</label>
           <select id="faPreviewCount">
             <option value="10">10</option>
@@ -539,6 +532,7 @@
     let currentDelimiter = ",";
     let dropdownsInitialized = false;
     let delimiterAutodetected = false;
+    let uiBound = false;
 
     const INITIAL_RENDER = 100;   // first charts after 100 rows
     const REFRESH_EVERY  = 2000;  // then every 2,000 rows
@@ -1296,7 +1290,7 @@ function renderChart(){
       if (val === "custom"){
         return (delimCustom.value || ",");
       }
-      if (val === "\\\\t") return "\\t";
+      if (val === "\\\\t") return "\t";
       return val || ",";
     }
 
@@ -1428,127 +1422,142 @@ function renderChart(){
     }
 
     // ─── Event wiring ────────────────────────────────────────────────
-    const fileInput   = $("faFile");
-    const delimSel    = $("faDelim");
-    const delimCustom = $("faDelimCustom");
-
-    delimSel.addEventListener("change", () => {
-      delimCustom.style.display = (delimSel.value === "custom" ? "block" : "none");
-      if (lastText){
-        startStreamingParse(lastText, getDelimiterFromUI());
-      }
-    });
-
-    delimCustom.addEventListener("change", () => {
-      if (delimSel.value === "custom" && lastText){
-        startStreamingParse(lastText, getDelimiterFromUI());
-      }
-    });
-
-    fileInput.addEventListener("change", () => {
-      const file = fileInput.files && fileInput.files[0];
+    function readAndParseFile(file){
       if (!file) return;
+      const infoEl = $("faPreviewInfo");
+      if (infoEl) infoEl.textContent = "Reading file…";
+      delimiterAutodetected = false;
+      dropdownsInitialized = false;
+
       const reader = new FileReader();
       reader.onload = (ev) => {
         const text = String(ev.target.result || "");
         startStreamingParse(text, getDelimiterFromUI());
       };
       reader.readAsText(file);
-    });
+    }
 
-    $("faPreviewCount").addEventListener("change", () => {
-      renderPreview();
-    });
+    function bindUi(){
+      if (uiBound) return;
+      uiBound = true;
 
-    $("faBtnApplyFilter").addEventListener("click", () => {
-      refreshAll();
-    });
-	
-	    const addFilterBtn = $("faAddFilter");
-    if (addFilterBtn){
-      addFilterBtn.addEventListener("click", function(){
-        const container = $("faFilterContainer");
-        if (!container) return;
-        const rows = container.querySelectorAll(".fa-filter-row");
-        const last = rows[rows.length - 1];
-        if (!last) return;
+      const delimSel    = $("faDelim");
+      const delimCustom = $("faDelimCustom");
 
-        const clone = last.cloneNode(true);
+      if (delimSel && delimCustom){
+        delimSel.addEventListener("change", () => {
+          delimCustom.style.display = (delimSel.value === "custom" ? "block" : "none");
+          if (lastText){
+            startStreamingParse(lastText, getDelimiterFromUI());
+          }
+        });
 
-        // clear values for the new row
-        const colSel   = clone.querySelector(".faFilterCol");
-        const opSel    = clone.querySelector(".faFilterOp");
-        const val1El   = clone.querySelector(".faFilterVal");
-        const val2El   = clone.querySelector(".faFilterVal2");
-        const logicSel = clone.querySelector(".faFilterLogic");
+        delimCustom.addEventListener("change", () => {
+          if (delimSel.value === "custom" && lastText){
+            startStreamingParse(lastText, getDelimiterFromUI());
+          }
+        });
+      }
 
-        if (colSel) colSel.value = "";
-        if (opSel)  opSel.value  = "";
-        if (val1El) val1El.value = "";
-        if (val2El) val2El.value = "";
-        if (logicSel) logicSel.value = "AND";
+      // Use delegated change handler so it also works with the enhanced dropzone.
+      document.addEventListener("change", (e) => {
+        const t = e.target;
+        if (!t || t.id !== "faFile") return;
+        const file = t.files && t.files[0];
+        readAndParseFile(file);
+      });
 
-        container.appendChild(clone);
+      const previewSel = $("faPreviewCount");
+      if (previewSel){
+        previewSel.addEventListener("change", () => { renderPreview(); });
+      }
+
+      const applyBtn = $("faBtnApplyFilter");
+      if (applyBtn){
+        applyBtn.addEventListener("click", () => { refreshAll(); });
+      }
+
+      const addFilterBtn = $("faAddFilter");
+      if (addFilterBtn){
+        addFilterBtn.addEventListener("click", function(){
+          const container = $("faFilterContainer");
+          if (!container) return;
+          const rows = container.querySelectorAll(".fa-filter-row");
+          const last = rows[rows.length - 1];
+          if (!last) return;
+
+          const clone = last.cloneNode(true);
+
+          // clear values for the new row
+          const colSel   = clone.querySelector(".faFilterCol");
+          const opSel    = clone.querySelector(".faFilterOp");
+          const val1El   = clone.querySelector(".faFilterVal");
+          const val2El   = clone.querySelector(".faFilterVal2");
+          const logicSel = clone.querySelector(".faFilterLogic");
+
+          if (colSel) colSel.value = "";
+          if (opSel)  opSel.value  = "";
+          if (val1El) val1El.value = "";
+          if (val2El) val2El.value = "";
+          if (logicSel) logicSel.value = "AND";
+
+          // Hide 2nd value unless 'between'
+          if (val2El) val2El.style.display = "none";
+          if (opSel && val2El){
+            opSel.addEventListener("change", () => {
+              val2El.style.display = (opSel.value === "between" ? "block" : "none");
+            });
+          }
+
+          // Remove duplicate IDs in clones (safer DOM)
+          clone.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
+
+          container.appendChild(clone);
+        });
+      }
+
+      // Show/hide the 2nd value box for the first row too
+      const filterContainer = $("faFilterContainer");
+      if (filterContainer){
+        filterContainer.addEventListener("change", (e) => {
+          const isOp = e.target && e.target.classList && e.target.classList.contains("faFilterOp");
+          if (!isOp) return;
+          const row = e.target.closest(".fa-filter-row");
+          if (!row) return;
+          const v2 = row.querySelector(".faFilterVal2");
+          if (!v2) return;
+          v2.style.display = (e.target.value === "between" ? "block" : "none");
+        });
+      }
+
+      // Group-by controls
+      const groupDim = $("faGroupDim");
+      const groupMeasure = $("faGroupMeasure");
+      const groupAgg = $("faGroupAgg");
+      if (groupDim) groupDim.addEventListener("change", () => { renderGroup(); renderChart(); });
+      if (groupMeasure) groupMeasure.addEventListener("change", () => { renderGroup(); renderChart(); });
+      if (groupAgg) groupAgg.addEventListener("change", () => { renderGroup(); renderChart(); });
+
+      const chartLimitSel = $("faChartLimit");
+      if (chartLimitSel){
+        chartLimitSel.addEventListener("change", () => { renderChart(); });
+      }
+
+      // Pivot controls
+      ["faPivotRow","faPivotCol","faPivotVal","faPivotAgg"].forEach(id => {
+        const el = $(id);
+        if (!el) return;
+        el.addEventListener("change", () => { renderPivot(); });
       });
     }
 
-    // faDropZone wiring (drag/drop + click)
-    const faDropZone = $("faDropZone");
-    if (faDropZone){
-      // Click opens the hidden input
-      faDropZone.addEventListener("click", () => fileInput.click());
-      faDropZone.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") fileInput.click(); });
-
-      // Drag visuals
-      faDropZone.addEventListener("dragover", (ev) => { ev.preventDefault(); faDropZone.classList.add('dragover'); });
-      faDropZone.addEventListener("dragenter", (ev) => { ev.preventDefault(); faDropZone.classList.add('dragover'); });
-      faDropZone.addEventListener("dragleave", (ev) => { faDropZone.classList.remove('dragover'); });
-
-      faDropZone.addEventListener("drop", (ev) => {
-        ev.preventDefault();
-        faDropZone.classList.remove('dragover');
-        const files = (ev.dataTransfer && ev.dataTransfer.files) ? ev.dataTransfer.files : null;
-        if (!files || !files.length) return;
-        const file = files[0];
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const text = String(e.target.result || "");
-          // re-run parse using the current UI delimiter selection
-          startStreamingParse(text, getDelimiterFromUI());
-        };
-        reader.readAsText(file);
-      });
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", bindUi);
+    } else {
+      bindUi();
     }
 
-    $("faGroupDim").addEventListener("change", () => {
-      renderGroup();
-      renderChart();
-    });
-    $("faGroupMeasure").addEventListener("change", () => {
-      renderGroup();
-      renderChart();
-    });
-    $("faGroupAgg").addEventListener("change", () => {
-      renderGroup();
-      renderChart();
-    });
-	
-	const chartLimitSel = $("faChartLimit");
-	if (chartLimitSel){
-	  chartLimitSel.addEventListener("change", () => {
-		renderChart();
-	  });
-	}
-
-    ["faPivotRow","faPivotCol","faPivotVal","faPivotAgg"].forEach(id => {
-      const el = $(id);
-      if (!el) return;
-      el.addEventListener("change", () => { renderPivot(); });
-    });
-	
-	
-
-  })();
+})();
   </script>
 </body>
 </html>
