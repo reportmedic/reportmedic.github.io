@@ -169,7 +169,7 @@
           </div>
         </div>
 
-        <div class="row wrap" style="margin-top:0px">
+        <div class="row wrap" style="margin-top:8px">
           <button class="btn primary" id="loadBtn" type="button" disabled>Load into SQL</button>
           <button class="btn" id="clearBtn" type="button" disabled>Clear</button>
           <div class="right tiny muted" id="loadMsg">Choose a file to begin.</div>
@@ -180,11 +180,10 @@
           <div class="tiny muted" style="margin-top:6px" id="loadProgText"></div>
         </div>
 
-        
-<div class="hr" id="kpiHrTop" style="display:none"></div>
-<div class="kpi" id="kpis" style="display:none"></div>
-<div class="hr" id="kpiHrBottom" style="display:none"></div>
-        
+        <div class="hr" id="kpiHrTop" style="display:none"></div>
+        <div class="kpi" id="kpis" style="display:none"></div>
+
+        <div class="hr" id="kpiHrBottom" style="display:none"></div>
         <div style="font-weight:800">Loaded tables</div>
         <div class="tiny muted">Table names are derived from filenames. Columns are cleaned to be SQL-friendly (see “Schema”).</div>
         <div class="codebox mono" id="tablesOut" style="margin-top:8px">No tables loaded yet.</div>
@@ -503,6 +502,8 @@ CREATE INDEX idx_a_id ON table_a(id);</div>
     loadProgBar: $('loadProgBar'),
     loadProgText: $('loadProgText'),
     kpis: $('kpis'),
+    kpiHrTop: $('kpiHrTop'),
+    kpiHrBottom: $('kpiHrBottom'),
     tablesOut: $('tablesOut'),
     tablePick: $('tablePick'),
     schemaBtn: $('schemaBtn'),
@@ -596,6 +597,8 @@ CREATE INDEX idx_a_id ON table_a(id);</div>
     els.tablesOut.textContent = 'No tables loaded yet.';
     els.kpis.style.display='none';
     els.kpis.innerHTML='';
+    if(els.kpiHrTop) els.kpiHrTop.style.display='none';
+    if(els.kpiHrBottom) els.kpiHrBottom.style.display='none';
     els.tablePick.innerHTML='';
     els.tablePick.disabled = true;
     els.schemaBtn.disabled = true;
@@ -688,6 +691,8 @@ CREATE INDEX idx_a_id ON table_a(id);</div>
     `;
     els.kpis.style.display = 'flex';
 
+    if(els.kpiHrTop) els.kpiHrTop.style.display = 'block';
+    if(els.kpiHrBottom) els.kpiHrBottom.style.display = 'block';
     els.clearBtn.disabled = false;
     els.runBtn.disabled = false;
     els.runPreviewBtn.disabled = false;
