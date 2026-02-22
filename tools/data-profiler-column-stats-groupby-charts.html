@@ -1295,12 +1295,11 @@ function renderChart(){
     }
 
     function startStreamingParse(text, delim){
-      // Normalize line-endings so -only, 
--only, and 
- all work reliably.
+      // Normalize line-endings so -only, -only, and  all work reliably.
       const normalized = String(text || "").replace(/
 /g, "
-").replace(//g, "
+").replace(/
+/g, "
 ");
       lastText = normalized;
       currentDelimiter = delim || ",";
