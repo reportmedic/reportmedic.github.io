@@ -1177,19 +1177,65 @@ function renderChart(){
     return;
   }
 
+  const root = document.querySelector(".fa-root") || document.documentElement;
+  const cs = getComputedStyle(root);
+  const ink = (cs.getPropertyValue("--fa-ink") || cs.getPropertyValue("--text") || "#e5e7eb").trim();
+  const sub = (cs.getPropertyValue("--fa-sub") || cs.getPropertyValue("--muted") || "rgba(229,231,235,.75)").trim();
+  const grid = (cs.getPropertyValue("--fa-line") || "rgba(255,255,255,.14)").trim();
+
   const svgNS = "http://www.w3.org/2000/svg";
   const totalWidth = Math.max(600, data.length * 40);
   const svg = document.createElementNS(svgNS,"svg");
   svg.setAttribute("viewBox","0 0 " + totalWidth + " 240");
   svg.setAttribute("width", String(totalWidth));
 
-  const leftPad = 40;
-  const bottomPad = 40;
-  const topPad = 10;
+  const leftPad = 52;          // give y-axis labels a bit more space
+  const bottomPad = 42;
+  const topPad = 12;
   const width = totalWidth - leftPad - 10;
   const height = 240 - topPad - bottomPad;
   const barWidth = width / data.length * 0.7;
 
+  // Axes + grid
+  const axisX = leftPad;
+  const axisY = topPad + height;
+
+  const axisLine = (x1,y1,x2,y2) => {
+    const l = document.createElementNS(svgNS,"line");
+    l.setAttribute("x1", String(x1));
+    l.setAttribute("y1", String(y1));
+    l.setAttribute("x2", String(x2));
+    l.setAttribute("y2", String(y2));
+    l.setAttribute("stroke", grid);
+    l.setAttribute("stroke-width","1");
+    return l;
+  };
+
+  svg.appendChild(axisLine(axisX, topPad, axisX, axisY));                 // y-axis
+  svg.appendChild(axisLine(axisX, axisY, leftPad + width, axisY));        // x-axis
+
+  // Y ticks (0..max)
+  const ticks = 4;
+  for(let t=0; t<=ticks; t++){
+    const frac = t / ticks;
+    const y = axisY - (frac * height);
+    // gridline
+    const gl = axisLine(axisX, y, leftPad + width, y);
+    gl.setAttribute("stroke", "rgba(255,255,255,.08)");
+    svg.appendChild(gl);
+
+    const tickVal = maxVal * frac;
+    const tick = document.createElementNS(svgNS,"text");
+    tick.setAttribute("x", String(axisX - 6));
+    tick.setAttribute("y", String(y + 3));
+    tick.setAttribute("font-size","9");
+    tick.setAttribute("text-anchor","end");
+    tick.setAttribute("fill", ink);
+    tick.textContent = String(Math.round(tickVal));
+    svg.appendChild(tick);
+  }
+
+  // Bars + labels
   data.forEach((d, idx) => {
     const xCenter = leftPad + (width / data.length) * (idx + 0.5);
     const barHeight = (d.value / maxVal) * height;
@@ -1207,21 +1253,21 @@ function renderChart(){
 
     const label = document.createElementNS(svgNS,"text");
     label.setAttribute("x", String(xCenter));
-    label.setAttribute("y", String(240 - 22));
+    label.setAttribute("y", String(240 - 20));
     label.setAttribute("font-size","9");
     label.setAttribute("text-anchor","middle");
-    label.setAttribute("fill","#111827");
+    label.setAttribute("fill", ink);
     let txt = d.key;
-    if (txt.length > 8) txt = txt.slice(0,8) + "\u2026";
+    if (txt.length > 10) txt = txt.slice(0,10) + "\u2026";
     label.textContent = txt;
     svg.appendChild(label);
 
     const valText = document.createElementNS(svgNS,"text");
     valText.setAttribute("x", String(xCenter));
-    valText.setAttribute("y", String(y - 4));
+    valText.setAttribute("y", String(Math.max(topPad + 10, y - 4)));
     valText.setAttribute("font-size","9");
     valText.setAttribute("text-anchor","middle");
-    valText.setAttribute("fill","#111827");
+    valText.setAttribute("fill", ink);
     valText.textContent = String(d.value);
     svg.appendChild(valText);
   });
