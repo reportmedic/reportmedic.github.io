@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="description" content="Run SQL queries on local CSV/TSV files in your browser. Load one or more files as tables, then SELECT, JOIN, GROUP BY, and export results — no upload."/>
+  <title>Query CSV with SQL (SQLite) — ReportMedic</title>
+  <link href="/favicon.ico" rel="icon" sizes="any"/>
+  <link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+  <link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+
+  <!-- libs (client-side only) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/sql-wasm.js"></script>
+
+  <script defer src="/assets/js/rm-dropzone.js"></script>
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+  <style>
+    .grid2{display:grid;grid-template-columns:1.25fr .85fr;gap:12px;align-items:start}
+    @media (max-width: 980px){ .grid2{grid-template-columns:1fr} }
+    .row{display:flex;gap:10px;align-items:center}
+    .row.wrap{flex-wrap:wrap;align-items:flex-end}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.05);font-size:12px;}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .codebox{background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px;white-space:pre-wrap;word-break:break-word;}
+    .btn.sm{padding:7px 10px;font-size:12.5px}
+    textarea#sql{min-height:170px;resize:vertical;font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;line-height:1.35}
+    .tableWrap{border:1px solid rgba(255,255,255,.14);border-radius:14px;overflow:auto;max-height:520px;background:rgba(0,0,0,.12)}
+    table{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px}
+    th,td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.10);vertical-align:top}
+    thead th{position:sticky;top:0;z-index:5;background:rgba(13, 21, 35, .92);backdrop-filter: blur(8px);text-align:left;font-size:11.5px;letter-spacing:.02em;opacity:.95}
+    tbody tr:hover td{background:rgba(255,255,255,.035)}
+    .kpi{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .kpi .pill b{font-weight:800}
+    .warn{color: rgba(255,215,140,.95)}
+    .ok{color: rgba(124,247,212,.95)}
+    .err{color: rgba(255,170,170,.95)}
+    .tiny{font-size:12px}
+    .muted{opacity:.82}
+    .hr{height:1px;background:rgba(255,255,255,.12);margin:12px 0}
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{cursor:pointer;user-select:none;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);border-radius:999px;padding:6px 10px;font-size:12px;}
+    .chip:hover{background:rgba(255,255,255,.08)}
+    .right{margin-left:auto}
+    .progress{height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid rgba(255,255,255,.12)}
+    .progress > div{height:100%;width:0%;background:linear-gradient(90deg, var(--brand), var(--brand2));}
+  </style>
+
+  <style>
+/* ReportMedic Learn-more modal (lightweight, page-local) */
+.rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+.rm-lm-link:hover{opacity:1;}
+.rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;}
+.rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+.rm-lm-dialog{color:#111;max-width:560px; width:100%; background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.25); overflow:hidden;}
+.rm-lm-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08);}
+.rm-lm-title{margin:0; font-size:1.05rem;}
+.rm-lm-close{border:0; background:transparent; font-size:1.25rem; line-height:1; padding:6px 10px; cursor:pointer; opacity:.7;}
+.rm-lm-close:hover{opacity:1;}
+.rm-lm-body{font-size:.95rem; line-height:1.45; color:#111;padding:14px 16px;}
+.rm-lm-body h3{margin:12px 0 6px; font-size:.95rem;}
+.rm-lm-body ul{margin:0 0 6px 18px;}
+.rm-lm-body li{margin:4px 0;}
+</style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Query CSV with SQL <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Load CSV/TSV files as tables, then run SQL (SQLite) right in your browser. Great for quick checks, joins, and aggregations — your data stays local.</p>
+
+    <div class="hr"></div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:800">Load data</div>
+            <div class="tiny muted">Upload one or more delimited text files. Each file becomes a SQL table.</div>
+          </div>
+          <div class="pill mono" id="enginePill">Loading SQL engine…</div>
+        </div>
+
+        <label style="margin-top:12px">File (CSV / TSV / TXT)</label>
+        <input id="fileInput" type="file" multiple accept=".csv,.tsv,.txt,text/csv,text/plain" data-rm-dropzone-size="compact"/>
+
+        <div class="row wrap" style="margin-top:10px">
+          <div style="flex:1;min-width:180px">
+            <label>Delimiter</label>
+            <select id="delim">
+              <option value="auto">Auto-detect</option>
+              <option value=",">Comma (,)</option>
+              <option value=";">Semicolon (;)</option>
+              <option value="\t">Tab (\t)</option>
+              <option value="|">Pipe (|)</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:180px">
+            <label>Header row</label>
+            <select id="hasHeader">
+              <option value="yes" selected>Yes (first row is headers)</option>
+              <option value="no">No (generate col1..colN)</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:180px">
+            <label>Default table alias</label>
+            <select id="defaultAlias">
+              <option value="t" selected>t (recommended)</option>
+              <option value="none">No alias</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row wrap" style="margin-top:10px">
+          <button class="btn primary" id="loadBtn" type="button" disabled>Load into SQL</button>
+          <button class="btn" id="clearBtn" type="button" disabled>Clear</button>
+          <div class="right tiny muted" id="loadMsg">Choose a file to begin.</div>
+        </div>
+
+        <div style="margin-top:10px;display:none" id="loadProgWrap">
+          <div class="progress"><div id="loadProgBar"></div></div>
+          <div class="tiny muted" style="margin-top:6px" id="loadProgText"></div>
+        </div>
+
+        <div class="hr"></div>
+        <div class="kpi" id="kpis" style="display:none"></div>
+
+        <div class="hr"></div>
+        <div style="font-weight:800">Loaded tables</div>
+        <div class="tiny muted">Table names are derived from filenames. Columns are cleaned to be SQL-friendly (see “Schema”).</div>
+        <div class="codebox mono" id="tablesOut" style="margin-top:10px">No tables loaded yet.</div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:800">Schema & helpers</div>
+        <div class="tiny muted">Inspect tables, insert common queries, and sanity-check types.</div>
+
+        <div class="row wrap" style="margin-top:10px">
+          <div style="flex:1;min-width:220px">
+            <label>Table</label>
+            <select id="tablePick" disabled></select>
+          </div>
+          <button class="btn sm" id="schemaBtn" type="button" disabled>Show schema</button>
+        </div>
+
+        <div class="codebox mono" id="schemaOut" style="margin-top:10px">Load a file to see schema.</div>
+
+        <div class="hr"></div>
+        <div style="font-weight:800">Quick queries</div>
+        <div class="tiny muted">Click to insert into the editor.</div>
+        <div class="chips" style="margin-top:10px">
+          <div class="chip mono" data-q="SELECT * FROM t LIMIT 50;">SELECT * LIMIT 50</div>
+          <div class="chip mono" data-q="SELECT COUNT(*) AS rows FROM t;">COUNT(*)</div>
+          <div class="chip mono" data-q="SELECT * FROM t WHERE 1=1 LIMIT 50;">WHERE …</div>
+          <div class="chip mono" data-q="SELECT col, COUNT(*) AS n FROM t GROUP BY col ORDER BY n DESC LIMIT 10;">GROUP BY</div>
+          <div class="chip mono" data-q="SELECT DISTINCT col FROM t LIMIT 50;">DISTINCT</div>
+        </div>
+
+        <div class="hr"></div>
+        <div class="tiny muted">
+          <span class="pill mono">Tip</span>
+          If you load multiple files, you can JOIN tables (SQLite syntax).
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <div class="row" style="justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-weight:800">SQL editor</div>
+          <div class="tiny muted">SQLite dialect • Run with <span class="mono">Ctrl/⌘ + Enter</span>.</div>
+        </div>
+        <div class="row wrap">
+          <button class="btn sm primary" id="runBtn" type="button" disabled>Run</button>
+          <button class="btn sm" id="runPreviewBtn" type="button" disabled>Preview</button>
+          <button class="btn sm" id="copyBtn" type="button" disabled>Copy (TSV)</button>
+          <button class="btn sm" id="downloadBtn" type="button" disabled>Download CSV</button>
+        </div>
+      </div>
+
+      <label style="margin-top:10px">SQL</label>
+      <textarea id="sql" spellcheck="false" placeholder="Example:
+SELECT *
+FROM t
+LIMIT 50;"></textarea>
+
+      <div class="row wrap" style="margin-top:10px">
+        <div class="pill mono" id="queryPill">No query run yet.</div>
+        <div class="right tiny muted" id="queryMsg"></div>
+      </div>
+
+      <div class="hr"></div>
+      <div class="tableWrap" id="resultWrap" style="display:none">
+        <table id="resultTable">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="tiny muted" id="resultNote" style="margin-top:10px;display:none"></div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="rm-footer-links">
+      <a href="/tools.html">All tools</a>
+      <a href="/fix-my-report.html">Live Agent</a>
+      <a href="/about.html">About</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
+<!-- Learn more modal -->
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Query CSV with SQL details">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Query CSV with SQL</h2>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Run fast validation queries (counts, distincts, filters)</li>
+        <li>Group-by summaries and quick “why is this off?” checks</li>
+        <li>Join multiple CSV extracts to reconcile keys and totals</li>
+        <li>Export the query result as a new CSV</li>
+      </ul>
+
+      <h3>How it works</h3>
+      <ul>
+        <li>Your file is parsed locally and loaded into an in-memory SQLite database (sql.js).</li>
+        <li>Queries run in your browser — nothing is uploaded.</li>
+        <li>SQL dialect is SQLite (most common SELECT/GROUP BY/JOIN patterns work).</li>
+      </ul>
+
+      <div class="rm-lm-foot">
+        <span class="pill mono">Privacy</span>
+        Local-first. Your data never leaves your device.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  function openLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','false');
+    const btn=bd.querySelector('.rm-lm-close');
+    if(btn) btn.focus();
+  }
+  function closeLM(id){
+    const bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','true');
+  }
+  document.addEventListener('click', function(e){
+    const a=e.target.closest('[data-rm-lm-open]');
+    if(a){
+      e.preventDefault();
+      openLM(a.getAttribute('data-rm-lm-open'));
+      return;
+    }
+    const close=e.target.closest('[data-rm-lm-close]');
+    if(close){
+      e.preventDefault();
+      closeLM(close.getAttribute('data-rm-lm-close'));
+      return;
+    }
+    const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+    if(bd){
+      closeLM(bd.id);
+    }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute('aria-hidden','true'));
+  });
+})();
+</script>
+
+<script>
+(function(){
+  'use strict';
+
+  const $ = (id)=>document.getElementById(id);
+
+  const els = {
+    fileInput: $('fileInput'),
+    delim: $('delim'),
+    hasHeader: $('hasHeader'),
+    defaultAlias: $('defaultAlias'),
+    loadBtn: $('loadBtn'),
+    clearBtn: $('clearBtn'),
+    loadMsg: $('loadMsg'),
+    enginePill: $('enginePill'),
+    loadProgWrap: $('loadProgWrap'),
+    loadProgBar: $('loadProgBar'),
+    loadProgText: $('loadProgText'),
+    kpis: $('kpis'),
+    tablesOut: $('tablesOut'),
+    tablePick: $('tablePick'),
+    schemaBtn: $('schemaBtn'),
+    schemaOut: $('schemaOut'),
+    sql: $('sql'),
+    runBtn: $('runBtn'),
+    runPreviewBtn: $('runPreviewBtn'),
+    copyBtn: $('copyBtn'),
+    downloadBtn: $('downloadBtn'),
+    queryPill: $('queryPill'),
+    queryMsg: $('queryMsg'),
+    resultWrap: $('resultWrap'),
+    resultTable: $('resultTable'),
+    resultNote: $('resultNote')
+  };
+
+  let SQL = null;
+  let db = null;
+  let engineReady = false;
+  let loadedTables = []; // {name, cols, map, rows}
+  let lastResult = null; // {cols, rows}
+
+  function setEngine(status, cls){
+    els.enginePill.textContent = status;
+    els.enginePill.className = 'pill mono' + (cls ? (' ' + cls) : '');
+  }
+
+  function setQueryStatus(text, cls){
+    els.queryPill.textContent = text;
+    els.queryPill.className = 'pill mono' + (cls ? (' ' + cls) : '');
+  }
+
+  function qIdent(name){
+    return '"' + String(name).replace(/"/g,'""') + '"';
+  }
+
+  function cleanIdent(raw, fallback){
+    const s = (raw==null? '' : String(raw)).trim();
+    let out = s.normalize ? s.normalize('NFKD') : s;
+    out = out.replace(/[^A-Za-z0-9_]+/g, '_').replace(/^_+|_+$/g,'');
+    if(!out) out = fallback || 'col';
+    if(/^[0-9]/.test(out)) out = 'c_' + out;
+    return out;
+  }
+
+  function toCSV(cols, rows){
+    const esc = (v)=>{
+      if(v==null) return '';
+      const s = String(v);
+      if(/[",\n\r]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+      return s;
+    };
+    const lines=[];
+    lines.push(cols.map(esc).join(','));
+    for(const r of rows) lines.push(r.map(esc).join(','));
+    return lines.join('\n');
+  }
+
+  function toTSV(cols, rows){
+    const esc = (v)=> v==null ? '' : String(v).replace(/\t/g,' ').replace(/\r?\n/g,' ');
+    const lines=[];
+    lines.push(cols.map(esc).join('\t'));
+    for(const r of rows) lines.push(r.map(esc).join('\t'));
+    return lines.join('\n');
+  }
+
+  async function ensureEngine(){
+    if(engineReady) return;
+    try {
+      setEngine('Loading SQL engine…');
+      if(typeof initSqlJs !== 'function') throw new Error('sql.js not loaded');
+      SQL = await initSqlJs({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/${file}`
+      });
+      db = new SQL.Database();
+      db.run("PRAGMA foreign_keys=ON;");
+      engineReady = true;
+      setEngine('Engine ready', 'ok');
+    } catch (e) {
+      setEngine('Engine failed', 'err');
+      els.loadMsg.textContent = 'Could not load SQL engine.';
+      els.loadMsg.className = 'tiny err';
+      console.error(e);
+      throw e;
+    }
+  }
+
+  function resetAll(){
+    loadedTables = [];
+    lastResult = null;
+    els.tablesOut.textContent = 'No tables loaded yet.';
+    els.kpis.style.display='none';
+    els.kpis.innerHTML='';
+    els.tablePick.innerHTML='';
+    els.tablePick.disabled = true;
+    els.schemaBtn.disabled = true;
+    els.schemaOut.textContent = 'Load a file to see schema.';
+    els.runBtn.disabled = true;
+    els.runPreviewBtn.disabled = true;
+    els.copyBtn.disabled = true;
+    els.downloadBtn.disabled = true;
+    els.sql.value = '';
+    setQueryStatus('No query run yet.');
+    els.queryMsg.textContent = '';
+    els.resultWrap.style.display='none';
+    els.resultNote.style.display='none';
+    els.clearBtn.disabled = true;
+  }
+
+  function safeTableNameFromFile(fileName, used){
+    const base = (fileName||'table').replace(/\.[^.]+$/,'');
+    let t = cleanIdent(base, 'table').toLowerCase();
+    if(!t) t='table';
+    let cand = t;
+    let n=2;
+    while(used.has(cand)){ cand = t + '_' + (n++); }
+    used.add(cand);
+    return cand;
+  }
+
+  function inferTypes(sampleRows, cols){
+    const types = {};
+    const isInt = (s)=> /^[-+]?\d+$/.test(s);
+    const isNum = (s)=> /^[-+]?\d*(\.\d+)?([eE][-+]?\d+)?$/.test(s) && s !== '' && s !== '.' && s !== '-' && s !== '+';
+    for(const c of cols) types[c] = {i:0,n:0,t:0};
+    for(const row of sampleRows){
+      for(const c of cols){
+        const v = row[c];
+        if(v==null) continue;
+        const s = String(v).trim();
+        if(s==='') continue;
+        if(isInt(s)) types[c].i++;
+        if(isNum(s)) types[c].n++;
+        types[c].t++;
+      }
+    }
+    const out={};
+    for(const c of cols){
+      const st = types[c];
+      if(st.t===0) out[c]='TEXT';
+      else if(st.n===st.t && st.i===st.t) out[c]='INTEGER';
+      else if(st.n===st.t) out[c]='REAL';
+      else out[c]='TEXT';
+    }
+    return out;
+  }
+
+  function showProgress(pct, text){
+    els.loadProgWrap.style.display = 'block';
+    els.loadProgBar.style.width = Math.max(0, Math.min(100, pct)) + '%';
+    els.loadProgText.textContent = text || '';
+  }
+  function hideProgress(){
+    els.loadProgWrap.style.display = 'none';
+    els.loadProgBar.style.width = '0%';
+    els.loadProgText.textContent = '';
+  }
+
+  function updateTablesUI(){
+    if(!loadedTables.length){
+      els.tablesOut.textContent = 'No tables loaded yet.';
+      els.tablePick.disabled = true;
+      els.schemaBtn.disabled = true;
+      els.tablePick.innerHTML='';
+      return;
+    }
+    const lines = [];
+    for(const t of loadedTables){
+      lines.push(`${t.name}  —  ${t.rows.toLocaleString()} rows, ${t.cols.length} cols`);
+    }
+    els.tablesOut.textContent = lines.join('\n');
+
+    els.tablePick.innerHTML = loadedTables.map(t=>`<option value="${t.name}">${t.name}</option>`).join('');
+    els.tablePick.disabled = false;
+    els.schemaBtn.disabled = false;
+
+    const totalRows = loadedTables.reduce((a,b)=>a+b.rows,0);
+    const totalCols = loadedTables.reduce((a,b)=>a+b.cols.length,0);
+    els.kpis.innerHTML = `
+      <span class="pill mono"><b>${loadedTables.length}</b> tables</span>
+      <span class="pill mono"><b>${totalRows.toLocaleString()}</b> rows</span>
+      <span class="pill mono"><b>${totalCols}</b> columns</span>
+    `;
+    els.kpis.style.display = 'flex';
+
+    els.clearBtn.disabled = false;
+    els.runBtn.disabled = false;
+    els.runPreviewBtn.disabled = false;
+  }
+
+  function showSchema(tableName){
+    try {
+      const res = db.exec(`PRAGMA table_info(${qIdent(tableName)});`);
+      if(!res || !res.length){
+        els.schemaOut.textContent = 'No schema found.';
+        return;
+      }
+      const cols = res[0].columns;
+      const rows = res[0].values;
+      const lines = [];
+      lines.push(`-- PRAGMA table_info(${tableName})`);
+      for(const r of rows){
+        const rowObj = {};
+        cols.forEach((c,i)=>rowObj[c]=r[i]);
+        lines.push(`${rowObj.name}  ${rowObj.type}${rowObj.notnull ? ' NOT NULL' : ''}${rowObj.dflt_value!=null ? ' DEFAULT ' + rowObj.dflt_value : ''}`);
+      }
+      els.schemaOut.textContent = lines.join('\n');
+    } catch (e) {
+      els.schemaOut.textContent = 'Schema error: ' + e.message;
+    }
+  }
+
+  function setDefaultAlias(){
+    try {
+      db.run('DROP VIEW IF EXISTS t;');
+      const mode = els.defaultAlias.value;
+      if(mode !== 't') return;
+      if(loadedTables.length === 1){
+        db.run(`CREATE VIEW t AS SELECT * FROM ${qIdent(loadedTables[0].name)};`);
+      }
+    } catch(e) {
+      // ignore
+    }
+  }
+
+  function insertExample(sql){
+    const cur = els.sql.value.trim();
+    els.sql.value = (cur ? (cur + '\n\n') : '') + sql;
+    els.sql.focus();
+  }
+
+  function renderResult(cols, rows, metaText){
+    const thead = els.resultTable.querySelector('thead');
+    const tbody = els.resultTable.querySelector('tbody');
+    thead.innerHTML = '';
+    tbody.innerHTML = '';
+    const trh = document.createElement('tr');
+    cols.forEach(c=>{
+      const th=document.createElement('th');
+      th.textContent = c;
+      trh.appendChild(th);
+    });
+    thead.appendChild(trh);
+
+    const maxShow = 500;
+    const showRows = rows.slice(0, maxShow);
+    for(const r of showRows){
+      const tr=document.createElement('tr');
+      for(let i=0;i<cols.length;i++) {
+        const td=document.createElement('td');
+        const v=r[i];
+        td.textContent = (v==null ? '' : String(v));
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+
+    els.resultWrap.style.display = 'block';
+    els.resultNote.style.display = 'block';
+    els.resultNote.textContent = metaText + (rows.length > maxShow ? `  •  Showing first ${maxShow} rows.` : '');
+  }
+
+  function runSQL(sqlText){
+    if(!sqlText.trim()) {
+      els.queryMsg.textContent = 'Type a query first.';
+      return;
+    }
+    try {
+      const t0 = performance.now();
+      const res = db.exec(sqlText);
+      const ms = Math.round(performance.now() - t0);
+
+      if(!res || !res.length){
+        lastResult = null;
+        els.copyBtn.disabled = true;
+        els.downloadBtn.disabled = true;
+        els.resultWrap.style.display = 'none';
+        els.resultNote.style.display = 'none';
+        setQueryStatus(`Executed (no rows) • ${ms} ms`, 'ok');
+        els.queryMsg.textContent = '';
+        return;
+      }
+
+      const last = res[res.length-1];
+      const cols = last.columns || [];
+      const rows = last.values || [];
+      lastResult = {cols, rows};
+      els.copyBtn.disabled = !(cols.length && rows.length);
+      els.downloadBtn.disabled = !(cols.length && rows.length);
+
+      setQueryStatus(`OK • ${rows.length.toLocaleString()} rows • ${ms} ms`, 'ok');
+      els.queryMsg.textContent = '';
+      renderResult(cols, rows, `${cols.length} columns • ${rows.length.toLocaleString()} rows • ${ms} ms`);
+    } catch(e) {
+      lastResult = null;
+      els.copyBtn.disabled = true;
+      els.downloadBtn.disabled = true;
+      els.resultWrap.style.display = 'none';
+      els.resultNote.style.display = 'none';
+      setQueryStatus('Error', 'err');
+      els.queryMsg.textContent = e.message;
+    }
+  }
+
+  async function loadFiles(files){
+    if(!files || !files.length) return;
+    await ensureEngine();
+
+    if(db) db.close();
+    db = new SQL.Database();
+    db.run("PRAGMA foreign_keys=ON;");
+    resetAll();
+    showProgress(2, 'Preparing…');
+
+    const used = new Set();
+    const delimiter = els.delim.value === 'auto' ? null : (els.delim.value === '\t' ? '\t' : els.delim.value);
+    const header = els.hasHeader.value === 'yes';
+
+    let totalBytes = 0;
+    for(const f of files) totalBytes += (f.size || 0);
+
+    let loadedBytes = 0;
+    function bumpProgress(extraBytes, msg){
+      loadedBytes += (extraBytes || 0);
+      const pct = totalBytes ? Math.min(98, Math.round((loadedBytes/totalBytes)*100)) : 20;
+      showProgress(pct, msg);
+    }
+
+    for(let fi=0; fi<files.length; fi++){
+      const file = files[fi];
+      const tableName = safeTableNameFromFile(file.name, used);
+
+      els.loadMsg.textContent = `Loading: ${file.name} …`;
+      els.loadMsg.className = 'tiny muted';
+
+      const sample = await new Promise((resolve,reject)=>{
+        const opts = {
+          skipEmptyLines: true,
+          preview: 250,
+          worker: true,
+          delimiter: delimiter || undefined,
+          complete: (res)=> resolve(res),
+          error: (err)=> reject(err)
+        };
+        if(header) opts.header = true;
+        Papa.parse(file, opts);
+      });
+
+      let cols = [];
+      let map = [];
+      if(header){
+        const usedCols = new Set();
+        const rawCols = (sample.meta && sample.meta.fields) ? sample.meta.fields : [];
+        cols = rawCols.map((h, idx)=>{
+          let c = cleanIdent(h, 'col' + (idx+1));
+          let base = c;
+          let n = 2;
+          while(usedCols.has(c)) c = base + '_' + (n++);
+          usedCols.add(c);
+          map.push({from: h, to: c});
+          return c;
+        });
+      } else {
+        const firstRow = (sample.data && sample.data[0]) ? sample.data[0] : [];
+        const nCols = Array.isArray(firstRow) ? firstRow.length : Object.keys(firstRow).length;
+        cols = Array.from({length: nCols}, (_,i)=> 'col' + (i+1));
+        map = cols.map(c=>({from:c,to:c}));
+      }
+
+      let sampleRows = (sample.data||[]).map((rec)=>{
+        const o={};
+        if(header){
+          for(let i=0;i<map.length;i++){
+            o[map[i].to] = rec[map[i].from];
+          }
+        } else {
+          for(let i=0;i<cols.length;i++) o[cols[i]] = Array.isArray(rec) ? rec[i] : rec[cols[i]];
+        }
+        return o;
+      });
+
+      const types = inferTypes(sampleRows, cols);
+
+      const colDefs = cols.map(c => `${qIdent(c)} ${types[c] || 'TEXT'}`).join(', ');
+      db.run(`CREATE TABLE ${qIdent(tableName)} (${colDefs});`);
+
+      const placeholders = cols.map(()=>'?').join(',');
+      const insertSQL = `INSERT INTO ${qIdent(tableName)} (${cols.map(qIdent).join(',')}) VALUES (${placeholders});`;
+      const stmt = db.prepare(insertSQL);
+
+      let rowCount = 0;
+
+      await new Promise((resolve,reject)=>{
+        const opts = {
+          skipEmptyLines: true,
+          worker: true,
+          delimiter: delimiter || undefined,
+          chunkSize: 1024 * 256,
+          chunk: (results)=>{
+            const data = results.data || [];
+            for(const rec of data){
+              const vals = [];
+              if(header){
+                for(let i=0;i<map.length;i++){
+                  const raw = map[i].from;
+                  const clean = map[i].to;
+                  vals.push(rec[raw] ?? rec[clean] ?? '');
+                }
+              } else {
+                for(let i=0;i<cols.length;i++) vals.push(Array.isArray(rec) ? rec[i] : (rec[cols[i]] ?? ''));
+              }
+              stmt.run(vals);
+              rowCount++;
+            }
+            bumpProgress(Math.floor((file.size||0) / 80), `Loaded ${rowCount.toLocaleString()} rows into ${tableName}…`);
+          },
+          complete: ()=> resolve(),
+          error: (err)=> reject(err)
+        };
+        if(header) opts.header = true;
+        else opts.header = false;
+
+        Papa.parse(file, opts);
+      });
+
+      stmt.free();
+
+      loadedTables.push({name: tableName, cols, map, rows: rowCount, fileName: file.name, size: file.size || 0});
+      els.loadMsg.textContent = `Loaded: ${file.name} → table "${tableName}" (${rowCount.toLocaleString()} rows)`;
+    }
+
+    hideProgress();
+    updateTablesUI();
+    setDefaultAlias();
+
+    if(loadedTables.length === 1 && els.defaultAlias.value === 't') {
+      els.sql.value = "SELECT *\nFROM t\nLIMIT 50;";
+    } else {
+      const first = loadedTables[0].name;
+      els.sql.value = `SELECT *\nFROM ${qIdent(first)}\nLIMIT 50;`;
+    }
+
+    runSQL(els.sql.value);
+  }
+
+  function wire(){
+    window.addEventListener('load', ()=>{
+      ensureEngine().catch(()=>{});
+    });
+
+    els.fileInput.addEventListener('change', ()=>{
+      const has = els.fileInput.files && els.fileInput.files.length;
+      els.loadBtn.disabled = !has;
+      els.loadMsg.textContent = has ? `${els.fileInput.files.length} file(s) selected.` : 'Choose a file to begin.';
+      els.loadMsg.className = 'tiny muted';
+      if(has) els.loadBtn.click();
+    });
+
+    els.loadBtn.addEventListener('click', async ()=>{
+      const files = els.fileInput.files ? Array.from(els.fileInput.files) : [];
+      if(!files.length) return;
+      els.loadBtn.disabled = true;
+      els.loadMsg.textContent = 'Loading…';
+      els.loadMsg.className = 'tiny muted';
+      try {
+        await loadFiles(files);
+      } catch (e) {
+        hideProgress();
+        els.loadMsg.textContent = 'Load failed: ' + (e.message || e);
+        els.loadMsg.className = 'tiny err';
+        console.error(e);
+      } finally {
+        els.loadBtn.disabled = false;
+      }
+    });
+
+    els.clearBtn.addEventListener('click', ()=>{
+      try { if(db) db.close(); } catch(e){}
+      db = null;
+      engineReady = false;
+      setEngine('Reloading engine…');
+      resetAll();
+      ensureEngine().catch(()=>{});
+      els.fileInput.value = '';
+      els.loadBtn.disabled = true;
+      els.loadMsg.textContent = 'Choose a file to begin.';
+      els.loadMsg.className = 'tiny muted';
+    });
+
+    els.schemaBtn.addEventListener('click', ()=>{
+      const t = els.tablePick.value;
+      if(!t) return;
+      showSchema(t);
+    });
+    els.tablePick.addEventListener('change', ()=>{
+      const t = els.tablePick.value;
+      if(t) showSchema(t);
+    });
+
+    document.addEventListener('click', (e)=>{
+      const chip = e.target.closest('.chip[data-q]');
+      if(chip){
+        const q = chip.getAttribute('data-q') || '';
+        insertExample(q);
+      }
+    });
+
+    els.runBtn.addEventListener('click', ()=> runSQL(els.sql.value));
+    els.runPreviewBtn.addEventListener('click', ()=> {
+      let q = els.sql.value.trim();
+      if(!q) return;
+      if(q.split(';').filter(s=>s.trim()).length > 1) { runSQL(q); return; }
+      const lower = q.toLowerCase();
+      if(!/\blimit\b/.test(lower)) q = q.replace(/;?\s*$/,'') + '\nLIMIT 50;';
+      runSQL(q);
+    });
+
+    els.sql.addEventListener('keydown', (e)=>{
+      if((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if(!els.runBtn.disabled) runSQL(els.sql.value);
+      }
+    });
+
+    els.copyBtn.addEventListener('click', async ()=>{
+      if(!lastResult) return;
+      const tsv = toTSV(lastResult.cols, lastResult.rows);
+      try {
+        await navigator.clipboard.writeText(tsv);
+        els.queryMsg.textContent = 'Copied results (TSV).';
+      } catch(e) {
+        els.queryMsg.textContent = 'Copy failed.';
+      }
+    });
+
+    els.downloadBtn.addEventListener('click', ()=>{
+      if(!lastResult) return;
+      const csv = toCSV(lastResult.cols, lastResult.rows);
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'query_result.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+    });
+
+    els.defaultAlias.addEventListener('change', ()=> {
+      setDefaultAlias();
+    });
+  }
+
+  wire();
+})();
+</script>
+</body>
+</html>
