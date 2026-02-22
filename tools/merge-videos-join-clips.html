@@ -306,8 +306,7 @@
       if(s === 'Aborted()') return;
       if(s.startsWith('RuntimeError: Aborted')) return;
 
-      log.textContent += (log.textContent ? '
-' : '') + s;
+      log.textContent += (log.textContent ? '\\n' : '') + s;
       log.scrollTop = log.scrollHeight;
     }
     function resetOutput(){
