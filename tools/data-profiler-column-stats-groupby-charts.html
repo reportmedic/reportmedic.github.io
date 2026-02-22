@@ -1200,6 +1200,16 @@ function renderChart(){
   const height = 240 - topPad - bottomPad;
   const barWidth = width / data.length * 0.7;
 
+  // Adaptive label sizing: bigger when there is more space, smaller when dense.
+  const clamp = (min, v, max) => Math.max(min, Math.min(max, v));
+  const slot = width / data.length; // horizontal space per bar
+  const xFont   = clamp(7,  Math.round(slot * 0.22), 13); // x-axis labels
+  const valFont = clamp(7,  Math.round(slot * 0.24), 13); // value labels above bars
+  const yFont   = clamp(8,  Math.round(9 + (slot > 90 ? 2 : slot > 60 ? 1 : 0)), 12); // y-axis ticks
+
+  const approxCharW = xFont * 0.58;
+  const maxChars = clamp(4, Math.floor((slot * 0.90) / approxCharW), 18);
+
   // Axes + grid
   const axisX = leftPad;
   const axisY = topPad + height;
@@ -1232,7 +1242,7 @@ function renderChart(){
     const tick = document.createElementNS(svgNS,"text");
     tick.setAttribute("x", String(axisX - 6));
     tick.setAttribute("y", String(y + 3));
-    tick.setAttribute("font-size","9");
+    tick.setAttribute("font-size", String(yFont));
     tick.setAttribute("text-anchor","end");
     tick.setAttribute("fill", ink);
     tick.textContent = String(Math.round(tickVal));
@@ -1258,18 +1268,18 @@ function renderChart(){
     const label = document.createElementNS(svgNS,"text");
     label.setAttribute("x", String(xCenter));
     label.setAttribute("y", String(240 - 20));
-    label.setAttribute("font-size","9");
+    label.setAttribute("font-size", String(xFont));
     label.setAttribute("text-anchor","middle");
     label.setAttribute("fill", ink);
     let txt = d.key;
-    if (txt.length > 10) txt = txt.slice(0,10) + "\u2026";
+    if (txt.length > maxChars) txt = txt.slice(0, Math.max(1, maxChars - 1)) + "\u2026";
     label.textContent = txt;
     svg.appendChild(label);
 
     const valText = document.createElementNS(svgNS,"text");
     valText.setAttribute("x", String(xCenter));
     valText.setAttribute("y", String(Math.max(topPad + 10, y - 4)));
-    valText.setAttribute("font-size","9");
+    valText.setAttribute("font-size", String(valFont));
     valText.setAttribute("text-anchor","middle");
     valText.setAttribute("fill", ink);
     valText.textContent = String(d.value);
