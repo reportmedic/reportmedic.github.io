@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Merge Videos / Join Clips into One MP4 — ReportMedic</title>
+  <meta name="description" content="Merge multiple video clips into one file in your browser. Fast join (no re-encode) or compatible join (re-encode). Runs locally (no upload)." />
+
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+
+  <script defer src="/assets/js/rm-dropzone.js"></script>
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+  <style>
+    /* Learn-more modal (page-local) */
+    .rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+    .rm-lm-link:hover{opacity:1;}
+    .rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:16px; z-index:9999;}
+    .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+    .rm-lm{width:min(900px, 100%); background:rgba(20,20,24,.96); border:1px solid rgba(255,255,255,.12); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35);}
+    .rm-lm header{display:flex; align-items:center; justify-content:space-between; padding:14px 14px 10px; border-bottom:1px solid rgba(255,255,255,.10);}
+    .rm-lm header .t{font-weight:800; letter-spacing:.2px;}
+    .rm-lm .rm-lm-close{background:transparent; border:1px solid rgba(255,255,255,.18); color:inherit; border-radius:10px; padding:8px 10px; cursor:pointer;}
+    .rm-lm .rm-lm-close:hover{border-color:rgba(255,255,255,.28);}
+    .rm-lm .body{padding:14px;}
+    .rm-lm .body ul{margin:8px 0 0 18px;}
+    .rm-lm .body li{margin:6px 0;}
+
+    .rm-kv{display:grid; grid-template-columns:160px 1fr; gap:8px; margin-top:10px;}
+    .rm-kv .k{opacity:.8;}
+    .rm-kv .v{word-break:break-word;}
+
+    .rm-log{height:150px; overflow:auto; border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:10px; background:rgba(255,255,255,.03); font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px; color:rgba(255,255,255,.88);}
+    .rm-progress{width:100%; height:10px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden; border:1px solid rgba(255,255,255,.10);}
+    .rm-progress > div{height:100%; width:0%; background:linear-gradient(135deg, rgba(110,168,255,.95), rgba(124,247,212,.95));}
+
+    .rm-list{list-style:none; padding:0; margin:10px 0 0;}
+    .rm-item{display:flex; gap:10px; align-items:center; padding:10px; border:1px solid rgba(255,255,255,.12); border-radius:14px; margin:8px 0; background:rgba(255,255,255,.03)}
+    .rm-item .grow{flex:1; min-width:0}
+    .rm-item .t{font-weight:800; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .rm-item .m{color:var(--muted); font-size:12px; margin-top:2px}
+    .rm-item .btns{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+    .rm-hidden{display:none !important}
+  </style>
+</head>
+
+<body class="tools-page">
+  <header>
+    <div class="nav">
+      <a class="logo" href="/" style="text-decoration:none;">
+        <div class="mark"></div>
+        <div>ReportMedic</div>
+      </a>
+      <div class="spacer"></div>
+      <a class="btn" href="/">Home</a>
+      <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+      <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="panel">
+      <h1>Merge Videos / Join Clips <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+      <p class="sub">Join multiple clips into one file — private and local. Runs in your browser (no upload).</p>
+      <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+      <div class="hr"></div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="row" style="justify-content:space-between; align-items:flex-start">
+            <div>
+              <div style="font-weight:800">Upload clips</div>
+              <div class="tiny muted">Select 2+ videos. Reorder before merging.</div>
+            </div>
+            <span class="pill tiny" id="meta"><b>Files:</b><span class="muted">0</span></span>
+          </div>
+
+          <div style="margin-top:10px">
+            <input id="files" class="input" type="file" accept="video/*" multiple />
+          </div>
+
+          <ul class="rm-list" id="list" aria-label="input files"></ul>
+
+          <div class="hr"></div>
+
+          <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+            <span class="tiny muted" style="min-width:130px">Merge style</span>
+            <select id="mergeMode" class="input" style="width:auto; min-width:340px">
+              <option value="copy" selected>Fast join (no re-encode) — best when clips match</option>
+              <option value="encode">Compatible join (re-encode) — works for mixed clips</option>
+            </select>
+          </div>
+
+          <div id="encodeBox" class="rm-hidden" style="margin-top:12px">
+            <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+              <span class="tiny muted" style="min-width:130px">Normalize</span>
+              <select id="norm" class="input" style="width:auto; min-width:260px">
+                <option value="1080" selected>Normalize to 1080p canvas</option>
+                <option value="720">Normalize to 720p canvas</option>
+                <option value="none">Keep original (requires matching)</option>
+              </select>
+
+              <span class="tiny muted" style="min-width:90px">Audio</span>
+              <select id="audioMode" class="input" style="width:auto; min-width:220px">
+                <option value="keep" selected>Keep audio (requires all clips have audio)</option>
+                <option value="mute">Video only (mute output)</option>
+              </select>
+            </div>
+
+            <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap; align-items:center">
+              <span class="tiny muted" style="min-width:130px">Quality (CRF)</span>
+              <input id="crf" type="range" min="18" max="35" value="23" step="1" style="width:240px" />
+              <span class="pill tiny" id="crfLbl"><b>CRF:</b><span class="muted">23</span></span>
+
+              <span class="tiny muted" style="min-width:90px">Speed</span>
+              <select id="preset" class="input" style="width:auto; min-width:220px">
+                <option value="ultrafast">Ultra fast (largest)</option>
+                <option value="veryfast" selected>Very fast (recommended)</option>
+                <option value="faster">Faster</option>
+                <option value="fast">Fast</option>
+                <option value="medium">Medium (slower)</option>
+              </select>
+
+              <span class="tiny muted" style="min-width:90px">Audio bitrate</span>
+              <select id="ab" class="input" style="width:auto; min-width:170px">
+                <option value="96k">96k</option>
+                <option value="128k" selected>128k</option>
+                <option value="160k">160k</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:14px; gap:10px; flex-wrap:wrap">
+            <button class="btn" id="loadBtn" type="button">Load video engine</button>
+            <button class="btn primary" id="goBtn" type="button" disabled>Merge</button>
+            <button class="btn" id="downloadBtn" type="button" disabled>Download MP4</button>
+            <button class="btn" id="clearBtn" type="button" disabled>Clear</button>
+            <span class="pill tiny" id="status"><b>Status:</b><span class="muted">select 2+ clips</span></span>
+          </div>
+
+          <div style="margin-top:12px">
+            <div class="rm-progress" aria-label="progress"><div id="bar"></div></div>
+            <div class="tiny muted" style="margin-top:8px">Everything runs locally. If “Fast join” fails, switch to “Compatible join”.</div>
+          </div>
+
+          <div class="hr"></div>
+          <div style="font-weight:800; margin-bottom:6px">Engine log</div>
+          <div class="rm-log" id="log" aria-label="ffmpeg log"></div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:800; margin-bottom:6px">Preview</div>
+          <div class="tiny muted">Output preview appears after merge.</div>
+          <div class="hr"></div>
+
+          <video id="out" controls style="width:100%; border-radius:14px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.25);"></video>
+
+          <div class="hr"></div>
+
+          <div style="font-weight:800; margin-bottom:6px">File details</div>
+          <div class="row" style="gap:10px; flex-wrap:wrap">
+            <span class="pill tiny" id="before"><b>Inputs:</b><span class="muted">—</span></span>
+            <span class="pill tiny" id="after"><b>Output:</b><span class="muted">—</span></span>
+          </div>
+
+          <div class="hr"></div>
+          <div class="tiny muted" id="tips">
+            Tip: For best results in “Fast join”, use clips exported from the same device/app with the same resolution and frame rate.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="rm-footer">
+    <div class="rm-footer-inner">
+      <div class="rm-footer-brand">
+        <div class="rm-footer-name">ReportMedic</div>
+        <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+      </div>
+      <div class="rm-footer-links">
+        <a href="/fix-my-report.html">Fix My Report</a>
+        <a href="/#tools">Tools</a>
+        <a href="/docs/">Docs</a>
+        <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+      </div>
+      <div class="rm-footer-meta">© 2026 ReportMedic</div>
+    </div>
+  </footer>
+
+  <div class="rm-lm-backdrop" id="rmLM" aria-hidden="true">
+    <div class="rm-lm" role="dialog" aria-modal="true" aria-label="Merge Videos / Join Clips">
+      <header>
+        <div class="t">Merge Videos / Join Clips</div>
+        <button class="rm-lm-close" type="button" data-rm-lm-close="rmLM">Close</button>
+      </header>
+      <div class="body">
+        <ul>
+          <li><b>Fast join</b>: quickest and keeps original quality, but requires clips to match (codec/resolution/fps).</li>
+          <li><b>Compatible join</b>: re-encodes to a consistent output and is more forgiving for mixed clips.</li>
+          <li>Nothing is uploaded — merging happens locally in your browser.</li>
+        </ul>
+        <div class="rm-kv">
+          <div class="k">Quickest</div>
+          <div class="v">Fast join • same camera/app exports</div>
+          <div class="k">Most compatible</div>
+          <div class="v">Compatible join • normalize to 1080p</div>
+          <div class="k">Audio note</div>
+          <div class="v">“Keep audio” requires all clips to have audio tracks</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    function openLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','false');
+      const btn=bd.querySelector('.rm-lm-close');
+      if(btn) btn.focus();
+    }
+    function closeLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','true');
+    }
+    document.addEventListener('click', function(e){
+      const a=e.target.closest('[data-rm-lm-open]');
+      if(a){ e.preventDefault(); openLM(a.getAttribute('data-rm-lm-open')); return; }
+      const c=e.target.closest('[data-rm-lm-close]');
+      if(c){ e.preventDefault(); closeLM(c.getAttribute('data-rm-lm-close')); return; }
+      const bd=(e.target && e.target.classList && e.target.classList.contains('rm-lm-backdrop')) ? e.target : null;
+      if(bd) closeLM(bd.id);
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key !== 'Escape') return;
+      document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute('aria-hidden','true'));
+    });
+  })();
+  </script>
+
+  <script type="module">
+    import { FFmpeg } from '/assets/vendor/ffmpeg/ffmpeg-esm/index.js';
+    import { toBlobURL } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.2/dist/esm/index.js';
+
+    const $ = (id)=>document.getElementById(id);
+
+    const filesEl = $('files');
+    const meta = $('meta');
+    const list = $('list');
+
+    const mergeMode = $('mergeMode');
+    const encodeBox = $('encodeBox');
+    const norm = $('norm');
+    const audioMode = $('audioMode');
+    const crf = $('crf');
+    const crfLbl = $('crfLbl');
+    const preset = $('preset');
+    const ab = $('ab');
+
+    const status = $('status');
+    const loadBtn = $('loadBtn');
+    const goBtn = $('goBtn');
+    const dlBtn = $('downloadBtn');
+    const clearBtn = $('clearBtn');
+
+    const out = $('out');
+    const beforeP = $('before');
+    const afterP = $('after');
+
+    const log = $('log');
+    const bar = $('bar');
+
+    const ffmpeg = new FFmpeg();
+    let loaded = false;
+    let files = []; // ordered
+    let outBlob = null;
+    let outUrl = null;
+
+    const humanBytes = (n) => {
+      if(!Number.isFinite(n)) return '—';
+      const u=['B','KB','MB','GB']; let i=0; let v=n;
+      while(v>=1024 && i<u.length-1){ v/=1024; i++; }
+      const s = i===0 ? String(Math.round(v)) : String(Math.round(v*10)/10);
+      return s+' '+u[i];
+    };
+
+    function setStatus(msg){
+      status.innerHTML = `<b>Status:</b><span class="muted">${msg}</span>`;
+    }
+    function setPill(pill, label, value){
+      pill.innerHTML = `<b>${label}:</b><span class="muted">${value}</span>`;
+    }
+    function appendLog(line){
+      const s = String(line || '').trim();
+      if(!s) return;
+      log.textContent += (log.textContent ? '\n' : '') + s;
+      log.scrollTop = log.scrollHeight;
+    }
+    function resetOutput(){
+      outBlob = null;
+      dlBtn.disabled = true;
+      setPill(afterP,'Output','—');
+      bar.style.width = '0%';
+      if(outUrl){ URL.revokeObjectURL(outUrl); outUrl = null; }
+      out.removeAttribute('src'); out.load();
+    }
+
+    function showEncodeUI(){
+      encodeBox.classList.toggle('rm-hidden', mergeMode.value !== 'encode');
+    }
+    mergeMode.addEventListener('change', ()=>{ showEncodeUI(); resetOutput(); });
+
+    crf.addEventListener('input', ()=>{ crfLbl.innerHTML = `<b>CRF:</b><span class="muted">${crf.value}</span>`; });
+
+    filesEl.addEventListener('change', ()=>{
+      const picked = Array.from(filesEl.files || []);
+      if(!picked.length){
+        files = [];
+        list.innerHTML = '';
+        meta.innerHTML = '<b>Files:</b><span class="muted">0</span>';
+        setStatus('select 2+ clips');
+        goBtn.disabled = true;
+        clearBtn.disabled = true;
+        resetOutput();
+        setPill(beforeP,'Inputs','—');
+        return;
+      }
+      files = picked;
+      renderList();
+      resetOutput();
+      meta.innerHTML = `<b>Files:</b><span class="muted">${files.length}</span>`;
+      const totalBytes = files.reduce((a,f)=>a+f.size,0);
+      setPill(beforeP,'Inputs', `${files.length} file(s) • ${humanBytes(totalBytes)}`);
+      setStatus(loaded ? 'ready to merge' : 'load engine, then merge');
+      goBtn.disabled = !loaded || files.length < 2;
+      clearBtn.disabled = false;
+    });
+
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, (c)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+
+    function renderList(){
+      list.innerHTML = '';
+      files.forEach((f, idx)=>{
+        const li = document.createElement('li');
+        li.className = 'rm-item';
+        li.innerHTML = `
+          <div class="grow">
+            <div class="t">${escapeHtml(f.name)}</div>
+            <div class="m">${escapeHtml(humanBytes(f.size))}</div>
+          </div>
+          <div class="btns">
+            <button class="btn small" type="button" data-act="up" data-idx="${idx}">↑</button>
+            <button class="btn small" type="button" data-act="down" data-idx="${idx}">↓</button>
+            <button class="btn small" type="button" data-act="remove" data-idx="${idx}">Remove</button>
+          </div>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    list.addEventListener('click', (e)=>{
+      const b = e.target.closest('button[data-act]');
+      if(!b) return;
+      const act = b.getAttribute('data-act');
+      const idx = parseInt(b.getAttribute('data-idx'), 10);
+      if(!Number.isFinite(idx) || idx < 0 || idx >= files.length) return;
+
+      if(act === 'remove'){
+        files.splice(idx,1);
+      } else if(act === 'up' && idx > 0){
+        const t = files[idx-1]; files[idx-1]=files[idx]; files[idx]=t;
+      } else if(act === 'down' && idx < files.length-1){
+        const t = files[idx+1]; files[idx+1]=files[idx]; files[idx]=t;
+      } else {
+        return;
+      }
+      renderList();
+      meta.innerHTML = `<b>Files:</b><span class="muted">${files.length}</span>`;
+      const totalBytes = files.reduce((a,f)=>a+f.size,0);
+      setPill(beforeP,'Inputs', files.length ? `${files.length} file(s) • ${humanBytes(totalBytes)}` : '—');
+      goBtn.disabled = !loaded || files.length < 2;
+      resetOutput();
+    });
+
+    ffmpeg.on('log', ({ message }) => appendLog(message));
+    ffmpeg.on('progress', ({ ratio }) => {
+      if(!Number.isFinite(ratio)) return;
+      const pct = Math.max(0, Math.min(100, Math.round(ratio * 100)));
+      bar.style.width = pct + '%';
+    });
+
+    async function loadEngine(){
+      if(loaded) return;
+      loadBtn.disabled = true;
+      goBtn.disabled = true;
+      setStatus('loading engine…');
+      appendLog('Loading FFmpeg (first time can be ~30–40MB)…');
+      try{
+        const coreBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm';
+        const coreURL = await toBlobURL(`${coreBase}/ffmpeg-core.js`, 'text/javascript');
+        const wasmURL = await toBlobURL(`${coreBase}/ffmpeg-core.wasm`, 'application/wasm');
+        await ffmpeg.load({ coreURL, wasmURL });
+        loaded = true;
+        appendLog('Engine ready.');
+        setStatus(files.length >= 2 ? 'ready to merge' : 'select 2+ clips');
+        goBtn.disabled = files.length < 2;
+      } catch(e){
+        console.error(e);
+        appendLog(String(e));
+        setStatus('failed to load engine');
+        loadBtn.disabled = false;
+      }
+    }
+
+    function escForConcatList(path){
+      // concat demuxer list: single-quote string; escape any single quotes
+      return String(path).replace(/'/g, "'\\''");
+    }
+
+    function buildNormalizeFilter(w, h){
+      // Downscale to fit, pad to exact canvas, set sar=1
+      // Escape comma inside min() with \, to satisfy ffmpeg filter syntax.
+      return `scale=w=min(${w}\\,iw):h=min(${h}\\,ih):force_original_aspect_ratio=decrease,pad=${w}:${h}:(ow-iw)/2:(oh-ih)/2,setsar=1`;
+    }
+
+    async function merge(){
+      if(files.length < 2){ setStatus('select 2+ clips'); return; }
+      if(!loaded){ await loadEngine(); if(!loaded) return; }
+
+      resetOutput();
+      goBtn.disabled = true;
+      dlBtn.disabled = true;
+      clearBtn.disabled = true;
+      loadBtn.disabled = true;
+      setStatus('merging…');
+      appendLog('---');
+
+      const mountPoint = '/input';
+      const outFile = 'output.mp4';
+
+      try{
+        try{ await ffmpeg.createDir(mountPoint); }catch(e){}
+        try{ await ffmpeg.unmount(mountPoint); }catch(e){}
+        await ffmpeg.mount('WORKERFS', { files }, mountPoint);
+
+        // cleanup from prior runs
+        try{ await ffmpeg.deleteFile(outFile); }catch(e){}
+        try{ await ffmpeg.deleteFile('list.txt'); }catch(e){}
+
+
+        if(mergeMode.value === 'copy'){
+          const lines = files.map(f => `file '${escForConcatList(mountPoint + '/' + f.name)}'`).join('\n') + '\n';
+          const enc = new TextEncoder().encode(lines);
+          await ffmpeg.writeFile('list.txt', enc);
+
+          const args = ['-f','concat','-safe','0','-i','list.txt','-c','copy','-movflags','+faststart'];
+          if(mergeMode.value === 'copy'){
+            // allow dropping audio (mute output) even in copy mode by omitting audio
+            // (video-only output is often useful for B-roll)
+            // keep audio by default
+          }
+          // If user wants video-only in copy mode, treat it as "mute output" using -an
+          // (We keep this simple: only in encode mode can we choose keep/mute explicitly.)
+          args.push(outFile);
+
+          appendLog('ffmpeg ' + args.join(' '));
+          await ffmpeg.exec(args);
+        } else {
+          const N = files.length;
+
+          const args = [];
+          for(const f of files){
+            args.push('-i', `${mountPoint}/${f.name}`);
+          }
+
+          const wantAudio = (audioMode.value === 'keep');
+
+          const vLabels = [];
+          const aLabels = [];
+
+          const doNorm = norm.value;
+          let vf = 'setsar=1';
+          if(doNorm === '1080') vf = buildNormalizeFilter(1920,1080);
+          else if(doNorm === '720') vf = buildNormalizeFilter(1280,720);
+          else vf = 'setsar=1';
+
+          let filter = '';
+          for(let i=0;i<N;i++){
+            filter += `[${i}:v]${vf}[v${i}];`;
+            vLabels.push(`[v${i}]`);
+            if(wantAudio){
+              filter += `[${i}:a]aformat=sample_fmts=fltp:channel_layouts=stereo,aresample=48000[a${i}];`;
+              aLabels.push(`[a${i}]`);
+            }
+          }
+
+          if(wantAudio){
+            filter += `${vLabels.join('')}${aLabels.join('')}concat=n=${N}:v=1:a=1[outv][outa]`;
+          } else {
+            filter += `${vLabels.join('')}concat=n=${N}:v=1:a=0[outv]`;
+          }
+
+          args.push('-filter_complex', filter, '-map', '[outv]');
+          if(wantAudio) args.push('-map','[outa]');
+          args.push('-c:v','libx264','-preset', preset.value, '-crf', String(crf.value), '-pix_fmt','yuv420p');
+          if(wantAudio) args.push('-c:a','aac','-b:a', ab.value);
+          else args.push('-an');
+          args.push('-movflags','+faststart', outFile);
+
+          appendLog('ffmpeg ' + args.join(' '));
+          await ffmpeg.exec(args);
+        }
+
+        const data = await ffmpeg.readFile(outFile);
+        outBlob = new Blob([data], { type:'video/mp4' });
+        setPill(afterP,'Output', humanBytes(outBlob.size));
+        outUrl = URL.createObjectURL(outBlob);
+        out.src = outUrl;
+        out.load();
+
+        dlBtn.disabled = false;
+        setStatus('done');
+        bar.style.width = '100%';
+      } catch(e){
+        console.error(e);
+        appendLog(String(e));
+        setStatus('failed (try Compatible join)');
+      } finally {
+        goBtn.disabled = false;
+        clearBtn.disabled = false;
+        loadBtn.disabled = false;
+      }
+    }
+
+    function download(){
+      if(!outBlob) return;
+      const a = document.createElement('a');
+      a.href = outUrl || (outUrl = URL.createObjectURL(outBlob));
+      a.download = 'merged.mp4';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    function clearAll(){
+      filesEl.value = '';
+      files = [];
+      list.innerHTML = '';
+      meta.innerHTML = '<b>Files:</b><span class="muted">0</span>';
+      setPill(beforeP,'Inputs','—');
+      resetOutput();
+      log.textContent = '';
+      setStatus('select 2+ clips');
+      goBtn.disabled = true;
+      clearBtn.disabled = true;
+    }
+
+    loadBtn.addEventListener('click', loadEngine);
+    goBtn.addEventListener('click', merge);
+    dlBtn.addEventListener('click', download);
+    clearBtn.addEventListener('click', clearAll);
+
+    // init
+    showEncodeUI();
+    crfLbl.innerHTML = `<b>CRF:</b><span class="muted">${crf.value}</span>`;
+    setPill(beforeP,'Inputs','—');
+    setPill(afterP,'Output','—');
+  </script>
+</body>
+</html>

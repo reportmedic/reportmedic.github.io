@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Split Video into Clips (Time / Duration / Size) — ReportMedic</title>
+  <meta name="description" content="Split a video into smaller clips by custom time ranges, fixed durations, equal parts, or approximate file size. Runs locally in your browser (no upload)." />
+
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+
+  <script defer src="/assets/js/rm-dropzone.js"></script>
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+  <style>
+    /* Learn-more modal (page-local) */
+    .rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
+    .rm-lm-link:hover{opacity:1;}
+    .rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:16px; z-index:9999;}
+    .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+    .rm-lm{width:min(900px, 100%); background:rgba(20,20,24,.96); border:1px solid rgba(255,255,255,.12); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35);}
+    .rm-lm header{display:flex; align-items:center; justify-content:space-between; padding:14px 14px 10px; border-bottom:1px solid rgba(255,255,255,.10);}
+    .rm-lm header .t{font-weight:800; letter-spacing:.2px;}
+    .rm-lm .rm-lm-close{background:transparent; border:1px solid rgba(255,255,255,.18); color:inherit; border-radius:10px; padding:8px 10px; cursor:pointer;}
+    .rm-lm .rm-lm-close:hover{border-color:rgba(255,255,255,.28);}
+    .rm-lm .body{padding:14px;}
+    .rm-lm .body ul{margin:8px 0 0 18px;}
+    .rm-lm .body li{margin:6px 0;}
+
+    .rm-kv{display:grid; grid-template-columns:160px 1fr; gap:8px; margin-top:10px;}
+    .rm-kv .k{opacity:.8;}
+    .rm-kv .v{word-break:break-word;}
+
+    .rm-log{height:150px; overflow:auto; border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:10px; background:rgba(255,255,255,.03); font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px; color:rgba(255,255,255,.88);}
+    .rm-progress{width:100%; height:10px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden; border:1px solid rgba(255,255,255,.10);}
+    .rm-progress > div{height:100%; width:0%; background:linear-gradient(135deg, rgba(110,168,255,.95), rgba(124,247,212,.95));}
+
+    textarea.input{min-height:120px; resize:vertical; line-height:1.35;}
+    .rm-cliplist{list-style:none; padding:0; margin:10px 0 0;}
+    .rm-clip{display:flex; gap:10px; align-items:flex-start; padding:10px; border:1px solid rgba(255,255,255,.12); border-radius:14px; margin:8px 0; background:rgba(255,255,255,.03)}
+    .rm-clip .grow{flex:1; min-width:0}
+    .rm-clip .t{font-weight:800; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .rm-clip .m{color:var(--muted); font-size:12px; margin-top:2px}
+    .rm-clip .btns{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+    .rm-hidden{display:none !important}
+  </style>
+</head>
+
+<body class="tools-page">
+  <header>
+    <div class="nav">
+      <a class="logo" href="/" style="text-decoration:none;">
+        <div class="mark"></div>
+        <div>ReportMedic</div>
+      </a>
+      <div class="spacer"></div>
+      <a class="btn" href="/">Home</a>
+      <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+      <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="panel">
+      <h1>Split Video into Clips <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+      <p class="sub">Split large videos into smaller parts for email, portals, or messaging — private and local. Runs in your browser (no upload).</p>
+      <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+      <div class="hr"></div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="row" style="justify-content:space-between; align-items:flex-start">
+            <div>
+              <div style="font-weight:800">Upload video</div>
+              <div class="tiny muted">MP4/MOV/WebM (very large files may take time)</div>
+            </div>
+            <span class="pill tiny" id="meta"><b>Video:</b><span class="muted">not loaded</span></span>
+          </div>
+
+          <div style="margin-top:10px">
+            <input id="file" class="input" type="file" accept="video/*" />
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+            <span class="tiny muted" style="min-width:130px">Split mode</span>
+            <select id="splitMode" class="input" style="width:auto; min-width:320px">
+              <option value="custom" selected>Custom time ranges (you define each clip)</option>
+              <option value="fixed">Split by fixed duration (e.g., every 2 minutes)</option>
+              <option value="parts">Split into N equal parts</option>
+              <option value="size">Split by target file size (approx)</option>
+            </select>
+          </div>
+
+          <div id="customBox" style="margin-top:12px">
+            <div class="tiny muted" style="margin-bottom:6px">One clip per line. Examples: <span class="pill tiny"><b>00:00:00-00:00:30</b></span> or <span class="pill tiny"><b>01:02-03:40</b></span></div>
+            <textarea id="ranges" class="input" placeholder="00:00:00-00:00:30
+00:00:30-00:01:00"></textarea>
+          </div>
+
+          <div id="fixedBox" class="rm-hidden" style="margin-top:12px">
+            <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+              <span class="tiny muted" style="min-width:130px">Clip duration</span>
+              <input id="dur" class="input" placeholder="e.g., 00:02:00" style="max-width:220px" />
+              <span class="tiny muted" style="min-width:120px">Start at</span>
+              <input id="start" class="input" placeholder="optional (e.g., 00:00:00)" style="max-width:220px" />
+            </div>
+          </div>
+
+          <div id="partsBox" class="rm-hidden" style="margin-top:12px">
+            <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+              <span class="tiny muted" style="min-width:130px">Number of parts</span>
+              <input id="parts" type="number" min="2" value="2" class="input" style="max-width:140px" />
+              <span class="tiny muted">Evenly splits by total duration.</span>
+            </div>
+          </div>
+
+          <div id="sizeBox" class="rm-hidden" style="margin-top:12px">
+            <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+              <span class="tiny muted" style="min-width:130px">Target size</span>
+              <input id="maxMB" type="number" min="1" value="25" class="input" style="max-width:140px" />
+              <span class="tiny muted">MB per clip (approx, based on average bitrate)</span>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+            <span class="tiny muted" style="min-width:130px">Cut style</span>
+            <select id="cutMode" class="input" style="width:auto; min-width:320px">
+              <option value="copy" selected>Fast (no re-encode) — may cut on keyframes</option>
+              <option value="encode">Exact (re-encode) — precise cuts (slower)</option>
+            </select>
+          </div>
+
+          <div id="encodeBox" class="rm-hidden" style="margin-top:12px">
+            <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+              <span class="tiny muted" style="min-width:130px">Quality (CRF)</span>
+              <input id="crf" type="range" min="18" max="35" value="24" step="1" style="width:240px" />
+              <span class="pill tiny" id="crfLbl"><b>CRF:</b><span class="muted">24</span></span>
+              <span class="tiny muted">Higher → smaller (more loss)</span>
+            </div>
+
+            <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap; align-items:center">
+              <span class="tiny muted" style="min-width:130px">Speed</span>
+              <select id="preset" class="input" style="width:auto; min-width:220px">
+                <option value="ultrafast">Ultra fast (largest)</option>
+                <option value="veryfast" selected>Very fast (recommended)</option>
+                <option value="faster">Faster</option>
+                <option value="fast">Fast</option>
+                <option value="medium">Medium (slower)</option>
+              </select>
+
+              <span class="tiny muted" style="min-width:90px">Audio</span>
+              <select id="ab" class="input" style="width:auto; min-width:200px">
+                <option value="96k">AAC 96 kbps</option>
+                <option value="128k" selected>AAC 128 kbps</option>
+                <option value="160k">AAC 160 kbps</option>
+              </select>
+              <label class="row tiny muted" style="gap:8px; align-items:center">
+                <input id="mute" type="checkbox" />
+                Mute
+              </label>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:14px; gap:10px; flex-wrap:wrap">
+            <button class="btn" id="loadBtn" type="button">Load video engine</button>
+            <button class="btn primary" id="goBtn" type="button" disabled>Split</button>
+            <button class="btn" id="zipBtn" type="button" disabled>Download ZIP</button>
+            <button class="btn" id="clearBtn" type="button" disabled>Clear</button>
+            <span class="pill tiny" id="status"><b>Status:</b><span class="muted">select a video</span></span>
+          </div>
+
+          <div style="margin-top:12px">
+            <div class="rm-progress" aria-label="progress"><div id="bar"></div></div>
+            <div class="tiny muted" style="margin-top:8px">Everything runs locally in your browser. For very large 4K files, start with “Fast” + fewer clips.</div>
+          </div>
+
+          <div class="hr"></div>
+          <div style="font-weight:800; margin-bottom:6px">Engine log</div>
+          <div class="rm-log" id="log" aria-label="ffmpeg log"></div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:800; margin-bottom:6px">Preview</div>
+          <div class="tiny muted">Select a clip below to preview.</div>
+          <div class="hr"></div>
+
+          <video id="out" controls style="width:100%; border-radius:14px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.25);"></video>
+
+          <div class="hr"></div>
+
+          <div style="font-weight:800; margin-bottom:6px">Output clips</div>
+          <div class="row" style="gap:10px; flex-wrap:wrap">
+            <span class="pill tiny" id="clipCount"><b>Clips:</b><span class="muted">—</span></span>
+            <span class="pill tiny" id="totalSize"><b>Total:</b><span class="muted">—</span></span>
+            <span class="pill tiny" id="durationPill"><b>Duration:</b><span class="muted">—</span></span>
+          </div>
+
+          <ul class="rm-cliplist" id="clipsList" aria-label="output clips"></ul>
+
+          <div class="hr"></div>
+          <div class="tiny muted" id="tips">
+            Tip: If “Fast” cuts feel slightly off at the boundary, switch to “Exact (re-encode)” for precise times.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="rm-footer">
+    <div class="rm-footer-inner">
+      <div class="rm-footer-brand">
+        <div class="rm-footer-name">ReportMedic</div>
+        <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+      </div>
+      <div class="rm-footer-links">
+        <a href="/fix-my-report.html">Fix My Report</a>
+        <a href="/#tools">Tools</a>
+        <a href="/docs/">Docs</a>
+        <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+      </div>
+      <div class="rm-footer-meta">© 2026 ReportMedic</div>
+    </div>
+  </footer>
+
+  <div class="rm-lm-backdrop" id="rmLM" aria-hidden="true">
+    <div class="rm-lm" role="dialog" aria-modal="true" aria-label="Split Video into Clips">
+      <header>
+        <div class="t">Split Video into Clips</div>
+        <button class="rm-lm-close" type="button" data-rm-lm-close="rmLM">Close</button>
+      </header>
+      <div class="body">
+        <ul>
+          <li>Split by custom time ranges, fixed durations, equal parts, or approximate size.</li>
+          <li>Nothing is uploaded — the file stays on your machine.</li>
+          <li><b>Fast</b> mode copies streams (quick) but may cut on keyframes.</li>
+          <li><b>Exact</b> mode re-encodes for precise boundaries (slower, uses more CPU).</li>
+        </ul>
+        <div class="rm-kv">
+          <div class="k">Common use</div>
+          <div class="v">25 MB clips for email / portals</div>
+          <div class="k">Quickest</div>
+          <div class="v">Fast mode • fixed duration</div>
+          <div class="k">Most accurate</div>
+          <div class="v">Exact mode • custom ranges</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    function openLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','false');
+      const btn=bd.querySelector('.rm-lm-close');
+      if(btn) btn.focus();
+    }
+    function closeLM(id){
+      const bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','true');
+    }
+    document.addEventListener('click', function(e){
+      const a=e.target.closest('[data-rm-lm-open]');
+      if(a){ e.preventDefault(); openLM(a.getAttribute('data-rm-lm-open')); return; }
+      const c=e.target.closest('[data-rm-lm-close]');
+      if(c){ e.preventDefault(); closeLM(c.getAttribute('data-rm-lm-close')); return; }
+      const bd=(e.target && e.target.classList && e.target.classList.contains('rm-lm-backdrop')) ? e.target : null;
+      if(bd) closeLM(bd.id);
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key !== 'Escape') return;
+      document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute('aria-hidden','true'));
+    });
+  })();
+  </script>
+
+  <script type="module">
+    import { FFmpeg } from '/assets/vendor/ffmpeg/ffmpeg-esm/index.js';
+    import { toBlobURL } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.2/dist/esm/index.js';
+
+    const $ = (id)=>document.getElementById(id);
+
+    const fileEl = $('file');
+    const meta = $('meta');
+    const status = $('status');
+    const loadBtn = $('loadBtn');
+    const goBtn = $('goBtn');
+    const zipBtn = $('zipBtn');
+    const clearBtn = $('clearBtn');
+    const out = $('out');
+    const log = $('log');
+    const bar = $('bar');
+
+    const splitMode = $('splitMode');
+    const customBox = $('customBox');
+    const fixedBox = $('fixedBox');
+    const partsBox = $('partsBox');
+    const sizeBox = $('sizeBox');
+
+    const rangesEl = $('ranges');
+    const durEl = $('dur');
+    const startEl = $('start');
+    const partsEl = $('parts');
+    const maxMBEl = $('maxMB');
+
+    const cutMode = $('cutMode');
+    const encodeBox = $('encodeBox');
+    const crf = $('crf');
+    const crfLbl = $('crfLbl');
+    const preset = $('preset');
+    const ab = $('ab');
+    const mute = $('mute');
+
+    const clipCount = $('clipCount');
+    const totalSize = $('totalSize');
+    const durationPill = $('durationPill');
+    const clipsList = $('clipsList');
+
+    const ffmpeg = new FFmpeg();
+    let loaded = false;
+    let currentFile = null;
+    let lastPreviewUrl = null;
+    let clipItems = []; // {name, blob, url, start, end, size}
+    let totalJobs = 1;
+    let jobIndex = 0;
+
+    const humanBytes = (n) => {
+      if(!Number.isFinite(n)) return '—';
+      const u=['B','KB','MB','GB']; let i=0; let v=n;
+      while(v>=1024 && i<u.length-1){ v/=1024; i++; }
+      const s = i===0 ? String(Math.round(v)) : String(Math.round(v*10)/10);
+      return s+' '+u[i];
+    };
+
+    function setStatus(msg){
+      status.innerHTML = `<b>Status:</b><span class="muted">${msg}</span>`;
+    }
+    function setPill(pill, label, value){
+      pill.innerHTML = `<b>${label}:</b><span class="muted">${value}</span>`;
+    }
+    function appendLog(line){
+      const s = String(line || '').trim();
+      if(!s) return;
+      log.textContent += (log.textContent ? '\n' : '') + s;
+      log.scrollTop = log.scrollHeight;
+    }
+    function resetOutputs(){
+      clipItems.forEach(it=>{ if(it.url) URL.revokeObjectURL(it.url); });
+      clipItems = [];
+      clipsList.innerHTML = '';
+      setPill(clipCount,'Clips','—');
+      setPill(totalSize,'Total','—');
+      zipBtn.disabled = true;
+      clearBtn.disabled = true;
+      bar.style.width = '0%';
+      if(lastPreviewUrl){ URL.revokeObjectURL(lastPreviewUrl); lastPreviewUrl = null; }
+      out.removeAttribute('src'); out.load();
+    }
+
+    function showModeUI(){
+      const m = splitMode.value;
+      customBox.classList.toggle('rm-hidden', m !== 'custom');
+      fixedBox.classList.toggle('rm-hidden', m !== 'fixed');
+      partsBox.classList.toggle('rm-hidden', m !== 'parts');
+      sizeBox.classList.toggle('rm-hidden', m !== 'size');
+    }
+    function showCutUI(){
+      encodeBox.classList.toggle('rm-hidden', cutMode.value !== 'encode');
+    }
+    splitMode.addEventListener('change', showModeUI);
+    cutMode.addEventListener('change', showCutUI);
+    crf.addEventListener('input', ()=>{ crfLbl.innerHTML = `<b>CRF:</b><span class="muted">${crf.value}</span>`; });
+
+    fileEl.addEventListener('change', ()=>{
+      currentFile = fileEl.files && fileEl.files[0] ? fileEl.files[0] : null;
+      log.textContent = '';
+      resetOutputs();
+      if(!currentFile){
+        meta.innerHTML = '<b>Video:</b><span class="muted">not loaded</span>';
+        setStatus('select a video');
+        goBtn.disabled = true;
+        setPill(durationPill,'Duration','—');
+        return;
+      }
+      meta.innerHTML = `<b>Video:</b><span class="muted">${currentFile.name}</span>`;
+      setStatus(loaded ? 'ready to split' : 'load engine, then split');
+      goBtn.disabled = !loaded;
+      setPill(durationPill,'Duration','detecting…');
+      detectDuration().then(d=>{
+        if(!Number.isFinite(d)) setPill(durationPill,'Duration','—');
+        else setPill(durationPill,'Duration', formatClock(d));
+      });
+    });
+
+    ffmpeg.on('log', ({ message }) => appendLog(message));
+    ffmpeg.on('progress', ({ ratio }) => {
+      if(!Number.isFinite(ratio)) return;
+      const pct = Math.max(0, Math.min(100, Math.round(((jobIndex + ratio) / Math.max(1,totalJobs)) * 100)));
+      bar.style.width = pct + '%';
+    });
+
+    async function loadEngine(){
+      if(loaded) return;
+      loadBtn.disabled = true;
+      goBtn.disabled = true;
+      setStatus('loading engine…');
+      appendLog('Loading FFmpeg (first time can be ~30–40MB)…');
+      try{
+        const coreBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm';
+        const coreURL = await toBlobURL(`${coreBase}/ffmpeg-core.js`, 'text/javascript');
+        const wasmURL = await toBlobURL(`${coreBase}/ffmpeg-core.wasm`, 'application/wasm');
+        await ffmpeg.load({ coreURL, wasmURL });
+        loaded = true;
+        appendLog('Engine ready.');
+        setStatus(currentFile ? 'ready to split' : 'select a video');
+        goBtn.disabled = !currentFile;
+      } catch (e) {
+        console.error(e);
+        appendLog(String(e));
+        setStatus('failed to load engine');
+        loadBtn.disabled = false;
+      }
+    }
+
+    function parseTimeToSeconds(s){
+      if(!s) return NaN;
+      const t = String(s).trim();
+      if(!t) return NaN;
+      // allow 1:02:03.5, 02:03, 90
+      const parts = t.split(':').map(p=>p.trim());
+      if(parts.length === 1){
+        const v = Number(parts[0]);
+        return Number.isFinite(v) ? v : NaN;
+      }
+      if(parts.length === 2){
+        const mm = Number(parts[0]);
+        const ss = Number(parts[1]);
+        if(!Number.isFinite(mm) || !Number.isFinite(ss)) return NaN;
+        return mm*60 + ss;
+      }
+      if(parts.length === 3){
+        const hh = Number(parts[0]);
+        const mm = Number(parts[1]);
+        const ss = Number(parts[2]);
+        if(!Number.isFinite(hh) || !Number.isFinite(mm) || !Number.isFinite(ss)) return NaN;
+        return hh*3600 + mm*60 + ss;
+      }
+      return NaN;
+    }
+
+    function formatClock(sec){
+      const s = Math.max(0, sec);
+      const hh = Math.floor(s/3600);
+      const mm = Math.floor((s%3600)/60);
+      const ss = Math.floor(s%60);
+      const ms = Math.round((s - Math.floor(s))*1000);
+      const pad = (n)=>String(n).padStart(2,'0');
+      const base = (hh>0? `${pad(hh)}:${pad(mm)}:${pad(ss)}` : `${pad(mm)}:${pad(ss)}`);
+      return ms ? `${base}.${String(ms).padStart(3,'0')}` : base;
+    }
+
+    function secToArg(sec){
+      // ffmpeg accepts seconds as string; keep 3 decimals
+      return (Math.max(0, sec)).toFixed(3).replace(/\.000$/,'');
+    }
+
+    async function detectDuration(){
+      if(!currentFile) return NaN;
+      try{
+        const url = URL.createObjectURL(currentFile);
+        const v = document.createElement('video');
+        v.preload = 'metadata';
+        v.muted = true;
+        const p = new Promise((resolve, reject)=>{
+          v.onloadedmetadata = ()=>resolve(v.duration);
+          v.onerror = ()=>reject(new Error('metadata failed'));
+        });
+        v.src = url;
+        const d = await p;
+        URL.revokeObjectURL(url);
+        return d;
+      } catch(e){
+        return NaN;
+      }
+    }
+
+    function sanitizeBaseName(name){
+      const base = (name || 'video').replace(/\.[^.]+$/,'');
+      return base.replace(/[^a-z0-9\-_.]+/gi,'_').slice(0, 80) || 'video';
+    }
+
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, (c)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+
+    function addClipRow(item, index){
+      const li = document.createElement('li');
+      li.className = 'rm-clip';
+      li.innerHTML = `
+        <div class="grow">
+          <div class="t">${escapeHtml(item.name)}</div>
+          <div class="m">${escapeHtml(formatClock(item.start))} → ${escapeHtml(formatClock(item.end))} • ${escapeHtml(humanBytes(item.size))}</div>
+        </div>
+        <div class="btns">
+          <button class="btn small" type="button" data-act="preview" data-idx="${index}">Preview</button>
+          <button class="btn small" type="button" data-act="download" data-idx="${index}">Download</button>
+        </div>
+      `;
+      clipsList.appendChild(li);
+    }
+
+    clipsList.addEventListener('click', (e)=>{
+      const btn = e.target.closest('button[data-act]');
+      if(!btn) return;
+      const idx = parseInt(btn.getAttribute('data-idx'), 10);
+      const act = btn.getAttribute('data-act');
+      const item = clipItems[idx];
+      if(!item) return;
+
+      if(act === 'preview'){
+        if(lastPreviewUrl){ URL.revokeObjectURL(lastPreviewUrl); lastPreviewUrl = null; }
+        lastPreviewUrl = URL.createObjectURL(item.blob);
+        out.src = lastPreviewUrl;
+        out.load();
+        out.play().catch(()=>{});
+      } else if(act === 'download'){
+        const a = document.createElement('a');
+        a.href = item.url || (item.url = URL.createObjectURL(item.blob));
+        a.download = item.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+    });
+
+    function buildSegments(duration){
+      const m = splitMode.value;
+
+      if(m === 'custom'){
+        const lines = (rangesEl.value || '').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+        const segs = [];
+        for(const line of lines){
+          const norm = line.replace(/\s+/g,'');
+          const parts = norm.split(/-|to|,|→/i).filter(Boolean);
+          if(parts.length < 2) continue;
+          const a = parseTimeToSeconds(parts[0]);
+          const b = parseTimeToSeconds(parts[1]);
+          if(!Number.isFinite(a) || !Number.isFinite(b) || b <= a) continue;
+          segs.push({ start:a, end:b });
+        }
+        return segs;
+      }
+
+      // other modes need duration
+      if(!Number.isFinite(duration) || duration <= 0) return null;
+
+      const startAt = parseTimeToSeconds(startEl.value);
+      const baseStart = Number.isFinite(startAt) && startAt >= 0 ? startAt : 0;
+
+      if(m === 'fixed'){
+        const dur = parseTimeToSeconds(durEl.value);
+        if(!Number.isFinite(dur) || dur <= 0) return null;
+        const segs = [];
+        for(let s = baseStart; s < duration; s += dur){
+          const e = Math.min(duration, s + dur);
+          if(e - s < 0.01) break;
+          segs.push({ start:s, end:e });
+          if(segs.length > 300) break;
+        }
+        return segs;
+      }
+
+      if(m === 'parts'){
+        const n = parseInt(partsEl.value, 10);
+        if(!Number.isFinite(n) || n < 2) return null;
+        const totalSpan = Math.max(0, duration - baseStart);
+        const chunk = totalSpan / n;
+        const segs = [];
+        for(let i=0;i<n;i++){
+          const s = baseStart + i*chunk;
+          const e = (i === n-1) ? duration : Math.min(duration, baseStart + (i+1)*chunk);
+          if(e - s < 0.01) continue;
+          segs.push({ start:s, end:e });
+        }
+        return segs;
+      }
+
+      if(m === 'size'){
+        const maxMB = parseFloat(maxMBEl.value);
+        if(!Number.isFinite(maxMB) || maxMB <= 0) return null;
+        const bytesPerSec = currentFile.size / duration; // average; approximate
+        const targetDur = (maxMB * 1024 * 1024) / Math.max(1, bytesPerSec);
+        const dur = Math.max(1, targetDur);
+        const segs = [];
+        for(let s = baseStart; s < duration; s += dur){
+          const e = Math.min(duration, s + dur);
+          if(e - s < 0.01) break;
+          segs.push({ start:s, end:e });
+          if(segs.length > 300) break;
+        }
+        return segs;
+      }
+
+      return null;
+    }
+
+    async function split(){
+      if(!currentFile){ setStatus('select a video'); return; }
+      if(!loaded){ await loadEngine(); if(!loaded) return; }
+
+      resetOutputs();
+      goBtn.disabled = true;
+      zipBtn.disabled = true;
+      clearBtn.disabled = true;
+      loadBtn.disabled = true;
+      setStatus('planning…');
+      appendLog('---');
+
+      const duration = await detectDuration();
+      const segs = buildSegments(duration);
+
+      // clamp to duration when known
+      if(Number.isFinite(duration)){
+        for(const seg of (segs || [])){
+          seg.start = Math.max(0, Math.min(duration, seg.start));
+          seg.end   = Math.max(0, Math.min(duration, seg.end));
+        }
+      }
+
+      if(!segs || !segs.length){
+        setStatus('invalid split plan (check times/options)');
+        goBtn.disabled = false;
+        loadBtn.disabled = false;
+        return;
+      }
+      if(segs.length > 300){
+        setStatus('too many clips (reduce count)');
+        goBtn.disabled = false;
+        loadBtn.disabled = false;
+        return;
+      }
+
+      totalJobs = segs.length;
+      jobIndex = 0;
+
+      setStatus(`processing ${segs.length} clip(s)…`);
+      setPill(clipCount,'Clips', String(segs.length));
+
+      const base = sanitizeBaseName(currentFile.name);
+      const mountPoint = '/input';
+
+      try{
+        try{ await ffmpeg.createDir(mountPoint); }catch(e){}
+        try{ await ffmpeg.unmount(mountPoint); }catch(e){}
+        await ffmpeg.mount('WORKERFS', { files: [currentFile] }, mountPoint);
+
+        const inputPath = `${mountPoint}/${currentFile.name}`;
+
+        let totalOutBytes = 0;
+
+        for(let i=0;i<segs.length;i++){
+          jobIndex = i;
+
+          const s = segs[i].start;
+          const e = segs[i].end;
+          const clipDur = Math.max(0.001, e - s);
+          const outFile = 'output.mp4';
+          const outName = `${base}_clip_${String(i+1).padStart(3,'0')}.mp4`;
+
+          const args = ['-ss', secToArg(s), '-i', inputPath, '-t', secToArg(clipDur)];
+
+          if(cutMode.value === 'copy'){
+            args.push('-c', 'copy');
+          } else {
+            args.push('-c:v','libx264','-preset', preset.value, '-crf', String(crf.value), '-pix_fmt','yuv420p');
+            if(mute.checked){ args.push('-an'); }
+            else { args.push('-c:a','aac','-b:a', ab.value); }
+          }
+
+          args.push('-movflags','+faststart', outFile);
+          appendLog('ffmpeg ' + args.join(' '));
+
+          await ffmpeg.exec(args);
+
+          const data = await ffmpeg.readFile(outFile);
+          const blob = new Blob([data], { type: 'video/mp4' });
+
+          try{ await ffmpeg.deleteFile(outFile); }catch(e){}
+
+          const item = { name: outName, blob, url: null, start:s, end:e, size: blob.size };
+          clipItems.push(item);
+          addClipRow(item, clipItems.length-1);
+
+          totalOutBytes += blob.size;
+          setPill(totalSize,'Total', humanBytes(totalOutBytes));
+        }
+
+        bar.style.width = '100%';
+        setStatus('done');
+        zipBtn.disabled = clipItems.length < 2;
+        clearBtn.disabled = false;
+
+        // auto preview first clip
+        if(clipItems[0]){
+          lastPreviewUrl = URL.createObjectURL(clipItems[0].blob);
+          out.src = lastPreviewUrl; out.load();
+        }
+      } catch (e) {
+        console.error(e);
+        appendLog(String(e));
+        setStatus('failed');
+      } finally {
+        goBtn.disabled = false;
+        loadBtn.disabled = false;
+      }
+    }
+
+    async function downloadZip(){
+      if(!clipItems.length) return;
+      zipBtn.disabled = true;
+      setStatus('zipping…');
+      try{
+        const zip = new window.JSZip();
+        for(const it of clipItems){
+          zip.file(it.name, it.blob);
+        }
+        const blob = await zip.generateAsync({ type:'blob' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = sanitizeBaseName(currentFile ? currentFile.name : 'video') + '_clips.zip';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setStatus('zip ready');
+      } catch(e){
+        console.error(e);
+        appendLog(String(e));
+        setStatus('zip failed');
+      } finally {
+        zipBtn.disabled = false;
+      }
+    }
+
+    function clearAll(){
+      fileEl.value = '';
+      currentFile = null;
+      meta.innerHTML = '<b>Video:</b><span class="muted">not loaded</span>';
+      log.textContent = '';
+      resetOutputs();
+      setPill(durationPill,'Duration','—');
+      setStatus('select a video');
+      goBtn.disabled = true;
+    }
+
+    loadBtn.addEventListener('click', loadEngine);
+    goBtn.addEventListener('click', split);
+    zipBtn.addEventListener('click', downloadZip);
+    clearBtn.addEventListener('click', clearAll);
+
+    // init UI
+    showModeUI();
+    showCutUI();
+    crfLbl.innerHTML = `<b>CRF:</b><span class="muted">${crf.value}</span>`;
+  </script>
+</body>
+</html>
