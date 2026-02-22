@@ -26,7 +26,7 @@
     .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
     .codebox{background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px;white-space:pre-wrap;word-break:break-word;}
     .btn.sm{padding:7px 10px;font-size:12.5px}
-    textarea#sql{min-height:170px;resize:vertical;font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;line-height:1.35}
+    textarea#sql{min-height:150px;resize:vertical;font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;line-height:1.35}
     .tableWrap{border:1px solid rgba(255,255,255,.14);border-radius:14px;overflow:auto;max-height:520px;background:rgba(0,0,0,.12)}
     table{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px}
     th,td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.10);vertical-align:top}
@@ -46,7 +46,41 @@
     .right{margin-left:auto}
     .progress{height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid rgba(255,255,255,.12)}
     .progress > div{height:100%;width:0%;background:linear-gradient(90deg, var(--brand), var(--brand2));}
-  </style>
+  
+
+    /* Tighten vertical rhythm (reduce perceived empty space) */
+    .panel .card{gap:6px; justify-content:flex-start !important; padding:12px !important}
+    .panel label{margin:6px 0 5px !important}
+    .panel .row.wrap{row-gap:8px}
+    .panel .hr{margin:10px 0}
+    .grid2{align-items:start !important}
+    .grid2 > .card{height:auto !important}
+    /* Compact file dropzone further for this tool */
+    .rm-dropzone--compact{padding:8px 12px}
+    .rm-dropzone--compact .rm-dz-inner{gap:8px}
+    .rm-dropzone--compact .rm-dz-title{font-size:1rem}
+    .rm-dropzone--compact .rm-dz-or{margin:0}
+    .rm-dropzone--compact .rm-dz-selected{margin-top:6px; line-height:1.2}
+    /* Keep long schema / table listings from creating huge blocks */
+    #tablesOut{max-height:160px; overflow:auto}
+    #schemaOut{max-height:220px; overflow:auto}
+    /* Results table already scrolls; keep it comfortable */
+    .tableWrap{max-height:520px}
+    /* Query guide */
+    details.rm-guide{margin-top:10px; border:1px solid rgba(255,255,255,.14); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden}
+    details.rm-guide > summary{list-style:none; cursor:pointer; padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:10px; user-select:none}
+    details.rm-guide > summary::-webkit-details-marker{display:none}
+    .rm-guide-title{font-weight:800}
+    .rm-guide-sub{font-size:12px; color:rgba(255,255,255,.72)}
+    .rm-guide-body{padding:12px; border-top:1px solid rgba(255,255,255,.10)}
+    .rm-guide-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    @media (max-width: 980px){ .rm-guide-grid{grid-template-columns:1fr} }
+    .rm-guide-card{border:1px solid rgba(255,255,255,.12); border-radius:12px; background:rgba(0,0,0,.14); padding:10px}
+    .rm-guide-card .t{font-weight:800; margin-bottom:6px}
+    .rm-guide-card .tiny{margin:0 0 8px}
+    .rm-guide-code{font-size:12px; line-height:1.35; background:rgba(0,0,0,.20); border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:10px; white-space:pre; overflow:auto}
+
+</style>
 
   <style>
 /* ReportMedic Learn-more modal (lightweight, page-local) */
@@ -96,10 +130,10 @@
           <div class="pill mono" id="enginePill">Loading SQL engine…</div>
         </div>
 
-        <label style="margin-top:12px">File (CSV / TSV / TXT)</label>
+        <label style="margin-top:8px">File (CSV / TSV / TXT)</label>
         <input id="fileInput" type="file" multiple accept=".csv,.tsv,.txt,text/csv,text/plain" data-rm-dropzone-size="compact"/>
 
-        <div class="row wrap" style="margin-top:10px">
+        <div class="row wrap" style="margin-top:8px">
           <div style="flex:1;min-width:180px">
             <label>Delimiter</label>
             <select id="delim">
@@ -126,7 +160,7 @@
           </div>
         </div>
 
-        <div class="row wrap" style="margin-top:10px">
+        <div class="row wrap" style="margin-top:8px">
           <button class="btn primary" id="loadBtn" type="button" disabled>Load into SQL</button>
           <button class="btn" id="clearBtn" type="button" disabled>Clear</button>
           <div class="right tiny muted" id="loadMsg">Choose a file to begin.</div>
@@ -143,14 +177,14 @@
         <div class="hr"></div>
         <div style="font-weight:800">Loaded tables</div>
         <div class="tiny muted">Table names are derived from filenames. Columns are cleaned to be SQL-friendly (see “Schema”).</div>
-        <div class="codebox mono" id="tablesOut" style="margin-top:10px">No tables loaded yet.</div>
+        <div class="codebox mono" id="tablesOut" style="margin-top:8px">No tables loaded yet.</div>
       </div>
 
       <div class="card">
         <div style="font-weight:800">Schema & helpers</div>
         <div class="tiny muted">Inspect tables, insert common queries, and sanity-check types.</div>
 
-        <div class="row wrap" style="margin-top:10px">
+        <div class="row wrap" style="margin-top:8px">
           <div style="flex:1;min-width:220px">
             <label>Table</label>
             <select id="tablePick" disabled></select>
@@ -158,12 +192,12 @@
           <button class="btn sm" id="schemaBtn" type="button" disabled>Show schema</button>
         </div>
 
-        <div class="codebox mono" id="schemaOut" style="margin-top:10px">Load a file to see schema.</div>
+        <div class="codebox mono" id="schemaOut" style="margin-top:8px">Load a file to see schema.</div>
 
         <div class="hr"></div>
         <div style="font-weight:800">Quick queries</div>
         <div class="tiny muted">Click to insert into the editor.</div>
-        <div class="chips" style="margin-top:10px">
+        <div class="chips" style="margin-top:8px">
           <div class="chip mono" data-q="SELECT * FROM t LIMIT 50;">SELECT * LIMIT 50</div>
           <div class="chip mono" data-q="SELECT COUNT(*) AS rows FROM t;">COUNT(*)</div>
           <div class="chip mono" data-q="SELECT * FROM t WHERE 1=1 LIMIT 50;">WHERE …</div>
@@ -179,7 +213,7 @@
       </div>
     </div>
 
-    <div class="card" style="margin-top:12px">
+    <div class="card" style="margin-top:8px">
       <div class="row" style="justify-content:space-between;align-items:flex-start">
         <div>
           <div style="font-weight:800">SQL editor</div>
@@ -193,16 +227,152 @@
         </div>
       </div>
 
-      <label style="margin-top:10px">SQL</label>
+      <label style="margin-top:8px">SQL</label>
       <textarea id="sql" spellcheck="false" placeholder="Example:
 SELECT *
 FROM t
 LIMIT 50;"></textarea>
 
-      <div class="row wrap" style="margin-top:10px">
+      <div class="row wrap" style="margin-top:8px">
         <div class="pill mono" id="queryPill">No query run yet.</div>
         <div class="right tiny muted" id="queryMsg"></div>
       </div>
+      <details class="rm-guide" id="guide" open>
+        <summary>
+          <div>
+            <div class="rm-guide-title">Query guide</div>
+            <div class="rm-guide-sub">Examples + supported features (runs on the loaded tables)</div>
+          </div>
+          <div class="pill mono">Toggle</div>
+        </summary>
+        <div class="rm-guide-body">
+          <div class="rm-guide-grid">
+            <div class="rm-guide-card">
+              <div class="t">1) Basics</div>
+              <p class="tiny muted">Select columns, filter rows, sort, and limit results.</p>
+              <div class="rm-guide-code mono">SELECT *
+FROM t
+WHERE price &gt; 100 AND category LIKE '%Kitchen%'
+ORDER BY price DESC
+LIMIT 50;</div>
+            </div>
+
+            <div class="rm-guide-card">
+              <div class="t">2) Counts, distinct, and quick sanity checks</div>
+              <p class="tiny muted">Row counts, unique values, duplicates, and null checks.</p>
+              <div class="rm-guide-code mono">SELECT COUNT(*) AS rows FROM t;
+
+SELECT COUNT(DISTINCT brand) AS unique_brands
+FROM t;
+
+SELECT name, COUNT(*) AS n
+FROM t
+GROUP BY name
+HAVING n &gt; 1
+ORDER BY n DESC;</div>
+            </div>
+
+            <div class="rm-guide-card">
+              <div class="t">3) Grouping &amp; aggregation</div>
+              <p class="tiny muted">Summaries by category, averages, min/max, and top-N groups.</p>
+              <div class="rm-guide-code mono">SELECT category,
+       COUNT(*) AS rows,
+       AVG(price) AS avg_price,
+       MIN(price) AS min_price,
+       MAX(price) AS max_price
+FROM t
+GROUP BY category
+ORDER BY rows DESC
+LIMIT 10;</div>
+            </div>
+
+            <div class="rm-guide-card">
+              <div class="t">4) Joins (multiple files)</div>
+              <p class="tiny muted">Load two+ files, then join by a key. Use aliases for clarity.</p>
+              <div class="rm-guide-code mono">SELECT a.id, a.name, b.status
+FROM table_a AS a
+LEFT JOIN table_b AS b
+  ON a.id = b.id
+WHERE b.status IS NOT NULL;</div>
+            </div>
+
+            <div class="rm-guide-card">
+              <div class="t">5) Subqueries &amp; CTEs</div>
+              <p class="tiny muted">Break complex logic into readable steps using WITH.</p>
+              <div class="rm-guide-code mono">WITH ranked AS (
+  SELECT category, price,
+         ROW_NUMBER() OVER (PARTITION BY category ORDER BY price DESC) AS rn
+  FROM t
+)
+SELECT * FROM ranked
+WHERE rn &lt;= 3
+ORDER BY category, rn;</div>
+            </div>
+
+            <div class="rm-guide-card">
+              <div class="t">6) Window functions</div>
+              <p class="tiny muted">Ranks, running totals, moving averages, percent-of-total.</p>
+              <div class="rm-guide-code mono">SELECT category, price,
+       SUM(price) OVER (PARTITION BY category) AS category_total,
+       AVG(price) OVER (PARTITION BY category) AS category_avg
+FROM t;</div>
+            </div>
+
+            <div class="rm-guide-card">
+              <div class="t">7) Text cleanup &amp; matching</div>
+              <p class="tiny muted">Case-insensitive search, trimming, replacing, extracting.</p>
+              <div class="rm-guide-code mono">SELECT TRIM(name) AS name_clean
+FROM t
+WHERE LOWER(brand) LIKE '%garner%';
+
+SELECT SUBSTR(ean, 1, 3) AS prefix,
+       COUNT(*) AS rows
+FROM t
+GROUP BY prefix
+ORDER BY rows DESC;</div>
+            </div>
+
+            <div class="rm-guide-card">
+              <div class="t">8) Types, casts, and safe numeric ops</div>
+              <p class="tiny muted">Convert text to numbers/dates and avoid surprises.</p>
+              <div class="rm-guide-code mono">SELECT CAST(price AS REAL) AS price_num
+FROM t
+WHERE CAST(stock AS INTEGER) &gt; 0;
+
+SELECT *
+FROM t
+WHERE CAST(ean AS TEXT) IS NOT NULL;</div>
+            </div>
+
+            <div class="rm-guide-card">
+              <div class="t">9) Set operations</div>
+              <p class="tiny muted">Combine result sets or compare lists.</p>
+              <div class="rm-guide-code mono">SELECT id FROM table_a
+UNION
+SELECT id FROM table_b;
+
+SELECT id FROM table_a
+EXCEPT
+SELECT id FROM table_b;</div>
+            </div>
+
+            <div class="rm-guide-card">
+              <div class="t">10) Views and performance helpers</div>
+              <p class="tiny muted">Create views for reusable queries; add indexes for big joins.</p>
+              <div class="rm-guide-code mono">CREATE VIEW v_top AS
+SELECT * FROM t ORDER BY price DESC LIMIT 100;
+
+CREATE INDEX idx_a_id ON table_a(id);</div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+          <div class="tiny muted">
+            Notes: table names come from filenames. Column names are cleaned to be identifier-friendly; if you see a column name with spaces/symbols, wrap it in double quotes like <span class="mono">"My Column"</span>. Everything runs locally and resets when you refresh or press Clear.
+          </div>
+        </div>
+      </details>
+
 
       <div class="hr"></div>
       <div class="tableWrap" id="resultWrap" style="display:none">
