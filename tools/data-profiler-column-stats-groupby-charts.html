@@ -1295,9 +1295,17 @@ function renderChart(){
     }
 
     function startStreamingParse(text, delim){
-      lastText = text;
+      // Normalize line-endings so -only, 
+-only, and 
+ all work reliably.
+      const normalized = String(text || "").replace(/
+/g, "
+").replace(//g, "
+");
+      lastText = normalized;
       currentDelimiter = delim || ",";
-      allLines = text.split(/\\r?\\n/);
+      allLines = normalized.split("
+");
       headerLineIndex = 0;
       while (headerLineIndex < allLines.length &&
              allLines[headerLineIndex].trim() === ""){
