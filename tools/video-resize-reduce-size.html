@@ -715,8 +715,7 @@
     function appendLog(line){
       const s = String(line || '').trim();
       if(!s) return;
-      log.textContent += (log.textContent ? '
-' : '') + s;
+      log.textContent += (log.textContent ? '\\n' : '') + s;
       log.scrollTop = log.scrollHeight;
       appendRunLog(s);
       applyTimeProgressFromLog(s);
