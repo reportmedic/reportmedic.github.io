@@ -144,6 +144,27 @@
     .rm-dialog-body{padding:12px;}
     .rm-dialog-row{margin-bottom:10px;}
     .rm-dialog-log{margin-top:10px; border:1px solid rgba(255,255,255,.12); border-radius:12px; background:rgba(0,0,0,.28); padding:10px; max-height:320px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace; font-size:.78rem; line-height:1.3;}
+  
+    /* Ready shine on Convert buttons (no shadows) */
+    .rm-shine-ready{position:relative; overflow:hidden;}
+    .rm-shine-ready::after{
+      content:"";
+      position:absolute;
+      top:-40%;
+      left:-60%;
+      width:40%;
+      height:180%;
+      background:linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.35) 45%, rgba(255,255,255,0) 90%);
+      transform:skewX(-18deg);
+      animation:rmShine 1.0s ease-out 1;
+      pointer-events:none;
+    }
+    @keyframes rmShine{0%{left:-60%;}100%{left:140%;}}
+
+    /* Radius 6px for requested pills/controls */
+    #status, #crfLbl, #outDirPill, #meta, #batchStatus{border-radius:6px !important;}
+    .rm-fields4 select.input{border-radius:6px !important;}
+
   </style>
 </head>
 
@@ -521,6 +542,16 @@ function shake(el){
   setTimeout(()=>{ el.classList.remove('rm-shake'); }, 800);
 }
 
+function triggerShine(btn){
+  if(!btn) return;
+  btn.classList.remove('rm-shine-ready');
+  // force reflow so animation restarts
+  void btn.offsetWidth;
+  btn.classList.add('rm-shine-ready');
+  clearTimeout(btn._rmShineT);
+  btn._rmShineT = setTimeout(()=>{ btn.classList.remove('rm-shine-ready'); }, 1100);
+}
+
     function getBatchFiles(){
       const fromOverride = Array.isArray(batchFilesOverride) ? batchFilesOverride : null;
       if(fromOverride) return fromOverride;
@@ -759,6 +790,7 @@ function shake(el){
       log.scrollTop = log.scrollHeight;
       appendRunLog(s);
       applyTimeProgressFromLog(s);
+      updateRowDialogIfOpen();
     }
     function resetOutput(){
       outBlob = null;
@@ -874,8 +906,14 @@ function shake(el){
            null);
 
         if(raw != null){
+          const pct = raw * 100;
+          // Some FFmpeg builds can emit an immediate 99–100% at the start of a job.
+          // If that happens before we have real progress, ignore it and rely on time-based parsing.
+          if(isRunning && pct >= 95 && activeRun && (Number(activeRun.pct) || 0) < 5){
+            return;
+          }
           progressTouched = true;
-          applyPctToActive(raw * 100);
+          applyPctToActive(pct);
           return;
         }
 
@@ -955,6 +993,7 @@ function shake(el){
       if(rowDialogTitle) rowDialogTitle.textContent = data.name || 'Details';
       if(rowDialogRow) rowDialogRow.innerHTML = renderRowSnippet(data.name, data.state, data.pct);
       if(rowDialogLog) rowDialogLog.textContent = data.log || '';
+      if(rowDialogLog){ rowDialogLog.scrollTop = rowDialogLog.scrollHeight; }
     }
 
     if(rowDialogClose) rowDialogClose.addEventListener('click', closeRowDialog);
@@ -997,6 +1036,9 @@ function shake(el){
                 });
         loaded = true;
         appendLog('Engine ready.');
+        // Ready indication
+        try{ triggerShine(goBtn); }catch(e){}
+        try{ if(batchBtn) triggerShine(batchBtn); }catch(e){}
         setStatus(currentFile ? 'ready' : 'select a video', currentFile ? 'done' : '');
         if(currentFile) setSingleUIVisible(true);
         goBtn.disabled = !currentFile;
