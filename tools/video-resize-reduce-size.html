@@ -822,26 +822,7 @@
       activity.innerHTML = html;
     }
 
-      // Single run view
-      if(activeRun && activeRun.mode === 'single' && activeRun.name){
-        const safeName = escapeHtml(activeRun.name);
-        const dispName = escapeHtml(shortName(activeRun.name, 52));
-        const stateLabel = isRunning ? 'processing' : 'ready';
-        const pct = Math.max(0, Math.min(100, Math.round((activeRun.pct || 0))));
-        activity.innerHTML = `<div class="rm-qwrap">
-          <div class="rm-qrow" data-idx="${idx}" role="button" tabindex="0">
-            <div class="rm-qname" title="${safeName}">${dispName}</div>
-            <div class="pill tiny rm-qstate ${isRunning ? "processing" : "done"}"><b>${stateLabel}:</b><span class="muted">${pct}%</span></div>
-            <div class="rm-qbar"><div class="rm-qfill ${isRunning ? 'processing' : 'done'}" style="width:${pct}%"></div></div>
-          </div>
-        </div>`;
-        return;
-      }
-
-      activity.innerHTML = '';
-    }
-
-        function wireFfmpeg(){
+    function wireFfmpeg(){
       ffmpeg.on('log', ({ message }) => appendLog(message));
       ffmpeg.on('progress', (p) => {
         if(!p) return;
