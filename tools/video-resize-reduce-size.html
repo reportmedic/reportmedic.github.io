@@ -127,7 +127,7 @@
 </div>
           <div class="hr"></div>
 
-                    <div class="rm-fields4">
+                              <div class="rm-fields4">
             <div class="rm-field">
               <div class="rm-label">Target resolution</div>
               <select id="mode" class="input" style="width:auto; min-width:260px">
@@ -167,49 +167,15 @@
               <option value="128k" selected>AAC 128 kbps</option>
               <option value="160k">AAC 160 kbps</option>
             </select>
-                <label class="row tiny muted" style="gap:8px; align-items:center">
-              <input id="lock" type="checkbox" checked />
-              Keep aspect ratio
-            </label>
+                <label class="row tiny muted" style="gap:8px; align-items:center"><input id="mute" type="checkbox" /> Mute</label>
+                
           </div>
 
-          <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap; align-items:center">
-            <span class="tiny muted" style="min-width:130px">Quality (CRF)</span>
-            <input id="crf" type="range" min="18" max="35" value="28" step="1" style="width:240px" />
-            <span class="pill tiny" id="crfLbl"><b>CRF:</b><span class="muted">28</span></span>
-            <span class="tiny muted">Higher -> smaller (a bit more loss)</span>
-          </div>
+          
 
-          <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap; align-items:center">
-            <span class="tiny muted" style="min-width:130px">Speed</span>
-            <select id="preset" class="input" style="width:auto; min-width:220px">
-              <option value="ultrafast">Ultra fast (largest)</option>
-              <option value="veryfast" selected>Very fast (recommended)</option>
-              <option value="faster">Faster</option>
-              <option value="fast">Fast</option>
-              <option value="medium">Medium (slower)</option>
-            </select>
+          
 
-            <span class="tiny muted" style="min-width:90px">FPS</span>
-            <select id="fps" class="input" style="width:auto; min-width:160px">
-              <option value="keep" selected>Keep</option>
-              <option value="30">30 fps</option>
-              <option value="24">24 fps</option>
-            </select>
-          </div>
-
-          <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap; align-items:center">
-            <span class="tiny muted" style="min-width:130px">Audio</span>
-            <select id="ab" class="input" style="width:auto; min-width:220px">
-              <option value="96k">AAC 96 kbps</option>
-              <option value="128k" selected>AAC 128 kbps</option>
-              <option value="160k">AAC 160 kbps</option>
-            </select>
-            <label class="row tiny muted" style="gap:8px; align-items:center">
-              <input id="mute" type="checkbox" />
-              Mute
-            </label>
-              </div>
+          
             </div>
           </div>
 
@@ -235,7 +201,7 @@
             <span class="tiny muted">Higher -> smaller (a bit more loss)</span>
           </div>
 
-<div class="row rm-hide" id="singleActions" style="margin-top:12px; gap:10px; flex-wrap:wrap">
+          <div class="row rm-hide" id="singleActions" style="margin-top:12px; gap:10px; flex-wrap:wrap">
             <button class="btn" id="loadBtn" type="button">Load video engine</button>
             <button class="btn primary" id="goBtn" type="button" disabled>Convert</button>
             <button class="btn" id="downloadBtn" type="button" disabled>Download MP4</button>
