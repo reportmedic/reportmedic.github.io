@@ -761,33 +761,66 @@
       const clamped = Math.max(0, Math.min(100, Math.round(pct)));
       bar.style.width = clamped + '%';
     }
-
     function renderActivity(){
       if(!activity) return;
 
-      // Batch queue view
-      if(batchMode && batchQueue && batchQueue.length){
-        const rows = batchQueue.map((it, idx)=>{
-          const safeName = escapeHtml(it.name);
-          const dispName = escapeHtml(shortName(it.name, 52));
+      // nothing to show
+      if(!activeRun && (!batchQueue || !batchQueue.length)){
+        activity.innerHTML = '';
+        return;
+      }
+
+      const esc = escapeHtml;
+      const sn = shortName;
+
+      let html = '';
+
+      // Single run row (clickable)
+      if(activeRun && activeRun.mode === 'single' && activeRun.name){
+        const safeName = esc(activeRun.name);
+        const dispName = esc(sn(activeRun.name, 52));
+        const pct = Math.max(0, Math.min(100, Math.round(activeRun.pct || 0)));
+        const stateLabel = isRunning ? 'processing' : 'completed';
+        const cls = isRunning ? 'processing' : 'done';
+
+        html += `
+          <div class="rm-qrow" data-idx="single" role="button" tabindex="0">
+            <div class="rm-qname" title="${safeName}">${dispName}</div>
+            <div class="pill tiny rm-qstate ${cls}"><b>${stateLabel}:</b><span class="muted">${pct}%</span></div>
+            <div class="rm-qbar"><div class="rm-qfill ${cls}" style="width:${pct}%"></div></div>
+          </div>
+        `;
+      }
+
+      // Batch queue rows
+      if(batchQueue && batchQueue.length){
+        for(let idx = 0; idx < batchQueue.length; idx++){
+          const it = batchQueue[idx];
+          const safeName = esc(it.name || '');
+          const dispName = esc(sn(it.name || '', 52));
+          const pct = Math.max(0, Math.min(100, Math.round(it.pct || 0)));
+
           const stateLabel = it.state === 'waiting' ? 'waiting' :
                              it.state === 'processing' ? 'processing' :
                              it.state === 'done' ? 'completed' :
-                             it.state === 'failed' ? 'failed' : it.state;
-          const fillClass = it.state === 'waiting' ? 'waiting' :
-                            it.state === 'processing' ? 'processing' :
+                             it.state === 'failed' ? 'failed' : String(it.state || 'waiting');
+
+          const fillClass = it.state === 'processing' ? 'processing' :
                             it.state === 'done' ? 'done' :
                             it.state === 'failed' ? 'failed' : 'waiting';
-          const pct = Math.max(0, Math.min(100, Math.round(it.pct || 0)));
-          return `<div class="rm-qrow" data-idx="${idx}" role="button" tabindex="0">
-            <div class="rm-qname" title="${safeName}">${dispName}</div>
-            <div class="pill tiny rm-qstate ${fillClass}"><b>${escapeHtml(stateLabel)}:</b><span class="muted">${pct}%</span></div>
-            <div class="rm-qbar"><div class="rm-qfill ${fillClass}" style="width:${pct}%"></div></div>
-          </div>`;
-        }).join('');
-        activity.innerHTML = `<div class="rm-qwrap">${rows}</div>`;
-        return;
+
+          html += `
+            <div class="rm-qrow" data-idx="${idx}" role="button" tabindex="0">
+              <div class="rm-qname" title="${safeName}">${dispName}</div>
+              <div class="pill tiny rm-qstate ${fillClass}"><b>${esc(stateLabel)}:</b><span class="muted">${pct}%</span></div>
+              <div class="rm-qbar"><div class="rm-qfill ${fillClass}" style="width:${pct}%"></div></div>
+            </div>
+          `;
+        }
       }
+
+      activity.innerHTML = html;
+    }
 
       // Single run view
       if(activeRun && activeRun.mode === 'single' && activeRun.name){
