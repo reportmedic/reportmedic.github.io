@@ -1059,7 +1059,22 @@
     if(!n) return;
     saveActive();
     const safeName = (n.title || "note").replace(/[^a-z0-9\-_ ]/gi,"").trim().slice(0,60) || "note";
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(n.title||"Note")}</title></head><body>${n.html||""}</body></html>`;
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(n.title||"Note")}</title></head><body>${n.html||""}
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6997965e73d8cb1c357e66ee/1jhs26oms';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+</body></html>`;
     const blob = new Blob([html], {type:"text/html;charset=utf-8"});
     const a=document.createElement("a");
     a.href = URL.createObjectURL(blob);
