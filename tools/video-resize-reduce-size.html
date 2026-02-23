@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title>Video Resize / Reduce Size (4K → 1080p/720p) — ReportMedic</title>
+  <title>Video Resize / Reduce Size (4K → 1080p/720p) - ReportMedic</title>
   <meta name="description" content="Downscale 2K/4K videos to a smaller resolution to reduce file size (great for GoPro exports). Runs locally in your browser (no upload)." />
 
   <link rel="icon" href="/favicon.ico" />
@@ -57,7 +57,7 @@
   <div class="wrap">
     <div class="panel">
       <h1>Video Resize / Reduce Size <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
-      <p class="sub">Downscale big GoPro / 2K / 4K videos to a smaller resolution to shrink size — private and local. Runs in your browser (no upload).</p>
+      <p class="sub">Downscale big GoPro / 2K / 4K videos to a smaller resolution to shrink size - private and local. Runs in your browser (no upload).</p>
       <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
       <div class="hr"></div>
 
@@ -73,6 +73,26 @@
 
           <div style="margin-top:10px">
             <input id="file" class="input" type="file" accept="video/*" />
+<div class="row" style="margin-top:10px; gap:10px; flex-wrap:wrap; align-items:center">
+  <div class="tiny muted" style="min-width:130px">Batch folder</div>
+  <input id="folder" class="input" type="file" webkitdirectory multiple />
+</div>
+
+<div class="row" style="margin-top:10px; gap:10px; flex-wrap:wrap; align-items:center">
+  <button class="btn" id="pickOutDirBtn" type="button">Choose output folder</button>
+  <span class="pill tiny" id="outDirPill"><b>Output:</b><span class="muted">downloads</span></span>
+</div>
+
+<div class="row" style="margin-top:10px; gap:10px; flex-wrap:wrap; align-items:center">
+  <button class="btn primary" id="batchBtn" type="button" disabled>Batch Convert Folder</button>
+  <button class="btn" id="stopBatchBtn" type="button" disabled>Stop</button>
+  <span class="pill tiny" id="batchStatus"><b>Batch:</b><span class="muted">idle</span></span>
+</div>
+
+<div style="margin-top:10px">
+  <div class="rm-progress" aria-label="batch progress"><div id="batchBar"></div></div>
+  <div class="tiny muted" style="margin-top:8px">Tip: Batch mode processes one file at a time to keep memory stable.</div>
+</div>
           </div>
 
           <div class="hr"></div>
@@ -150,7 +170,7 @@
 
           <div style="margin-top:12px">
             <div class="rm-progress" aria-label="progress"><div id="bar"></div></div>
-            <div class="tiny muted" style="margin-top:8px">This runs locally in your browser — nothing is uploaded. Big 4K clips may require a strong machine and lots of RAM.</div>
+            <div class="tiny muted" style="margin-top:8px">This runs locally in your browser - nothing is uploaded. For fastest results, use a strong machine with plenty of free memory.</div>
           </div>
 
           <div class="hr"></div>
@@ -169,9 +189,9 @@
 
           <div style="font-weight:800; margin-bottom:6px">File details</div>
           <div class="row" style="gap:10px; flex-wrap:wrap">
-            <span class="pill tiny" id="before"><b>Before:</b><span class="muted">—</span></span>
-            <span class="pill tiny" id="after"><b>After:</b><span class="muted">—</span></span>
-            <span class="pill tiny" id="saved"><b>Saved:</b><span class="muted">—</span></span>
+            <span class="pill tiny" id="before"><b>Before:</b><span class="muted">-</span></span>
+            <span class="pill tiny" id="after"><b>After:</b><span class="muted">-</span></span>
+            <span class="pill tiny" id="saved"><b>Saved:</b><span class="muted">-</span></span>
           </div>
 
           <div class="hr"></div>
@@ -208,7 +228,7 @@
       <div class="body">
         <ul>
           <li>Best for reducing GoPro-style 2K/4K exports for sharing.</li>
-          <li>Nothing is uploaded — your file stays on your machine.</li>
+          <li>Nothing is uploaded - your file stays on your machine.</li>
           <li>Choose a target resolution, then fine-tune quality with CRF (higher = smaller).</li>
           <li>If a very large file fails, try 720p or split the clip before converting.</li>
         </ul>
@@ -259,6 +279,15 @@
 
     const $ = (id)=>document.getElementById(id);
     const fileEl = $('file');
+
+    const folderEl = $('folder');
+    const batchBtn = $('batchBtn');
+    const stopBatchBtn = $('stopBatchBtn');
+    const batchStatus = $('batchStatus');
+    const batchBar = $('batchBar');
+
+    const pickOutDirBtn = $('pickOutDirBtn');
+    const outDirPill = $('outDirPill');
     const meta = $('meta');
     const status = $('status');
     const loadBtn = $('loadBtn');
@@ -291,8 +320,64 @@
     let outName = 'output.mp4';
     let lastUrl = null;
 
+    let outDirHandle = null;
+    let batchStop = false;
+
+    function setBatchStatus(msg){
+      batchStatus.innerHTML = `<b>Batch:</b><span class="muted">${msg}</span>`;
+    }
+    function setOutDirPill(msg){
+      outDirPill.innerHTML = `<b>Output:</b><span class="muted">${msg}</span>`;
+    }
+    function setBatchProgress(pct){
+      const v = Math.max(0, Math.min(100, Math.round(pct)));
+      batchBar.style.width = v + '%';
+    }
+
+    async function pickOutputFolder(){
+      if(!window.showDirectoryPicker){
+        setOutDirPill('downloads');
+        appendLog('Output folder picker not supported in this browser. Using downloads.');
+        return;
+      }
+      try{
+        const h = await window.showDirectoryPicker({ mode: 'readwrite' });
+        outDirHandle = h;
+        setOutDirPill('selected folder');
+        appendLog('Output folder selected.');
+      }catch(e){
+        appendLog('Output folder not selected. Using downloads.');
+        outDirHandle = null;
+        setOutDirPill('downloads');
+      }
+    }
+
+    async function saveBlob(blob, filename){
+      if(outDirHandle && window.FileSystemWritableFileStream){
+        try{
+          const fileHandle = await outDirHandle.getFileHandle(filename, { create: true });
+          const writable = await fileHandle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          return 'folder';
+        }catch(e){
+          appendLog('Could not save to folder. Falling back to downloads.');
+          outDirHandle = null;
+          setOutDirPill('downloads');
+        }
+      }
+      const a = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 250);
+      return 'download';
+    }
+
     const humanBytes = (n) => {
-      if(!Number.isFinite(n)) return '—';
+      if(!Number.isFinite(n)) return '-';
       const u=['B','KB','MB','GB']; let i=0; let v=n;
       while(v>=1024 && i<u.length-1){ v/=1024; i++; }
       const s = i===0 ? String(Math.round(v)) : String(Math.round(v*10)/10);
@@ -314,8 +399,8 @@
     function resetOutput(){
       outBlob = null;
       dlBtn.disabled = true;
-      setPill(afterP,'After','—');
-      setPill(savedP,'Saved','—');
+      setPill(afterP,'After','-');
+      setPill(savedP,'Saved','-');
       if(lastUrl){ URL.revokeObjectURL(lastUrl); lastUrl = null; }
       out.removeAttribute('src');
       out.load();
@@ -372,6 +457,7 @@
         appendLog('Engine ready.');
         setStatus(currentFile ? 'ready to convert' : 'select a video');
         goBtn.disabled = !currentFile;
+        batchBtn.disabled = (listVideosFromFolderFiles(folderEl.files).length === 0);
       } catch (e) {
         console.error(e);
         appendLog(String(e));
@@ -420,30 +506,39 @@
       return `scale=${W}:${H}`;
     }
 
-    async function convert(){
-      if(!currentFile){ setStatus('select a video'); return; }
-      if(!loaded){ await loadEngine(); if(!loaded) return; }
+    async function convertFile(file, opts){
+      const options = Object.assign({ preview:true, autoSave:false, label:'' }, opts || {});
+      if(!file){ setStatus('select a video'); return { ok:false, error:'no file' }; }
+      if(!loaded){ await loadEngine(); if(!loaded) return { ok:false, error:'engine not loaded' }; }
 
-      resetOutput();
+      if(options.preview){
+        resetOutput();
+        log.textContent = '';
+      } else {
+        bar.style.width = '0%';
+      }
+
       goBtn.disabled = true;
       dlBtn.disabled = true;
       loadBtn.disabled = true;
-      setStatus('processing…');
+      setStatus(options.label ? `processing: ${options.label}` : 'processing…');
       appendLog('---');
 
-      const ext = (currentFile.name.split('.').pop() || 'mp4').toLowerCase().replace(/[^a-z0-9]/g,'');
-      const inName = `input.${ext || 'mp4'}`;
-      outName = (currentFile.name.replace(/\.[^.]+$/, '') || 'video') + `_rm_${mode.value === 'custom' ? 'custom' : mode.value}.mp4`;
+      outName = (file.name.replace(/\.[^.]+$/, '') || 'video') + `_rm_${mode.value === 'custom' ? 'custom' : mode.value}.mp4`;
+      const rel = (file.webkitRelativePath || '').trim();
+      if(rel){
+        const flat = rel.replace(/[\/\\]/g, '__').replace(/\.[^.]+$/, '');
+        outName = `${flat}_rm_${mode.value === 'custom' ? 'custom' : mode.value}.mp4`;
+      }
       const outFile = 'output.mp4';
 
-      try{        // Avoid loading huge videos fully into JS memory (can throw RangeError on large GoPro/4K files).
-        // Mount the selected file with WORKERFS so ffmpeg can read it without a giant ArrayBuffer copy.
+      try{
         const mountPoint = '/input';
         try{ await ffmpeg.createDir(mountPoint); }catch(e){}
-        try{ await ffmpeg.unmount(mountPoint); }catch(e){} // in case a previous run left it mounted
-        await ffmpeg.mount('WORKERFS', { files: [currentFile] }, mountPoint);
+        try{ await ffmpeg.unmount(mountPoint); }catch(e){}
+        await ffmpeg.mount('WORKERFS', { files: [file] }, mountPoint);
 
-        const inputPath = `${mountPoint}/${currentFile.name}`;
+        const inputPath = `${mountPoint}/${file.name}`;
         const args = ['-i', inputPath];
         const vf = [];
 
@@ -476,38 +571,51 @@
         await ffmpeg.exec(args);
 
         const data = await ffmpeg.readFile(outFile);
-        outBlob = new Blob([data.buffer], { type: 'video/mp4' });
+        const blob = new Blob([data.buffer], { type: 'video/mp4' });
 
-        const afterSize = outBlob.size;
-        setPill(afterP,'After', humanBytes(afterSize));
-        if(Number.isFinite(currentFile.size)){
-          const saved = currentFile.size - afterSize;
-          const pct = currentFile.size ? Math.round((saved / currentFile.size) * 100) : 0;
-          setPill(savedP,'Saved', (saved > 0 ? `${humanBytes(saved)} (${pct}%)` : '—'));
+        if(options.preview){
+          outBlob = blob;
+          const afterSize = outBlob.size;
+          setPill(afterP,'After', humanBytes(afterSize));
+          if(Number.isFinite(file.size)){
+            const saved = file.size - afterSize;
+            const pct = file.size ? Math.round((saved / file.size) * 100) : 0;
+            setPill(savedP,'Saved', (saved > 0 ? `${humanBytes(saved)} (${pct}%)` : '-'));
+          }
+          if(lastUrl) URL.revokeObjectURL(lastUrl);
+          lastUrl = URL.createObjectURL(outBlob);
+          out.src = lastUrl;
+          out.load();
+          dlBtn.disabled = false;
         }
 
-        if(lastUrl) URL.revokeObjectURL(lastUrl);
-        lastUrl = URL.createObjectURL(outBlob);
-        out.src = lastUrl;
-        out.load();
+        if(options.autoSave){
+          await saveBlob(blob, outName);
+        }
 
-        dlBtn.disabled = false;
         setStatus('done');
         appendLog('Done.');
+
+        return { ok:true, blob, outName };
       } catch (e) {
         console.error(e);
         appendLog(String(e));
         setStatus('error (see log)');
+        return { ok:false, error:String(e) };
       } finally {
-        // best-effort cleanup
         try{ await ffmpeg.unmount('/input'); }catch(e){}
         try{ await ffmpeg.deleteDir('/input'); }catch(e){}
         try{ await ffmpeg.deleteFile('output.mp4'); }catch(e){}
-
         goBtn.disabled = false;
-        loadBtn.disabled = loaded; // once loaded, keep it disabled
+        loadBtn.disabled = loaded;
       }
     }
+
+    async function convert(){
+      if(!currentFile){ setStatus('select a video'); return; }
+      await convertFile(currentFile, { preview:true, autoSave:false, label: currentFile.name });
+    }
+
 
     function download(){
       if(!outBlob) return;
@@ -521,13 +629,101 @@
     }
 
     loadBtn.addEventListener('click', loadEngine);
+
+    function listVideosFromFolderFiles(files){
+      const arr = Array.from(files || []);
+      return arr.filter(f => (f && (f.type || '').startsWith('video/')) || /\.(mp4|mov|mkv|webm|avi|m4v)$/i.test(f.name));
+    }
+
+    folderEl.addEventListener('change', ()=>{
+      const vids = listVideosFromFolderFiles(folderEl.files);
+      if(!vids.length){
+        setBatchStatus('idle');
+        batchBtn.disabled = true;
+        setBatchProgress(0);
+        return;
+      }
+      setBatchStatus(`${vids.length} files ready`);
+      batchBtn.disabled = !loaded;
+      setBatchProgress(0);
+      appendLog(`Folder selected: ${vids.length} video files.`);
+    });
+
+    pickOutDirBtn.addEventListener('click', pickOutputFolder);
+
+    async function runBatch(){
+      const files = listVideosFromFolderFiles(folderEl.files);
+      if(!files.length){
+        setBatchStatus('pick a folder');
+        return;
+      }
+      if(!loaded){
+        await loadEngine();
+        if(!loaded){
+          setBatchStatus('engine not loaded');
+          return;
+        }
+      }
+
+      batchStop = false;
+      stopBatchBtn.disabled = false;
+      batchBtn.disabled = true;
+      goBtn.disabled = true;
+      dlBtn.disabled = true;
+
+      let okCount = 0;
+      let failCount = 0;
+
+      setBatchProgress(0);
+      setBatchStatus(`running 0/${files.length}`);
+
+      for(let i=0; i<files.length; i++){
+        if(batchStop) break;
+
+        const f = files[i];
+
+        meta.innerHTML = `<b>Video:</b><span class="muted">${f.name}</span>`;
+        setPill(beforeP,'Before', humanBytes(f.size));
+
+        setBatchStatus(`running ${i+1}/${files.length}`);
+        setBatchProgress((i / files.length) * 100);
+
+        const r = await convertFile(f, { preview:false, autoSave:true, label: f.name });
+        if(r && r.ok){
+          okCount++;
+        } else {
+          failCount++;
+        }
+
+        await new Promise(res => setTimeout(res, 60));
+      }
+
+      setBatchProgress(100);
+      if(batchStop){
+        setBatchStatus(`stopped: ${okCount} ok, ${failCount} failed`);
+      } else {
+        setBatchStatus(`done: ${okCount} ok, ${failCount} failed`);
+      }
+
+      stopBatchBtn.disabled = true;
+      batchBtn.disabled = false;
+      goBtn.disabled = !currentFile;
+        batchBtn.disabled = (listVideosFromFolderFiles(folderEl.files).length === 0);
+    }
+
+    batchBtn.addEventListener('click', runBatch);
+    stopBatchBtn.addEventListener('click', ()=>{
+      batchStop = true;
+      setBatchStatus('stopping…');
+      stopBatchBtn.disabled = true;
+    });
     goBtn.addEventListener('click', convert);
     dlBtn.addEventListener('click', download);
 
     // Sensible initial UI
-    setPill(beforeP,'Before','—');
-    setPill(afterP,'After','—');
-    setPill(savedP,'Saved','—');
+    setPill(beforeP,'Before','-');
+    setPill(afterP,'After','-');
+    setPill(savedP,'Saved','-');
     setStatus('select a video');
     appendLog('Tip: Click “Load video engine” once, then convert.');
   </script>
