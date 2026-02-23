@@ -37,6 +37,14 @@
     .rm-log{height:140px; overflow:auto; border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:10px; background:rgba(255,255,255,.03); font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px; color:rgba(255,255,255,.88);}
     .rm-progress{width:100%; height:10px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden; border:1px solid rgba(255,255,255,.10);}
     .rm-progress > div{height:100%; width:0%; background:linear-gradient(135deg, rgba(110,168,255,.95), rgba(124,247,212,.95));}
+      /* Batch + upload zones UI helpers (page-local) */
+    .rm-upload-zones{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;}
+    @media (max-width: 860px){ .rm-upload-zones{grid-template-columns:1fr;} }
+    .rm-dropzone{border:1px dashed rgba(255,255,255,.22); border-radius:14px; padding:12px; background:rgba(255,255,255,.03); cursor:pointer;}
+    .rm-dropzone:hover{border-color:rgba(255,255,255,.30);}
+    .rm-dropzone.is-dragover{border-color:rgba(124,247,212,.75); background:rgba(124,247,212,.08);}
+    .rm-dropzone .dz-title{font-weight:800;}
+    .rm-dropzone .dz-sub{margin-top:4px;}
   </style>
 </head>
 
@@ -72,29 +80,45 @@
           </div>
 
           <div style="margin-top:10px">
-            <input id="file" class="input" type="file" accept="video/*" />
-<div class="row" style="margin-top:10px; gap:10px; flex-wrap:wrap; align-items:center">
-  <div class="tiny muted" style="min-width:130px">Batch folder</div>
-  <input id="folder" class="input" type="file" webkitdirectory multiple />
-</div>
+  <div class="rm-upload-zones">
+    <div class="rm-dropzone" id="singleDrop" tabindex="0" role="button" aria-label="Upload single video">
+      <div class="dz-title">Single video</div>
+      <div class="tiny muted dz-sub">Drop one video here, or browse.</div>
+      <div class="row" style="margin-top:10px; gap:10px; flex-wrap:wrap; align-items:center">
+        <button class="btn" id="browseSingleBtn" type="button">Browse single file</button>
+        <input id="file" class="input" type="file" accept="video/*" style="display:none" />
+      </div>
+    </div>
 
-<div class="row" style="margin-top:10px; gap:10px; flex-wrap:wrap; align-items:center">
-  <button class="btn" id="pickOutDirBtn" type="button">Choose output folder</button>
-  <span class="pill tiny" id="outDirPill"><b>Output:</b><span class="muted">downloads</span></span>
-</div>
+    <div class="rm-dropzone" id="batchDrop" tabindex="0" role="button" aria-label="Upload folder with multiple videos">
+      <div class="dz-title">Folder batch</div>
+      <div class="tiny muted dz-sub">Drop multiple videos here, or browse a folder.</div>
+      <div class="row" style="margin-top:10px; gap:10px; flex-wrap:wrap; align-items:center">
+        <button class="btn" id="browseFolderBtn" type="button">Browser folder with multiple files</button>
+        <input id="folder" class="input" type="file" webkitdirectory multiple style="display:none" />
+      </div>
+    </div>
+  </div>
 
-<div class="row" style="margin-top:10px; gap:10px; flex-wrap:wrap; align-items:center">
-  <button class="btn primary" id="batchBtn" type="button" disabled>Batch Convert Folder</button>
-  <button class="btn" id="stopBatchBtn" type="button" disabled>Stop</button>
-  <span class="pill tiny" id="batchStatus"><b>Batch:</b><span class="muted">idle</span></span>
-</div>
+  <div id="batchControls" style="display:none; margin-top:10px">
+    <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+      <button class="btn" id="pickOutDirBtn" type="button">Choose output folder</button>
+      <span class="pill tiny" id="outDirPill"><b>Output:</b><span class="muted">downloads</span></span>
+    </div>
 
-<div style="margin-top:10px">
-  <div class="rm-progress" aria-label="batch progress"><div id="batchBar"></div></div>
-  <div class="tiny muted" style="margin-top:8px">Tip: Batch mode processes one file at a time to keep memory stable.</div>
-</div>
-          </div>
+    <div class="row" style="margin-top:10px; gap:10px; flex-wrap:wrap; align-items:center">
+      <button class="btn" id="batchLoadBtn" type="button">Load video engine</button>
+      <button class="btn primary" id="batchBtn" type="button" disabled>Batch Convert Folder</button>
+      <button class="btn" id="stopBatchBtn" type="button" disabled>Stop</button>
+      <span class="pill tiny" id="batchStatus"><b>Batch:</b><span class="muted">idle</span></span>
+    </div>
 
+    <div style="margin-top:10px">
+      <div class="rm-progress" aria-label="batch progress"><div id="batchBar"></div></div>
+      <div class="tiny muted" style="margin-top:8px">Tip: Batch mode processes one file at a time to keep memory stable.</div>
+    </div>
+  </div>
+</div>
           <div class="hr"></div>
 
           <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
@@ -178,7 +202,7 @@
           <div class="rm-log" id="log" aria-label="ffmpeg log"></div>
         </div>
 
-        <div class="card">
+        <div class="card" id="previewCard">
           <div style="font-weight:800; margin-bottom:6px">Preview</div>
           <div class="tiny muted">Output preview appears after conversion.</div>
           <div class="hr"></div>
@@ -279,8 +303,17 @@
 
     const $ = (id)=>document.getElementById(id);
     const fileEl = $('file');
-
     const folderEl = $('folder');
+
+    const singleDrop = $('singleDrop');
+    const batchDrop = $('batchDrop');
+    const browseSingleBtn = $('browseSingleBtn');
+    const browseFolderBtn = $('browseFolderBtn');
+
+    const batchControls = $('batchControls');
+    const batchLoadBtn = $('batchLoadBtn');
+    const previewCard = $('previewCard');
+
     const batchBtn = $('batchBtn');
     const stopBatchBtn = $('stopBatchBtn');
     const batchStatus = $('batchStatus');
@@ -322,6 +355,48 @@
 
     let outDirHandle = null;
     let batchStop = false;
+    let batchFilesOverride = null;
+    let batchMode = false;
+
+    function setBatchMode(on){
+      batchMode = !!on;
+      if(previewCard) previewCard.style.display = batchMode ? 'none' : '';
+      if(batchControls) batchControls.style.display = batchMode ? '' : 'none';
+    }
+
+    function setDropState(el, on){
+      if(!el) return;
+      if(on) el.classList.add('is-dragover');
+      else el.classList.remove('is-dragover');
+    }
+
+    function getBatchFiles(){
+      const fromOverride = Array.isArray(batchFilesOverride) ? batchFilesOverride : null;
+      if(fromOverride) return fromOverride;
+      return listVideosFromFolderFiles(folderEl && folderEl.files ? folderEl.files : []);
+    }
+
+    function updateBatchButtons(){
+      const hasFiles = getBatchFiles().length > 0;
+      if(batchBtn) batchBtn.disabled = (!loaded) || (!hasFiles);
+    }
+
+    function setCurrentFile(f){
+      currentFile = f || null;
+      resetOutput();
+      log.textContent = '';
+      if(!currentFile){
+        meta.innerHTML = '<b>Video:</b><span class="muted">not loaded</span>';
+        setStatus('select a video');
+        goBtn.disabled = true;
+        return;
+      }
+      meta.innerHTML = `<b>Video:</b><span class="muted">${currentFile.name}</span>`;
+      setPill(beforeP,'Before', humanBytes(currentFile.size));
+      setStatus(loaded ? 'ready to convert' : 'load engine, then convert');
+      goBtn.disabled = !loaded;
+      setBatchMode(false);
+    }
 
     function setBatchStatus(msg){
       batchStatus.innerHTML = `<b>Batch:</b><span class="muted">${msg}</span>`;
@@ -414,20 +489,9 @@
       crfLbl.innerHTML = `<b>CRF:</b><span class="muted">${crf.value}</span>`;
     });
 
-    fileEl.addEventListener('change', ()=>{
-      currentFile = fileEl.files && fileEl.files[0] ? fileEl.files[0] : null;
-      resetOutput();
-      log.textContent = '';
-      if(!currentFile){
-        meta.innerHTML = '<b>Video:</b><span class="muted">not loaded</span>';
-        setStatus('select a video');
-        goBtn.disabled = true;
-        return;
-      }
-      meta.innerHTML = `<b>Video:</b><span class="muted">${currentFile.name}</span>`;
-      setPill(beforeP,'Before', humanBytes(currentFile.size));
-      setStatus(loaded ? 'ready to convert' : 'load engine, then convert');
-      goBtn.disabled = !loaded;
+        fileEl.addEventListener('change', ()=>{
+      const f = fileEl.files && fileEl.files[0] ? fileEl.files[0] : null;
+      setCurrentFile(f);
     });
 
     ffmpeg.on('log', ({ message }) => appendLog(message));
@@ -440,6 +504,7 @@
     async function loadEngine(){
       if(loaded) return;
       loadBtn.disabled = true;
+      if(batchLoadBtn) batchLoadBtn.disabled = true;
       goBtn.disabled = true;
       setStatus('loading engine…');
       appendLog('Loading FFmpeg (first time can be ~30–40MB)…');
@@ -457,12 +522,14 @@
         appendLog('Engine ready.');
         setStatus(currentFile ? 'ready to convert' : 'select a video');
         goBtn.disabled = !currentFile;
-        batchBtn.disabled = (listVideosFromFolderFiles(folderEl.files).length === 0);
+        if(batchLoadBtn) batchLoadBtn.disabled = true;
+        updateBatchButtons();
       } catch (e) {
         console.error(e);
         appendLog(String(e));
         setStatus('failed to load engine');
         loadBtn.disabled = false;
+        if(batchLoadBtn) batchLoadBtn.disabled = false;
       }
     }
 
@@ -521,6 +588,7 @@
       goBtn.disabled = true;
       dlBtn.disabled = true;
       loadBtn.disabled = true;
+      if(batchLoadBtn) batchLoadBtn.disabled = true;
       setStatus(options.label ? `processing: ${options.label}` : 'processing…');
       appendLog('---');
 
@@ -608,6 +676,8 @@
         try{ await ffmpeg.deleteFile('output.mp4'); }catch(e){}
         goBtn.disabled = false;
         loadBtn.disabled = loaded;
+        if(batchLoadBtn) batchLoadBtn.disabled = loaded;
+        updateBatchButtons();
       }
     }
 
@@ -629,30 +699,71 @@
     }
 
     loadBtn.addEventListener('click', loadEngine);
+    if(batchLoadBtn) batchLoadBtn.addEventListener('click', loadEngine);
+    if(browseSingleBtn){
+      browseSingleBtn.addEventListener('click', (e)=>{ e.preventDefault(); if(fileEl) fileEl.click(); });
+    }
+    if(browseFolderBtn){
+      browseFolderBtn.addEventListener('click', (e)=>{ e.preventDefault(); if(folderEl) folderEl.click(); });
+    }
+
+    function wireDropzone(el, kind){
+      if(!el) return;
+      const openPicker = ()=>{ if(kind === 'single' && fileEl) fileEl.click(); if(kind === 'batch' && folderEl) folderEl.click(); };
+      el.addEventListener('click', (e)=>{ if(e.target && e.target.closest && e.target.closest('button')) return; openPicker(); });
+      el.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openPicker(); } });
+
+      el.addEventListener('dragover', (e)=>{ e.preventDefault(); setDropState(el, true); });
+      el.addEventListener('dragleave', ()=> setDropState(el, false));
+      el.addEventListener('drop', (e)=>{
+        e.preventDefault();
+        setDropState(el, false);
+
+        const files = Array.from((e.dataTransfer && e.dataTransfer.files) ? e.dataTransfer.files : []);
+        if(kind === 'single'){
+          const f = files.find(x => x && (x.type || '').startsWith('video/')) || files[0];
+          if(f) setCurrentFile(f);
+          return;
+        }
+
+        const vids = listVideosFromFolderFiles(files);
+        batchFilesOverride = vids;
+        setBatchMode(true);
+        setBatchStatus(vids.length ? `${vids.length} files ready` : 'pick a folder');
+        setBatchProgress(0);
+        updateBatchButtons();
+        appendLog(vids.length ? `Batch files dropped: ${vids.length} video files.` : 'No video files detected in drop.');
+      });
+    }
+
+    wireDropzone(singleDrop, 'single');
+    wireDropzone(batchDrop, 'batch');
 
     function listVideosFromFolderFiles(files){
       const arr = Array.from(files || []);
       return arr.filter(f => (f && (f.type || '').startsWith('video/')) || /\.(mp4|mov|mkv|webm|avi|m4v)$/i.test(f.name));
     }
 
-    folderEl.addEventListener('change', ()=>{
-      const vids = listVideosFromFolderFiles(folderEl.files);
+        folderEl.addEventListener('change', ()=>{
+      batchFilesOverride = null;
+      setBatchMode(true);
+      const vids = getBatchFiles();
       if(!vids.length){
-        setBatchStatus('idle');
-        batchBtn.disabled = true;
+        setBatchStatus('pick a folder');
         setBatchProgress(0);
+        updateBatchButtons();
         return;
       }
       setBatchStatus(`${vids.length} files ready`);
-      batchBtn.disabled = !loaded;
       setBatchProgress(0);
+      updateBatchButtons();
       appendLog(`Folder selected: ${vids.length} video files.`);
     });
 
     pickOutDirBtn.addEventListener('click', pickOutputFolder);
 
     async function runBatch(){
-      const files = listVideosFromFolderFiles(folderEl.files);
+      const files = getBatchFiles();
       if(!files.length){
         setBatchStatus('pick a folder');
         return;
@@ -706,9 +817,8 @@
       }
 
       stopBatchBtn.disabled = true;
-      batchBtn.disabled = false;
       goBtn.disabled = !currentFile;
-        batchBtn.disabled = (listVideosFromFolderFiles(folderEl.files).length === 0);
+      updateBatchButtons();
     }
 
     batchBtn.addEventListener('click', runBatch);
@@ -725,6 +835,7 @@
     setPill(afterP,'After','-');
     setPill(savedP,'Saved','-');
     setStatus('select a video');
+    setBatchMode(false);
     appendLog('Tip: Click “Load video engine” once, then convert.');
   </script>
 
