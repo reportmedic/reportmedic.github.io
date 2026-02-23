@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title>Video Resize / Reduce Size (4K → 1080p/720p) - ReportMedic</title>
+  <title>Video Resize / Reduce Size (4K -> 1080p/720p) - ReportMedic</title>
   <meta name="description" content="Downscale 2K/4K videos to a smaller resolution to reduce file size (great for GoPro exports). Runs locally in your browser (no upload)." />
 
   <link rel="icon" href="/favicon.ico" />
@@ -37,14 +37,26 @@
     .rm-log{height:140px; overflow:auto; border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:10px; background:rgba(255,255,255,.03); font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px; color:rgba(255,255,255,.88);}
     .rm-progress{width:100%; height:10px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden; border:1px solid rgba(255,255,255,.10);}
     .rm-progress > div{height:100%; width:0%; background:linear-gradient(135deg, rgba(110,168,255,.95), rgba(124,247,212,.95));}
-      /* Batch + upload zones UI helpers (page-local) */
+      /* UI layout helpers (page-local) */
     .rm-upload-zones{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;}
     @media (max-width: 860px){ .rm-upload-zones{grid-template-columns:1fr;} }
-    .rm-dropzone{border:1px dashed rgba(255,255,255,.22); border-radius:14px; padding:12px; background:rgba(255,255,255,.03); cursor:pointer;}
+    .rm-dropzone{border:1px dashed rgba(255,255,255,.22); border-radius:14px; padding:14px; background:rgba(255,255,255,.03); cursor:pointer;}
     .rm-dropzone:hover{border-color:rgba(255,255,255,.30);}
     .rm-dropzone.is-dragover{border-color:rgba(124,247,212,.75); background:rgba(124,247,212,.08);}
     .rm-dropzone .dz-title{font-weight:800;}
     .rm-dropzone .dz-sub{margin-top:4px;}
+
+    .rm-fields4{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin-top:12px;}
+    @media (max-width: 1100px){ .rm-fields4{grid-template-columns:repeat(2, minmax(0,1fr));} }
+    @media (max-width: 640px){ .rm-fields4{grid-template-columns:1fr;} }
+    .rm-field .rm-label{font-size:.85rem; opacity:.85; margin-bottom:6px;}
+    .rm-field .input{width:100%;}
+    .rm-crf-row{margin-top:12px; gap:10px; align-items:center; flex-wrap:wrap;}
+    .rm-crf-row #crf{flex:1; min-width:240px; width:auto;}
+    #customRow.rm-custom{display:grid; grid-template-columns:1fr 1fr auto; gap:12px; align-items:end;}
+    @media (max-width: 860px){ #customRow.rm-custom{grid-template-columns:1fr;} }
+
+    .rm-hide{display:none !important;}
   </style>
 </head>
 
@@ -66,7 +78,7 @@
     <div class="panel">
       <h1>Video Resize / Reduce Size <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
       <p class="sub">Downscale big GoPro / 2K / 4K videos to a smaller resolution to shrink size - private and local. Runs in your browser (no upload).</p>
-      <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+      <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help -></a></div>
       <div class="hr"></div>
 
       <div class="grid2">
@@ -84,19 +96,13 @@
     <div class="rm-dropzone" id="singleDrop" tabindex="0" role="button" aria-label="Upload single video">
       <div class="dz-title">Single video</div>
       <div class="tiny muted dz-sub">Drop one video here, or browse.</div>
-      <div class="row" style="margin-top:10px; gap:10px; flex-wrap:wrap; align-items:center">
-        
-        <input id="file" class="input" type="file" accept="video/*" style="display:none" />
-      </div>
+      <input id="file" class="input" type="file" accept="video/*" style="display:none" />
     </div>
 
     <div class="rm-dropzone" id="batchDrop" tabindex="0" role="button" aria-label="Upload folder with multiple videos">
       <div class="dz-title">Folder batch</div>
       <div class="tiny muted dz-sub">Drop multiple videos here, or browse a folder.</div>
-      <div class="row" style="margin-top:10px; gap:10px; flex-wrap:wrap; align-items:center">
-        
-        <input id="folder" class="input" type="file" webkitdirectory multiple style="display:none" />
-      </div>
+      <input id="folder" class="input" type="file" webkitdirectory multiple style="display:none" />
     </div>
   </div>
 
@@ -121,27 +127,47 @@
 </div>
           <div class="hr"></div>
 
-          <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
-            <span class="tiny muted" style="min-width:130px">Target resolution</span>
-            <select id="mode" class="input" style="width:auto; min-width:260px">
+                    <div class="rm-fields4">
+            <div class="rm-field">
+              <div class="rm-label">Target resolution</div>
+              <select id="mode" class="input" style="width:auto; min-width:260px">
               <option value="1080" selected>1080p (1920×1080)</option>
               <option value="720">720p (1280×720)</option>
               <option value="480">480p (854×480)</option>
               <option value="keep">Keep original</option>
               <option value="custom">Custom…</option>
             </select>
-          </div>
+            </div>
 
-          <div class="row" id="customRow" style="margin-top:12px; gap:10px; flex-wrap:wrap; display:none">
-            <div class="row" style="gap:10px; align-items:center">
-              <span class="tiny muted" style="min-width:110px">Width</span>
-              <input id="w" class="input" type="number" min="1" step="1" style="max-width:180px" placeholder="px" />
+            <div class="rm-field">
+              <div class="rm-label">Speed</div>
+              <select id="preset" class="input" style="width:auto; min-width:220px">
+              <option value="ultrafast">Ultra fast (largest)</option>
+              <option value="veryfast" selected>Very fast (recommended)</option>
+              <option value="faster">Faster</option>
+              <option value="fast">Fast</option>
+              <option value="medium">Medium (slower)</option>
+            </select>
             </div>
-            <div class="row" style="gap:10px; align-items:center">
-              <span class="tiny muted" style="min-width:110px">Height</span>
-              <input id="h" class="input" type="number" min="1" step="1" style="max-width:180px" placeholder="px" />
+
+            <div class="rm-field">
+              <div class="rm-label">FPS</div>
+              <select id="fps" class="input" style="width:auto; min-width:160px">
+              <option value="keep" selected>Keep</option>
+              <option value="30">30 fps</option>
+              <option value="24">24 fps</option>
+            </select>
             </div>
-            <label class="row tiny muted" style="gap:8px; align-items:center">
+
+            <div class="rm-field">
+              <div class="rm-label">Audio</div>
+              <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+                <select id="ab" class="input" style="width:auto; min-width:220px">
+              <option value="96k">AAC 96 kbps</option>
+              <option value="128k" selected>AAC 128 kbps</option>
+              <option value="160k">AAC 160 kbps</option>
+            </select>
+                <label class="row tiny muted" style="gap:8px; align-items:center">
               <input id="lock" type="checkbox" checked />
               Keep aspect ratio
             </label>
@@ -151,7 +177,7 @@
             <span class="tiny muted" style="min-width:130px">Quality (CRF)</span>
             <input id="crf" type="range" min="18" max="35" value="28" step="1" style="width:240px" />
             <span class="pill tiny" id="crfLbl"><b>CRF:</b><span class="muted">28</span></span>
-            <span class="tiny muted">Higher → smaller (a bit more loss)</span>
+            <span class="tiny muted">Higher -> smaller (a bit more loss)</span>
           </div>
 
           <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap; align-items:center">
@@ -183,16 +209,40 @@
               <input id="mute" type="checkbox" />
               Mute
             </label>
+              </div>
+            </div>
           </div>
 
-          <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap">
+          <div class="row rm-custom rm-hide" id="customRow" style="margin-top:12px; gap:12px">
+            <div class="row" style="gap:10px; align-items:center">
+              <span class="tiny muted" style="min-width:110px">Width</span>
+              <input id="w" class="input" type="number" min="1" step="1" style="max-width:220px" placeholder="px" />
+            </div>
+            <div class="row" style="gap:10px; align-items:center">
+              <span class="tiny muted" style="min-width:110px">Height</span>
+              <input id="h" class="input" type="number" min="1" step="1" style="max-width:220px" placeholder="px" />
+            </div>
+            <label class="row tiny muted" style="gap:8px; align-items:center">
+              <input id="lock" type="checkbox" checked />
+              Keep aspect ratio
+            </label>
+          </div>
+
+          <div class="row rm-crf-row">
+            <span class="tiny muted" style="min-width:130px">Quality (CRF)</span>
+            <input id="crf" type="range" min="18" max="35" value="28" step="1" />
+            <span class="pill tiny" id="crfLbl"><b>CRF:</b><span class="muted">28</span></span>
+            <span class="tiny muted">Higher -> smaller (a bit more loss)</span>
+          </div>
+
+<div class="row rm-hide" id="singleActions" style="margin-top:12px; gap:10px; flex-wrap:wrap">
             <button class="btn" id="loadBtn" type="button">Load video engine</button>
             <button class="btn primary" id="goBtn" type="button" disabled>Convert</button>
             <button class="btn" id="downloadBtn" type="button" disabled>Download MP4</button>
             <span class="pill tiny" id="status"><b>Status:</b><span class="muted">select a video</span></span>
           </div>
 
-          <div style="margin-top:12px">
+          <div style="margin-top:12px" class="rm-hide" id="singleProgress">
             <div class="rm-progress" aria-label="progress"><div id="bar"></div></div>
             <div class="tiny muted" style="margin-top:8px">This runs locally in your browser - nothing is uploaded. For fastest results, use a strong machine with plenty of free memory.</div>
           </div>
@@ -202,7 +252,7 @@
           <div class="rm-log" id="log" aria-label="ffmpeg log"></div>
         </div>
 
-        <div class="card" id="previewCard">
+        <div class="card rm-hide" id="previewCard">
           <div style="font-weight:800; margin-bottom:6px">Preview</div>
           <div class="tiny muted">Output preview appears after conversion.</div>
           <div class="hr"></div>
@@ -307,13 +357,13 @@
 
     const singleDrop = $('singleDrop');
     const batchDrop = $('batchDrop');
-    const browseSingleBtn = $('browseSingleBtn');
-    const browseFolderBtn = $('browseFolderBtn');
 
     const batchControls = $('batchControls');
     const batchLoadBtn = $('batchLoadBtn');
     const previewCard = $('previewCard');
 
+    const singleActions = $('singleActions');
+    const singleProgress = $('singleProgress');
     const batchBtn = $('batchBtn');
     const stopBatchBtn = $('stopBatchBtn');
     const batchStatus = $('batchStatus');
@@ -358,10 +408,17 @@
     let batchFilesOverride = null;
     let batchMode = false;
 
+    function setSingleUIVisible(on){
+      const show = !!on;
+      if(singleActions) singleActions.classList.toggle('rm-hide', !show);
+      if(singleProgress) singleProgress.classList.toggle('rm-hide', !show);
+      if(previewCard) previewCard.classList.toggle('rm-hide', !show);
+    }
+
     function setBatchMode(on){
       batchMode = !!on;
-      if(previewCard) previewCard.style.display = batchMode ? 'none' : '';
       if(batchControls) batchControls.style.display = batchMode ? '' : 'none';
+      if(batchMode) setSingleUIVisible(false);
     }
 
     function setDropState(el, on){
@@ -389,13 +446,14 @@
         meta.innerHTML = '<b>Video:</b><span class="muted">not loaded</span>';
         setStatus('select a video');
         goBtn.disabled = true;
+        setSingleUIVisible(false);
         return;
       }
       meta.innerHTML = `<b>Video:</b><span class="muted">${currentFile.name}</span>`;
       setPill(beforeP,'Before', humanBytes(currentFile.size));
       setStatus(loaded ? 'ready to convert' : 'load engine, then convert');
       goBtn.disabled = !loaded;
-      setBatchMode(false);
+      setSingleUIVisible(true);
     }
 
     function setBatchStatus(msg){
@@ -483,7 +541,9 @@
     }
 
     mode.addEventListener('change', ()=>{
-      customRow.style.display = (mode.value === 'custom') ? '' : 'none';
+      const on = (mode.value === 'custom');
+      if(on) customRow.classList.remove('rm-hide');
+      else customRow.classList.add('rm-hide');
     });
     crf.addEventListener('input', ()=>{
       crfLbl.innerHTML = `<b>CRF:</b><span class="muted">${crf.value}</span>`;
@@ -521,6 +581,7 @@
         loaded = true;
         appendLog('Engine ready.');
         setStatus(currentFile ? 'ready to convert' : 'select a video');
+        if(currentFile) setSingleUIVisible(true);
         goBtn.disabled = !currentFile;
         if(batchLoadBtn) batchLoadBtn.disabled = true;
         updateBatchButtons();
@@ -700,11 +761,7 @@
 
     loadBtn.addEventListener('click', loadEngine);
     if(batchLoadBtn) batchLoadBtn.addEventListener('click', loadEngine);
-    if(browseSingleBtn){
-      browseSingleBtn.addEventListener('click', (e)=>{ e.preventDefault(); if(fileEl) fileEl.click(); });
     }
-    if(browseFolderBtn){
-      browseFolderBtn.addEventListener('click', (e)=>{ e.preventDefault(); if(folderEl) folderEl.click(); });
     }
 
     function wireDropzone(el, kind){
@@ -729,6 +786,8 @@
         const vids = listVideosFromFolderFiles(files);
         batchFilesOverride = vids;
         setBatchMode(true);
+        setSingleUIVisible(false);
+      setSingleUIVisible(false);
         setBatchStatus(vids.length ? `${vids.length} files ready` : 'pick a folder');
         setBatchProgress(0);
         updateBatchButtons();
@@ -747,6 +806,7 @@
         folderEl.addEventListener('change', ()=>{
       batchFilesOverride = null;
       setBatchMode(true);
+      setSingleUIVisible(false);
       const vids = getBatchFiles();
       if(!vids.length){
         setBatchStatus('pick a folder');
@@ -831,6 +891,8 @@
     dlBtn.addEventListener('click', download);
 
     // Sensible initial UI
+    if(typeof setSingleUIVisible === 'function') setSingleUIVisible(false);
+    if(typeof setBatchMode === 'function') setBatchMode(false);
     setPill(beforeP,'Before','-');
     setPill(afterP,'After','-');
     setPill(savedP,'Saved','-');
