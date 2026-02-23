@@ -108,6 +108,25 @@
     .rm-qstate.done{border-color:rgba(34,197,94,.50); background:rgba(34,197,94,.14);}
     .rm-qstate.failed{border-color:rgba(244,63,94,.55); background:rgba(244,63,94,.14);}
 
+    /* Prevent name/pill overlap: fixed middle column + truncation */
+.rm-qrow{grid-template-columns:minmax(0,1fr) 140px minmax(0,1.1fr);}
+.rm-qstate{min-width:140px;}
+
+/* Single status pill colors (no filename) */
+#status{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+#status.rm-status-waiting{border-color:rgba(245,196,66,.45); background:rgba(245,196,66,.14);}
+#status.rm-status-processing{border-color:rgba(96,165,250,.50); background:rgba(96,165,250,.14);}
+#status.rm-status-done{border-color:rgba(34,197,94,.50); background:rgba(34,197,94,.14);}
+#status.rm-status-failed{border-color:rgba(244,63,94,.55); background:rgba(244,63,94,.14);}
+
+/* Tiny hint under single/batch action rows */
+.rm-hint{margin-top:6px; font-size:.78rem; opacity:.9;}
+.rm-hint.is-hide{display:none;}
+
+/* Shake animation for Load Engine buttons */
+@keyframes rmShake{0%{transform:translateX(0)} 20%{transform:translateX(-3px)} 40%{transform:translateX(3px)} 60%{transform:translateX(-2px)} 80%{transform:translateX(2px)} 100%{transform:translateX(0)}}
+.rm-shake{animation:rmShake .35s ease-in-out 0s 2;}
+
     /* Queue rows clickable */
     .rm-qrow{cursor:pointer;}
     .rm-qrow:hover{border-color:rgba(255,255,255,.22); background:rgba(255,255,255,.045);}
@@ -186,9 +205,10 @@
       <div aria-hidden="true"></div>
       <div aria-hidden="true"></div>
     </div>
+    <div class="rm-hint is-hide" id="batchHint" aria-live="polite"></div>
 
     <div style="margin-top:10px">
-      <div class="rm-progress" aria-label="batch progress"><div id="batchBar"></div></div>
+      <div class="rm-progress aria-label="batch progress"><div id="batchBar"></div></div>
       <div class="tiny muted" style="margin-top:8px">Tip: Batch mode processes one file at a time to keep memory stable.</div>
     </div>
   </div>
@@ -229,19 +249,11 @@
 
             <div class="rm-field">
               <div class="rm-label">Audio</div>
-              <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
-                <select id="ab" class="input">
+              <select id="ab" class="input">
               <option value="96k">AAC 96 kbps</option>
               <option value="128k" selected>AAC 128 kbps</option>
               <option value="160k">AAC 160 kbps</option>
             </select>
-</div>
-
-          
-
-          
-
-          
             </div>
           </div>
 
@@ -280,7 +292,8 @@
             <button class="btn primary" id="goBtn" type="button" disabled>Convert</button>
             <button class="btn" id="downloadBtn" type="button" disabled>Download MP4</button>
             <span class="pill tiny" id="status"><b>Status:</b><span class="muted">select a video</span></span>
-          </div>
+            </div>
+            <div class="rm-hint is-hide" id="singleHint" aria-live="polite"></div>
 
           <div style="margin-top:12px" class="rm-hide" id="singleProgress">
             <div class="rm-progress" aria-label="progress"><div id="bar"></div></div>
@@ -490,6 +503,24 @@
       else el.classList.remove('is-dragover');
     }
 
+function showHint(which, msg){
+  const el = which === 'batch' ? document.getElementById('batchHint') : document.getElementById('singleHint');
+  if(!el) return;
+  el.textContent = msg;
+  el.classList.remove('is-hide');
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>{ el.classList.add('is-hide'); }, 2200);
+}
+
+function shake(el){
+  if(!el) return;
+  el.classList.remove('rm-shake');
+  // force reflow
+  void el.offsetWidth;
+  el.classList.add('rm-shake');
+  setTimeout(()=>{ el.classList.remove('rm-shake'); }, 800);
+}
+
     function getBatchFiles(){
       const fromOverride = Array.isArray(batchFilesOverride) ? batchFilesOverride : null;
       if(fromOverride) return fromOverride;
@@ -498,7 +529,7 @@
 
     function updateBatchButtons(){
       const hasFiles = getBatchFiles().length > 0;
-      if(batchBtn) batchBtn.disabled = (!loaded) || (!hasFiles);
+      if(batchBtn) batchBtn.disabled = !hasFiles;
     }
 
     function setCurrentFile(f){
@@ -514,8 +545,8 @@
       }
       meta.innerHTML = `<b>Video:</b><span class="muted">${currentFile.name}</span>`;
       setPill(beforeP,'Before', humanBytes(currentFile.size));
-      setStatus(loaded ? 'ready to convert' : 'load engine, then convert');
-      goBtn.disabled = !loaded;
+      setStatus(loaded ? 'ready' : 'load engine first', loaded ? 'done' : 'waiting');
+      goBtn.disabled = false;
       setBatchMode(false);
       batchQueue = [];
       activeRun = { mode: 'single', idx: -1, name: currentFile.name, pct: 0 };
@@ -663,7 +694,10 @@
     }
 
     function applyPctToActive(pct){
-      const safePct = Math.max(0, Math.min(100, Math.round(pct)));
+      let safePct = Math.max(0, Math.min(100, Math.round(pct)));
+      // FFmpeg progress events can briefly report 100% before the job is fully done.
+      // While running, cap at 99% and only set 100% on completion.
+      if(isRunning) safePct = Math.min(99, safePct);
       setSingleProgressIndeterminate(false);
       setSingleProgressPct(safePct);
 
@@ -709,9 +743,15 @@
     function setPill(pill, label, value){
       pill.innerHTML = `<b>${label}:</b><span class="muted">${value}</span>`;
     }
-    function setStatus(msg){
-      status.innerHTML = `<b>Status:</b><span class="muted">${msg}</span>`;
-    }
+    function setStatus(msg, state){
+  const st = String(state || '').toLowerCase();
+  status.classList.remove('rm-status-waiting','rm-status-processing','rm-status-done','rm-status-failed');
+  if(st === 'waiting' || st === 'warn') status.classList.add('rm-status-waiting');
+  else if(st === 'processing') status.classList.add('rm-status-processing');
+  else if(st === 'done') status.classList.add('rm-status-done');
+  else if(st === 'failed' || st === 'error') status.classList.add('rm-status-failed');
+  status.innerHTML = `<b>Status:</b><span class="muted">${escapeHtml(msg)}</span>`;
+}
     function appendLog(line){
       const s = String(line || '').trim();
       if(!s) return;
@@ -778,7 +818,7 @@
       // Single run row (clickable)
       if(activeRun && activeRun.mode === 'single' && activeRun.name){
         const safeName = esc(activeRun.name);
-        const dispName = esc(sn(activeRun.name, 52));
+        const dispName = esc(sn(activeRun.name, 42));
         const pct = Math.max(0, Math.min(100, Math.round(activeRun.pct || 0)));
         const stateLabel = isRunning ? 'processing' : 'completed';
         const cls = isRunning ? 'processing' : 'done';
@@ -797,7 +837,7 @@
         for(let idx = 0; idx < batchQueue.length; idx++){
           const it = batchQueue[idx];
           const safeName = esc(it.name || '');
-          const dispName = esc(sn(it.name || '', 52));
+          const dispName = esc(sn(it.name || '', 42));
           const pct = Math.max(0, Math.min(100, Math.round(it.pct || 0)));
 
           const stateLabel = it.state === 'waiting' ? 'waiting' :
@@ -943,7 +983,7 @@
       loadBtn.disabled = true;
       if(batchLoadBtn) batchLoadBtn.disabled = true;
       goBtn.disabled = true;
-      setStatus('loading engine...');
+      setStatus('loading engine...', 'processing');
       appendLog('Loading FFmpeg (first time can be ~30–40MB)...');
       try{
                 const coreBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm';
@@ -957,7 +997,7 @@
                 });
         loaded = true;
         appendLog('Engine ready.');
-        setStatus(currentFile ? 'ready to convert' : 'select a video');
+        setStatus(currentFile ? 'ready' : 'select a video', currentFile ? 'done' : '');
         if(currentFile) setSingleUIVisible(true);
         goBtn.disabled = !currentFile;
         if(batchLoadBtn) batchLoadBtn.disabled = true;
@@ -965,7 +1005,7 @@
       } catch (e) {
         console.error(e);
         appendLog(String(e));
-        setStatus('failed to load engine');
+        setStatus('failed to load engine', 'failed');
         loadBtn.disabled = false;
         if(batchLoadBtn) batchLoadBtn.disabled = false;
       }
@@ -1014,7 +1054,7 @@
     async function convertFile(file, opts){
       const options = Object.assign({ preview:true, autoSave:false, label:'' }, opts || {});
       if(!file){ setStatus('select a video'); return { ok:false, error:'no file' }; }
-      if(!loaded){ await loadEngine(); if(!loaded) return { ok:false, error:'engine not loaded' }; }
+      if(!loaded){ return { ok:false, error:'engine not loaded' }; }
 
       if(options.preview){
         resetOutput();
@@ -1027,7 +1067,7 @@
       dlBtn.disabled = true;
       loadBtn.disabled = true;
       if(batchLoadBtn) batchLoadBtn.disabled = true;
-      setStatus(options.label ? `processing: ${options.label}` : 'processing...');
+      setStatus('processing', 'processing');
       appendLog('---');
 
       isRunning = true;
@@ -1123,7 +1163,7 @@
           await saveBlob(blob, outName);
         }
 
-        setStatus('done');
+        setStatus('done', 'done');
         setSingleProgressIndeterminate(false);
         setSingleProgressPct(100);
         if(activeRun && activeRun.mode === 'single'){ activeRun.pct = 100; if(typeof renderActivity === 'function') renderActivity(); }
@@ -1133,7 +1173,7 @@
       } catch (e) {
         console.error(e);
         appendLog(String(e));
-        setStatus('error (see log)');
+        setStatus('error (see log)', 'failed');
         setSingleProgressIndeterminate(false);
         if(activeRun && activeRun.mode === 'single'){ activeRun.pct = 0; if(typeof renderActivity === 'function') renderActivity(); }
         return { ok:false, error:String(e) };
@@ -1157,6 +1197,12 @@
 
     async function convert(){
       if(!currentFile){ setStatus('select a video'); return; }
+      if(!loaded){
+        showHint('single', 'Click “Load video engine” first.');
+        shake(loadBtn);
+        setStatus('load engine first', 'waiting');
+        return;
+      }
       await convertFile(currentFile, { preview:true, autoSave:false, label: currentFile.name });
     }
 
@@ -1239,11 +1285,10 @@
         return;
       }
       if(!loaded){
-        await loadEngine();
-        if(!loaded){
-          setBatchStatus('engine not loaded');
-          return;
-        }
+        showHint('batch', 'Click “Load video engine” first.');
+        shake(batchLoadBtn);
+        setBatchStatus('engine not loaded');
+        return;
       }
 
       batchStop = false;
@@ -1328,7 +1373,7 @@
       setSingleProgressIndeterminate(false);
       setSingleProgressPct(0);
       updateBatchButtons();
-      setStatus('engine stopped');
+      setStatus('engine stopped', 'waiting');
       appendLog('Engine stopped. Load video engine to continue.');
     }
 
