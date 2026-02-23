@@ -92,6 +92,39 @@
     .rm-qfill.done{background:rgba(34, 197, 94, .95);}
     .rm-qfill.failed{background:rgba(244, 63, 94, .95);}
     @media (max-width: 860px){ .rm-qrow{grid-template-columns:1fr; gap:8px;} .rm-qstate{justify-self:start;} }
+      /* File details 3-up */
+    .rm-file-details{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px;}
+    .rm-file-details .pill{width:100%; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+    /* Ensure the 4-select grid stays truly 25% each */
+    .rm-fields4{grid-template-columns:repeat(4, minmax(0,1fr));}
+    .rm-fields4 .rm-field{min-width:0;}
+    .rm-fields4 select.input{width:100%; min-width:0;}
+
+    /* Queue pills: color + radius 6px */
+    .rm-qstate{border-radius:6px !important; min-width:130px; justify-self:end; white-space:nowrap;}
+    .rm-qstate.waiting{border-color:rgba(245,196,66,.45); background:rgba(245,196,66,.14);}
+    .rm-qstate.processing{border-color:rgba(96,165,250,.50); background:rgba(96,165,250,.14);}
+    .rm-qstate.done{border-color:rgba(34,197,94,.50); background:rgba(34,197,94,.14);}
+    .rm-qstate.failed{border-color:rgba(244,63,94,.55); background:rgba(244,63,94,.14);}
+
+    /* Queue rows clickable */
+    .rm-qrow{cursor:pointer;}
+    .rm-qrow:hover{border-color:rgba(255,255,255,.22); background:rgba(255,255,255,.045);}
+
+    /* Batch status pill: use remaining width, no wrap */
+    #batchStatus{grid-column:2 / -1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:flex; align-items:center; gap:8px;}
+    #batchStatus .rm-status-text{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+    /* Row dialog */
+    .rm-dialog{border:1px solid rgba(255,255,255,.16); border-radius:14px; padding:0; background:rgba(20,26,36,.98); color:#eaf1ff; width:min(860px, 92vw);}
+    .rm-dialog::backdrop{background:rgba(0,0,0,.55);}
+    .rm-dialog-head{display:flex; align-items:center; justify-content:space-between; padding:12px 12px 10px 12px; border-bottom:1px solid rgba(255,255,255,.10);}
+    .rm-dialog-title{font-weight:900; font-size:1rem; max-width:calc(100% - 44px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+    .rm-dialog-close{width:34px; height:34px; border-radius:10px; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.06); color:#eaf1ff; cursor:pointer;}
+    .rm-dialog-body{padding:12px;}
+    .rm-dialog-row{margin-bottom:10px;}
+    .rm-dialog-log{margin-top:10px; border:1px solid rgba(255,255,255,.12); border-radius:12px; background:rgba(0,0,0,.28); padding:10px; max-height:320px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace; font-size:.78rem; line-height:1.3;}
   </style>
 </head>
 
@@ -149,7 +182,7 @@
       <button class="btn primary" id="batchBtn" type="button" disabled>Batch Convert Folder</button>
 
       <button class="btn" id="stopBatchBtn" type="button" disabled>Stop</button>
-      <span class="pill tiny" id="batchStatus"><b>Status:</b><span class="muted">idle</span></span>
+      <span class="pill tiny" id="batchStatus"><b>Status:</b><span class="muted rm-status-text">idle</span></span>
       <div aria-hidden="true"></div>
       <div aria-hidden="true"></div>
     </div>
@@ -257,6 +290,20 @@
           <div class="hr"></div>
           <div style="font-weight:800; margin-bottom:6px">Engine log</div>
           <div id="activity" class="rm-activity" aria-label="activity"></div>
+
+          <dialog id="rowDialog" class="rm-dialog">
+            <div class="rm-dialog-head">
+              <div class="rm-dialog-title" id="rowDialogTitle">Details</div>
+              <button class="rm-dialog-close" id="rowDialogClose" type="button" aria-label="Close">✕</button>
+            </div>
+            <div class="rm-dialog-body">
+              <div class="rm-dialog-row" id="rowDialogRow"></div>
+              <details open>
+                <summary class="tiny muted" style="cursor:pointer">Technical details</summary>
+                <pre class="rm-dialog-log" id="rowDialogLog"></pre>
+              </details>
+            </div>
+          </dialog>
           <details style="margin-top:6px">
             <summary class="tiny muted" style="cursor:pointer">Technical details</summary>
             <div class="rm-log" id="log" aria-label="ffmpeg log"></div>
@@ -273,7 +320,7 @@
           <div class="hr"></div>
 
           <div style="font-weight:800; margin-bottom:6px">File details</div>
-          <div class="row" style="gap:10px; flex-wrap:wrap">
+          <div class="rm-file-details">
             <span class="pill tiny" id="before"><b>Before:</b><span class="muted">-</span></span>
             <span class="pill tiny" id="after"><b>After:</b><span class="muted">-</span></span>
             <span class="pill tiny" id="saved"><b>Saved:</b><span class="muted">-</span></span>
@@ -477,7 +524,7 @@
     }
 
     function setBatchStatus(msg){
-      batchStatus.innerHTML = `<b>Status:</b><span class="muted">${msg}</span>`;
+      batchStatus.innerHTML = `<b>Status:</b><span class="muted rm-status-text">${msg}</span>`;
     }
     function setOutDirPill(msg){
       outDirPill.innerHTML = `<b>Output:</b><span class="muted">${msg}</span>`;
@@ -557,6 +604,108 @@
 
 
 
+    async function getVideoDurationSec(file){
+      try{
+        const url = URL.createObjectURL(file);
+        const v = document.createElement('video');
+        v.preload = 'metadata';
+        v.muted = true;
+        v.playsInline = true;
+        const dur = await new Promise((resolve)=>{
+          const cleanup = ()=>{
+            try{ URL.revokeObjectURL(url); }catch(e){}
+            v.removeAttribute('src');
+            try{ v.load(); }catch(e){}
+          };
+          v.onloadedmetadata = ()=>{
+            const d = Number(v.duration);
+            cleanup();
+            resolve(Number.isFinite(d) && d > 0 ? d : 0);
+          };
+          v.onerror = ()=>{ cleanup(); resolve(0); };
+          v.src = url;
+        });
+        return Number.isFinite(dur) ? dur : 0;
+      }catch(e){ return 0; }
+    }
+
+    function parseFfmpegTimeSec(line){
+      const str = String(line || '');
+      const m = str.match(/\btime=(\d+):(\d+):(\d+(?:\.\d+)?)\b/);
+      if(!m) return null;
+      const hh = Number(m[1]) || 0;
+      const mm = Number(m[2]) || 0;
+      const ss = Number(m[3]) || 0;
+      return (hh * 3600) + (mm * 60) + ss;
+    }
+
+    function getActiveLogTarget(){
+      if(!activeRun || !activeRun.mode) return null;
+      if(activeRun.mode === 'single') return { mode:'single', idx:-1 };
+      if(activeRun.mode === 'batch' && Number.isInteger(activeRun.idx) && activeRun.idx >= 0) return { mode:'batch', idx: activeRun.idx };
+      return null;
+    }
+
+    function appendRunLog(line){
+      const t = getActiveLogTarget();
+      if(!t) return;
+      const msg = String(line || '');
+      if(t.mode === 'single'){
+        activeRun.log = (activeRun.log || '') + msg + '\n';
+        if(activeRun.log.length > 200000) activeRun.log = activeRun.log.slice(-200000);
+        return;
+      }
+      if(t.mode === 'batch' && batchQueue && batchQueue[t.idx]){
+        const it = batchQueue[t.idx];
+        it.log = (it.log || '') + msg + '\n';
+        if(it.log.length > 200000) it.log = it.log.slice(-200000);
+      }
+    }
+
+    function applyPctToActive(pct){
+      const safePct = Math.max(0, Math.min(100, Math.round(pct)));
+      setSingleProgressIndeterminate(false);
+      setSingleProgressPct(safePct);
+
+      if(activeRun && activeRun.mode === 'single'){
+        activeRun.pct = Math.max(activeRun.pct || 0, safePct);
+      }
+      if(activeRun && activeRun.mode === 'batch' && Number.isInteger(activeRun.idx) && activeRun.idx >= 0){
+        const idx = activeRun.idx;
+        if(batchQueue && batchQueue[idx]){
+          batchQueue[idx].pct = Math.max(batchQueue[idx].pct || 0, safePct);
+          const total = batchQueue.length || 1;
+          setBatchProgress(((idx + (safePct/100)) / total) * 100);
+        }
+      }
+      renderActivity();
+      updateRowDialogIfOpen();
+    }
+
+    function applyTimeProgressFromLog(line){
+      const sec = parseFfmpegTimeSec(line);
+      if(sec == null) return;
+
+      if(activeRun && activeRun.mode === 'single'){
+        const dur = Number(activeRun.durSec) || 0;
+        if(dur > 0){
+          const pct = Math.min(99, (sec / dur) * 100);
+          applyPctToActive(pct);
+        }
+        return;
+      }
+
+      if(activeRun && activeRun.mode === 'batch' && Number.isInteger(activeRun.idx) && activeRun.idx >= 0){
+        const idx = activeRun.idx;
+        const it = (batchQueue && batchQueue[idx]) ? batchQueue[idx] : null;
+        const dur = it ? (Number(it.durSec) || 0) : 0;
+        if(dur > 0){
+          const pct = Math.min(99, (sec / dur) * 100);
+          applyPctToActive(pct);
+        }
+      }
+    }
+
     function setPill(pill, label, value){
       pill.innerHTML = `<b>${label}:</b><span class="muted">${value}</span>`;
     }
@@ -566,8 +715,11 @@
     function appendLog(line){
       const s = String(line || '').trim();
       if(!s) return;
-      log.textContent += (log.textContent ? '\n' : '') + s;
+      log.textContent += (log.textContent ? '
+' : '') + s;
       log.scrollTop = log.scrollHeight;
+      appendRunLog(s);
+      applyTimeProgressFromLog(s);
     }
     function resetOutput(){
       outBlob = null;
@@ -618,6 +770,7 @@
       if(batchMode && batchQueue && batchQueue.length){
         const rows = batchQueue.map((it, idx)=>{
           const safeName = escapeHtml(it.name);
+          const dispName = escapeHtml(shortName(it.name, 52));
           const stateLabel = it.state === 'waiting' ? 'waiting' :
                              it.state === 'processing' ? 'processing' :
                              it.state === 'done' ? 'completed' :
@@ -627,9 +780,9 @@
                             it.state === 'done' ? 'done' :
                             it.state === 'failed' ? 'failed' : 'waiting';
           const pct = Math.max(0, Math.min(100, Math.round(it.pct || 0)));
-          return `<div class="rm-qrow">
-            <div class="rm-qname" title="${safeName}">${safeName}</div>
-            <div class="pill tiny rm-qstate"><b>${escapeHtml(stateLabel)}:</b><span class="muted">${pct}%</span></div>
+          return `<div class="rm-qrow" data-idx="${idx}" role="button" tabindex="0">
+            <div class="rm-qname" title="${safeName}">${dispName}</div>
+            <div class="pill tiny rm-qstate ${fillClass}"><b>${escapeHtml(stateLabel)}:</b><span class="muted">${pct}%</span></div>
             <div class="rm-qbar"><div class="rm-qfill ${fillClass}" style="width:${pct}%"></div></div>
           </div>`;
         }).join('');
@@ -640,12 +793,13 @@
       // Single run view
       if(activeRun && activeRun.mode === 'single' && activeRun.name){
         const safeName = escapeHtml(activeRun.name);
+        const dispName = escapeHtml(shortName(activeRun.name, 52));
         const stateLabel = isRunning ? 'processing' : 'ready';
         const pct = Math.max(0, Math.min(100, Math.round((activeRun.pct || 0))));
         activity.innerHTML = `<div class="rm-qwrap">
-          <div class="rm-qrow">
-            <div class="rm-qname" title="${safeName}">${safeName}</div>
-            <div class="pill tiny rm-qstate"><b>${stateLabel}:</b><span class="muted">${pct}%</span></div>
+          <div class="rm-qrow" data-idx="${idx}" role="button" tabindex="0">
+            <div class="rm-qname" title="${safeName}">${dispName}</div>
+            <div class="pill tiny rm-qstate ${isRunning ? "processing" : "done"}"><b>${stateLabel}:</b><span class="muted">${pct}%</span></div>
             <div class="rm-qbar"><div class="rm-qfill ${isRunning ? 'processing' : 'done'}" style="width:${pct}%"></div></div>
           </div>
         </div>`;
@@ -655,34 +809,122 @@
       activity.innerHTML = '';
     }
 
-    function wireFfmpeg(){
+        function wireFfmpeg(){
       ffmpeg.on('log', ({ message }) => appendLog(message));
-      ffmpeg.on('progress', ({ ratio }) => {
-        if(!Number.isFinite(ratio)) return;
-        const pct = Math.max(0, Math.min(100, Math.round(ratio * 100)));
-        progressTouched = true;
-        setSingleProgressIndeterminate(false);
-        setSingleProgressPct(pct);
+      ffmpeg.on('progress', (p) => {
+        if(!p) return;
 
-        if(activeRun && activeRun.mode === 'single'){
-          activeRun.pct = pct;
-          renderActivity();
+        const raw =
+          (Number.isFinite(p.ratio) ? p.ratio :
+           Number.isFinite(p.progress) ? p.progress :
+           Number.isFinite(p.percent) ? (p.percent / 100) :
+           null);
+
+        if(raw != null){
+          progressTouched = true;
+          applyPctToActive(raw * 100);
+          return;
         }
 
-        if(activeRun && activeRun.mode === 'batch' && Number.isInteger(activeRun.idx) && activeRun.idx >= 0){
-          const idx = activeRun.idx;
-          if(batchQueue && batchQueue[idx]){
-            batchQueue[idx].pct = pct;
-            renderActivity();
-            // smoother overall batch bar
-            const total = batchQueue.length || 1;
-            setBatchProgress(((idx + (pct/100)) / total) * 100);
+        if(Number.isFinite(p.time)){
+          const sec = (p.time > 1000000) ? (p.time / 1000000) : p.time;
+          if(Number.isFinite(sec) && sec >= 0){
+            // feed a synthetic time line to the parser
+            const hh = String(Math.floor(sec/3600)).padStart(2,'0');
+            const mm = String(Math.floor((sec%3600)/60)).padStart(2,'0');
+            const ss = (sec%60).toFixed(2).padStart(5,'0');
+            applyTimeProgressFromLog(`time=${hh}:${mm}:${ss}`);
           }
         }
       });
     }
 
     wireFfmpeg();
+    const rowDialog = $('rowDialog');
+    const rowDialogTitle = $('rowDialogTitle');
+    const rowDialogRow = $('rowDialogRow');
+    const rowDialogLog = $('rowDialogLog');
+    const rowDialogClose = $('rowDialogClose');
+    let rowDialogKey = null;
+
+    function getRowDataByKey(key){
+      if(key === 'single'){
+        const nm = (activeRun && activeRun.mode === 'single' && activeRun.name) ? activeRun.name : (currentFile ? currentFile.name : 'single');
+        const st = isRunning ? 'processing' : (activeRun && activeRun.name ? 'done' : 'ready');
+        const pc = Math.round((activeRun && activeRun.pct) || 0);
+        const lg = (activeRun && activeRun.log) ? activeRun.log : '';
+        return { name: nm, state: st === 'ready' ? 'waiting' : (st === 'done' ? 'done' : st), pct: pc, log: lg };
+      }
+      const idx = Number(key);
+      if(Number.isInteger(idx) && batchQueue && batchQueue[idx]){
+        const it = batchQueue[idx];
+        return { name: it.name, state: it.state, pct: Math.round(it.pct || 0), log: it.log || '' };
+      }
+      return null;
+    }
+
+    function renderRowSnippet(name, state, pct){
+      const safeName = escapeHtml(name || '');
+      const disp = escapeHtml(shortName(name || '', 60));
+      const label = state === 'waiting' ? 'waiting' :
+                    state === 'processing' ? 'processing' :
+                    state === 'done' ? 'completed' :
+                    state === 'failed' ? 'failed' : state;
+      const cls = state === 'waiting' ? 'waiting' :
+                  state === 'processing' ? 'processing' :
+                  state === 'done' ? 'done' :
+                  state === 'failed' ? 'failed' : 'waiting';
+      const pp = Math.max(0, Math.min(100, Math.round(pct || 0)));
+      return `<div class="rm-qrow" style="cursor:default" aria-hidden="true">
+        <div class="rm-qname" title="${safeName}">${disp}</div>
+        <div class="pill tiny rm-qstate ${cls}"><b>${escapeHtml(label)}:</b><span class="muted">${pp}%</span></div>
+        <div class="rm-qbar"><div class="rm-qfill ${cls}" style="width:${pp}%"></div></div>
+      </div>`;
+    }
+
+    function openRowDialog(key){
+      if(!rowDialog) return;
+      rowDialogKey = key;
+      updateRowDialogIfOpen();
+      try{ rowDialog.showModal(); }catch(e){ rowDialog.setAttribute('open',''); }
+    }
+
+    function closeRowDialog(){
+      if(!rowDialog) return;
+      rowDialogKey = null;
+      try{ rowDialog.close(); }catch(e){ rowDialog.removeAttribute('open'); }
+    }
+
+    function updateRowDialogIfOpen(){
+      if(!rowDialogKey || !rowDialog) return;
+      const data = getRowDataByKey(rowDialogKey);
+      if(!data) return;
+      if(rowDialogTitle) rowDialogTitle.textContent = data.name || 'Details';
+      if(rowDialogRow) rowDialogRow.innerHTML = renderRowSnippet(data.name, data.state, data.pct);
+      if(rowDialogLog) rowDialogLog.textContent = data.log || '';
+    }
+
+    if(rowDialogClose) rowDialogClose.addEventListener('click', closeRowDialog);
+    if(rowDialog) rowDialog.addEventListener('click', (e)=>{ if(e.target === rowDialog) closeRowDialog(); });
+
+    if(activity){
+      activity.addEventListener('click', (e)=>{
+        const row = e.target && e.target.closest ? e.target.closest('.rm-qrow') : null;
+        if(!row) return;
+        const key = row.getAttribute('data-idx');
+        if(key == null) return;
+        openRowDialog(key);
+      });
+      activity.addEventListener('keydown', (e)=>{
+        if(e.key !== 'Enter' && e.key !== ' ') return;
+        const row = e.target && e.target.closest ? e.target.closest('.rm-qrow') : null;
+        if(!row) return;
+        const key = row.getAttribute('data-idx');
+        if(key == null) return;
+        e.preventDefault();
+        openRowDialog(key);
+      });
+    }
     async function loadEngine(){
       if(loaded) return;
       loadBtn.disabled = true;
@@ -786,6 +1028,18 @@
         activeRun = { mode: 'batch', idx, name: file.name, pct: 0 };
       }
       if(typeof renderActivity === 'function') renderActivity();
+
+      // duration is used to compute progress even when ratio is not available
+      if(activeRun){
+        activeRun.log = '';
+        if(!activeRun.durSec){ activeRun.durSec = await getVideoDurationSec(file); }
+        if(activeRun.mode === 'batch' && batchQueue && Number.isInteger(activeRun.idx) && activeRun.idx >= 0){
+          const it = batchQueue[activeRun.idx];
+          if(it && !it.durSec) it.durSec = activeRun.durSec || 0;
+          if(it) it.log = '';
+        }
+      }
+
 
       outName = (file.name.replace(/\.[^.]+$/, '') || 'video') + `_rm_${mode.value === 'custom' ? 'custom' : mode.value}.mp4`;
       const rel = (file.webkitRelativePath || '').trim();
@@ -991,7 +1245,7 @@
       setBatchProgress(0);
       setBatchStatus(`running 0/${files.length}`);
 
-      batchQueue = files.map(f => ({ name: f.name, state: 'waiting', pct: 0 }));
+      batchQueue = files.map((f, idx) => ({ key: idx, name: f.name, state: 'waiting', pct: 0, log: '', durSec: 0 }));
       activeRun = { mode: 'batch', idx: -1, name: '', pct: 0 };
       if(typeof renderActivity === 'function') renderActivity();
 
@@ -1002,10 +1256,13 @@
         const f = files[i];
 
         // Queue state
-        activeRun = { mode: 'batch', idx: i, name: f.name, pct: 0 };
+        activeRun = { mode: 'batch', idx: i, name: f.name, pct: 0, durSec: 0, log: '' };
         if(batchQueue && batchQueue[i]){
           batchQueue[i].state = 'processing';
           batchQueue[i].pct = 0;
+          batchQueue[i].log = '';
+          if(!batchQueue[i].durSec){ batchQueue[i].durSec = await getVideoDurationSec(f); }
+          activeRun.durSec = batchQueue[i].durSec || 0;
         }
         if(typeof renderActivity === 'function') renderActivity();
 
