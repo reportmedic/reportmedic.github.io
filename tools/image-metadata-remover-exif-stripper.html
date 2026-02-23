@@ -33,6 +33,118 @@
   .rm-good{color:#b7ffd7}
   .rm-warn{color:#ffe7a8}
   .rm-hidden{display:none !important}
+
+  
+/* Learn more modal, dark glass */
+:root{
+  --lm-radius: 18px;
+  --lm-border: rgba(255,255,255,.14);
+  --lm-text: rgba(240,246,255,.92);
+  --lm-muted: rgba(240,246,255,.68);
+}
+
+.panel h1{
+  display:flex;
+  align-items:baseline;
+  gap:.55rem;
+  flex-wrap:wrap;
+}
+
+.rm-lm-link{
+  font-size:.82rem;
+  margin-left:.55rem;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  opacity:.85;
+  white-space:nowrap;
+}
+.rm-lm-link:hover{opacity:1;}
+
+.rm-lm-backdrop{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  z-index:9999;
+  background:
+    radial-gradient(1200px 600px at 20% 10%, rgba(120,170,255,.18), transparent 60%),
+    radial-gradient(900px 500px at 85% 20%, rgba(0,220,255,.10), transparent 55%),
+    rgba(2,6,23,.72);
+  backdrop-filter: blur(4px) saturate(1.2);
+  -webkit-backdrop-filter: blur(4px) saturate(1.2);
+}
+.rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+
+.rm-lm-dialog{
+  width:min(640px, 100%);
+  border-radius: var(--lm-radius);
+  overflow:hidden;
+  background: rgba(10, 14, 25, .30);
+  border: 1px solid var(--lm-border);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  box-shadow: 0 20px 60px rgba(0,0,0,.45);
+  transform: translateY(10px) scale(.985);
+  opacity: 0;
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+.rm-lm-backdrop[aria-hidden="false"] .rm-lm-dialog{
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.rm-lm-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 16px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+}
+
+.rm-lm-title{
+  margin:0;
+  font-size:1.05rem;
+  letter-spacing:-.01em;
+  font-weight:650;
+  color: var(--lm-text);
+}
+
+.rm-lm-close{
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  padding:6px 10px;
+  border-radius:12px;
+  cursor:pointer;
+  color: rgba(240,246,255,.82);
+  font-size:1.1rem;
+  line-height:1;
+}
+.rm-lm-close:hover{
+  background: rgba(255,255,255,.10);
+  color: rgba(240,246,255,.95);
+}
+.rm-lm-close:active{transform: translateY(1px);}
+
+.rm-lm-body{
+  padding:14px 16px 16px;
+  font-size:.95rem;
+  line-height:1.55;
+  color: var(--lm-muted);
+}
+.rm-lm-body h3{
+  margin:12px 0 6px;
+  font-size:.92rem;
+  font-weight:700;
+  color: var(--lm-text);
+  letter-spacing:-.01em;
+}
+.rm-lm-body ul{margin:6px 0 10px 18px;}
+.rm-lm-body li{margin:5px 0;}
+.rm-lm-body p{margin:.55rem 0;}
+
 </style>
 </head>
 <body>
@@ -89,52 +201,31 @@
     <div class="hr2"></div>
     <div id="exifList" style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px;"></div>
   </div>
+  <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+<a class="btn" href="/docs/contact.html">Contact</a>
 </div>
 
 
 </div>
+    <div class="footer">© 2026 ReportMedic</div>
 </div>
-m-footer-inner">
-<div class="rm-footer-brand">
-<div class="rm-footer-name">ReportMedic</div>
-<div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
-</div>
-<div class="rm-footer-links">
-<a href="/fix-my-report.html">Fix My Report</a>
-<a href="/#tools">Tools</a>
-<a href="/docs/">Docs</a>
-<a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
-</div>
-<div class="rm-footer-meta">© 2026 ReportMedic</div>
-</div>
-</footer>
-<div aria-hidden="true" aria-label="PDF Organizer details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
-  <div class="rm-lm-dialog">
-    <div class="rm-lm-head">
-      <h2 class="rm-lm-title">PDF Organizer</h2>
-      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
     </div>
-    <div class="rm-lm-body">
-      <h3>What this helps with</h3>
-<ul>
-  <li>Combine multiple PDFs into one file (in the right order)</li>
-  <li>Extract only the pages you need for upload portals</li>
-  <li>Reorder pages before you send or archive</li>
-</ul>
-<h3>Good to know</h3>
-<ul>
-  <li>Everything runs locally in your browser — files are not uploaded.</li>
-  <li>Reorder keeps the original pages (no quality loss).</li>
-  <li>Splitting can export a single PDF or a ZIP of multiple PDFs.</li>
-</ul>
-<h3>What to do next</h3>
-<ul>
-  <li>If you’re working with scans or huge files, try “Compress PDF” afterwards.</li>
-  <li>If a portal rejects your document, split to isolate the failing pages.</li>
-</ul>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
     </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
   </div>
-</div>
+</footer>
+
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
