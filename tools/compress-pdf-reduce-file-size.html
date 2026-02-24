@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta name="description" content="Compress a PDF to reduce file size for email and upload portals. Runs locally in your browser."/>
-<title>Compress PDF (Reduce file size) — ReportMedic</title>
+<title>Compress PDF (Reduce file size) - ReportMedic</title>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
 <link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
 <link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
@@ -33,125 +33,10 @@
   .rm-good{color:#b7ffd7}
   .rm-warn{color:#ffe7a8}
   .rm-hidden{display:none !important}
-
-  /* Learn more - dark glass premium modal (single source of truth) */
-  :root{
-    --lm-radius: 18px;
-    --lm-border: rgba(255,255,255,.14);
-    --lm-text: rgba(240,246,255,.92);
-    --lm-muted: rgba(240,246,255,.68);
-  }
-
-  /* Keep Learn more inline with the page title */
-  .panel h1{
-    display:flex;
-    align-items:baseline;
-    gap:.55rem;
-    flex-wrap:wrap;
-  }
-
-  .rm-lm-link{
-    font-size:.82rem;
-    margin-left:.55rem;
-    text-decoration:underline;
-    text-underline-offset:3px;
-    opacity:.85;
-    white-space:nowrap;
-  }
-  .rm-lm-link:hover{opacity:1;}
-
-  .rm-lm-backdrop{
-    position:fixed;
-    inset:0;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    padding:24px;
-    z-index:9999;
-
-    background:
-      radial-gradient(1200px 600px at 20% 10%, rgba(120,170,255,.18), transparent 60%),
-      radial-gradient(900px 500px at 85% 20%, rgba(0,220,255,.10), transparent 55%),
-      rgba(2,6,23,.72);
-    backdrop-filter: blur(4px) saturate(1.2);
-    -webkit-backdrop-filter: blur(4px) saturate(1.2);
-  }
-  .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
-
-  .rm-lm-dialog{
-    width:min(640px, 100%);
-    border-radius: var(--lm-radius);
-    overflow:hidden;
-
-    background: rgba(10, 14, 25, .3);
-    border: 1px solid var(--lm-border);
-    backdrop-filter: blur(14px) saturate(1.15);
-    -webkit-backdrop-filter: blur(14px) saturate(1.15);
-    box-shadow: 0 20px 60px rgba(0,0,0,.45);
-
-    transform: translateY(10px) scale(.985);
-    opacity: 0;
-    transition: transform 180ms ease, opacity 180ms ease;
-  }
-  .rm-lm-backdrop[aria-hidden="false"] .rm-lm-dialog{
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-
-  .rm-lm-head{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:14px 16px;
-    border-bottom:1px solid rgba(255,255,255,.10);
-
-    background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
-  }
-
-  .rm-lm-title{
-    margin:0;
-    font-size:1.05rem;
-    letter-spacing:-.01em;
-    font-weight:650;
-    color: var(--lm-text);
-  }
-
-  .rm-lm-close{
-    border:1px solid rgba(255,255,255,.14);
-    background: rgba(255,255,255,.06);
-    padding:6px 10px;
-    border-radius:12px;
-    cursor:pointer;
-    color: rgba(240,246,255,.82);
-    font-size:1.1rem;
-    line-height:1;
-  }
-  .rm-lm-close:hover{
-    background: rgba(255,255,255,.10);
-    color: rgba(240,246,255,.95);
-  }
-  .rm-lm-close:active{transform: translateY(1px);}
-
-  .rm-lm-body{
-    padding:14px 16px 16px;
-    font-size:.95rem;
-    line-height:1.55;
-    color: var(--lm-muted);
-  }
-  .rm-lm-body h3{
-    margin:12px 0 6px;
-    font-size:.92rem;
-    font-weight:700;
-    color: var(--lm-text);
-    letter-spacing:-.01em;
-  }
-  .rm-lm-body ul{margin:6px 0 10px 18px;}
-  .rm-lm-body li{margin:5px 0;}
-  .rm-lm-body p{margin:.55rem 0;}
 </style>
   
 </head>
-<body>
+<body class=\"tools-page\">
 <header>
 <div class="nav">
 <a class="logo" href="/" style="text-decoration:none;">
@@ -167,7 +52,7 @@
 <div class="wrap">
   <div class="panel">
     <h1>Compress PDF <a class="rm-lm-link" data-rm-lm-open="rmLM" href="#">Learn more</a></h1>
-    <p class="sub">Make a PDF smaller for email and upload portals — private, fast, and runs locally in your browser.</p>
+    <p class="sub">Make a PDF smaller for email and upload portals - private, fast, and runs locally in your browser.</p>
     <div class="hr"></div>
 <div class="grid2">
   <div class="card">
@@ -206,9 +91,9 @@
     <div class="tiny muted" style="margin-top:4px">We’ll show before/after size so you can trust the outcome.</div>
     <div class="hr2"></div>
     <div class="row" style="gap:10px; flex-wrap:wrap">
-      <span class="pill tiny" id="beforePill"><b>Before:</b><span class="muted">—</span></span>
-      <span class="pill tiny" id="afterPill"><b>After:</b><span class="muted">—</span></span>
-      <span class="pill tiny" id="savedPill"><b>Saved:</b><span class="muted">—</span></span>
+      <span class="pill tiny" id="beforePill"><b>Before:</b><span class="muted">n/a</span></span>
+      <span class="pill tiny" id="afterPill"><b>After:</b><span class="muted">n/a</span></span>
+      <span class="pill tiny" id="savedPill"><b>Saved:</b><span class="muted">n/a</span></span>
     </div>
     <div class="hr2"></div>
     <div class="tiny muted">
@@ -278,7 +163,7 @@
 
   const $ = (id)=>document.getElementById(id);
   const humanBytes = (n) => {
-    if(!Number.isFinite(n)) return '—';
+    if(!Number.isFinite(n)) return 'n/a';
     const u=['B','KB','MB','GB']; let i=0; let v=n;
     while(v>=1024 && i<u.length-1){ v/=1024; i++; }
     const s = i===0 ? String(Math.round(v)) : String(Math.round(v*10)/10);
@@ -305,9 +190,9 @@
   fileInput.addEventListener('change', ()=>{
     file = (fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
     status.textContent='';
-    beforeP.innerHTML='<b>Before:</b><span class="muted">'+(file? humanBytes(file.size) : '—')+'</span>';
-    afterP.innerHTML='<b>After:</b><span class="muted">—</span>';
-    savedP.innerHTML='<b>Saved:</b><span class="muted">—</span>';
+    beforeP.innerHTML='<b>Before:</b><span class="muted">'+(file? humanBytes(file.size) : 'n/a')+'</span>';
+    afterP.innerHTML='<b>After:</b><span class="muted">n/a</span>';
+    savedP.innerHTML='<b>Saved:</b><span class="muted">n/a</span>';
     meta.innerHTML='<b>IN:</b><span class="muted">'+(file? esc(file.name) : 'not loaded')+'</span>';
   });
 
@@ -316,9 +201,9 @@
     file=null;
     status.textContent='';
     meta.innerHTML='<b>IN:</b><span class="muted">not loaded</span>';
-    beforeP.innerHTML='<b>Before:</b><span class="muted">—</span>';
-    afterP.innerHTML='<b>After:</b><span class="muted">—</span>';
-    savedP.innerHTML='<b>Saved:</b><span class="muted">—</span>';
+    beforeP.innerHTML='<b>Before:</b><span class="muted">n/a</span>';
+    afterP.innerHTML='<b>After:</b><span class="muted">n/a</span>';
+    savedP.innerHTML='<b>Saved:</b><span class="muted">n/a</span>';
   });
 
   $('go').addEventListener('click', async ()=>{
