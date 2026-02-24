@@ -43,8 +43,7 @@
     .diffbox .kv .v{word-break:break-word}
     .hint{border-left:3px solid rgba(255,255,255,.18);padding-left:10px;margin-top:10px}
   </style>
-
-  <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script defer src="/assets/js/rm-dropzone.js"></script>
   <script defer src="/assets/js/rm-tools-drawer.js"></script>
 </head>
@@ -146,19 +145,30 @@
 </footer>
 
 <div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
-  <div class="rm-lm-dialog" role="document">
+  <div class="rm-lm-dialog">
     <div class="rm-lm-head">
-      <h3 class="rm-lm-title">How this tool works</h3>
-      <button class="rm-lm-x" data-rm-lm-close="rmLM" aria-label="Close">✕</button>
+      <h2 class="rm-lm-title">Markdown to HTML</h2>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
     </div>
     <div class="rm-lm-body">
-      <div class="rm-lm-kicker">Local-only conversion</div>
-      <p class="rm-lm-p">Your files stay on your device. Conversion happens in your browser using well-known open-source libraries.</p>
-      <ul class="rm-lm-list">
-        <li>Upload a file (drag & drop supported) or paste text</li>
-        <li>Convert, review the preview, then copy or download</li>
+      <h3>Best for</h3>
+      <ul>
+        <li>Turning Markdown notes into clean HTML for emails, docs, or web pages</li>
+        <li>Quickly previewing how a README or snippet will render</li>
+        <li>Copying or downloading HTML without installing anything</li>
       </ul>
-      <div class="rm-lm-note">If the output looks off, try exporting from the source again (clean HTML / simple Markdown usually converts best).</div>
+
+      <h3>How it works</h3>
+      <ul>
+        <li>Upload a .md file or paste Markdown text</li>
+        <li>Click Convert to generate HTML and a live preview</li>
+        <li>Copy the output or download it as an .html file</li>
+      </ul>
+
+      <h3>Privacy</h3>
+      <ul>
+        <li>Local-only processing: your content stays on your device</li>
+      </ul>
     </div>
   </div>
 </div>
