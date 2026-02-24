@@ -30,29 +30,6 @@
   .rm-dropHint{font-size:12px; color:var(--muted); margin-top:8px}
   .rm-grid2{display:grid; grid-template-columns: 1.2fr 1fr;}
   @media(max-width: 900px){ .rm-grid2{grid-template-columns: 1fr;} }
-
-  .rm-dropzone{
-    margin-top:8px;
-    border:1px dashed rgba(255,255,255,.22);
-    background: rgba(255,255,255,.03);
-    border-radius:14px;
-    padding:14px;
-    cursor:pointer;
-    transition: border-color .15s ease, background .15s ease, transform .15s ease;
-    outline:none;
-  }
-  .rm-dropzone:hover{ border-color: rgba(124,247,212,.38); background: rgba(255,255,255,.04); }
-  .rm-dropzone:focus{ box-shadow: 0 0 0 2px rgba(124,247,212,.25); }
-  .rm-dropzone.is-dragover{ border-color: rgba(124,247,212,.55); background: rgba(124,247,212,.06); transform: translateY(-1px); }
-  .rm-dropzoneTop{ display:flex; align-items:center; gap:12px; }
-  .rm-dropIcon{
-    width:34px; height:34px; border-radius:10px;
-    display:flex; align-items:center; justify-content:center;
-    border:1px solid rgba(255,255,255,.14);
-    background: rgba(0,0,0,.18);
-    font-weight:800;
-  }
-  .rm-fileInfo{ margin-top:10px; }
   .rm-status{min-height:20px}
   .rm-bad{color:#ffb4b4}
   .rm-good{color:#b7ffd7}
@@ -212,17 +189,7 @@
     <div class="rm-grid2" style="gap:14px; align-items:start">
   <div>
     <label class="tiny muted">Upload TXT or CSV (optional)</label>
-    <div class="rm-dropzone" id="dropZone" tabindex="0" role="button" aria-label="Upload a TXT or CSV file">
-      <div class="rm-dropzoneTop">
-        <div class="rm-dropIcon" aria-hidden="true">⬆︎</div>
-        <div>
-          <div style="font-weight:700">Drop a file here</div>
-          <div class="tiny muted">or click to choose a .txt or .csv file</div>
-        </div>
-      </div>
-      <div class="tiny muted rm-fileInfo" id="fileInfo">No file selected</div>
-    </div>
-    <input class="input" id="fileInput" type="file" accept=".txt,.csv,text/plain,text/csv" style="display:none"/>
+    <input class="input" id="fileInput" type="file" accept=".txt,.csv,text/plain,text/csv" />
     <div class="rm-dropHint">Tip: This runs locally in your browser. Nothing is uploaded.</div>
   </div>
 
@@ -633,7 +600,7 @@ net 30"></textarea>
   function setActiveSource(kind){
     activeSource = kind;
     if(kind==="file"){
-      els.dropZone.classList.remove("rm-hidden");
+      if(els.dropZone) els.dropZone.classList.remove("rm-hidden");
     }
   }
 
@@ -681,27 +648,7 @@ net 30"></textarea>
     }
   }
 
-  // Drag zone wiring
-  els.dropZone.addEventListener("click", ()=> els.fileInput.click());
-  els.dropZone.addEventListener("keydown", (e)=>{ if(e.key==="Enter" || e.key===" "){ e.preventDefault(); els.fileInput.click(); } });
-
-  ["dragenter","dragover"].forEach(ev=>{
-    els.dropZone.addEventListener(ev, (e)=>{
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "copy";
-      els.dropZone.classList.add("is-dragover");
-    });
-  });
-  ["dragleave","dragend"].forEach(ev=>{
-    els.dropZone.addEventListener(ev, ()=> els.dropZone.classList.remove("is-dragover"));
-  });
-  els.dropZone.addEventListener("drop", (e)=>{
-    e.preventDefault();
-    els.dropZone.classList.remove("is-dragover");
-    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-    if(f) handleFileSelected(f);
-  });
-
+  // File input (rm-dropzone.js handles drag and drop and triggers change)
   els.fileInput.addEventListener("change", async ()=>{
     const f = els.fileInput.files && els.fileInput.files[0];
     if(!f) return;
@@ -759,13 +706,16 @@ net 30"></textarea>
       }
 
       const t0 = performance.now();
-      const rows = countAll(phrases, t, opts).sort((a,b)=>b.count-a.count);
+      const res = buildResults(t, phrases, opts);
+      const rows = res.rows;
+      const totalMatches = res.total;
       const ms = performance.now() - t0;
 
       lastRows = rows;
       renderTable(rows);
-      renderKpis(rows, ms, isAuto);
-      renderCharts(rows, rows.reduce((s,r)=>s+r.count,0));
+      setKpis(phrases.length, totalMatches, rows, ms, null);
+      if(isAuto){ els.tableHint.textContent = "No phrases provided. Auto-picked a small set from your text. Paste or type your own phrases to be exact."; } else { els.tableHint.textContent = rows.length ? "Sorted by highest count." : "No matches found."; }
+      renderCharts(rows, totalMatches);
       els.downloadCsv.disabled = !rows.length;
 
       setStatus("Updated.", "rm-good");
@@ -850,3 +800,65 @@ net 30"></textarea>
   </ul>
 </div>
 
+  </div>
+</div>
+<script>
+  (function(){
+    function openLM(id){
+      var bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','false');
+      var btn=bd.querySelector('.rm-lm-close');
+      if(btn) btn.focus();
+    }
+    function closeLM(id){
+      var bd=document.getElementById(id);
+      if(!bd) return;
+      bd.setAttribute('aria-hidden','true');
+    }
+    document.addEventListener('click', function(e){
+      var a=e.target.closest('[data-rm-lm-open]');
+      if(a){
+        e.preventDefault();
+        openLM(a.getAttribute('data-rm-lm-open'));
+        return;
+      }
+      var close=e.target.closest('[data-rm-lm-close]');
+      if(close){
+        e.preventDefault();
+        closeLM(close.getAttribute('data-rm-lm-close'));
+        return;
+      }
+      var bd=(e.target.classList && e.target.classList.contains('rm-lm-backdrop')) ? e.target : null;
+      if(bd){
+        e.preventDefault();
+        closeLM(bd.id);
+      }
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Escape'){
+        var open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        if(open) open.setAttribute('aria-hidden','true');
+      }
+    });
+  })();
+</script>
+<script src="/assets/js/rm-dropzone.js"></script>
+<script src="/assets/js/rm-tools-drawer.js"></script>
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6997965e73d8cb1c357e66ee/1jhs26oms';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+</body>
+</html>
