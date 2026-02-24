@@ -3,17 +3,14 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<meta name="description" content="Count occurrences of phrases in TXT, CSV, or pasted text. Runs locally in your browser."/>
-<title>Phrase Occurrence Counter - ReportMedic</title>
+<meta name="description" content="Compress a PDF to reduce file size for email and upload portals. Runs locally in your browser."/>
+<title>Compress PDF (Reduce file size) — ReportMedic</title>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
 <link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
 <link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
 <link href="/assets/css/styles.css" rel="stylesheet"/>
 
 <style>
-  /* Keep Learn more inline with the page title */
-  .panel h1{display:flex; align-items:baseline; gap:.55rem; flex-wrap:wrap;}
-
   .rm-modebar{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
   .rm-modebar .btn{border:1px solid rgba(255,255,255,.14)}
   .rm-modebar .btn.is-active{outline:2px solid rgba(124,247,212,.35)}
@@ -30,57 +27,129 @@
   .rm-pageCard{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.03)}
   .rm-pageCard .rm-pageTop{display:flex; justify-content:space-between; align-items:center; gap:10px}
   .rm-pageCard .rm-pageNo{font-weight:700; font-size:12px; color:var(--muted)}
-  .rm-dropHint{font-size:12px; color:var(--muted); margin-top:10px; min-height:18px;}
-  .rm-grid2{display:grid; grid-template-columns: 1.2fr 1fr; gap:16px; align-items:start;}
-.rm-grid2 > div{display:flex; flex-direction:column;}
-.rm-fieldBox{flex:1;}
-  @media(max-width: 900px){ .rm-grid2{grid-template-columns: 1fr;} }
+  .rm-dropHint{font-size:12px; color:var(--muted); margin-top:8px}
   .rm-status{min-height:20px}
   .rm-bad{color:#ffb4b4}
   .rm-good{color:#b7ffd7}
   .rm-warn{color:#ffe7a8}
   .rm-hidden{display:none !important}
 
-  
+  /* Learn more - dark glass premium modal (single source of truth) */
+  :root{
+    --lm-radius: 18px;
+    --lm-border: rgba(255,255,255,.14);
+    --lm-text: rgba(240,246,255,.92);
+    --lm-muted: rgba(240,246,255,.68);
+  }
 
-  .rm-fieldLabel{display:block; margin-bottom:8px}
-  .rm-fieldBox{margin-top:0}
-  .rm-topInputs .rm-fieldBox{margin-top:0}
-  .rm-dropzone{min-height:180px}
-  .rm-dz-inner{min-height:180px; height:100%}
-  .rm-check{display:flex; align-items:center; gap:6px; user-select:none}
-  .rm-check input{accent-color: var(--rm-accent)}
+  /* Keep Learn more inline with the page title */
+  .panel h1{
+    display:flex;
+    align-items:baseline;
+    gap:.55rem;
+    flex-wrap:wrap;
+  }
 
+  .rm-lm-link{
+    font-size:.82rem;
+    margin-left:.55rem;
+    text-decoration:underline;
+    text-underline-offset:3px;
+    opacity:.85;
+    white-space:nowrap;
+  }
+  .rm-lm-link:hover{opacity:1;}
 
-  /* Phrase counter layout tweaks */
-  .rm-topInputs .rm-fieldBox{height:240px;}
-  .rm-topInputs #phrases{height:100%; min-height:0 !important; resize:none;}
-  #phraseCountHint{white-space:nowrap;}
+  .rm-lm-backdrop{
+    position:fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    z-index:9999;
 
+    background:
+      radial-gradient(1200px 600px at 20% 10%, rgba(120,170,255,.18), transparent 60%),
+      radial-gradient(900px 500px at 85% 20%, rgba(0,220,255,.10), transparent 55%),
+      rgba(2,6,23,.72);
+    backdrop-filter: blur(4px) saturate(1.2);
+    -webkit-backdrop-filter: blur(4px) saturate(1.2);
+  }
+  .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
 
-  .grid4{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin-top:12px;}
-  @media (max-width: 1000px){ .grid4{grid-template-columns:repeat(2, minmax(0,1fr));} }
-  @media (max-width: 560px){ .grid4{grid-template-columns:1fr;} }
+  .rm-lm-dialog{
+    width:min(640px, 100%);
+    border-radius: var(--lm-radius);
+    overflow:hidden;
 
-  .rm-topInputs{align-items:stretch}
-  .rm-panelhead{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:12px;}
-  .rm-panelhead .rm-fieldLabel{margin:0}
-  .rm-panelsub{margin-top:10px}
-  .rm-topInputs .rm-fieldBox{margin-top:0}
-  #phraseCountHint{white-space:nowrap}
+    background: rgba(10, 14, 25, .3);
+    border: 1px solid var(--lm-border);
+    backdrop-filter: blur(14px) saturate(1.15);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    box-shadow: 0 20px 60px rgba(0,0,0,.45);
 
-  .rm-topInputs .rm-fieldBox{min-height:240px}
-  .rm-topInputs textarea.input{height:240px; resize:vertical}
+    transform: translateY(10px) scale(.985);
+    opacity: 0;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+  .rm-lm-backdrop[aria-hidden="false"] .rm-lm-dialog{
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 
-  .rm-fieldLabel{display:block; margin-bottom:10px}
+  .rm-lm-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 16px;
+    border-bottom:1px solid rgba(255,255,255,.10);
 
-:root{--rmPanelBoxH: 220px;}
-#phrases{min-height:var(--rmPanelBoxH); height:var(--rmPanelBoxH); resize:vertical;}
-.rm-dropzone, .rm-dropzoneBox, #dropZone{min-height:var(--rmPanelBoxH);}
+    background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+  }
+
+  .rm-lm-title{
+    margin:0;
+    font-size:1.05rem;
+    letter-spacing:-.01em;
+    font-weight:650;
+    color: var(--lm-text);
+  }
+
+  .rm-lm-close{
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    padding:6px 10px;
+    border-radius:12px;
+    cursor:pointer;
+    color: rgba(240,246,255,.82);
+    font-size:1.1rem;
+    line-height:1;
+  }
+  .rm-lm-close:hover{
+    background: rgba(255,255,255,.10);
+    color: rgba(240,246,255,.95);
+  }
+  .rm-lm-close:active{transform: translateY(1px);}
+
+  .rm-lm-body{
+    padding:14px 16px 16px;
+    font-size:.95rem;
+    line-height:1.55;
+    color: var(--lm-muted);
+  }
+  .rm-lm-body h3{
+    margin:12px 0 6px;
+    font-size:.92rem;
+    font-weight:700;
+    color: var(--lm-text);
+    letter-spacing:-.01em;
+  }
+  .rm-lm-body ul{margin:6px 0 10px 18px;}
+  .rm-lm-body li{margin:5px 0;}
+  .rm-lm-body p{margin:.55rem 0;}
 </style>
   
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <header>
@@ -97,1233 +166,62 @@
 </header>
 <div class="wrap">
   <div class="panel">
-    <h1>Phrase Occurrence Counter <a class="rm-lm-link" data-rm-lm-open="rmLM" href="#">Learn more</a></h1>
-    <p class="sub">Count phrases in TXT, CSV, or pasted text - private, fast, and runs locally in your browser.</p>
+    <h1>Compress PDF <a class="rm-lm-link" data-rm-lm-open="rmLM" href="#">Learn more</a></h1>
+    <p class="sub">Make a PDF smaller for email and upload portals — private, fast, and runs locally in your browser.</p>
     <div class="hr"></div>
-
 <div class="grid2">
   <div class="card">
     <div class="row" style="justify-content:space-between; align-items:flex-start">
       <div>
-        <div style="font-weight:700">Input text</div>
-        <div class="tiny muted">Upload a TXT or CSV, or paste text below. Everything runs locally in your browser.</div>
+        <div style="font-weight:700">Input PDF</div>
+        <div class="tiny muted">Reduce file size for email and upload portals. Runs locally in your browser.</div>
       </div>
-      <span class="pill tiny" id="meta"><b>SOURCE:</b><span class="muted">not loaded</span></span>
-    
-</div>
-
-    <div style="margin-top:16px">
-      <div class="rm-panelhead">
-        <label class="tiny muted rm-fieldLabel">Paste text (optional)</label>
-        <span class="tiny muted" id="pasteHint"> </span>
-      </div>
-      <div class="rm-fieldBox">
-        <textarea class="input" id="pasteText" style="width:100%; min-height:180px" placeholder="Paste text here…"></textarea>
-      </div>
-      <div class="rm-dropHint rm-panelsub">Pasting or typing updates results instantly. Uploading a file clears this box.</div>
+      <span class="pill tiny" id="meta"><b>IN:</b><span class="muted">not loaded</span></span>
     </div>
-
+    <div style="margin-top:10px">
+      <input accept=".pdf" class="input" id="fileInput" type="file"/>
+    </div>
 
     <div class="hr2"></div>
 
-    
-<div class="rm-grid2 rm-topInputs" style="gap:14px">
-  <div>
-    <div class="rm-panelhead">
-      <label class="tiny muted rm-fieldLabel">Upload TXT or CSV (optional)</label>
-      <span class="tiny muted" id="fileHintRight"> </span>
+    <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+      <label class="tiny muted">Compression</label>
+      <select class="input" id="level" style="width:auto; min-width:240px">
+        <option value="light" selected>Light (best quality)</option>
+        <option value="balanced">Balanced</option>
+        <option value="strong">Strong (smallest size)</option>
+      </select>
+      <span class="tiny muted">This is “image-based” compression (re-renders pages).</span>
     </div>
-    <div class="rm-fieldBox">
-      <input class="input" id="fileInput" type="file" accept=".txt,.csv,text/plain,text/csv" />
-    </div>
-    <div class="rm-dropHint rm-panelsub">Tip: This runs locally in your browser. Nothing is uploaded.</div>
-  </div>
 
-  <div>
-    <div class="rm-panelhead">
-      <label class="tiny muted rm-fieldLabel">Phrases (one per line)</label>
-      <span class="tiny muted" id="phraseCountHint">0 phrases</span>
-    </div>
-    <div class="rm-fieldBox">
-      <textarea class="input" id="phrases" style="width:100%" placeholder="invoice
-late fee
-net 30"></textarea>
-    </div>
-    <div class="rm-dropHint rm-panelsub">Leave this blank to auto-detect the most frequent words.</div>
-  </div>
-</div>
-
-    <div class="hr2"></div>
-
-
-    <div class="row" style="gap:12px; flex-wrap:wrap; align-items:center">
-        <label class="tiny muted">Options</label>
-        <label class="tiny"><input id="caseSensitive" type="checkbox"/> Case sensitive</label>
-        <label class="tiny"><input id="overlap" type="checkbox"/> Allow overlapping matches</label>
-        <label class="tiny"><input id="wholeWord" type="checkbox"/> Whole word</label>
-        <label class="tiny"><input id="optNouns" type="checkbox"/> Nouns</label>
-        <label class="tiny"><input id="optMulti" type="checkbox"/> Multi-word</label>
-      </div>
-
-      <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
-        <button class="btn primary" id="analyze" type="button">Count occurrences</button>
-        <button class="btn" id="downloadCsv" type="button" disabled>Download results (CSV)</button>
-        <span class="tiny muted rm-status" id="status"></span>
-      </div>
+    <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap">
+      <button class="btn primary" id="go" type="button">Compress PDF</button>
+      <button class="btn" id="clear" type="button">Clear</button>
+      <span class="tiny muted rm-status" id="status"></span>
     </div>
   </div>
 
   <div class="card">
-    <div style="font-weight:700">Results</div>
-    <div class="tiny muted" style="margin-top:4px">Metric cards and charts help you spot what repeats most.</div>
-
+    <div style="font-weight:700">Result</div>
+    <div class="tiny muted" style="margin-top:4px">We’ll show before/after size so you can trust the outcome.</div>
     <div class="hr2"></div>
-
-    
-    <div class="grid4" style="margin:0">
-
-      <div class="rm-kpi" data-tip="Total phrases is the number of unique targets you are measuring right now. Each non empty line in the phrases box becomes one phrase. If you keep the box empty, the tool auto detects a short list using your options like nouns or multi word. This count helps you confirm the scope of what you are checking so you do not accidentally analyze too few or too many phrases in a single run.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Total phrases</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiPhrases">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiPhrasesSub">count</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Total matches is the sum of all occurrences found across every phrase in the current run. If one phrase appears 10 times and another appears 5 times, Total matches becomes 15. This is useful for judging repetition density, comparing drafts, and validating that options like whole word or case sensitive behave as expected.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Total matches</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiMatches">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiMatchesSub">Across phrases</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Top phrase shows which single phrase has the highest occurrence count in your current text. The line below shows the phrase itself so you can spot what dominates the writing. Use this to quickly catch overused terms, recurring names, repeated boilerplate, or a keyword that is crowding out the rest of your phrasing.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Top phrase</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiTop">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiTopSub">Top phrase text</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Total long words counts how many word tokens in your text are longer than eight letters. It is a quick readability signal. A spike can indicate dense, technical, or overly formal wording. Use it to compare drafts, locate heavy paragraphs, and decide where simpler language could improve flow without losing accuracy.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Total long words</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiLongWords">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiLongWordsSub">Words over 8 letters</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Total attribution verbs estimates how often your text uses reporting verbs that introduce sources or quotes. Examples include said, says, told, added, stated, wrote, reported, noted, explained, argued, warned, and claimed. This helps keep attribution clear and varied. Too many can feel repetitive, too few can make sourcing unclear in a news style writeup.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Total attribution verbs</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiAttrib">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiAttribSub">Reporting verbs</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Tone is a lightweight signal based on cue words that often correlate with a writing style. The tool checks for cues and picks the strongest match among ten types: neutral, confident, uncertain, urgent, positive, negative, analytical, informal, formal, empathetic. It is not a perfect classifier, but it works well as a draft check. If the tone is surprising, review word choices that may be nudging voice.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Tone</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiTone">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiToneSub">Top detected tone</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Numbers counts how many numeric values appear in your text, including integers, decimals, and percent forms. This is useful for fact heavy writing. You can quickly see whether a section is rich with stats, or whether numbers may be overwhelming the narrative. It also helps editors scan for figures that may need citations, formatting, or verification before publishing.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Numbers</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiNumbers">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiNumbersSub">Numeric mentions</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Highest sentence starter shows the most common first word used at the beginning of your sentences. Repeating the same starter can make writing feel monotone even if the content is strong. Use this as a rhythm and variety check. Vary openings, reorder clauses, or combine short sentences to improve flow and pacing.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Highest sentence starter</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiStarter">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiStarterSub">Most common opener</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Overused word shows the single word that appears most often after filtering very common filler words. It is a quick way to catch accidental repetition, such as repeating the same adjective or verb under deadline pressure. Treat it as a prompt. Sometimes repetition is intentional, but if it is not, swap a few instances for synonyms or rephrase sentences.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Overused word</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiOverused">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiOverusedSub">Most frequent word</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Unique word ratio estimates lexical variety by comparing the number of unique words to the total word count. A higher ratio suggests more varied vocabulary, while a lower ratio suggests repetition or heavy reuse of the same terms. Use this to compare drafts, check whether a section became repetitive, and spot when a story relies too heavily on the same phrasing or jargon.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Unique word ratio</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiUniqueRatio">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiUniqueRatioSub">Unique over total</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Flesch Reading Ease is a readability score derived from sentence length and an estimated syllable count. Higher scores are easier to read, lower scores are more complex. This is a heuristic estimate, not a medical grade measurement, but it is very useful for fast editing. If the score drops after revisions, consider shorter sentences and simpler word choices.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Flesch Reading Ease</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiFlesch">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiFleschSub">Readability score</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Reading time estimates how long an average reader may take to read the text based on a typical reading speed. It helps writers and journalists gauge whether a draft is too long for the intended format and whether sections need tightening. Use it to compare versions and to plan where to add structure like subheads or summaries for better skimming.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Reading time</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiReadTime">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiReadTimeSub">Minutes to read</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Average sentence length shows the typical number of words per sentence in your text. Longer averages can indicate dense writing, while shorter averages can indicate punchy style or fragmented rhythm. Use it to balance clarity and flow. If the average is high, try splitting long sentences or reducing nested clauses.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Avg sentence length</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiAvgSent">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiAvgSentSub">Words per sentence</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Long sentences counts how many sentences exceed a length threshold, which is often where readers get lost. These sentences can be fine when carefully written, but a high count may signal run on phrasing, too many clauses, or unclear structure. Use this metric to quickly find places to split, simplify, or add punctuation for better readability.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Long sentences</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiLongSent">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiLongSentSub">Sentences over 20 words</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Transition words counts common connectors that help logic and flow, such as however, therefore, meanwhile, additionally, and for example. Too few transitions can make a piece feel choppy, while too many can feel mechanical. This metric helps you tune the narrative glue and improve clarity in explanatory writing and newsroom style context paragraphs.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Transition words</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiTransitions">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiTransitionsSub">Common connectors</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Paragraph distribution summarizes how many short, medium, and long paragraphs you have. Short paragraphs support skimming and pace, medium paragraphs carry most narrative load, and long paragraphs can feel heavy on screens. Use this to shape structure for your audience. If long paragraphs dominate, consider splitting into smaller units or adding subheads.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Paragraph distribution</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiParaDist">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiParaDistSub">Short, medium, long</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Questions counts how many question marks appear, which often correlates with rhetorical questions, interview framing, or conversational style. It is useful for tone control. Too many questions can feel informal or uncertain, while a few can engage the reader. Use it to check whether your draft matches the intended voice and genre.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Questions</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiQuestions">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiQuestionsSub">Question marks</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Exclamations counts how many exclamation marks appear. In news writing this is usually rare, while in marketing or personal writing it may be common. This metric helps you control emphasis. If the count is high, consider whether the tone feels too excited or promotional. Replace with stronger facts or cleaner phrasing when you want a more neutral voice.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Exclamations</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiExclaims">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiExclaimsSub">Exclamation marks</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Quotes estimates how much of your draft is framed as quoted material by counting quotation marks. This helps journalists and editors understand whether a story is quote heavy versus narrative heavy. Use it as a balance check. If quotes dominate, add context, paraphrase, or tighten attribution. If quotes are scarce, verify sourcing needs.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Quotes</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiQuotes">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiQuotesSub">Quote marks</div>
-      </div>
-
-      <div class="rm-kpi" data-tip="Named entities is a lightweight estimate of distinct proper name like tokens found in the text, such as people, organizations, and places. It uses capitalization heuristics, so it is approximate, but it is still helpful for draft review. Use it to sanity check whether key actors are present often enough, and to catch inconsistent spellings across a long piece.">
-        <div class="rm-kpi-top">
-          <span class="rm-kpi-label">Named entities</span>
-        </div>
-        <div class="rm-kpi-val" id="kpiEntities">0</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiEntitiesSub">Distinct proper names</div>
-      </div>
-      </div>
-
-
+    <div class="row" style="gap:10px; flex-wrap:wrap">
+      <span class="pill tiny" id="beforePill"><b>Before:</b><span class="muted">—</span></span>
+      <span class="pill tiny" id="afterPill"><b>After:</b><span class="muted">—</span></span>
+      <span class="pill tiny" id="savedPill"><b>Saved:</b><span class="muted">—</span></span>
+    </div>
     <div class="hr2"></div>
-
-    <div style="display:grid; gap:14px">
-      <div class="card" style="padding:12px; margin:0">
-        <div class="row" style="justify-content:space-between; align-items:center">
-          <div class="tiny muted">Counts by phrase (top 15)</div>
-          <div class="tiny muted" id="kpiTime">0</div>
-        </div>
-        <div style="height:260px; margin-top:8px">
-          <canvas id="barChart"></canvas>
-        </div>
-      </div>
-
-      <div class="card" style="padding:12px; margin:0">
-        <div class="tiny muted">Distribution (top 6)</div>
-        <div style="height:220px; margin-top:8px">
-          <canvas id="donutChart"></canvas>
-        </div>
-      </div>
-
-      <div class="card" style="padding:12px; margin:0">
-        <div class="row" style="justify-content:space-between; align-items:center">
-          <div class="tiny muted">Table</div>
-          <div class="tiny muted" id="tableHint">0</div>
-        </div>
-        <div class="hr2"></div>
-        <div style="max-height:260px; overflow:auto; border:1px solid rgba(255,255,255,.10); border-radius:12px">
-          <table class="tbl" style="margin:0; width:100%">
-            <thead>
-              <tr>
-                <th style="position:sticky; top:0; background:rgba(18,22,30,.92)">Phrase</th>
-                <th style="position:sticky; top:0; background:rgba(18,22,30,.92); width:120px">Count</th>
-                <th style="position:sticky; top:0; background:rgba(18,22,30,.92); width:120px">Share</th>
-              </tr>
-            </thead>
-            <tbody id="tbody">
-              <tr><td class="muted tiny" colspan="3">No results yet.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <div class="tiny muted">
+      If you need the text to remain selectable/searchable, try “Merge/Split/Reorder” instead (no re-render).
     </div>
   </div>
+</div>
     <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
   <a class="btn primary" href="/#toolbox" target=_blank rel=noopener>Back to Toolbox</a>
   <a class="btn" href="/docs/contact.html" target=_blank rel=noopener>Contact</a>
 </div>
-</div>
-
-<style>
-/* KPI cards (local to this tool, aligned to ReportMedic style) */
-.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
-@media (max-width: 900px){ .grid3{grid-template-columns:1fr} }
-.rm-kpi{border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:12px; background:rgba(255,255,255,.03)}
-.rm-kpi-top{display:flex; justify-content:space-between; align-items:center; gap:10px}
-.rm-kpi-label{font-size:12px; color:var(--muted); font-weight:600}
-.rm-kpi-val{font-size:22px; font-weight:800; letter-spacing:.2px; margin-top:6px}
-.rm-kpi-sub{margin-top:2px}
-  /* KPI tooltips (instant, long-form) */
-  .rm-kpi{position:relative}
-  .rm-kpi[data-tip]::after{
-    content: attr(data-tip);
-    position:absolute;
-    left:12px;
-    right:12px;
-    bottom:calc(100% + 10px);
-    padding:12px 12px;
-    border-radius:12px;
-    border:1px solid rgba(255,255,255,.14);
-    background:rgba(20,24,30,.92);
-    color:rgba(255,255,255,.92);
-    font-size:12.5px;
-    line-height:1.35;
-    box-shadow:none;
-    opacity:0;
-    transform:translateY(0);
-    pointer-events:none;
-    z-index:50;
-  }
-  .rm-kpi[data-tip]::before{
-    content:'';
-    position:absolute;
-    left:26px;
-    bottom:calc(100% + 2px);
-    width:10px;
-    height:10px;
-    background:rgba(20,24,30,.92);
-    border-left:1px solid rgba(255,255,255,.14);
-    border-top:1px solid rgba(255,255,255,.14);
-    transform:rotate(45deg);
-    opacity:0;
-    pointer-events:none;
-    z-index:51;
-  }
-  .rm-kpi:hover::after, .rm-kpi:hover::before{opacity:1}
-.tbl{border-collapse:collapse}
-.tbl th,.tbl td{padding:10px 10px; border-bottom:1px solid rgba(255,255,255,.08); vertical-align:top}
-</style>
-
-<script>
-(function(){
-  const $ = (id)=>document.getElementById(id);
-
-  const els = {
-    fileInput: $("fileInput"),
-    dropZone: $("dropZone"),
-    fileInfo: $("fileInfo"),
-    pasteText: $("pasteText"),
-    phrases: $("phrases"),
-    phraseCountHint: $("phraseCountHint"),
-    optNouns: $("optNouns"),
-    optMulti: $("optMulti"),
-    caseSensitive: $("caseSensitive"),
-    overlap: $("overlap"),
-    wholeWord: $("wholeWord"),
-    analyze: $("analyze"),
-    downloadCsv: $("downloadCsv"),
-    status: $("status"),
-    meta: $("meta"),
-    kpiPhrases: $("kpiPhrases"),
-    kpiPhrasesSub: $("kpiPhrasesSub"),
-    kpiMatches: $("kpiMatches"),
-    kpiMatchesSub: $("kpiMatchesSub"),
-    kpiTop: $("kpiTop"),
-    kpiTopSub: $("kpiTopSub"),
-    kpiTime: $("kpiTime"),
-
-    kpiLongWords: $("kpiLongWords"),
-    kpiLongWordsSub: $("kpiLongWordsSub"),
-    kpiAttrib: $("kpiAttrib"),
-    kpiAttribSub: $("kpiAttribSub"),
-    kpiTone: $("kpiTone"),
-    kpiToneSub: $("kpiToneSub"),
-    kpiNumbers: $("kpiNumbers"),
-    kpiNumbersSub: $("kpiNumbersSub"),
-    kpiStarter: $("kpiStarter"),
-    kpiStarterSub: $("kpiStarterSub"),
-    kpiOverused: $("kpiOverused"),
-
-    kpiOverusedSub: $("kpiOverusedSub"),
-    kpiUniqueRatio: $("kpiUniqueRatio"),
-    kpiUniqueRatioSub: $("kpiUniqueRatioSub"),
-    kpiFlesch: $("kpiFlesch"),
-    kpiFleschSub: $("kpiFleschSub"),
-    kpiReadTime: $("kpiReadTime"),
-    kpiReadTimeSub: $("kpiReadTimeSub"),
-    kpiAvgSent: $("kpiAvgSent"),
-    kpiAvgSentSub: $("kpiAvgSentSub"),
-    kpiLongSent: $("kpiLongSent"),
-    kpiLongSentSub: $("kpiLongSentSub"),
-    kpiTransitions: $("kpiTransitions"),
-    kpiTransitionsSub: $("kpiTransitionsSub"),
-    kpiParaDist: $("kpiParaDist"),
-    kpiParaDistSub: $("kpiParaDistSub"),
-    kpiQuestions: $("kpiQuestions"),
-    kpiQuestionsSub: $("kpiQuestionsSub"),
-    kpiExclaims: $("kpiExclaims"),
-    kpiExclaimsSub: $("kpiExclaimsSub"),
-    kpiQuotes: $("kpiQuotes"),
-    kpiQuotesSub: $("kpiQuotesSub"),
-    kpiEntities: $("kpiEntities"),
-    kpiEntitiesSub: $("kpiEntitiesSub"),
-    tbody: $("tbody"),
-    tableHint: $("tableHint"),
-    barChart: $("barChart"),
-    donutChart: $("donutChart")
-  };
-
-  let sourceText = "";
-  let sourceLabel = "not loaded";
-  let activeSource = "none";
-  let lastRows = [];
-  let bar, donut;
-
-  function setStatus(msg, kind){
-    els.status.textContent = msg || "";
-    els.status.classList.remove("rm-bad","rm-good","rm-warn");
-    if(kind) els.status.classList.add(kind);
-  }
-
-  function prettyBytes(n){
-    if(!Number.isFinite(n)) return "—";
-    const units=["B","KB","MB","GB"];
-    let i=0; let v=n;
-    while(v>=1024 && i<units.length-1){ v/=1024; i++; }
-    return (v>=10 || i===0 ? v.toFixed(0) : v.toFixed(1)) + " " + units[i];
-  }
-
-  function updateMeta(){
-    els.meta.innerHTML = "<b>SOURCE:</b><span class='muted'>"+escapeHtml(sourceLabel)+"</span>";
-  }
-
-  function escapeHtml(s){
-    return (s||"").replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
-  }
-
-  function normalizeNewlines(s){
-    return (s||"").replace(/\r\n/g,"\n").replace(/\r/g,"\n");
-  }
-
-  function updatePhraseHint(list, auto){
-    const n = (list && list.length) ? list.length : 0;
-    if(auto){
-      els.phraseCountHint.textContent = "Auto: " + n + (n===1 ? " phrase" : " phrases");
-    }else{
-      els.phraseCountHint.textContent = n + (n===1 ? " phrase" : " phrases");
-    }
-  }
-
-  function getPhrases(){
-    const raw = normalizeNewlines(els.phrases.value);
-    const list = raw.split("\n").map(x=>x.trim()).filter(Boolean);
-    const uniq = [...new Set(list)];
-    updatePhraseHint(uniq, false);
-    return uniq;
-  }
-
-  function makeNeedle(phrase, opts){
-    const esc = phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const word = opts.wholeWord ? "\\b" + esc + "\\b" : esc;
-    const flags = opts.caseSensitive ? "g" : "gi";
-    return new RegExp(word, flags);
-  }
-
-  function countWithRegex(hay, re, overlap){
-    if(!overlap) {
-      const m = hay.match(re);
-      return m ? m.length : 0;
-    }
-    // overlapping matches: move one char forward after each hit
-    let count = 0;
-    let lastIndex = 0;
-    const flags = re.flags.includes("g") ? re.flags : re.flags + "g";
-    const r = new RegExp(re.source, flags);
-    while(true){
-      r.lastIndex = lastIndex;
-      const m = r.exec(hay);
-      if(!m) break;
-      count++;
-      lastIndex = m.index + 1;
-      if(lastIndex > hay.length) break;
-    }
-    return count;
-  }
-
-  function buildResults(text, phrases, opts){
-    const rows = [];
-    let total = 0;
-    for(const p of phrases){
-      if(!p) continue;
-      const re = makeNeedle(p, opts);
-      const c = countWithRegex(text, re, opts.overlap);
-      rows.push({ phrase: p, count: c });
-      total += c;
-    }
-    rows.sort((a,b)=> b.count - a.count || a.phrase.localeCompare(b.phrase));
-    return { rows, total };
-  }
-
-  
-
-  function analyzeWritingSignals(text){
-    const t = String(text || "");
-    const lower = t.toLowerCase();
-
-    // word tokens for most metrics
-    const wordTokens = lower.match(/[a-z0-9\']+/g) || [];
-    const totalWords = wordTokens.length;
-    const uniqWords = new Set(wordTokens).size;
-    const uniqueRatio = totalWords ? (uniqWords / totalWords) : 0;
-
-    // long words: > 8 letters
-    let longWords = 0;
-    for(const w of wordTokens){
-      if(w.length > 8) longWords++;
-    }
-
-    // common attribution verbs
-    const attribList = [
-      "said","says","say","told","tell","tells","added","add","adds","stated","state","states",
-      "wrote","write","writes","reported","report","reports","noted","note","notes","explained","explain","explains",
-      "argued","argue","argues","warned","warn","warns","claimed","claim","claims","announced","announce","announces",
-      "tweeted","tweet","tweets","posted","post","posts","confirmed","confirm","confirms","denied","deny","denies"
-    ];
-    const attribSet = new Set(attribList);
-    let attrib = 0;
-    for(const w of wordTokens){
-      if(attribSet.has(w)) attrib++;
-    }
-
-    // numeric mentions
-    const numberMatches = t.match(/\b\d+(?:[.,]\d+)?%?\b/g) || [];
-    const numbers = numberMatches.length;
-
-    // sentences
-    const rawSentences = t
-      .replace(/\s+/g, " ")
-      .split(/(?<=[.!?])\s+|\n+/g);
-    const sentences = [];
-    for(const s of rawSentences){
-      const trimmed = (s || "").trim();
-      if(trimmed) sentences.push(trimmed);
-    }
-    const sentenceCount = sentences.length || 0;
-
-    // starters + sentence lengths
-    const starters = new Map();
-    let totalSentenceWords = 0;
-    let longSentences = 0;
-
-    for(const s of sentences){
-      const first = s.match(/[A-Za-z0-9\']+/);
-      if(first){
-        const w0 = first[0].toLowerCase();
-        starters.set(w0, (starters.get(w0) || 0) + 1);
-      }
-      const w = (s.toLowerCase().match(/[a-z0-9\']+/g) || []);
-      totalSentenceWords += w.length;
-      if(w.length > 20) longSentences++;
-    }
-
-    let topStarter = "n/a";
-    let topStarterN = 0;
-    for(const [k,v] of starters.entries()){
-      if(v > topStarterN){ topStarterN = v; topStarter = k; }
-    }
-
-    const avgSentenceLen = sentenceCount ? (totalSentenceWords / sentenceCount) : 0;
-
-    // overused word (ignoring short tokens + stop words)
-    const stop = new Set([
-      "the","and","for","with","that","this","from","have","has","had","are","was","were","you","your","but","not","they","their","them",
-      "into","over","under","about","after","before","between","because","also","just","like","than","then","there","here","what","when","where",
-      "who","whom","which","why","how","a","an","to","of","in","on","at","as","is","it","be","or","if","we","i","he","she","his","her",
-      "our","us","my","me","so","do","does","did","can","could","will","would","should","may","might","must"
-    ]);
-    const freq = new Map();
-    for(const w of wordTokens){
-      if(w.length < 3) continue;
-      if(stop.has(w)) continue;
-      freq.set(w, (freq.get(w) || 0) + 1);
-    }
-    let overused = "n/a";
-    let overusedN = 0;
-    for(const [k,v] of freq.entries()){
-      if(v > overusedN){ overusedN = v; overused = k; }
-    }
-
-    // tone heuristic (10 types)
-    const toneLex = {
-      confident: ["definitely","clearly","undeniably","certainly","always","never","must","will","proves","shows"],
-      uncertain: ["maybe","perhaps","likely","unlikely","appears","seems","reportedly","allegedly","suggests","could","might"],
-      urgent: ["urgent","immediately","now","critical","breaking","alert","emergency","deadline","asap","quickly"],
-      positive: ["good","great","success","improve","improved","benefit","strong","wins","growth","positive","happy"],
-      negative: ["bad","worse","fail","failed","risk","crisis","concern","decline","negative","angry","fear"],
-      analytical: ["data","evidence","analysis","trend","percent","rate","model","estimate","study","report","according"],
-      informal: ["kind","sort","okay","yeah","lol","really","stuff","gonna","wanna","guys"],
-      formal: ["therefore","however","moreover","nevertheless","furthermore","respectively","hereby","whereas","pursuant"],
-      empathetic: ["feel","felt","support","understand","care","help","safe","reassure","hope","worry"],
-      critical: ["problem","issue","flaw","mistake","wrong","weak","concern","doubt","question","suspect"]
-    };
-
-    const toneScores = new Map();
-    for(const [tone, words] of Object.entries(toneLex)){
-      let sc = 0;
-      for(const w of wordTokens){
-        if(words.includes(w)) sc++;
-      }
-      toneScores.set(tone, sc);
-    }
-    let tone = "neutral";
-    let toneScore = 0;
-    for(const [k,v] of toneScores.entries()){
-      if(v > toneScore){ toneScore = v; tone = k; }
-    }
-    if(toneScore === 0) tone = "neutral";
-
-    // transition words (common connectors)
-    const transitionSet = new Set([
-      "however","therefore","moreover","meanwhile","furthermore","nevertheless","instead","otherwise","also","because",
-      "although","though","while","yet","still","thus","hence","then","so"
-    ]);
-    let transitions = 0;
-    for(const w of wordTokens){
-      if(transitionSet.has(w)) transitions++;
-    }
-
-    // paragraph distribution: short < 40 words, medium 40-100, long > 100
-    const paras = t.split(/\n\s*\n+/g).map(x=>x.trim()).filter(Boolean);
-    let paraCount = paras.length;
-    let pShort = 0, pMed = 0, pLong = 0;
-    for(const p of paras){
-      const wc = (p.toLowerCase().match(/[a-z0-9\']+/g) || []).length;
-      if(wc < 40) pShort++;
-      else if(wc <= 100) pMed++;
-      else pLong++;
-    }
-
-    // punctuation counts
-    const questions = (t.match(/\?/g) || []).length;
-    const exclaims = (t.match(/!/g) || []).length;
-
-    // quotes count (straight and curly)
-    const quotes = (t.match(/["“”'‘’]/g) || []).length;
-
-    // named entities (simple heuristic): distinct capitalized words not in a small ignore list
-    const ignoreCaps = new Set(["The","A","An","And","But","Or","If","In","On","At","For","From","With","To","Of","As","It","This","That","These","Those","I","We","He","She","They"]);
-    const capMatches = t.match(/\b[A-Z][a-z]{2,}\b/g) || [];
-    const ents = new Set();
-    for(const w of capMatches){
-      if(ignoreCaps.has(w)) continue;
-      ents.add(w);
-    }
-    const namedEntities = ents.size;
-
-    // syllable estimate for Flesch
-    function syllables(word){
-      const w = String(word || "").toLowerCase().replace(/[^a-z]/g, "");
-      if(!w) return 0;
-      // very small words
-      if(w.length <= 3) return 1;
-      // count vowel groups
-      let s = (w.match(/[aeiouy]+/g) || []).length;
-      // silent e
-      if(w.endsWith("e")) s = Math.max(1, s - 1);
-      // -le ending (table, bottle) often adds a syllable
-      if(w.endsWith("le") && w.length > 2 && !/[aeiouy]/.test(w[w.length-3])) s += 1;
-      return Math.max(1, s);
-    }
-
-    let syllableTotal = 0;
-    for(const w of wordTokens){
-      syllableTotal += syllables(w);
-    }
-
-    const ASL = sentenceCount ? (totalWords / sentenceCount) : 0; // average sentence length
-    const ASW = totalWords ? (syllableTotal / totalWords) : 0;   // average syllables per word
-    const flesch = (totalWords && sentenceCount) ? (206.835 - 1.015 * ASL - 84.6 * ASW) : 0;
-
-    const readMinutes = totalWords ? (totalWords / 200) : 0; // 200 wpm baseline
-
-    return {
-      longWords,
-      attrib,
-      numbers,
-      topStarter,
-      topStarterN,
-      overused,
-      overusedN,
-      tone,
-      toneScore,
-      totalWords,
-      uniqWords,
-      uniqueRatio,
-      flesch,
-      readMinutes,
-      avgSentenceLen,
-      longSentences,
-      transitions,
-      paraCount,
-      pShort,
-      pMed,
-      pLong,
-      questions,
-      exclaims,
-      quotes,
-      namedEntities
-    };
-  }
-function setKpis(phrasesN, totalMatches, rows, ms, sizeBytes, signals){
-    els.kpiPhrases.textContent = phrasesN ? String(phrasesN) : "0";
-    els.kpiPhrasesSub.textContent = "count";
-
-    els.kpiMatches.textContent = String(totalMatches || 0);
-    els.kpiMatchesSub.textContent = phrasesN ? ("Across " + phrasesN + " phrases") : "Across 0 phrases";
-
-    const top = rows && rows.length ? rows[0] : null;
-    els.kpiTop.textContent = top ? String(top.count || 0) : "0";
-    els.kpiTopSub.textContent = top ? top.phrase : "n/a";
-
-    els.kpiTime.textContent = (Number.isFinite(ms) ? (ms.toFixed(0) + " ms") : "0 ms");
-
-    if(signals){
-      els.kpiLongWords.textContent = String(signals.longWords ?? 0);
-      els.kpiAttrib.textContent = String(signals.attrib ?? 0);
-      els.kpiNumbers.textContent = String(signals.numbers ?? 0);
-
-      els.kpiTone.textContent = String(signals.tone || "neutral");
-      els.kpiToneSub.textContent = (signals.toneScore ? (String(signals.toneScore) + " cues") : "No cues found");
-
-      els.kpiStarter.textContent = signals.topStarter ? String(signals.topStarter) : "n/a";
-      els.kpiStarterSub.textContent = signals.topStarterN ? (String(signals.topStarterN) + " sentences") : "0 sentences";
-
-      els.kpiOverused.textContent = signals.overused ? String(signals.overused) : "n/a";
-      els.kpiOverusedSub.textContent = signals.overusedN ? (String(signals.overusedN) + " uses") : "0 uses";
-
-      const pct = (signals.uniqueRatio || 0) * 100;
-      els.kpiUniqueRatio.textContent = pct ? pct.toFixed(1) + "%" : "0.0%";
-      els.kpiUniqueRatioSub.textContent = (signals.uniqWords ?? 0) + " unique of " + (signals.totalWords ?? 0);
-
-      els.kpiFlesch.textContent = Number.isFinite(signals.flesch) ? (signals.flesch.toFixed(1)) : "0.0";
-      els.kpiFleschSub.textContent = "Readability score";
-
-      els.kpiReadTime.textContent = (signals.readMinutes ? signals.readMinutes.toFixed(1) : "0.0");
-      els.kpiReadTimeSub.textContent = "Minutes to read";
-
-      els.kpiAvgSent.textContent = (signals.avgSentenceLen ? signals.avgSentenceLen.toFixed(1) : "0.0");
-      els.kpiAvgSentSub.textContent = "Words per sentence";
-
-      els.kpiLongSent.textContent = String(signals.longSentences ?? 0);
-      els.kpiLongSentSub.textContent = "Sentences over 20 words";
-
-      els.kpiTransitions.textContent = String(signals.transitions ?? 0);
-      els.kpiTransitionsSub.textContent = "Common connectors";
-
-      els.kpiParaDist.textContent = String(signals.paraCount ?? 0);
-      els.kpiParaDistSub.textContent = "S " + (signals.pShort ?? 0) + ", M " + (signals.pMed ?? 0) + ", L " + (signals.pLong ?? 0);
-
-      els.kpiQuestions.textContent = String(signals.questions ?? 0);
-      els.kpiQuestionsSub.textContent = "Question marks";
-
-      els.kpiExclaims.textContent = String(signals.exclaims ?? 0);
-      els.kpiExclaimsSub.textContent = "Exclamation marks";
-
-      els.kpiQuotes.textContent = String(signals.quotes ?? 0);
-      els.kpiQuotesSub.textContent = "Quote marks";
-
-      els.kpiEntities.textContent = String(signals.namedEntities ?? 0);
-      els.kpiEntitiesSub.textContent = "Distinct proper names";
-    } else {
-      // fallbacks
-      [
-        ["kpiLongWords","0"],["kpiAttrib","0"],["kpiTone","neutral"],["kpiNumbers","0"],["kpiStarter","n/a"],["kpiOverused","n/a"],
-        ["kpiUniqueRatio","0.0%"],["kpiFlesch","0.0"],["kpiReadTime","0.0"],["kpiAvgSent","0.0"],["kpiLongSent","0"],
-        ["kpiTransitions","0"],["kpiParaDist","0"],["kpiQuestions","0"],["kpiExclaims","0"],["kpiQuotes","0"],["kpiEntities","0"]
-      ].forEach(([id,val])=>{ if(els[id]) els[id].textContent = val; });
-    }
-  }
-
-  function renderTable(rows, total){
-    if(!rows || !rows.length){
-      els.tbody.innerHTML = "<tr><td class='muted tiny' colspan='3'>No results yet.</td></tr>";
-      els.tableHint.textContent = "—";
-      return;
-    }
-    const shown = rows.slice(0, 200);
-    els.tableHint.textContent = "Showing " + shown.length + " of " + rows.length;
-    els.tbody.innerHTML = shown.map(r=>{
-      const share = total ? ((r.count/total)*100) : 0;
-      return "<tr><td>"+escapeHtml(r.phrase)+"</td><td>"+r.count+"</td><td>"+share.toFixed(1)+"%</td></tr>";
-    }).join("");
-  }
-
-  function destroyCharts(){
-    if(bar){ bar.destroy(); bar=null; }
-    if(donut){ donut.destroy(); donut=null; }
-  }
-
-  function renderCharts(rows, total){
-    if(!window.Chart){ return; }
-    destroyCharts();
-    const top = rows.slice(0, 15);
-    const labels = top.map(r=>r.phrase);
-    const data = top.map(r=>r.count);
-
-    bar = new Chart(els.barChart.getContext("2d"), {
-      type: "bar",
-      data: { labels, datasets: [{ label: "Count", data }] },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: { duration: 3000 },
-        plugins: { legend: { display: false }, tooltip: { enabled: true } },
-        scales: {
-          x: { ticks: { color: "rgba(240,246,255,.75)" }, grid: { color: "rgba(255,255,255,.06)" } },
-          y: { ticks: { color: "rgba(240,246,255,.75)" }, grid: { color: "rgba(255,255,255,.06)" }, beginAtZero: true }
-        }
-      }
-    });
-
-    const top6 = rows.slice(0, 6);
-    const donutLabels = top6.map(r=>r.phrase);
-    const donutData = top6.map(r=>r.count);
-    const other = rows.slice(6).reduce((s,r)=>s+r.count,0);
-    if(other){
-      donutLabels.push("Other");
-      donutData.push(other);
-    }
-
-    donut = new Chart(els.donutChart.getContext("2d"), {
-      type: "doughnut",
-      data: { labels: donutLabels, datasets: [{ data: donutData }] },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: "bottom", labels: { color: "rgba(240,246,255,.75)", boxWidth: 10 } },
-          tooltip: { enabled: true }
-        }
-      }
-    });
-  }
-
-  function toCsv(rows, total){
-    const header = ["phrase","count","share_pct"];
-    const lines = [header.join(",")];
-    for(const r of rows){
-      const share = total ? ((r.count/total)*100) : 0;
-      const phrase = r.phrase.replace(/"/g,'""');
-      lines.push("\"" + phrase + "\"," + r.count + "," + share.toFixed(2));
-    }
-    return lines.join("\n");
-  }
-
-  function download(filename, content){
-    const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  async function loadFile(file){
-    const buf = await file.arrayBuffer();
-    const size = buf.byteLength || 0;
-    const text = new TextDecoder("utf-8").decode(buf);
-    sourceText = text;
-    sourceLabel = file.name + " (" + prettyBytes(size) + ")";
-    setFileInfo(sourceLabel);
-    updateMeta();
-    setStatus("Loaded " + file.name + ". Results updated.", "rm-good");
-    return size;
-  }
-
-  function setFromPaste(){
-    const text = els.pasteText.value || "";
-    sourceText = text;
-    sourceLabel = text.trim() ? ("pasted text (" + text.length.toLocaleString() + " chars)") : "not loaded";
-    updateMeta();
-    setStatus(text.trim() ? "Using pasted text. Ready to count." : "Paste text or upload a file first.", text.trim() ? "rm-good" : "rm-warn");
-  }
-
-  function clearResultsOnly(){
-    lastRows = [];
-    els.downloadCsv.disabled = true;
-    els.kpiPhrases.textContent = "0";
-    els.kpiPhrasesSub.textContent = "count";
-    els.kpiMatches.textContent = "0";
-    els.kpiMatchesSub.textContent = "Across phrases";
-    els.kpiTop.textContent = "0";
-    els.kpiTopSub.textContent = "Top phrase text";
-    if(els.kpiUniqueRatio) els.kpiUniqueRatio.textContent = "0.0%";
-    if(els.kpiUniqueRatioSub) els.kpiUniqueRatioSub.textContent = "Unique over total";
-    if(els.kpiFlesch) els.kpiFlesch.textContent = "0.0";
-    if(els.kpiFleschSub) els.kpiFleschSub.textContent = "Readability score";
-    if(els.kpiReadTime) els.kpiReadTime.textContent = "0.0";
-    if(els.kpiReadTimeSub) els.kpiReadTimeSub.textContent = "Minutes to read";
-    if(els.kpiAvgSent) els.kpiAvgSent.textContent = "0.0";
-    if(els.kpiAvgSentSub) els.kpiAvgSentSub.textContent = "Words per sentence";
-    if(els.kpiLongSent) els.kpiLongSent.textContent = "0";
-    if(els.kpiLongSentSub) els.kpiLongSentSub.textContent = "Sentences over 20 words";
-    if(els.kpiTransitions) els.kpiTransitions.textContent = "0";
-    if(els.kpiTransitionsSub) els.kpiTransitionsSub.textContent = "Common connectors";
-    if(els.kpiParaDist) els.kpiParaDist.textContent = "0";
-    if(els.kpiParaDistSub) els.kpiParaDistSub.textContent = "Short, medium, long";
-    if(els.kpiQuestions) els.kpiQuestions.textContent = "0";
-    if(els.kpiQuestionsSub) els.kpiQuestionsSub.textContent = "Question marks";
-    if(els.kpiExclaims) els.kpiExclaims.textContent = "0";
-    if(els.kpiExclaimsSub) els.kpiExclaimsSub.textContent = "Exclamation marks";
-    if(els.kpiQuotes) els.kpiQuotes.textContent = "0";
-    if(els.kpiQuotesSub) els.kpiQuotesSub.textContent = "Quote marks";
-    if(els.kpiEntities) els.kpiEntities.textContent = "0";
-    if(els.kpiEntitiesSub) els.kpiEntitiesSub.textContent = "Distinct proper names";
-
-    els.kpiTime.textContent = "0 ms";
-    els.meta.innerHTML = "";
-    els.tbody.innerHTML = "";
-    els.tableHint.textContent = "";
-    destroyCharts();
-  }
-
-  function clearUi(resetInputs){
-    sourceText = "";
-    sourceLabel = "not loaded";
-    activeSource = "none";
-    updateMeta();
-    setStatus("", null);
-    if(resetInputs){
-      els.pasteText.value = "";
-      clearFile();
-      // phrases intentionally preserved
-    }
-    clearResultsOnly();
-  }
-
-  els.phrases.addEventListener("input", ()=>{ els.phrases.dataset.autoFilled = "0"; getPhrases(); });
-
-  const debounce = (fn, wait=180)=>{
-    let t;
-    return (...args)=>{
-      clearTimeout(t);
-      t = setTimeout(()=>fn(...args), wait);
-    };
-  };
-
-  const scheduleAnalyze = debounce(()=>{ analyzeNow(); }, 180);
-
-  function setActiveSource(kind){
-    activeSource = kind;
-    if(kind==="file"){
-      if(els.dropZone) els.dropZone.classList.remove("rm-hidden");
-    }
-  }
-
-  function setFileInfo(text){
-    if(els.fileInfo) els.fileInfo.textContent = text || "No file selected";
-  }
-
-  function clearFile(){
-    els.fileInput.value = "";
-    setFileInfo("No file selected");
-  }
-
-  function clearPaste(){
-    els.pasteText.value = "";
-  }
-
-  async function handleFileSelected(file){
-    if(!file) return;
-    // file wins, and paste is cleared automatically
-    clearPaste();
-    activeSource = "file";
-    try{
-      await loadFile(file);
-      scheduleAnalyze();
-    }catch(e){
-      setStatus("Could not read file. " + (e && e.message ? e.message : ""), "rm-bad");
-    }
-  }
-
-  function handlePasteChanged(){
-    const t = (els.pasteText.value || "");
-    if(t.trim().length){
-      // paste wins, and file selection is cleared automatically
-      clearFile();
-      activeSource = "paste";
-      sourceText = t;
-      sourceLabel = "pasted text";
-      scheduleAnalyze();
-    }else{
-      if(activeSource==="paste"){
-        sourceText = "";
-        sourceLabel = "not loaded";
-        clearUi(false);
-      }
-    }
-  }
-
-  // File input (rm-dropzone.js handles drag and drop and triggers change)
-  els.fileInput.addEventListener("change", async ()=>{
-    const f = els.fileInput.files && els.fileInput.files[0];
-    if(!f) return;
-    await handleFileSelected(f);
-  });
-
-  if(els.pasteText) els.pasteText.addEventListener("input", ()=>{ handlePasteChanged(); });
-
-  els.phrases.addEventListener("input", ()=>{ els.phrases.dataset.autoFilled = "0"; getPhrases(); scheduleAnalyze(); });
-  ["optNouns","optMulti"].forEach(id=>{
-    const el = $(id);
-    if(el) el.addEventListener("change", ()=>{ scheduleAnalyze(); });
-  });
-  ["caseSensitive","overlap","wholeWord"].forEach(id=>{
-    const el = $(id);
-    if(el) el.addEventListener("change", ()=> scheduleAnalyze());
-  });
-
-  function autoDetectPhrases(text, limit, mode){
-    const raw = String(text || "");
-    const lim = limit || 12;
-    const m = mode || {};
-    const wantNouns = !!m.nouns;
-    const wantMulti = !!m.multi;
-
-    const stop = new Set([
-      "the","and","for","with","that","this","you","your","are","was","were","from","have","has","had",
-      "not","but","all","can","will","just","into","out","too","its","it's","they","them","then","than",
-      "she","him","her","his","our","ours","their","there","here","when","what","which","who","how",
-      "a","an","to","of","in","on","at","as","is","it","be","by","or"
-    ]);
-
-    function normToken(t){
-      const s = String(t || "");
-      return m.caseSensitive ? s : s.toLowerCase();
-    }
-
-    const tokensOriginal = (raw.match(/[A-Za-z][A-Za-z0-9']*/g) || []);
-    const tokens = tokensOriginal.map(normToken).filter(t=>t.length>=3);
-
-    function topFromFreq(freqMap){
-      return [...freqMap.entries()]
-        .sort((a,b)=> (b[1]-a[1]) || (String(a[0]).length-String(b[0]).length))
-        .slice(0, lim)
-        .map(x=>x[0]);
-    }
-
-    function detectNouns(){
-      const nounSet = new Set();
-
-      // Proper-noun style: appears capitalized somewhere
-      const caps = (raw.match(/\b[A-Z][a-z][A-Za-z0-9']*\b/g) || []);
-      for(const w of caps){
-        const k = normToken(w);
-        if(k.length>=3 && !stop.has(k.toLowerCase())) nounSet.add(k);
-      }
-
-      // Determiner pattern: "the X", "a X", "my X" etc
-      const detRe = /\b(?:the|a|an|this|that|these|those|my|your|his|her|their|our)\s+([A-Za-z][A-Za-z0-9']{2,})\b/gi;
-      let mm;
-      while((mm = detRe.exec(raw)) !== null){
-        const k = normToken(mm[1]);
-        if(k.length>=3 && !stop.has(k.toLowerCase())) nounSet.add(k);
-      }
-
-      const freq = new Map();
-      for(const t of tokens){
-        const base = m.caseSensitive ? t : t.toLowerCase();
-        if(stop.has(base)) continue;
-        if(!nounSet.has(t)) continue;
-        freq.set(t, (freq.get(t)||0)+1);
-      }
-      return topFromFreq(freq);
-    }
-
-    function detectMulti(){
-      const cleaned = tokens.map(t=>t.trim()).filter(Boolean);
-      const freq = new Map();
-
-      for(let n=2; n<=4; n++){
-        for(let i=0; i<=cleaned.length-n; i++){
-          const gram = cleaned.slice(i, i+n);
-          const low = gram.map(x=>m.caseSensitive ? x : x.toLowerCase());
-
-          // skip grams that are entirely stopwords
-          if(low.every(x=>stop.has(x))) continue;
-
-          const key = gram.join(" ");
-          freq.set(key, (freq.get(key)||0)+1);
-        }
-      }
-
-      return [...freq.entries()]
-        .filter(([k,v])=>v>=2)
-        .sort((a,b)=> (b[1]-a[1]) || (b[0].length-a[0].length))
-        .slice(0, lim)
-        .map(x=>x[0]);
-    }
-
-    function detectWords(){
-      const freq = new Map();
-      for(const t of tokens){
-        const base = m.caseSensitive ? t : t.toLowerCase();
-        if(stop.has(base)) continue;
-        freq.set(t, (freq.get(t)||0)+1);
-      }
-      return topFromFreq(freq);
-    }
-
-    if(wantNouns || wantMulti){
-      const out = [];
-      const seen = new Set();
-
-      const addList = (arr)=>{
-        for(const x of arr){
-          const k = String(x);
-          if(seen.has(k)) continue;
-          seen.add(k);
-          out.push(k);
-          if(out.length >= lim) break;
-        }
-      };
-
-      // If both are selected, we mix them: nouns first, then multi-word (fills remaining).
-      if(wantNouns) addList(detectNouns());
-      if(out.length < lim && wantMulti) addList(detectMulti());
-
-      // Fallback if filter yields nothing
-      if(!out.length) return detectWords();
-      return out.slice(0, lim);
-    }
-
-    return detectWords();
-  }
-
-
-
-  function analyzeNow(){
-    try{
-      const t = String(sourceText || "");
-      if(!t.trim()){
-        setStatus("Upload a file or paste text to see results.", "rm-warn");
-        clearResultsOnly();
-        return;
-      }
-
-      const opts = {
-        caseSensitive: !!els.caseSensitive.checked,
-        overlap: !!els.overlap.checked,
-        wholeWord: !!els.wholeWord.checked
-      };
-      // If phrases were auto-filled, treat as auto mode so toggles update immediately.
-      let phrases = [];
-      if(!(els.phrases && els.phrases.dataset && els.phrases.dataset.autoFilled === "1")){
-        phrases = getPhrases();
-      }
-      let isAuto = false;
-      if(!phrases.length){
-        phrases = autoDetectPhrases(t, 12, { nouns: els.optNouns && els.optNouns.checked, multi: els.optMulti && els.optMulti.checked, caseSensitive: opts.caseSensitive });
-        isAuto = true;
-        updatePhraseHint(phrases, true);
-
-        // Keep the auto list visible, but let user overwrite it by typing.
-        if(els.phrases){
-          const cur = String(els.phrases.value || "").trim();
-          const autoFilled = (els.phrases.dataset.autoFilled === "1");
-          if(!cur || autoFilled){
-            els.phrases.value = phrases.join("\n");
-            els.phrases.dataset.autoFilled = "1";
-          }
-        }
-      }else{
-        updatePhraseHint(phrases, false);
-        if(els.phrases) els.phrases.dataset.autoFilled = "0";
-      }
-
-      const t0 = performance.now();
-      const res = buildResults(t, phrases, opts);
-      const rows = res.rows;
-      const totalMatches = res.total;
-      const ms = performance.now() - t0;
-
-      lastRows = rows;
-      renderTable(rows, totalMatches);
-      const signals = analyzeWritingSignals(t);
-      setKpis(phrases.length, totalMatches, rows, ms, null, signals);
-      if(isAuto){ els.tableHint.textContent = "No phrases provided. Auto-picked a small set from your text. Paste or type your own phrases to be exact."; } else { els.tableHint.textContent = rows.length ? "Sorted by highest count." : "No matches found."; }
-      renderCharts(rows, totalMatches);
-      els.downloadCsv.disabled = !rows.length;
-
-      setStatus("Updated.", "rm-good");
-    }catch(e){
-      setStatus("Error while counting. " + (e && e.message ? e.message : ""), "rm-bad");
-    }
-  }
-
-  els.analyze.addEventListener("click", ()=>{ analyzeNow(); });
-
-  els.downloadCsv.addEventListener("click", ()=>{
-    if(!lastRows || !lastRows.length){
-      setStatus("No results to download yet.", "rm-warn");
-      return;
-    }
-    const total = lastRows.reduce((s,r)=>s+r.count,0);
-    const csv = toCsv(lastRows, total);
-    download("phrase_counts.csv", csv);
-    setStatus("Downloaded phrase_counts.csv", "rm-good");
-  });
-
-  updateMeta();
-  renderTable([], 0);
-
-})();
-</script>
-
-  <div class="footer">© 2026 ReportMedic</div>
   </div>
+  <div class="footer">© 2026 ReportMedic</div>
 </div>
 <footer class="rm-footer">
 <div class="rm-footer-inner">
@@ -1340,72 +238,177 @@ function setKpis(phrasesN, totalMatches, rows, ms, sizeBytes, signals){
 <div class="rm-footer-meta">© 2026 ReportMedic</div>
 </div>
 </footer>
-<div aria-hidden="true" aria-label="Phrase Occurrence Counter details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+<div aria-hidden="true" aria-label="Compress PDF details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
   <div class="rm-lm-dialog">
     <div class="rm-lm-head">
-      <h2 class="rm-lm-title">Phrase Occurrence Counter</h2>
+      <h2 class="rm-lm-title">Compress PDF</h2>
       <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
     </div>
-    
-<div class="rm-lm-body">
-  <h3>What this helps with</h3>
-  <ul>
-    <li>Check repeated phrases in a report, email thread, transcript, or notes</li>
-    <li>Measure how often key terms show up in a CSV export</li>
-    <li>Compare wording consistency across drafts</li>
-  </ul>
-
-  <h3>How it works</h3>
-  <ul>
-    <li>You provide phrases and text (upload or paste)</li>
-    <li>We count occurrences for each phrase and summarize the results</li>
-    <li>Charts and metric cards make patterns obvious at a glance</li>
-  </ul>
-
-  <h3>Privacy</h3>
-  <ul>
-    <li>Your file stays on your device</li>
-    <li>No uploads, no server processing</li>
-  </ul>
-
-  <h3>Tips</h3>
-  <ul>
-    <li>Use Whole word for words like fee, plan, or due</li>
-    <li>Use Case sensitive if capitalization matters</li>
-    <li>Overlapping matches can help with patterns like AAAA containing AAA twice</li>
-  </ul>
-</div>
-
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+<ul>
+  <li>Email attachments that exceed limits</li>
+  <li>Portals that reject “too large” PDFs</li>
+  <li>Oversized scanned documents</li>
+</ul>
+<h3>How it works</h3>
+<ul>
+  <li>We re-render each page and rebuild a new PDF with a smaller image payload.</li>
+  <li>Light/Balanced/Strong control resolution and JPEG quality.</li>
+</ul>
+<h3>Tradeoff</h3>
+<ul>
+  <li>Because pages are re-rendered, text may not remain selectable.</li>
+  <li>For “no quality loss” operations, use the Organizer tool.</li>
+</ul>
+    </div>
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/legacy/build/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/legacy/build/pdf.worker.min.js";
+</script>
+<script>
+(function(){
+  'use strict';
+  const { PDFDocument } = window.PDFLib;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/legacy/build/pdf.worker.min.js';
+
+  const $ = (id)=>document.getElementById(id);
+  const humanBytes = (n) => {
+    if(!Number.isFinite(n)) return '—';
+    const u=['B','KB','MB','GB']; let i=0; let v=n;
+    while(v>=1024 && i<u.length-1){ v/=1024; i++; }
+    const s = i===0 ? String(Math.round(v)) : String(Math.round(v*10)/10);
+    return s+' '+u[i];
+  };
+  const downloadBlob=(blob,name)=>{
+    const a=document.createElement('a');
+    const url=URL.createObjectURL(blob);
+    a.href=url; a.download=name;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 250);
+  };
+  const esc=(s)=>String(s).replace(/[&<>"']/g,(c)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+  const fileInput=$('fileInput');
+  const meta=$('meta');
+  const status=$('status');
+  const beforeP=$('beforePill');
+  const afterP=$('afterPill');
+  const savedP=$('savedPill');
+  const level=$('level');
+
+  let file=null;
+  fileInput.addEventListener('change', ()=>{
+    file = (fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
+    status.textContent='';
+    beforeP.innerHTML='<b>Before:</b><span class="muted">'+(file? humanBytes(file.size) : '—')+'</span>';
+    afterP.innerHTML='<b>After:</b><span class="muted">—</span>';
+    savedP.innerHTML='<b>Saved:</b><span class="muted">—</span>';
+    meta.innerHTML='<b>IN:</b><span class="muted">'+(file? esc(file.name) : 'not loaded')+'</span>';
+  });
+
+  $('clear').addEventListener('click', ()=>{
+    fileInput.value='';
+    file=null;
+    status.textContent='';
+    meta.innerHTML='<b>IN:</b><span class="muted">not loaded</span>';
+    beforeP.innerHTML='<b>Before:</b><span class="muted">—</span>';
+    afterP.innerHTML='<b>After:</b><span class="muted">—</span>';
+    savedP.innerHTML='<b>Saved:</b><span class="muted">—</span>';
+  });
+
+  $('go').addEventListener('click', async ()=>{
+    status.textContent='';
+    if(!file){
+      status.innerHTML='<span class="rm-warn">Upload a PDF first.</span>';
+      return;
+    }
+
+    // Level presets
+    const preset = {
+      light:    { dpi: 150, q: 0.85 },
+      balanced: { dpi: 120, q: 0.75 },
+      strong:   { dpi:  90, q: 0.60 },
+    }[level.value] || { dpi:120, q:0.75 };
+
+    try{
+      status.textContent='Reading…';
+      const bytes = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({data: bytes}).promise;
+
+      const out = await PDFDocument.create();
+
+      status.textContent='Compressing…';
+      for(let i=1; i<=pdf.numPages; i++){
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({scale: preset.dpi/72});
+        const canvas=document.createElement('canvas');
+        canvas.width=Math.max(1, Math.floor(viewport.width));
+        canvas.height=Math.max(1, Math.floor(viewport.height));
+        const ctx=canvas.getContext('2d', {alpha:false});
+        await page.render({canvasContext: ctx, viewport}).promise;
+
+        const dataUrl = canvas.toDataURL('image/jpeg', preset.q);
+        const jpgBytes = await (await fetch(dataUrl)).arrayBuffer();
+
+        // Create page matching rendered dimensions (PDF points)
+        const w = viewport.width;
+        const h = viewport.height;
+        const p = out.addPage([w, h]);
+        const img = await out.embedJpg(jpgBytes);
+        p.drawImage(img, { x:0, y:0, width:w, height:h });
+      }
+
+      const outBytes = await out.save();
+      const outBlob = new Blob([outBytes], {type:'application/pdf'});
+      downloadBlob(outBlob, 'compressed.pdf');
+
+      const afterSize = outBlob.size;
+      const saved = Math.max(0, file.size - afterSize);
+      const pct = file.size ? Math.round((saved/file.size)*100) : 0;
+
+      afterP.innerHTML='<b>After:</b><span class="muted">'+humanBytes(afterSize)+'</span>';
+      savedP.innerHTML='<b>Saved:</b><span class="muted">'+humanBytes(saved)+' ('+pct+'%)</span>';
+      status.innerHTML='<span class="rm-good">Done.</span>';
+    }catch(err){
+      console.error(err);
+      status.innerHTML='<span class="rm-bad">Error: '+esc(err && err.message ? err.message : String(err))+'</span>';
+    }
+  });
+})();
+</script>
 <script>
   (function(){
     function openLM(id){
-      var bd=document.getElementById(id);
+      const bd=document.getElementById(id);
       if(!bd) return;
       bd.setAttribute('aria-hidden','false');
-      var btn=bd.querySelector('.rm-lm-close');
+      const btn=bd.querySelector('.rm-lm-close');
       if(btn) btn.focus();
     }
     function closeLM(id){
-      var bd=document.getElementById(id);
+      const bd=document.getElementById(id);
       if(!bd) return;
       bd.setAttribute('aria-hidden','true');
     }
     document.addEventListener('click', function(e){
-      var a=e.target.closest('[data-rm-lm-open]');
+      const a=e.target.closest('[data-rm-lm-open]');
       if(a){
         e.preventDefault();
         openLM(a.getAttribute('data-rm-lm-open'));
         return;
       }
-      var close=e.target.closest('[data-rm-lm-close]');
+      const close=e.target.closest('[data-rm-lm-close]');
       if(close){
         e.preventDefault();
         closeLM(close.getAttribute('data-rm-lm-close'));
         return;
       }
-      var bd=(e.target.classList && e.target.classList.contains('rm-lm-backdrop')) ? e.target : null;
+      const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
       if(bd){
         e.preventDefault();
         closeLM(bd.id);
@@ -1413,7 +416,7 @@ function setKpis(phrasesN, totalMatches, rows, ms, sizeBytes, signals){
     });
     document.addEventListener('keydown', function(e){
       if(e.key==='Escape'){
-        var open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        const open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
         if(open) open.setAttribute('aria-hidden','true');
       }
     });
@@ -1435,44 +438,6 @@ s0.parentNode.insertBefore(s1,s0);
 })();
 </script>
 <!--End of Tawk.to Script-->
-
-
-<script>
-(function rmLmWireUp(){
-  const openers = document.querySelectorAll('[data-rm-lm-open]');
-  const closers = document.querySelectorAll('[data-rm-lm-close]');
-  const setOpen = (id, isOpen) => {
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
-    document.documentElement.classList.toggle('rmNoScroll', isOpen);
-    document.body.classList.toggle('rmNoScroll', isOpen);
-  };
-  openers.forEach(a=>{
-    a.addEventListener('click', (e)=>{
-      e.preventDefault();
-      const id = a.getAttribute('data-rm-lm-open');
-      if(id) setOpen(id, true);
-    });
-  });
-  closers.forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const id = btn.getAttribute('data-rm-lm-close');
-      if(id) setOpen(id, false);
-    });
-  });
-  document.addEventListener('keydown', (e)=>{
-    if(e.key !== 'Escape') return;
-    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(el=>{
-      setOpen(el.id, false);
-    });
-  });
-  document.addEventListener('click', (e)=>{
-    const bd = e.target && e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
-    if(bd && bd.id) setOpen(bd.id, false);
-  });
-})();
-</script>
 
 </body>
 </html>
