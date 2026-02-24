@@ -208,7 +208,8 @@
     .rm-merge-row .rm-check-label{margin:0;}
 
     /* ── Per-file override dialog ── */
-    #perFileDialog{width:min(680px,94vw);max-height:80vh;overflow:hidden;display:flex;flex-direction:column;}
+    #perFileDialog{width:min(680px,94vw);max-height:80vh;overflow:hidden;flex-direction:column;}
+    #perFileDialog[open]{display:flex;}
     .rm-dialog-scroll{overflow-y:auto;padding:12px;}
     .rm-pf-section{margin-bottom:14px;}
     .rm-pf-section-title{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
