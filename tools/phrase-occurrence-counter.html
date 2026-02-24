@@ -52,6 +52,105 @@
     flex-wrap:wrap;
   }
 
+  .rm-lm-link{
+    font-size:.82rem;
+    margin-left:.55rem;
+    text-decoration:underline;
+    text-underline-offset:3px;
+    opacity:.85;
+    white-space:nowrap;
+  }
+  .rm-lm-link:hover{opacity:1;}
+
+  .rm-lm-backdrop{
+    position:fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    z-index:9999;
+
+    background:
+      radial-gradient(1200px 600px at 20% 10%, rgba(120,170,255,.18), transparent 60%),
+      radial-gradient(900px 500px at 85% 20%, rgba(0,220,255,.10), transparent 55%),
+      rgba(2,6,23,.72);
+    backdrop-filter: blur(4px) saturate(1.2);
+    -webkit-backdrop-filter: blur(4px) saturate(1.2);
+  }
+  .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+
+  .rm-lm-dialog{
+    width:min(640px, 100%);
+    border-radius: var(--lm-radius);
+    overflow:hidden;
+
+    background: rgba(10, 14, 25, .3);
+    border: 1px solid var(--lm-border);
+    backdrop-filter: blur(14px) saturate(1.15);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    box-shadow: 0 20px 60px rgba(0,0,0,.45);
+
+    transform: translateY(10px) scale(.985);
+    opacity: 0;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+  .rm-lm-backdrop[aria-hidden="false"] .rm-lm-dialog{
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  .rm-lm-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 16px;
+    border-bottom:1px solid rgba(255,255,255,.10);
+
+    background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+  }
+
+  .rm-lm-title{
+    margin:0;
+    font-size:1.05rem;
+    letter-spacing:-.01em;
+    font-weight:650;
+    color: var(--lm-text);
+  }
+
+  .rm-lm-close{
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    padding:6px 10px;
+    border-radius:12px;
+    cursor:pointer;
+    color: rgba(240,246,255,.82);
+    font-size:1.1rem;
+    line-height:1;
+  }
+  .rm-lm-close:hover{
+    background: rgba(255,255,255,.10);
+    color: rgba(240,246,255,.95);
+  }
+  .rm-lm-close:active{transform: translateY(1px);}
+
+  .rm-lm-body{
+    padding:14px 16px 16px;
+    font-size:.95rem;
+    line-height:1.55;
+    color: var(--lm-muted);
+  }
+  .rm-lm-body h3{
+    margin:12px 0 6px;
+    font-size:.92rem;
+    font-weight:700;
+    color: var(--lm-text);
+    letter-spacing:-.01em;
+  }
+  .rm-lm-body ul{margin:6px 0 10px 18px;}
+  .rm-lm-body li{margin:5px 0;}
+  .rm-lm-body p{margin:.55rem 0;}
+
   .rm-fieldLabel{display:block; margin-bottom:8px}
   .rm-fieldBox{margin-top:10px}
   .rm-topInputs .rm-fieldBox{margin-top:10px}
@@ -107,19 +206,16 @@
 
   <div>
     <div class="row" style="justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap">
-      <label class="tiny muted rm-fieldLabel">Phrases (optional, one per line)</label>
+      <label class="tiny muted rm-fieldLabel">Phrases (one per line)</label>
       <div class="row" style="gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end">
-        <span class="tiny muted" id="phraseCountHint">0 phrases</span>
-        <label class="rm-check tiny muted"><input id="optNouns" type="checkbox"/> Nouns</label>
-        <label class="rm-check tiny muted"><input id="optMulti" type="checkbox"/> Multi-word</label>
-      </div>
+        <span class="tiny muted" id="phraseCountHint">0 phrases</span> </div>
     </div>
     <div class="rm-fieldBox">
       <textarea class="input" id="phrases" style="min-height:180px; width:100%; resize:vertical" placeholder="invoice
 late fee
 net 30"></textarea>
     </div>
-    <div class="rm-dropHint">Leave this blank to auto-detect. Use the toggles to focus auto-detection on nouns or multi-word phrases.</div>
+    <div class="rm-dropHint">Leave this blank to auto-detect the most frequent words.</div>
   </div>
 </div>
 </div>
@@ -139,6 +235,8 @@ net 30"></textarea>
         <label class="tiny"><input id="caseSensitive" type="checkbox"/> Case sensitive</label>
         <label class="tiny"><input id="overlap" type="checkbox"/> Allow overlapping matches</label>
         <label class="tiny"><input id="wholeWord" type="checkbox"/> Whole word</label>
+        <label class="tiny"><input id="optNouns" type="checkbox"/> Nouns</label>
+        <label class="tiny"><input id="optMulti" type="checkbox"/> Multi-word</label>
       </div>
 
       <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
@@ -156,21 +254,21 @@ net 30"></textarea>
     <div class="hr2"></div>
 
     <div class="grid3" style="margin:0">
-      <div class="rm-kpi">
+      <div class="rm-kpi" title="Counts how many phrases are being tracked (typed in the box, or auto-detected).">
         <div class="rm-kpi-top">
           <span class="rm-kpi-label">Total phrases</span>
         </div>
         <div class="rm-kpi-val" id="kpiPhrases">—</div>
         <div class="rm-kpi-sub tiny muted" id="kpiPhrasesSub">—</div>
       </div>
-      <div class="rm-kpi">
+      <div class="rm-kpi" title="Total number of occurrences found across all phrases (sum of counts).">
         <div class="rm-kpi-top">
           <span class="rm-kpi-label">Total matches</span>
         </div>
         <div class="rm-kpi-val" id="kpiMatches">—</div>
         <div class="rm-kpi-sub tiny muted" id="kpiMatchesSub">—</div>
       </div>
-      <div class="rm-kpi">
+      <div class="rm-kpi" title="The phrase with the highest count. Subtext shows its count and share of total matches.">
         <div class="rm-kpi-top">
           <span class="rm-kpi-label">Top phrase</span>
         </div>
