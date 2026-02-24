@@ -4,203 +4,278 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<meta name="description" content="Diagnose why reports don’t match. Use fast self-serve tools for compare, validate, reconcile, outliers, and data cleaning—or request direct help to fix your report."/>
+<meta name="description" content="Diagnose why reports don't match. Use fast self-serve tools for compare, validate, reconcile, outliers, data cleaning, PDF tools, video tools, and more—everything runs locally in your browser."/>
 <title>ReportMedic — Report Diagnostics & Consulting</title>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
 <link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
 <link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
 <link href="/assets/css/styles.css" rel="stylesheet"/>
 <style>
-    .hero{margin-top:18px;display:grid;grid-template-columns:1.3fr .9fr;gap:18px;align-items:stretch;}
-    @media (max-width:900px){.hero{grid-template-columns:1fr}}
-    .searchRow{display:flex;gap:10px;margin-top:14px;align-items:center;}
-    .searchRow input{flex:1;padding:12px 12px;border-radius:12px;border:1px solid var(--border);outline:none;background:rgba(255,255,255,.04);color:var(--text);}
-    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-    .chip{font-size:12px;padding:8px 10px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);cursor:pointer;user-select:none;}
-    .chip.active{color:#061021;background:linear-gradient(135deg, rgba(110,168,255,.95), rgba(124,247,212,.95));border:none;font-weight:700;}
-    .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px;}
-    .kpi{background:rgba(16,26,47,.65);border:1px solid var(--border);border-radius:14px;padding:12px;}
-    .kpi strong{display:block;font-size:14px}
-    .kpi span{color:var(--muted);font-size:12px}
-    /* Drawer */
-    .drawerOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:40;}
-    .drawer{position:fixed;right:0;top:0;width:420px;max-width:92vw;height:100vh;background:rgba(8,12,22,.96);border-left:1px solid var(--border);box-shadow:-18px 0 40px rgba(0,0,0,.55);padding:14px;transform:translateX(102%);transition:transform .18s ease;z-index:50;display:flex;flex-direction:column;}
-    .drawer.open{transform:translateX(0)}
-    .drawerHeader{display:flex;align-items:center;gap:10px;padding:8px 6px 12px;border-bottom:1px solid var(--border);}
-    .drawerHeader strong{font-size:14px}
-    .drawerList{padding:12px 4px;overflow:auto;display:flex;flex-direction:column;gap:10px;}
-    .row{display:flex;gap:10px;padding:10px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.03);cursor:pointer;text-decoration:none;}
-    .row:hover{border-color:rgba(124,247,212,.45)}
-    .row .rTitle{font-weight:800;font-size:13px}
-    .row .rDesc{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.35}
-    .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:rgba(255,255,255,.08);border:1px solid var(--border);padding:10px 12px;border-radius:12px;color:var(--text);font-size:13px;display:none;z-index:60;backdrop-filter:blur(10px);}
-  </style>
+  /* ── Hero Layout ── */
+  .hero{margin-top:18px;display:grid;grid-template-columns:1.3fr .9fr;gap:18px;align-items:stretch;}
+  @media(max-width:900px){.hero{grid-template-columns:1fr}}
+
+  /* ── Search Row ── */
+  .searchRow{display:flex;gap:10px;margin-top:14px;align-items:center;}
+  .searchRow input{flex:1;padding:12px;border-radius:12px;border:1px solid var(--border);outline:none;background:rgba(255,255,255,.04);color:var(--text);font-size:14px;transition:border-color .15s;}
+  .searchRow input:focus{border-color:rgba(124,247,212,.5);}
+
+  /* ── Category Chips ── */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .chip{font-size:12px;padding:7px 12px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);cursor:pointer;user-select:none;transition:all .12s;}
+  .chip:hover{border-color:rgba(124,247,212,.35);color:var(--text);}
+  .chip.active{color:#061021;background:linear-gradient(135deg,rgba(110,168,255,.95),rgba(124,247,212,.95));border:none;font-weight:700;}
+
+  /* ── KPI Grid ── */
+  .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px;}
+  .kpi{background:rgba(16,26,47,.65);border:1px solid var(--border);border-radius:14px;padding:12px;}
+  .kpi strong{display:block;font-size:14px}
+  .kpi span{color:var(--muted);font-size:12px}
+
+  /* ── Drawer ── */
+  .drawerOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:40;}
+  .drawer{position:fixed;right:0;top:0;width:440px;max-width:92vw;height:100vh;background:rgba(8,12,22,.97);border-left:1px solid var(--border);box-shadow:-18px 0 40px rgba(0,0,0,.55);padding:14px;transform:translateX(102%);transition:transform .18s ease;z-index:50;display:flex;flex-direction:column;}
+  .drawer.open{transform:translateX(0)}
+  .drawerHeader{display:flex;align-items:center;gap:10px;padding:8px 6px 12px;border-bottom:1px solid var(--border);}
+  .drawerHeader strong{font-size:14px}
+  .drawerSearch{padding:10px 6px 8px;border-bottom:1px solid rgba(255,255,255,.06);}
+  .drawerSearch input{width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);font-size:13px;outline:none;box-sizing:border-box;}
+  .drawerSearch input:focus{border-color:rgba(124,247,212,.4);}
+  .drawerList{padding:10px 4px;overflow:auto;display:flex;flex-direction:column;gap:8px;flex:1;}
+  .row{display:flex;gap:10px;padding:10px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.03);cursor:pointer;text-decoration:none;transition:border-color .12s,background .12s;}
+  .row:hover{border-color:rgba(124,247,212,.45);background:rgba(124,247,212,.04);}
+  .row .rIcon{width:32px;height:32px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(255,255,255,.05);flex-shrink:0;}
+  .row .rTitle{font-weight:800;font-size:13px}
+  .row .rDesc{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.35}
+  .row .rCats{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;}
+  .row .rCat{font-size:10px;padding:2px 7px;border-radius:999px;background:rgba(110,168,255,.12);color:rgba(110,168,255,.85);border:1px solid rgba(110,168,255,.2);}
+  .drawerEmpty{color:var(--muted);font-size:13px;text-align:center;padding:30px 0;}
+
+  /* ── Toolbox section header ── */
+  .toolboxHeader{display:flex;align-items:end;justify-content:space-between;gap:10px;margin-top:24px;}
+  .toolboxTitle{font-weight:900;font-size:17px;}
+  .toolboxSub{color:var(--muted);font-size:13px;margin-top:3px;}
+
+  /* ── Toast ── */
+  .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:rgba(255,255,255,.08);border:1px solid var(--border);padding:10px 16px;border-radius:12px;color:var(--text);font-size:13px;display:none;z-index:60;backdrop-filter:blur(10px);}
+
+  /* ── Section label (category group) ── */
+  .sectionLabel{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px 0 4px;border-top:1px solid var(--border);margin-top:4px;}
+  .sectionLabel:first-child{border-top:none;margin-top:0;}
+
+  /* ── No results ── */
+  .noResults{color:var(--muted);font-size:14px;text-align:center;padding:40px 0;grid-column:1/-1;}
+</style>
 </head>
 <body>
 <header>
 <div class="nav">
-<div class="logo">
-<div class="mark"></div>
-<div>ReportMedic</div>
+  <div class="logo">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn" id="openDrawerBtn">All Tools ↗</button>
+  <a class="btn primary" href="#tools">Toolbox</a>
+  <a class="btn primary" href="/fix-my-report.html">Get human help</a>
 </div>
-<div class="spacer"></div>
-<button class="btn" id="openDrawerBtn">All Tools</button>
-<a class="btn primary" href="#toolbox" id="navStartReport">Start with a report</a>
-<a class="btn primary" href="/fix-my-report.html">Get human help</a></div>
 </header>
+
 <div class="wrap">
-<section class="hero">
-<div class="panel">
-<h1>Make reports safe to share — in minutes.</h1>
-<p class="sub">Clean, validate, compare, and explain reports with focused tools you can trust — without building a workflow. Everything runs locally in your browser.</p>
-<div class="searchRow">
-<input id="search" placeholder="Search tools… e.g., validate, compare, clean, reconcile"/>
-<button class="btn" id="clearBtn">Clear</button>
-</div>
-<div class="chips" id="chips">
-<div class="chip active" data-cat="All">All</div>
-<div class="chip" data-cat="Compare">Compare</div>
-<div class="chip" data-cat="Clean">Clean</div>
-<div class="chip" data-cat="Validate">Validate</div>
-<div class="chip" data-cat="Analyze">Analyze</div>
-<div class="chip" data-cat="Export">Export</div>
-</div>
-<div class="kpis">
-<div class="kpi">
-<strong>3 ways to find tools</strong>
-<span>Search • Categories • All Tools panel</span>
-</div>
-<div class="kpi">
-<strong>Instant discovery</strong>
-<span>Type any keyword → matching tools appear</span>
-</div>
-<div class="kpi">
-<strong>Tool-first design</strong>
-<span>Each tool does one job extremely well</span>
-</div>
-<div class="kpi">
-<strong>Quick launch</strong>
-<span>Click any card to open the tool</span>
-</div>
-</div>
-</div>
-<div class="panel">
-<div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-<div>
-<div style="font-weight:900; font-size:16px;">Today’s workflow</div>
-<div style="color:var(--muted); font-size:13px; margin-top:4px; line-height:1.45;">
-            Upload your report → pick a tool → export a clean result or explanation.
-          </div>
-</div>
-</div>
-<div style="margin-top:14px; border:1px dashed var(--border); border-radius:14px; padding:14px; background:rgba(255,255,255,.02)">
-<div style="font-weight:800; font-size:13px;">What users usually do first</div>
-<ol style="margin:10px 0 0 18px; color:var(--muted); font-size:13px; line-height:1.6;">
-<li>Search “compare” → open “Report Compare”</li>
-<li>Validate totals and missing fields</li>
-<li>Export a clean version or summary notes</li>
-</ol>
-</div>
-<div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-<a class="btn" href="/tools/compare-two-files-find-differences.html">Open Compare</a>
-<a class="btn" href="/tools/validate-data-schema-and-columns.html">Open Validator</a>
-<button class="btn" id="quickAll">Browse All 10</button>
-</div>
-<div class="hr"></div>
-<div class="small">
-<div><strong>Docs:</strong> <a href="/docs/privacy.html">Privacy</a> • <a href="/docs/terms.html">Terms</a></div>
-</div>
-</div>
-</section>
-<section id="tools">
-<div style="display:flex; align-items:end; justify-content:space-between; gap:10px; margin-top:18px;">
-<div>
-<div style="font-weight:900; font-size:16px;">Toolbox (42)</div>
-<div style="color:var(--muted); font-size:13px; margin-top:4px;">
-          Filtered results update live as users type or select categories.
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="panel">
+      <h1>Make reports safe to share — in minutes.</h1>
+      <p class="sub">Clean, validate, compare, convert, and explain reports with 47 focused tools you can trust — without building a workflow. Everything runs locally in your browser.</p>
+      <div class="searchRow">
+        <input id="search" placeholder="Search tools… e.g., validate, compare, clean, video, pdf"/>
+        <button class="btn" id="clearBtn">Clear</button>
+      </div>
+      <div class="chips" id="chips">
+        <div class="chip active" data-cat="All">All</div>
+        <div class="chip" data-cat="Compare">Compare</div>
+        <div class="chip" data-cat="Clean">Clean</div>
+        <div class="chip" data-cat="Validate">Validate</div>
+        <div class="chip" data-cat="Analyze">Analyze</div>
+        <div class="chip" data-cat="Convert">Convert</div>
+        <div class="chip" data-cat="Export">Export</div>
+        <div class="chip" data-cat="Video">Video</div>
+      </div>
+      <div class="kpis">
+        <div class="kpi">
+          <strong>47 tools</strong>
+          <span>Search • Categories • Sidebar panel</span>
         </div>
+        <div class="kpi">
+          <strong>Instant search</strong>
+          <span>Type any keyword → matching tools appear</span>
+        </div>
+        <div class="kpi">
+          <strong>Tool-first design</strong>
+          <span>Each tool does one job extremely well</span>
+        </div>
+        <div class="kpi">
+          <strong>100% private</strong>
+          <span>All processing runs in your browser</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div style="font-weight:900;font-size:16px;">Start here</div>
+      <div style="color:var(--muted);font-size:13px;margin-top:4px;line-height:1.45;">
+        Upload your report → pick a tool → export a clean result or explanation.
+      </div>
+      <div style="margin-top:14px;border:1px dashed var(--border);border-radius:14px;padding:14px;background:rgba(255,255,255,.02)">
+        <div style="font-weight:800;font-size:13px;">What users usually do first</div>
+        <ol style="margin:10px 0 0 18px;color:var(--muted);font-size:13px;line-height:1.7;">
+          <li>Search "compare" → open <strong style="color:var(--text)">Report Compare</strong></li>
+          <li>Validate totals and missing fields</li>
+          <li>Export a clean version or summary notes</li>
+        </ol>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
+        <a class="btn" href="/tools/compare-two-files-find-differences.html">Open Compare</a>
+        <a class="btn" href="/tools/validate-data-schema-and-columns.html">Open Validator</a>
+        <button class="btn" id="quickAll">Browse All 47</button>
+      </div>
+      <div class="hr"></div>
+      <div class="small">
+        <div><strong>Need a human?</strong> <a href="/fix-my-report.html">Request direct help →</a></div>
+        <div style="margin-top:6px;"><strong>Docs:</strong> <a href="/docs/privacy.html">Privacy</a> • <a href="/docs/terms.html">Terms</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TOOLBOX ── -->
+  <section id="tools">
+    <div class="toolboxHeader">
+      <div>
+        <div class="toolboxTitle">Toolbox</div>
+        <div class="toolboxSub">Filtered results update live as you type or select a category.</div>
+      </div>
+      <div id="countLabel" style="color:var(--muted);font-size:12px;white-space:nowrap;"></div>
+    </div>
+    <div class="grid" id="toolGrid"></div>
+  </section>
+
+  <div class="footer">© 2026 ReportMedic</div>
 </div>
-<div id="countLabel" style="color:var(--muted); font-size:12px;"></div>
-</div>
-<div class="grid" id="toolGrid"></div>
-</section>
-<div class="footer">© 2026 ReportMedic</div>
-</div>
-<!-- Drawer -->
+
+<!-- ── DRAWER ── -->
 <div class="drawerOverlay" id="overlay"></div>
-<aside aria-label="All Tools Drawer" class="drawer" id="drawer">
-<div class="drawerHeader">
-<button class="btn" id="closeDrawerBtn">Close</button>
-<strong>All Tools (42)</strong>
-<div class="spacer"></div>
-</div>
-<div class="drawerList" id="drawerList"></div>
+<aside aria-label="All Tools" class="drawer" id="drawer">
+  <div class="drawerHeader">
+    <button class="btn" id="closeDrawerBtn">✕ Close</button>
+    <strong id="drawerTitle">All Tools (47)</strong>
+    <div class="spacer"></div>
+  </div>
+  <div class="drawerSearch">
+    <input id="drawerSearch" placeholder="Filter tools…"/>
+  </div>
+  <div class="drawerList" id="drawerList"></div>
 </aside>
+
 <div class="toast" id="toast"></div>
+
 <script>
+  /* ─────────────────────────────────────────
+     TOOL REGISTRY  (47 tools)
+  ───────────────────────────────────────── */
   const tools = [
-    { id:"compare-two-files-find-differences", name:"Report Compare", icon:"≋", cat:["Compare","Analyze"], desc:"Compare two reports and pinpoint exactly what changed.", tags:["diff","keys","columns"] },
-    { id:"reconcile-two-datasets-totals-dont-match", name:"Reconciliation", icon:"✓", cat:["Compare","Validate"], desc:"Match totals, quantify variance, and explain gaps.", tags:["variance","totals"] },
-    { id:"clean-dirty-data-file-online", name:"Data Cleaner", icon:"✦", cat:["Clean"], desc:"Trim, normalize, dedupe, fix dates, and standardize formats.", tags:["dedupe","normalize"] },
-    { id:"validate-data-schema-and-columns", name:"Schema Validator", icon:"⊢", cat:["Validate"], desc:"Validate required fields, types, ranges, and null rules.", tags:["rules","nulls"] },
-    { id:"find-data-outliers-and-anomalies", name:"Outlier Finder", icon:"⚡", cat:["Analyze","Validate"], desc:"Detect spikes, anomalies, and suspicious rows fast.", tags:["anomaly","spikes"] },
-    { id:"summarize-data-by-group-pivot-online", name:"Quick Pivot", icon:"▦", cat:["Analyze"], desc:"Instant pivot tables & group summaries (counts/sums/avg).", tags:["groupby","summary"] },
-    { id:"why-two-reports-dont-match", name:"Why Reports Don’t Match", icon:"✎", cat:["Analyze"], desc:"Turn mismatches into a clear, audit-ready explanation.", tags:["explain","audit"] },
-    { id:"compare-two-texts-side-by-side", name:"Text Compare", icon:"↔", cat:["Compare"], desc:"Compare two texts side-by-side and spot exactly what changed.", tags:["text","diff"] },
-    { id:"online-notepad-rich-text-editor", name:"Online Notepad", icon:"🗒", cat:["Write"], desc:"Notebooks + rich-text notes with find/replace (saved locally).", tags:["notes","richtext"] },
-    { id:"mask-sensitive-data-before-sharing", name:"PII Masker", icon:"◎", cat:["Clean","Export"], desc:"Mask sensitive fields for safe sharing.", tags:["pii","redact"] },
-    { id:"fix-export-formatting-errors", name:"Export Fixer", icon:"⇣", cat:["Export"], desc:"Repair export formatting and generate clean outputs.", tags:["csv","xlsx"] },
-    { id:"schedule-data-validation-checks", name:"Run Scheduler", icon:"⏱", cat:["Export","Validate"], desc:"Save a run config and repeat it on new files.", tags:["repeat","config"] },
-    { id:"markdown-to-html", name:"Markdown → HTML", icon:"⌁", cat:["Convert"], desc:"Convert Markdown into clean HTML.", tags:["md","html"] },
-    { id:"html-to-markdown", name:"HTML → Markdown", icon:"⌁", cat:["Convert"], desc:"Convert HTML into Markdown.", tags:["html","md"] },
-    { id:"markdown-to-pdf", name:"Markdown → PDF", icon:"⎙", cat:["Convert"], desc:"Turn Markdown into a printable PDF.", tags:["pdf","print"] },
-    { id:"markdown-to-word-docx", name:"Markdown → Word", icon:"W", cat:["Convert"], desc:"Convert Markdown into a .docx file.", tags:["docx","word"] },
-    { id:"word-docx-to-markdown", name:"Word → Markdown", icon:"W", cat:["Convert"], desc:"Convert a .docx file into Markdown.", tags:["docx","md"] },
-    { id:"compare-two-spreadsheets", name:"Spreadsheet Compare", icon:"▦", cat:["Compare"], desc:"Compare two spreadsheets (XLSX/CSV) to spot changed cells, added/removed rows and columns, and export a dif…", tags:["diff","audit"] },
-    { id:"check-date-timezone-drift", name:"Date & Timezone Drift Checker", icon:"🕒", cat:["Validate"], desc:"Detect day/hour shifts and timezone drift between two exports by comparing date distributions and likely of…", tags:["rules","checks"] },
-    { id:"auto-map-and-rename-columns", name:"Column Mapping Helper", icon:"⇄", cat:["Analyze"], desc:"Auto-suggest column mappings between two files and generate a renamed copy + mapping JSON so reports line up.", tags:["insights","debug"] },
-    { id:"null-missingness-heatmap", name:"Null & Missingness Heatmap", icon:"▧", cat:["Analyze"], desc:"See missingness per column and by segment with a quick heatmap, so you can spot broken fields before report…", tags:["insights","debug"] },
-    { id:"remove-image-background", name:"Background Remover", icon:"✂", cat:["Export"], desc:"Remove backgrounds and download transparent PNGs.", tags:["image","compress"] },
-    { id:"compress-pdf-reduce-file-size", name:"Compress PDF", icon:"🗜", cat:["Export"], desc:"Compress a PDF to reduce file size for email and upload portals. Runs locally in your browser.", tags:["pdf","tools"] },
-    { id:"csv-to-pdf", name:"CSV to PDF", icon:"⎙", cat:["Export"], desc:"Convert CSV/TSV exports to a clean, shareable PDF snapshot. Runs locally in your browser.", tags:["csv","pdf"] },
-    { id:"excel-to-pdf", name:"Excel to PDF", icon:"X", cat:["Export"], desc:"Convert Excel (XLSX/XLS) to a clean PDF snapshot you can share. Runs locally in your browser.", tags:["xlsx","pdf"] },
-    { id:"heic-heif-to-jpg-png", name:"HEIC → JPG/PNG", icon:"⧉", cat:["Export"], desc:"Convert iPhone HEIC photos to JPG/PNG (batch + ZIP).", tags:["convert","download"] },
-    { id:"id-photo-maker-passport-photo", name:"ID Photo Maker", icon:"🪪", cat:["Export"], desc:"Make passport-style photos and a 4×6 print sheet.", tags:["convert","download"] },
-    { id:"image-metadata-remover-exif-stripper", name:"Image Metadata Remover", icon:"⛭", cat:["Export"], desc:"Strip EXIF/GPS metadata from photos.", tags:["image","compress"] },
-    { id:"image-resize-compress", name:"Image Resize / Compress", icon:"🖼", cat:["Export"], desc:"Resize and compress images (JPG/PNG/WebP) locally in your browser. Choose dimensions, format, and quality,…", tags:["image","compress"] },
-    { id:"link-shortener-with-qr", name:"Link Shortener + QR", icon:"🔗", cat:["Export"], desc:"Shorten a link (optional) and generate a QR.", tags:["qr","code"] },
-    { id:"ocr-image-pdf-to-text", name:"OCR (Image/PDF → Text)", icon:"⌁", cat:["Export"], desc:"Extract text from scans and images locally.", tags:["image","compress"] },
-    { id:"office-file-viewer-excel-docx-pptx", name:"Office File Viewer", icon:"👁", cat:["Export"], desc:"View Excel (XLSX), Word (DOCX), and PowerPoint (PPTX) files directly in your browser. Runs locally.", tags:["xlsx","docx"] },
-    { id:"strong-password-generator", name:"Password Generator", icon:"🔑", cat:["Export"], desc:"Generate strong passwords with crypto randomness.", tags:["password","security"] },
-    { id:"pdf-organizer-merge-split-reorder", name:"PDF Organizer", icon:"🗂", cat:["Export"], desc:"Merge PDFs, split/extract page ranges, and reorder pages. Fast, private, and runs locally in your browser.", tags:["pdf","tools"] },
-    { id:"pdf-password-protect-unlock", name:"PDF Password Protect / Unlock", icon:"🔒", cat:["Export"], desc:"Add or remove PDF passwords (qpdf‑wasm).", tags:["pdf","docx"] },
-    { id:"pdf-redact-blackout-sensitive-info", name:"PDF Redactor", icon:"█", cat:["Export"], desc:"Black out sensitive areas and export a redacted PDF.", tags:["pdf","tools"] },
-    { id:"pdf-to-markdown", name:"PDF to Markdown", icon:"⌁", cat:["Export"], desc:"Convert a PDF into editable Markdown. Extracts selectable text locally in your browser (no upload).", tags:["md","pdf"] },
-    { id:"pdf-to-word-docx", name:"PDF to Word (DOCX)", icon:"W", cat:["Export"], desc:"Convert a PDF into an editable Word (.docx) by extracting text locally in your browser. Best for text-based…", tags:["pdf","docx"] },
-    { id:"pdf-to-excel-csv-extract-tables", name:"PDF → Excel/CSV", icon:"▦", cat:["Export"], desc:"Extract text tables to Excel/CSV with preview.", tags:["xlsx","pdf"] },
-    { id:"pdf-to-jpg-and-jpg-to-pdf", name:"PDF ⇄ Images", icon:"🖼", cat:["Export"], desc:"Convert PDF pages to images (JPG/PNG) and convert images to a single PDF. Runs locally in your browser.", tags:["pdf","jpg"] },
-    { id:"qr-code-generator-and-scanner", name:"QR Code Generator & Scanner", icon:"▣", cat:["Export"], desc:"Generate QR codes or scan them from camera/image.", tags:["qr","code"] },
-    { id:"sign-pdf-add-signature", name:"Sign PDF", icon:"✍", cat:["Export"], desc:"Draw a signature and stamp it onto a PDF.", tags:["pdf","tools"] },
+    // ── Compare
+    { id:"compare-two-files-find-differences",      name:"Report Compare",              icon:"≋",  cat:["Compare","Analyze"],         desc:"Compare two reports and pinpoint exactly what changed row by row.",          tags:["diff","keys","columns"] },
+    { id:"compare-two-spreadsheets",                name:"Spreadsheet Compare",          icon:"▦",  cat:["Compare"],                   desc:"Compare two spreadsheets (XLSX/CSV) to spot changed cells, added/removed rows and columns, and export a diff.",  tags:["diff","audit","xlsx"] },
+    { id:"compare-two-texts-side-by-side",          name:"Text Compare",                icon:"↔",  cat:["Compare"],                   desc:"Compare two texts side-by-side and spot exactly what changed.",             tags:["text","diff"] },
+    { id:"reconcile-two-datasets-totals-dont-match",name:"Reconciliation",              icon:"✓",  cat:["Compare","Validate"],         desc:"Match totals, quantify variance, and explain gaps between two datasets.",   tags:["variance","totals"] },
+
+    // ── Clean
+    { id:"clean-dirty-data-file-online",            name:"Data Cleaner",                icon:"✦",  cat:["Clean"],                     desc:"Trim, normalize, dedupe, fix dates, and standardize formats automatically.", tags:["dedupe","normalize"] },
+    { id:"mask-sensitive-data-before-sharing",      name:"PII Masker",                  icon:"◎",  cat:["Clean","Export"],             desc:"Detect and mask sensitive fields (emails, phones, IDs) for safe sharing.",  tags:["pii","redact","privacy"] },
+    { id:"fix-export-formatting-errors",            name:"Export Fixer",                icon:"⇣",  cat:["Clean","Export"],             desc:"Repair export formatting issues and generate clean, consistent outputs.",    tags:["csv","xlsx","repair"] },
+
+    // ── Validate
+    { id:"validate-data-schema-and-columns",        name:"Schema Validator",            icon:"⊢",  cat:["Validate"],                  desc:"Validate required fields, data types, ranges, and null rules against a schema.", tags:["rules","nulls","schema"] },
+    { id:"find-data-outliers-and-anomalies",        name:"Outlier Finder",              icon:"⚡", cat:["Analyze","Validate"],         desc:"Detect spikes, anomalies, and suspicious rows instantly.",                 tags:["anomaly","spikes","iqr"] },
+    { id:"check-date-timezone-drift",               name:"Date & Timezone Drift Checker",icon:"🕒",cat:["Validate"],                  desc:"Detect day/hour shifts and timezone drift between two exports by comparing date distributions.", tags:["timezone","dates","drift"] },
+    { id:"schedule-data-validation-checks",         name:"Run Scheduler",               icon:"⏱", cat:["Export","Validate"],          desc:"Save a run config and repeat validation checks on fresh files.",           tags:["repeat","config","automate"] },
+
+    // ── Analyze
+    { id:"summarize-data-by-group-pivot-online",    name:"Quick Pivot",                 icon:"▦",  cat:["Analyze"],                   desc:"Instant pivot tables & group summaries — counts, sums, and averages.",      tags:["groupby","summary","pivot"] },
+    { id:"null-missingness-heatmap",                name:"Null & Missingness Heatmap",  icon:"▧",  cat:["Analyze"],                   desc:"Visualize missingness per column and by segment so you spot broken fields before reporting.", tags:["nulls","heatmap","missing"] },
+    { id:"auto-map-and-rename-columns",             name:"Column Mapping Helper",        icon:"⇄",  cat:["Analyze"],                   desc:"Auto-suggest column mappings between two files and generate a renamed copy + mapping JSON.", tags:["mapping","rename","columns"] },
+    { id:"data-profiler-column-stats-groupby-charts",name:"Data Profiler",              icon:"📊", cat:["Analyze"],                   desc:"Profile any CSV/XLSX: column stats, groupby summaries, and distribution charts in one view.", tags:["profile","stats","charts","groupby"] },
+    { id:"phrase-occurrence-counter",               name:"Phrase Occurrence Counter",    icon:"🔢", cat:["Analyze"],                   desc:"Count how often specific words or phrases appear in any text or data file.", tags:["count","text","frequency","words"] },
+    { id:"query-csv-with-sql-online",               name:"SQL Query on CSV",            icon:"⌗",  cat:["Analyze"],                   desc:"Run SQL SELECT queries directly on CSV/XLSX files in your browser — no database needed.", tags:["sql","query","filter","csv"] },
+
+    // ── Convert
+    { id:"markdown-to-html",                        name:"Markdown → HTML",             icon:"⌁",  cat:["Convert"],                   desc:"Convert Markdown into clean, preview-ready HTML.",                         tags:["md","html","convert"] },
+    { id:"html-to-markdown",                        name:"HTML → Markdown",             icon:"⌁",  cat:["Convert"],                   desc:"Convert any HTML into plain Markdown.",                                    tags:["html","md","convert"] },
+    { id:"markdown-to-pdf",                         name:"Markdown → PDF",              icon:"⎙",  cat:["Convert"],                   desc:"Turn a Markdown document into a printable PDF.",                           tags:["pdf","print","convert"] },
+    { id:"markdown-to-word-docx",                   name:"Markdown → Word",             icon:"W",  cat:["Convert"],                   desc:"Convert Markdown into a fully formatted .docx Word file.",                 tags:["docx","word","convert"] },
+    { id:"word-docx-to-markdown",                   name:"Word → Markdown",             icon:"W",  cat:["Convert"],                   desc:"Convert a .docx file into clean, portable Markdown.",                      tags:["docx","md","convert"] },
+    { id:"pdf-to-word-docx",                        name:"PDF to Word (DOCX)",          icon:"W",  cat:["Convert","Export"],           desc:"Convert a PDF into an editable Word .docx by extracting text locally.",    tags:["pdf","docx","convert"] },
+    { id:"pdf-to-markdown",                         name:"PDF → Markdown",              icon:"⌁",  cat:["Convert","Export"],           desc:"Convert a PDF into editable Markdown. Extracts selectable text locally.",  tags:["md","pdf","convert"] },
+    { id:"heic-heif-to-jpg-png",                    name:"HEIC → JPG/PNG",              icon:"⧉",  cat:["Convert","Export"],           desc:"Convert iPhone HEIC photos to JPG/PNG in batch with ZIP download.",        tags:["heic","image","convert"] },
+
+    // ── Export / PDF
+    { id:"compress-pdf-reduce-file-size",           name:"Compress PDF",                icon:"🗜",  cat:["Export"],                    desc:"Compress a PDF to reduce file size for email and upload portals.",         tags:["pdf","compress","size"] },
+    { id:"pdf-organizer-merge-split-reorder",       name:"PDF Organizer",               icon:"🗂",  cat:["Export"],                    desc:"Merge PDFs, split/extract page ranges, and reorder pages — fully local.",   tags:["pdf","merge","split","reorder"] },
+    { id:"pdf-password-protect-unlock",             name:"PDF Password Protect / Unlock",icon:"🔒", cat:["Export"],                    desc:"Add or remove password protection on any PDF (qpdf-wasm).",               tags:["pdf","password","security"] },
+    { id:"pdf-redact-blackout-sensitive-info",      name:"PDF Redactor",                icon:"█",  cat:["Export"],                    desc:"Black out sensitive areas and export a permanently redacted PDF.",          tags:["pdf","redact","privacy"] },
+    { id:"pdf-to-excel-csv-extract-tables",         name:"PDF → Excel/CSV",             icon:"▦",  cat:["Export"],                    desc:"Extract tables from PDF pages to Excel or CSV with inline preview.",        tags:["xlsx","pdf","tables","extract"] },
+    { id:"pdf-to-jpg-and-jpg-to-pdf",               name:"PDF ⇄ Images",                icon:"🖼",  cat:["Export"],                    desc:"Convert PDF pages to JPG/PNG, or combine images into a single PDF.",       tags:["pdf","jpg","images","convert"] },
+    { id:"sign-pdf-add-signature",                  name:"Sign PDF",                    icon:"✍",  cat:["Export"],                    desc:"Draw or upload a signature and stamp it onto any PDF locally.",             tags:["pdf","signature","sign"] },
+    { id:"csv-to-pdf",                              name:"CSV to PDF",                  icon:"⎙",  cat:["Export"],                    desc:"Convert CSV/TSV exports to a clean, shareable PDF snapshot.",              tags:["csv","pdf","export"] },
+    { id:"excel-to-pdf",                            name:"Excel to PDF",                icon:"X",  cat:["Export"],                    desc:"Convert Excel (XLSX/XLS) to a clean PDF snapshot you can share.",          tags:["xlsx","pdf","export"] },
+    { id:"ocr-image-pdf-to-text",                   name:"OCR (Image/PDF → Text)",      icon:"⌁",  cat:["Export"],                    desc:"Extract text from scanned PDFs and images entirely in your browser.",      tags:["ocr","image","text","scan"] },
+    { id:"office-file-viewer-excel-docx-pptx",      name:"Office File Viewer",          icon:"👁",  cat:["Export"],                    desc:"View Excel, Word, and PowerPoint files directly in your browser.",         tags:["xlsx","docx","pptx","view"] },
+
+    // ── Export / Image
+    { id:"remove-image-background",                 name:"Background Remover",          icon:"✂",  cat:["Export"],                    desc:"Remove image backgrounds and download transparent PNGs locally.",          tags:["image","background","png"] },
+    { id:"image-resize-compress",                   name:"Image Resize / Compress",     icon:"🖼",  cat:["Export"],                    desc:"Resize and compress JPG/PNG/WebP images — choose dimensions, format, and quality.", tags:["image","resize","compress"] },
+    { id:"image-metadata-remover-exif-stripper",    name:"Image Metadata Remover",      icon:"⛭",  cat:["Export"],                    desc:"Strip EXIF/GPS metadata from photos before sharing.",                      tags:["image","exif","privacy"] },
+    { id:"id-photo-maker-passport-photo",           name:"ID Photo Maker",              icon:"🪪",  cat:["Export"],                    desc:"Make passport-style ID photos and generate a standard 4×6 print sheet.",   tags:["photo","passport","id"] },
+
+    // ── Export / Misc
+    { id:"link-shortener-with-qr",                  name:"Link Shortener + QR",         icon:"🔗",  cat:["Export"],                    desc:"Shorten a URL (optional) and instantly generate a QR code for it.",        tags:["qr","link","url","short"] },
+    { id:"qr-code-generator-and-scanner",           name:"QR Code Generator & Scanner", icon:"▣",  cat:["Export"],                    desc:"Generate QR codes for any text/URL, or scan QR codes from camera or image.", tags:["qr","scan","camera"] },
+    { id:"strong-password-generator",               name:"Password Generator",          icon:"🔑",  cat:["Export"],                    desc:"Generate cryptographically strong random passwords with one click.",        tags:["password","security","random"] },
+    { id:"online-notepad-rich-text-editor",         name:"Online Notepad",              icon:"🗒",  cat:["Export"],                    desc:"Rich-text notes with find/replace, formatting, and local saving.",          tags:["notes","richtext","editor"] },
+
+    // ── Video
+    { id:"video-resize-reduce-size",                name:"Video Resize / Compress",     icon:"🎬",  cat:["Video"],                     desc:"Reduce video file size and resize resolution — runs entirely in your browser.", tags:["video","compress","resize","mp4"] },
+    { id:"split-video-into-clips",                  name:"Split Video into Clips",      icon:"✂",  cat:["Video"],                     desc:"Split a video into multiple clips by time range or intervals, locally.",    tags:["video","split","clip","trim"] },
+    { id:"merge-videos-join-clips",                 name:"Merge Videos",                icon:"⧉",  cat:["Video"],                     desc:"Join multiple video clips into a single file — no upload, no server.",      tags:["video","merge","join","combine"] },
   ];
 
+  /* ─────────────────────────────────────────
+     ROUTING
+  ───────────────────────────────────────── */
   const routes = Object.fromEntries(tools.map(t => [t.id, `/tools/${t.id}.html`]));
 
-
-  const toolGrid = document.getElementById("toolGrid");
-  const drawerList = document.getElementById("drawerList");
-  const search = document.getElementById("search");
-  const clearBtn = document.getElementById("clearBtn");
-  const chips = document.getElementById("chips");
-  const countLabel = document.getElementById("countLabel");
-
-  const drawer = document.getElementById("drawer");
-  const overlay = document.getElementById("overlay");
-  const openDrawerBtn = document.getElementById("openDrawerBtn");
+  /* ─────────────────────────────────────────
+     DOM REFS
+  ───────────────────────────────────────── */
+  const toolGrid     = document.getElementById("toolGrid");
+  const drawerList   = document.getElementById("drawerList");
+  const drawerTitle  = document.getElementById("drawerTitle");
+  const search       = document.getElementById("search");
+  const clearBtn     = document.getElementById("clearBtn");
+  const chipsEl      = document.getElementById("chips");
+  const countLabel   = document.getElementById("countLabel");
+  const drawer       = document.getElementById("drawer");
+  const overlay      = document.getElementById("overlay");
+  const openDrawerBtn  = document.getElementById("openDrawerBtn");
   const closeDrawerBtn = document.getElementById("closeDrawerBtn");
-  const toast = document.getElementById("toast");
+  const drawerSearchEl = document.getElementById("drawerSearch");
+  const toast        = document.getElementById("toast");
 
   let activeCat = "All";
 
+  /* ─────────────────────────────────────────
+     TOAST
+  ───────────────────────────────────────── */
   function showToast(msg){
     toast.textContent = msg;
     toast.style.display = "block";
@@ -208,92 +283,152 @@
     showToast._t = setTimeout(()=> toast.style.display = "none", 1600);
   }
 
-  function openTool(t){
-    const url = routes[t.id] || "#";
-    if(url === "#"){ showToast("Missing route"); return; }
-    window.location.href = url;
-  }
-
-  function renderCards(list){
-    toolGrid.innerHTML = "";
-    list.forEach(t=>{
-      const el = document.createElement("a");
-      el.className = "card";
-      el.href = routes[t.id] || "#";
-      el.innerHTML = `
-        <div class="topline">
-          <div class="icon">${t.icon}</div>
-          <div class="title">${t.name}</div>
-        </div>
-        <div class="desc">${t.desc}</div>
-        <div class="meta">
-          ${t.cat.map(c=> `<span class="tag">${c}</span>`).join("")}
-          ${t.tags.slice(0,2).map(x=> `<span class="tag">${x}</span>`).join("")}
-        </div>
-      `;
-      toolGrid.appendChild(el);
-    });
-    countLabel.textContent = `Showing ${list.length} of ${tools.length}`;
-  }
-
-  function renderDrawer(){
-    drawerList.innerHTML = "";
-    tools.forEach(t=>{
-      const row = document.createElement("a");
-      row.className = "row";
-      row.href = routes[t.id] || "#";
-      row.innerHTML = `
-        <div class="icon" style="width:32px;height:32px;border-radius:12px;">${t.icon}</div>
-        <div>
-          <div class="rTitle">${t.name}</div>
-          <div class="rDesc">${t.desc}</div>
-        </div>
-      `;
-      drawerList.appendChild(row);
-    });
-  }
-
+  /* ─────────────────────────────────────────
+     FILTER
+  ───────────────────────────────────────── */
   function matches(t, q, cat){
     const qq = q.trim().toLowerCase();
-    const text = (t.name + " " + t.desc + " " + t.tags.join(" ") + " " + t.cat.join(" ")).toLowerCase();
+    const text = (t.name+" "+t.desc+" "+t.tags.join(" ")+" "+t.cat.join(" ")).toLowerCase();
     const qok = !qq || text.includes(qq);
     const cok = (cat === "All") || t.cat.includes(cat);
     return qok && cok;
   }
 
-  function applyFilters(){
-    const q = search.value || "";
-    const list = tools.filter(t => matches(t, q, activeCat));
-    renderCards(list);
+  /* ─────────────────────────────────────────
+     RENDER CARDS (main grid)
+  ───────────────────────────────────────── */
+  function renderCards(list){
+    toolGrid.innerHTML = "";
+    if(!list.length){
+      const el = document.createElement("div");
+      el.className = "noResults";
+      el.textContent = "No tools match — try a different keyword or category.";
+      toolGrid.appendChild(el);
+    } else {
+      list.forEach(t=>{
+        const el = document.createElement("a");
+        el.className = "card";
+        el.href = routes[t.id] || "#";
+        el.innerHTML = `
+          <div class="topline">
+            <div class="icon">${t.icon}</div>
+            <div class="title">${t.name}</div>
+          </div>
+          <div class="desc">${t.desc}</div>
+          <div class="meta">
+            ${t.cat.map(c=>`<span class="tag">${c}</span>`).join("")}
+            ${t.tags.slice(0,2).map(x=>`<span class="tag">${x}</span>`).join("")}
+          </div>`;
+        toolGrid.appendChild(el);
+      });
+    }
+    countLabel.textContent = `Showing ${list.length} of ${tools.length}`;
   }
 
-  chips.addEventListener("click", (e)=>{
+  /* ─────────────────────────────────────────
+     RENDER DRAWER (sidebar)
+  ───────────────────────────────────────── */
+  function renderDrawer(filter){
+    drawerList.innerHTML = "";
+    const q = (filter || "").trim().toLowerCase();
+
+    // Group by first category
+    const catOrder = ["Compare","Clean","Validate","Analyze","Convert","Export","Video"];
+    const groups = {};
+    catOrder.forEach(c => groups[c] = []);
+
+    tools.forEach(t => {
+      if(q){
+        const text = (t.name+" "+t.desc+" "+t.tags.join(" ")+" "+t.cat.join(" ")).toLowerCase();
+        if(!text.includes(q)) return;
+      }
+      const primaryCat = t.cat[0];
+      if(!groups[primaryCat]) groups[primaryCat] = [];
+      groups[primaryCat].push(t);
+    });
+
+    let total = 0;
+    catOrder.forEach(cat => {
+      if(!groups[cat] || !groups[cat].length) return;
+      total += groups[cat].length;
+
+      const label = document.createElement("div");
+      label.className = "sectionLabel";
+      label.textContent = cat;
+      drawerList.appendChild(label);
+
+      groups[cat].forEach(t => {
+        const row = document.createElement("a");
+        row.className = "row";
+        row.href = routes[t.id] || "#";
+        row.innerHTML = `
+          <div class="rIcon">${t.icon}</div>
+          <div>
+            <div class="rTitle">${t.name}</div>
+            <div class="rDesc">${t.desc}</div>
+            <div class="rCats">${t.cat.map(c=>`<span class="rCat">${c}</span>`).join("")}</div>
+          </div>`;
+        drawerList.appendChild(row);
+      });
+    });
+
+    if(!total){
+      const empty = document.createElement("div");
+      empty.className = "drawerEmpty";
+      empty.textContent = "No tools match.";
+      drawerList.appendChild(empty);
+    }
+    drawerTitle.textContent = q ? `Tools (${total} match)` : `All Tools (${tools.length})`;
+  }
+
+  /* ─────────────────────────────────────────
+     APPLY FILTERS (main grid)
+  ───────────────────────────────────────── */
+  function applyFilters(){
+    const q = search.value || "";
+    renderCards(tools.filter(t => matches(t, q, activeCat)));
+  }
+
+  /* ─────────────────────────────────────────
+     EVENTS
+  ───────────────────────────────────────── */
+  chipsEl.addEventListener("click", e => {
     const chip = e.target.closest(".chip");
     if(!chip) return;
     activeCat = chip.dataset.cat;
-    [...chips.querySelectorAll(".chip")].forEach(c=> c.classList.toggle("active", c.dataset.cat === activeCat));
+    [...chipsEl.querySelectorAll(".chip")].forEach(c => c.classList.toggle("active", c.dataset.cat === activeCat));
     applyFilters();
   });
 
   search.addEventListener("input", applyFilters);
-  clearBtn.onclick = ()=> { search.value=""; applyFilters(); search.focus(); };
+  clearBtn.onclick = () => { search.value = ""; applyFilters(); search.focus(); };
+
+  drawerSearchEl.addEventListener("input", () => renderDrawer(drawerSearchEl.value));
 
   function openDrawer(){
     overlay.style.display = "block";
     drawer.classList.add("open");
+    drawerSearchEl.value = "";
+    renderDrawer("");
+    drawerSearchEl.focus();
   }
   function closeDrawer(){
     overlay.style.display = "none";
     drawer.classList.remove("open");
   }
+
   openDrawerBtn.onclick = openDrawer;
   closeDrawerBtn.onclick = closeDrawer;
   overlay.onclick = closeDrawer;
   document.getElementById("quickAll").onclick = openDrawer;
+  document.addEventListener("keydown", e => { if(e.key === "Escape") closeDrawer(); });
 
-  renderDrawer();
+  /* ─────────────────────────────────────────
+     INIT
+  ───────────────────────────────────────── */
   renderCards(tools);
 </script>
+
 <footer class="rm-footer">
   <div class="rm-footer-inner">
     <div class="rm-footer-brand">
@@ -309,7 +444,6 @@
     <div class="rm-footer-meta">© 2026 ReportMedic</div>
   </div>
 </footer>
-
 
 <!--Start of Tawk.to Script-->
 <script type="text/javascript">
