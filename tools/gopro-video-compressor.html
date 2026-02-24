@@ -227,24 +227,30 @@
     .rm-pf-actions{display:flex;gap:8px;padding:10px 12px;border-top:1px solid rgba(255,255,255,.10);flex-shrink:0;}
     .rm-pf-reset{margin-right:auto;}
     .rm-pf-global-note{font-size:11px;color:var(--muted);margin-top:6px;}
+
+    /* ── Learn-more modal: 80 % height, scrollable body ── */
+    .rm-lm-dialog{max-height:80vh !important;display:flex !important;flex-direction:column !important;overflow:hidden !important;}
+    .rm-lm-body{overflow-y:auto !important;flex:1 !important;}
   </style>
 </head>
 
 <body class="tools-page">
   <header>
     <div class="nav">
-      <a class="logo" href="/" style="text-decoration:none;display:flex;align-items:center;gap:10px;">
-        <span style="font-size:22px">🎥</span>
-        <div style="font-weight:900;letter-spacing:-.5px;">GoPro Clip Studio</div>
+      <a class="logo" href="/" style="text-decoration:none;">
+        <div class="mark"></div>
+        <div>ReportMedic</div>
       </a>
       <div class="spacer"></div>
-      <span class="pill tiny" style="border-color:rgba(0,200,255,.4);background:rgba(0,200,255,.08);color:rgba(0,200,255,.9);">Hero · Max · Fusion</span>
+      <a class="btn" href="/">Home</a>
+      <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+      <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
     </div>
   </header>
 
   <div class="wrap">
     <div class="panel">
-      <h1>GoPro Video Compressor <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">How it works</a></h1>
+      <h1>GoPro Video Compressor <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
       <p class="sub">Downscale, rotate, trim and compress your GoPro Hero / Max / Fusion footage for sharing — runs entirely in your browser, nothing is ever uploaded.</p>
       <div class="tiny muted" id="humanFallback" style="margin-top:10px">🔒 100% private · no account needed · no file size limit (RAM permitting)</div>
       <div class="hr"></div>
@@ -259,7 +265,7 @@
         <span class="pill tiny" style="border-color:rgba(0,200,255,.25);background:rgba(0,144,212,.07);">🎬 Hero 13</span>
         <span class="pill tiny" style="border-color:rgba(0,200,255,.25);background:rgba(0,144,212,.07);">🌐 GoPro Max</span>
         <span class="pill tiny" style="border-color:rgba(0,200,255,.25);background:rgba(0,144,212,.07);">🎞 Fusion</span>
-        <span class="pill tiny" style="margin-left:auto;border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.08);color:rgba(34,197,94,.9);">🔒 100% local · no uploads</span>
+        <span class="pill tiny" style="border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.08);color:rgba(34,197,94,.9);">🔒 100% local · no uploads</span>
       </div>
 
       <div class="grid2">
@@ -648,31 +654,34 @@
       </div>
 
       <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
-        <span class="pill tiny" style="border-color:rgba(0,200,255,.3);background:rgba(0,200,255,.06);color:rgba(0,200,255,.8);">🔒 100% local · nothing uploaded</span>
-        <span class="pill tiny" style="border-color:rgba(0,200,212,.3);background:rgba(0,144,212,.06);">Works with Hero 9 · 10 · 11 · 12 · 13 · Max · Fusion</span>
+        <a class="btn primary" href="/#tools" rel="noopener">Back to Toolbox</a>
+        <a class="btn" href="/docs/contact.html" rel="noopener">Contact</a>
       </div>
     </div>
-    <div class="footer">GoPro Clip Studio — free, private, browser-based</div>
+    <div class="footer">© 2026 ReportMedic</div>
   </div>
 
   <footer class="rm-footer">
     <div class="rm-footer-inner">
       <div class="rm-footer-brand">
-        <div class="rm-footer-name">🎥 GoPro Clip Studio</div>
-        <div class="rm-footer-tag">Free GoPro video compressor — runs entirely in your browser.</div>
+        <div class="rm-footer-name">ReportMedic</div>
+        <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
       </div>
       <div class="rm-footer-links">
-        <span class="tiny muted">Supports Hero 9 · 10 · 11 · 12 · 13 · Max · Fusion</span>
+        <a href="/fix-my-report.html">Fix My Report</a>
+        <a href="/#tools">Tools</a>
+        <a href="/docs/">Docs</a>
+        <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
       </div>
-      <div class="rm-footer-meta">Powered by FFmpeg.wasm · No uploads · No account</div>
+      <div class="rm-footer-meta">© 2026 ReportMedic</div>
     </div>
   </footer>
 
-  <!-- How it works modal -->
+  <!-- Learn more modal -->
   <div class="rm-lm-backdrop" id="rmLM" aria-hidden="true">
     <div class="rm-lm-dialog" role="dialog" aria-modal="true" aria-label="GoPro Video Compressor">
       <div class="rm-lm-head">
-        <h2 class="rm-lm-title">🎥 GoPro Video Compressor — How it works</h2>
+        <h2 class="rm-lm-title">🎥 GoPro Video Compressor — Learn more</h2>
         <button class="rm-lm-close" type="button" data-rm-lm-close="rmLM" aria-label="Close">×</button>
       </div>
       <div class="rm-lm-body">
