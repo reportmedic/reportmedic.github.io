@@ -25,6 +25,70 @@
     .kv2{display:grid; grid-template-columns: 160px 1fr; gap:8px 12px; margin-top:10px;}
     .kv2 .k{color:rgba(255,255,255,.70); font-size:12px;}
     .kv2 .v{font-size:12px; overflow-wrap:anywhere;}
+  
+    /* Polished inputs */
+    .input{
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:rgba(255,255,255,.92);
+      padding:12px 12px;
+      min-height:44px;
+      line-height:1.3;
+      transition:background .15s ease, border-color .15s ease, outline-color .15s ease;
+    }
+    textarea.input{
+      min-height:96px;
+      padding:12px 12px;
+      resize:vertical;
+    }
+    .input::placeholder{
+      color:rgba(255,255,255,.46);
+    }
+    .input:focus{
+      outline:none;
+    }
+    .input:focus-visible{
+      border-color:rgba(124,247,212,.45);
+      outline:2px solid rgba(124,247,212,.25);
+      outline-offset:2px;
+      background:rgba(255,255,255,.08);
+    }
+    .input[readonly]{
+      opacity:.92;
+      background:rgba(255,255,255,.045);
+      border-color:rgba(255,255,255,.12);
+      cursor:text;
+    }
+    .input:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    /* File input polish */
+    input[type=file].input{
+      padding:10px 10px;
+    }
+    input[type=file].input::file-selector-button{
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.08);
+      color:rgba(255,255,255,.90);
+      padding:8px 10px;
+      border-radius:10px;
+      margin-right:10px;
+      cursor:pointer;
+    }
+    input[type=file].input::file-selector-button:hover{
+      background:rgba(255,255,255,.11);
+      border-color:rgba(255,255,255,.22);
+    }
+
+    /* Tighter label spacing so fields feel more premium */
+    label.tiny.muted{
+      display:block;
+      margin-bottom:6px;
+    }
+
   </style>
 </head>
 
