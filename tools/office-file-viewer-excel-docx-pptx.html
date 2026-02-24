@@ -22,6 +22,110 @@
   .rm-slide .rm-slideNo{font-weight:800; font-size:12px; color:var(--muted)}
   .rm-doc p{margin:0 0 10px}
   .rm-doc h1,.rm-doc h2,.rm-doc h3{margin:14px 0 10px}
+
+    :root{
+    --lm-radius: 18px;
+    --lm-border: rgba(255,255,255,.14);
+    --lm-text: rgba(240,246,255,.92);
+    --lm-muted: rgba(240,246,255,.68);
+  }
+
+  .rm-lm-link{
+    font-size:.82rem;
+    margin-left:.55rem;
+    text-decoration:underline;
+    text-underline-offset:3px;
+    opacity:.85;
+    white-space:nowrap;
+  }
+  .rm-lm-link:hover{opacity:1;}
+
+  .rm-lm-backdrop{
+    position:fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    z-index:9999;
+
+    background:
+      radial-gradient(1200px 600px at 20% 10%, rgba(120,170,255,.18), transparent 60%),
+      radial-gradient(900px 500px at 85% 20%, rgba(0,220,255,.10), transparent 55%),
+      rgba(2,6,23,.72);
+    backdrop-filter: blur(4px) saturate(1.2);
+    -webkit-backdrop-filter: blur(4px) saturate(1.2);
+  }
+  .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+
+  .rm-lm-dialog{
+    width:min(640px, 100%);
+    border-radius: var(--lm-radius);
+    overflow:hidden;
+
+    background: rgba(10, 14, 25, .3);
+    border: 1px solid var(--lm-border);
+    backdrop-filter: blur(14px) saturate(1.15);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    box-shadow: 0 20px 60px rgba(0,0,0,.45);
+
+    transform: translateY(10px) scale(.985);
+    opacity: 0;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+  .rm-lm-backdrop[aria-hidden="false"] .rm-lm-dialog{
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  .rm-lm-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.18);
+  }
+  .rm-lm-title{
+    margin:0;
+    font-size:1rem;
+    font-weight:800;
+    letter-spacing:-.01em;
+    color: var(--lm-text);
+  }
+  .rm-lm-close{
+    width:34px;
+    height:34px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    color: var(--lm-text);
+    cursor:pointer;
+    font-size:18px;
+    line-height:1;
+    display:grid;
+    place-items:center;
+  }
+  .rm-lm-close:hover{background: rgba(255,255,255,.10);}
+  .rm-lm-close:active{transform: translateY(1px);}
+
+  .rm-lm-body{
+    padding: 14px 16px 16px;
+    font-size:.95rem;
+    line-height:1.55;
+    color: var(--lm-muted);
+  }
+  .rm-lm-body h3{
+    margin:12px 0 6px;
+    font-size:.92rem;
+    font-weight:700;
+    color: var(--lm-text);
+    letter-spacing:-.01em;
+  }
+  .rm-lm-body ul{margin:6px 0 10px 18px;}
+  .rm-lm-body li{margin:5px 0;}
+  .rm-lm-body p{margin:.55rem 0;}
 </style>
 </head>
 <body>
@@ -106,8 +210,12 @@
         </ul>
       </div>
     </div>
-
+<div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+<a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+<a class="btn" href="/docs/contact.html">Contact</a>
+</div>
   </div>
+  <div class="footer">© 2026 ReportMedic</div>
 </div>
 
 <footer class="rm-footer">
