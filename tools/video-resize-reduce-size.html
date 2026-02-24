@@ -118,8 +118,11 @@
 
     /* ── Activity queue ── */
     .rm-activity{margin:10px 0 8px;}
-    .rm-qwrap{display:flex;flex-direction:column;gap:14px;}
-    .rm-qrow{display:grid;grid-template-columns:minmax(0,1fr) 140px minmax(0,1.1fr);gap:10px;align-items:center;padding:8px 10px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(255,255,255,.03);cursor:pointer;}
+    .rm-qwrap{display:flex;flex-direction:column;gap:8px;}
+    .rm-qrow{display:grid;grid-template-columns:minmax(0,1fr) 140px minmax(0,1.1fr);gap:10px;
+             align-items:center;padding:8px 10px;border:1px solid rgba(255,255,255,.14);
+             border-radius:12px;background:rgba(255,255,255,.03);cursor:pointer;
+            margin-bottom: 6px;}
     .rm-qrow:hover{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.045);}
     @media(max-width:860px){.rm-qrow{grid-template-columns:1fr;gap:8px;}}
     .rm-qname{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;}
