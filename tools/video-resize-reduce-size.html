@@ -186,6 +186,43 @@
 
     /* ── Batch badge ── */
     .rm-batch-badge{font-size:10px;padding:2px 7px;border-radius:999px;background:rgba(110,168,255,.12);color:rgba(110,168,255,.8);border:1px solid rgba(110,168,255,.2);margin-left:6px;}
+
+    /* ── Queue row: 4-col with gear ── */
+    .rm-qrow{grid-template-columns:minmax(0,1fr) 140px minmax(0,1.1fr) 34px!important;}
+    @media(max-width:860px){.rm-qrow{grid-template-columns:1fr 34px!important;}}
+
+    /* ── Gear button ── */
+    .rm-gear-btn{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:rgba(255,255,255,.5);cursor:pointer;font-size:14px;flex-shrink:0;position:relative;transition:all .12s;}
+    .rm-gear-btn:hover{border-color:rgba(124,247,212,.45);color:rgba(124,247,212,.9);background:rgba(124,247,212,.07);}
+    .rm-gear-btn.has-override{border-color:rgba(124,247,212,.5);color:rgba(124,247,212,.9);}
+    .rm-gear-btn .rm-override-dot{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:rgba(124,247,212,.9);display:none;}
+    .rm-gear-btn.has-override .rm-override-dot{display:block;}
+    .rm-gear-btn:disabled{opacity:.35;cursor:default;}
+
+    /* ── Queued state ── */
+    .rm-qstate.queued{border-color:rgba(148,163,184,.35);background:rgba(148,163,184,.08);}
+    .rm-qfill.queued{background:rgba(148,163,184,.4);}
+
+    /* ── Merge row ── */
+    .rm-merge-row{display:flex;align-items:center;gap:12px;margin-top:10px;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03);}
+    .rm-merge-row .rm-check-label{margin:0;}
+
+    /* ── Per-file override dialog ── */
+    #perFileDialog{width:min(680px,94vw);max-height:80vh;overflow:hidden;display:flex;flex-direction:column;}
+    .rm-dialog-scroll{overflow-y:auto;padding:12px;}
+    .rm-pf-section{margin-bottom:14px;}
+    .rm-pf-section-title{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+    .rm-pf-rot-group{display:flex;flex-wrap:wrap;gap:5px;}
+    .rm-pf-rot-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);cursor:pointer;font-size:16px;min-width:44px;transition:all .12s;line-height:1;}
+    .rm-pf-rot-btn .rm-rot-label{font-size:9px;font-weight:700;}
+    .rm-pf-rot-btn:hover{border-color:rgba(124,247,212,.4);color:var(--text);}
+    .rm-pf-rot-btn.active{border-color:rgba(124,247,212,.7);background:rgba(124,247,212,.1);color:rgba(124,247,212,.95);}
+    .rm-pf-tilt-row{display:grid;grid-template-columns:60px 1fr auto auto;gap:8px;align-items:center;margin-top:6px;}
+    .rm-pf-tilt-row input[type=range]{width:100%;min-width:0;}
+    .rm-pf-trim-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+    .rm-pf-actions{display:flex;gap:8px;padding:10px 12px;border-top:1px solid rgba(255,255,255,.10);flex-shrink:0;}
+    .rm-pf-reset{margin-right:auto;}
+    .rm-pf-global-note{font-size:11px;color:var(--muted);margin-top:6px;}
   </style>
 </head>
 
@@ -253,7 +290,14 @@
               <div class="rm-hint is-hide" id="batchHint" aria-live="polite"></div>
               <div style="margin-top:10px">
                 <div class="rm-progress" aria-label="batch progress"><div id="batchBar"></div></div>
-                <div class="tiny muted" style="margin-top:8px">Settings below (rotation, trim, codec, etc.) apply to <strong>all files</strong> in the batch.</div>
+                <div class="tiny muted" style="margin-top:8px">Settings below (rotation, trim, codec, etc.) apply to <strong>all files</strong> in the batch. Use the ⚙ icon per file to override.</div>
+              </div>
+              <div class="rm-merge-row">
+                <label class="rm-check-label">
+                  <input id="mergeOutput" type="checkbox" />
+                  Merge all outputs into one video when done
+                </label>
+                <span class="tiny muted" id="mergeNote" style="margin-left:auto">concatenates converted files in order</span>
               </div>
             </div>
           </div>
@@ -441,7 +485,7 @@
               </div>
               <div class="rm-field">
                 <div class="rm-label">Trim duration</div>
-                <span class="pill tiny" id="trimDurPill" style="display:flex;align-items:center;height:100%;box-sizing:border-box"><b>Duration:</b><span class="muted">–</span></span>
+                <input id="trimDurPill" class="input" type="text" readonly placeholder="–" style="font-variant-numeric:tabular-nums;cursor:default;color:var(--muted);" tabindex="-1" />
               </div>
             </div>
           </div>
@@ -468,7 +512,7 @@
           <div style="font-weight:800;margin-bottom:6px">Engine log</div>
           <div id="activity" class="rm-activity" aria-label="activity"></div>
 
-          <!-- Row dialog -->
+          <!-- Row dialog (log viewer) -->
           <dialog id="rowDialog" class="rm-dialog">
             <div class="rm-dialog-head">
               <div class="rm-dialog-title" id="rowDialogTitle">Details</div>
@@ -480,6 +524,81 @@
                 <summary class="tiny muted" style="cursor:pointer">Technical details</summary>
                 <pre class="rm-dialog-log" id="rowDialogLog"></pre>
               </details>
+            </div>
+          </dialog>
+
+          <!-- Per-file override dialog -->
+          <dialog id="perFileDialog" class="rm-dialog">
+            <div class="rm-dialog-head">
+              <div class="rm-dialog-title" id="pfTitle">Override settings</div>
+              <button class="rm-dialog-close" id="pfClose" type="button" aria-label="Close">✕</button>
+            </div>
+            <div class="rm-dialog-scroll">
+              <div class="rm-pf-global-note" id="pfGlobalNote">Using global settings as defaults. Changes here override only this file.</div>
+
+              <!-- Resolution -->
+              <div class="rm-pf-section" style="margin-top:12px">
+                <div class="rm-pf-section-title">Resolution</div>
+                <select id="pfMode" class="input">
+                  <option value="">(use global)</option>
+                  <option value="1080">1080p (1920×1080)</option>
+                  <option value="720">720p (1280×720)</option>
+                  <option value="480">480p (854×480)</option>
+                  <option value="2160">4K (3840×2160)</option>
+                  <option value="vertical916">Vertical 9:16 — Reels/TikTok</option>
+                  <option value="square11">Square 1:1 — Instagram</option>
+                  <option value="keep">Keep original</option>
+                </select>
+              </div>
+
+              <!-- Transform -->
+              <div class="rm-pf-section">
+                <div class="rm-pf-section-title">Rotation &amp; Flip</div>
+                <div class="rm-pf-rot-group">
+                  <button class="rm-pf-rot-btn" type="button" data-pfrot=""><span>⊙</span><span class="rm-rot-label">Global</span></button>
+                  <button class="rm-pf-rot-btn" type="button" data-pfrot="none"><span>⊙</span><span class="rm-rot-label">None</span></button>
+                  <button class="rm-pf-rot-btn" type="button" data-pfrot="cw90"><span>↻</span><span class="rm-rot-label">CW 90°</span></button>
+                  <button class="rm-pf-rot-btn" type="button" data-pfrot="ccw90"><span>↺</span><span class="rm-rot-label">CCW 90°</span></button>
+                  <button class="rm-pf-rot-btn" type="button" data-pfrot="180"><span>↕</span><span class="rm-rot-label">180°</span></button>
+                  <button class="rm-pf-rot-btn" type="button" data-pfrot="fliph"><span>↔</span><span class="rm-rot-label">Flip H</span></button>
+                  <button class="rm-pf-rot-btn" type="button" data-pfrot="flipv"><span>⇅</span><span class="rm-rot-label">Flip V</span></button>
+                </div>
+                <input type="hidden" id="pfRotation" value="" />
+                <div style="margin-top:10px">
+                  <div class="tiny muted" style="margin-bottom:5px">Tilt (±10°) — leave at 0 to use global</div>
+                  <div class="rm-pf-tilt-row">
+                    <span class="tiny muted">Tilt</span>
+                    <input id="pfTilt" type="range" min="-10" max="10" value="0" step="0.5" />
+                    <span class="pill tiny" id="pfTiltLbl" style="border-radius:6px;min-width:60px"><b>0°</b></span>
+                    <button class="btn" type="button" id="pfTiltReset" style="padding:4px 8px;font-size:11px">Reset</button>
+                  </div>
+                  <div class="tiny muted" style="margin-top:3px;opacity:.7">Note: tilt 0° here means "use global tilt value".</div>
+                </div>
+              </div>
+
+              <!-- Trim -->
+              <div class="rm-pf-section">
+                <div class="rm-pf-section-title">Trim</div>
+                <div class="rm-pf-trim-row">
+                  <div class="rm-field">
+                    <div class="rm-label">Start time</div>
+                    <input id="pfTrimStart" class="input" type="text" placeholder="0:00 or 30 (global)" autocomplete="off" spellcheck="false" />
+                  </div>
+                  <div class="rm-field">
+                    <div class="rm-label">End time</div>
+                    <input id="pfTrimEnd" class="input" type="text" placeholder="e.g. 1:30 (global)" autocomplete="off" spellcheck="false" />
+                  </div>
+                  <div class="rm-field">
+                    <div class="rm-label">Duration</div>
+                    <input id="pfTrimDur" class="input" type="text" readonly placeholder="–" style="cursor:default;color:var(--muted);" tabindex="-1" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="rm-pf-actions">
+              <button class="btn rm-pf-reset" type="button" id="pfResetBtn">Reset to global</button>
+              <button class="btn" type="button" id="pfCancelBtn">Cancel</button>
+              <button class="btn primary" type="button" id="pfSaveBtn">Save override</button>
             </div>
           </dialog>
 
@@ -667,6 +786,11 @@
     let batchStop     = false;
     let batchFilesOverride = null;
     let batchMode     = false;
+    // per-file overrides: Map<idx, {mode,rotation,tilt,trimStart,trimEnd}>
+    let perFileOverrides = new Map();
+    // blobs collected during batch for merge
+    let batchOutputBlobs = [];  // [{name, blob}]
+    let pfEditingIdx = -1;
 
     /* ═══════════════════════════════════════════
        COLLAPSIBLE SECTIONS
@@ -797,21 +921,23 @@
 
       if(!hasStart && !hasEnd){
         trimSummary.textContent = 'full clip';
-        trimDurPill.innerHTML = '<b>Duration:</b><span class="muted">–</span>';
+        trimDurPill.value = '';
+        trimDurPill.placeholder = '–';
         return;
       }
 
       if(hasStart && hasEnd && end > start){
         const dur = end - start;
         trimSummary.textContent = `${fmtSec(start)} → ${fmtSec(end)}`;
-        trimDurPill.innerHTML = `<b>Duration:</b><span class="muted">${fmtSec(dur)}</span>`;
+        trimDurPill.value = fmtSec(dur);
       } else if(hasStart){
         trimSummary.textContent = `from ${fmtSec(start)}`;
         const dur = currentDurSec > 0 && currentDurSec > start ? currentDurSec - start : 0;
-        trimDurPill.innerHTML = dur > 0 ? `<b>Duration:</b><span class="muted">~${fmtSec(dur)}</span>` : '<b>Duration:</b><span class="muted">–</span>';
+        trimDurPill.value = dur > 0 ? `~${fmtSec(dur)}` : '';
+        if(!trimDurPill.value) trimDurPill.placeholder = '–';
       } else {
         trimSummary.textContent = `until ${fmtSec(end)}`;
-        trimDurPill.innerHTML = `<b>Duration:</b><span class="muted">${fmtSec(end)}</span>`;
+        trimDurPill.value = fmtSec(end);
       }
     }
 
@@ -956,6 +1082,136 @@
       const hasFiles = getBatchFiles().length > 0;
       if(batchBtn) batchBtn.disabled = !hasFiles;
     }
+
+    /* ═══════════════════════════════════════════
+       PRE-POPULATE BATCH QUEUE (show files before convert)
+    ════════════════════════════════════════════ */
+    function populateBatchQueueFromFiles(files){
+      perFileOverrides = new Map();
+      batchOutputBlobs = [];
+      batchQueue = files.map((f, idx) => ({
+        key: idx, name: f.name, state: 'queued', pct: 0, log: '', durSec: 0
+      }));
+      // Fetch durations async so size shown in dialog later
+      files.forEach((f, idx) => {
+        getVideoDurationSec(f).then(d => {
+          if(batchQueue[idx]) batchQueue[idx].durSec = d;
+        });
+      });
+      renderActivity();
+    }
+
+    /* ═══════════════════════════════════════════
+       PER-FILE OVERRIDE DIALOG
+    ════════════════════════════════════════════ */
+    const perFileDialog = $('perFileDialog');
+    const pfClose       = $('pfClose');
+    const pfCancelBtn   = $('pfCancelBtn');
+    const pfSaveBtn     = $('pfSaveBtn');
+    const pfResetBtn    = $('pfResetBtn');
+    const pfTitle       = $('pfTitle');
+    const pfModeEl      = $('pfMode');
+    const pfRotationEl  = $('pfRotation');
+    const pfTiltEl      = $('pfTilt');
+    const pfTiltLbl     = $('pfTiltLbl');
+    const pfTiltReset   = $('pfTiltReset');
+    const pfTrimStartEl = $('pfTrimStart');
+    const pfTrimEndEl   = $('pfTrimEnd');
+    const pfTrimDurEl   = $('pfTrimDur');
+
+    document.querySelectorAll('.rm-pf-rot-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.rm-pf-rot-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        pfRotationEl.value = btn.dataset.pfrot;
+        updatePfTrimDur();
+      });
+    });
+    pfTiltEl.addEventListener('input', () => {
+      const v = parseFloat(pfTiltEl.value) || 0;
+      pfTiltLbl.innerHTML = `<b>${v > 0 ? '+' : ''}${v}°</b>`;
+    });
+    pfTiltReset.addEventListener('click', () => {
+      pfTiltEl.value = '0'; pfTiltLbl.innerHTML = '<b>0°</b>';
+    });
+    pfTrimStartEl.addEventListener('input', updatePfTrimDur);
+    pfTrimEndEl.addEventListener('input',   updatePfTrimDur);
+
+    function updatePfTrimDur(){
+      const start = parseTrimTime(pfTrimStartEl.value);
+      const end   = parseTrimTime(pfTrimEndEl.value);
+      const hasS  = pfTrimStartEl.value.trim() !== '';
+      const hasE  = pfTrimEndEl.value.trim() !== '';
+      if(!hasS && !hasE){ pfTrimDurEl.value=''; pfTrimDurEl.placeholder='–'; return; }
+      const fileDur = (pfEditingIdx >= 0 && batchQueue[pfEditingIdx]) ? (batchQueue[pfEditingIdx].durSec||0) : 0;
+      if(hasS && hasE && end > start){ pfTrimDurEl.value = fmtSec(end - start); }
+      else if(hasS){ const rem = fileDur > 0 ? Math.max(0, fileDur - start) : 0; pfTrimDurEl.value = rem > 0 ? `~${fmtSec(rem)}` : ''; }
+      else { pfTrimDurEl.value = fmtSec(end); }
+    }
+
+    function openPerFileDialog(idx){
+      if(idx < 0 || !batchQueue[idx]) return;
+      pfEditingIdx = idx;
+      const item = batchQueue[idx];
+      const ov = perFileOverrides.get(idx) || {};
+      pfTitle.textContent = shortName(item.name, 50);
+
+      // Fill fields from override or empty (= use global)
+      pfModeEl.value          = ov.mode      || '';
+      pfTrimStartEl.value     = ov.trimStart  || '';
+      pfTrimEndEl.value       = ov.trimEnd    || '';
+      pfTiltEl.value          = (ov.tilt !== undefined) ? ov.tilt : 0;
+      const tiltV = parseFloat(pfTiltEl.value)||0;
+      pfTiltLbl.innerHTML = `<b>${tiltV > 0?'+':''}${tiltV}°</b>`;
+
+      const rotVal = ov.rotation !== undefined ? ov.rotation : '';
+      pfRotationEl.value = rotVal;
+      document.querySelectorAll('.rm-pf-rot-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.pfrot === rotVal);
+      });
+
+      updatePfTrimDur();
+
+      try{ perFileDialog.showModal(); }catch(e){ perFileDialog.setAttribute('open',''); }
+    }
+
+    function closePerFileDialog(){
+      pfEditingIdx = -1;
+      try{ perFileDialog.close(); }catch(e){ perFileDialog.removeAttribute('open'); }
+    }
+
+    function hasOverride(ov){
+      if(!ov) return false;
+      return !!(ov.mode || ov.rotation!==undefined || ov.tilt || ov.trimStart || ov.trimEnd);
+    }
+
+    pfClose.addEventListener('click', closePerFileDialog);
+    pfCancelBtn.addEventListener('click', closePerFileDialog);
+    if(perFileDialog) perFileDialog.addEventListener('click', e => { if(e.target===perFileDialog) closePerFileDialog(); });
+
+    pfResetBtn.addEventListener('click', () => {
+      perFileOverrides.delete(pfEditingIdx);
+      closePerFileDialog();
+      renderActivity();
+    });
+
+    pfSaveBtn.addEventListener('click', () => {
+      if(pfEditingIdx < 0) return;
+      const ov = {};
+      if(pfModeEl.value)          ov.mode      = pfModeEl.value;
+      if(pfRotationEl.value !== '') ov.rotation = pfRotationEl.value;
+      const tiltV = parseFloat(pfTiltEl.value)||0;
+      if(Math.abs(tiltV) >= 0.1)  ov.tilt      = tiltV;
+      if(pfTrimStartEl.value.trim()) ov.trimStart = pfTrimStartEl.value.trim();
+      if(pfTrimEndEl.value.trim())   ov.trimEnd   = pfTrimEndEl.value.trim();
+      if(hasOverride(ov)){
+        perFileOverrides.set(pfEditingIdx, ov);
+      } else {
+        perFileOverrides.delete(pfEditingIdx);
+      }
+      closePerFileDialog();
+      renderActivity();
+    });
 
     function setCurrentFile(f){
       currentFile = f || null;
@@ -1163,21 +1419,44 @@
       if(!activity) return;
       if(!activeRun&&(!batchQueue||!batchQueue.length)){ activity.innerHTML=''; return; }
       const esc=escapeHtml; const sn=shortName; let html='';
+
       if(activeRun&&activeRun.mode==='single'&&activeRun.name){
         const safeName=esc(activeRun.name); const dispName=esc(sn(activeRun.name,42));
         const pct=Math.max(0,Math.min(100,Math.round(activeRun.pct||0)));
         const cls=isRunning?'processing':'done';
-        html+=`<div class="rm-qrow" data-idx="single" role="button" tabindex="0"><div class="rm-qname" title="${safeName}">${dispName}</div><div class="pill tiny rm-qstate ${cls}"><b>${isRunning?'processing':'completed'}:</b><span class="muted">${pct}%</span></div><div class="rm-qbar"><div class="rm-qfill ${cls}" style="width:${pct}%"></div></div></div>`;
+        html+=`<div class="rm-qrow" data-idx="single" role="button" tabindex="0"><div class="rm-qname" title="${safeName}">${dispName}</div><div class="pill tiny rm-qstate ${cls}"><b>${isRunning?'processing':'completed'}:</b><span class="muted">${pct}%</span></div><div class="rm-qbar"><div class="rm-qfill ${cls}" style="width:${pct}%"></div></div><div></div></div>`;
       }
+
       if(batchQueue&&batchQueue.length){
         for(let idx=0;idx<batchQueue.length;idx++){
-          const it=batchQueue[idx]; const safeName=esc(it.name||''); const dispName=esc(sn(it.name||'',42));
+          const it=batchQueue[idx]; const safeName=esc(it.name||''); const dispName=esc(sn(it.name||'',38));
           const pct=Math.max(0,Math.min(100,Math.round(it.pct||0)));
-          const stateLabel=it.state==='waiting'?'waiting':it.state==='processing'?'processing':it.state==='done'?'completed':it.state==='failed'?'failed':String(it.state||'waiting');
-          const fillClass=it.state==='processing'?'processing':it.state==='done'?'done':it.state==='failed'?'failed':'waiting';
-          html+=`<div class="rm-qrow" data-idx="${idx}" role="button" tabindex="0"><div class="rm-qname" title="${safeName}">${dispName}</div><div class="pill tiny rm-qstate ${fillClass}"><b>${esc(stateLabel)}:</b><span class="muted">${pct}%</span></div><div class="rm-qbar"><div class="rm-qfill ${fillClass}" style="width:${pct}%"></div></div></div>`;
+          const isQueued = it.state==='queued';
+
+          const stateLabel = isQueued ? 'queued'
+                           : it.state==='waiting'?'waiting'
+                           : it.state==='processing'?'processing'
+                           : it.state==='done'?'completed'
+                           : it.state==='failed'?'failed' : String(it.state||'queued');
+
+          const fillClass = isQueued ? 'queued'
+                          : it.state==='processing'?'processing'
+                          : it.state==='done'?'done'
+                          : it.state==='failed'?'failed':'waiting';
+
+          const hasOv = perFileOverrides.has(idx);
+          const gearDisabled = it.state==='processing' ? 'disabled' : '';
+          const gearTitle = hasOv ? 'Override active — click to edit' : 'Override settings for this file';
+
+          // Gear button — stopPropagation so it doesn't open log dialog
+          const gearBtn = `<button class="rm-gear-btn${hasOv?' has-override':''}" type="button" data-gear="${idx}" title="${gearTitle}" ${gearDisabled} aria-label="Override settings"><span>⚙</span><span class="rm-override-dot"></span></button>`;
+
+          // For queued/waiting rows: clicking row does nothing (no log yet); gear opens override
+          const rowRole = isQueued ? '' : `role="button" tabindex="0" data-idx="${idx}"`;
+          html+=`<div class="rm-qrow" ${rowRole}><div class="rm-qname" title="${safeName}">${dispName}</div><div class="pill tiny rm-qstate ${fillClass}"><b>${esc(stateLabel)}:</b><span class="muted">${isQueued?'pending':pct+'%'}</span></div><div class="rm-qbar"><div class="rm-qfill ${fillClass}" style="width:${isQueued?'0':pct}%"></div></div>${gearBtn}</div>`;
         }
       }
+
       activity.innerHTML=html;
     }
 
@@ -1233,8 +1512,26 @@
     if(rowDialogClose) rowDialogClose.addEventListener('click',closeRowDialog);
     if(rowDialog) rowDialog.addEventListener('click',e=>{ if(e.target===rowDialog) closeRowDialog(); });
     if(activity){
-      activity.addEventListener('click',e=>{ const row=e.target&&e.target.closest?e.target.closest('.rm-qrow'):null; if(!row) return; const key=row.getAttribute('data-idx'); if(key==null) return; openRowDialog(key); });
-      activity.addEventListener('keydown',e=>{ if(e.key!=='Enter'&&e.key!==' ') return; const row=e.target&&e.target.closest?e.target.closest('.rm-qrow'):null; if(!row) return; const key=row.getAttribute('data-idx'); if(key==null) return; e.preventDefault(); openRowDialog(key); });
+      activity.addEventListener('click',e=>{
+        // Gear button — open per-file override dialog
+        const gear = e.target&&e.target.closest?e.target.closest('[data-gear]'):null;
+        if(gear){ e.stopPropagation(); const idx=parseInt(gear.getAttribute('data-gear'),10); openPerFileDialog(idx); return; }
+        // Row click — open log dialog (only for non-queued rows)
+        const row=e.target&&e.target.closest?e.target.closest('.rm-qrow[data-idx]'):null;
+        if(!row) return;
+        const key=row.getAttribute('data-idx');
+        if(key==null) return;
+        openRowDialog(key);
+      });
+      activity.addEventListener('keydown',e=>{
+        if(e.key!=='Enter'&&e.key!==' ') return;
+        const row=e.target&&e.target.closest?e.target.closest('.rm-qrow[data-idx]'):null;
+        if(!row) return;
+        const key=row.getAttribute('data-idx');
+        if(key==null) return;
+        e.preventDefault();
+        openRowDialog(key);
+      });
     }
 
     /* ═══════════════════════════════════════════
@@ -1293,20 +1590,13 @@
     }
 
     /* ═══════════════════════════════════════════
-       FILTER BUILDERS
+       FILTER BUILDERS  (accept optional override values)
     ════════════════════════════════════════════ */
-    function scaleFilter(){
-      const m=mode.value;
+    function scaleFilter(modeOverride){
+      const m = modeOverride !== undefined ? modeOverride : mode.value;
       if(m==='keep') return null;
-
-      // Special crop+scale modes
-      if(m==='vertical916'){
-        // Scale to fill 1080×1920, then center-crop to exact 9:16
-        return 'scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920';
-      }
-      if(m==='square11'){
-        return 'scale=1080:1080:force_original_aspect_ratio=increase,crop=1080:1080';
-      }
+      if(m==='vertical916') return 'scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920';
+      if(m==='square11')    return 'scale=1080:1080:force_original_aspect_ratio=increase,crop=1080:1080';
 
       let W=null, H=null;
       if(m==='2160'){ W=3840; H=2160; }
@@ -1332,12 +1622,11 @@
         if(W&&H) return `scale=${W}:${H}`;
         return null;
       }
-      // Presets: never upscale
       return `scale=w=min(${W}\\,iw):h=min(${H}\\,ih):force_original_aspect_ratio=decrease`;
     }
 
-    function rotationFilter(){
-      const r = rotationEl.value;
+    function rotationFilter(rotOverride){
+      const r = rotOverride !== undefined ? rotOverride : rotationEl.value;
       if(r==='cw90')  return 'transpose=1';
       if(r==='ccw90') return 'transpose=2';
       if(r==='180')   return 'hflip,vflip';
@@ -1346,10 +1635,9 @@
       return null;
     }
 
-    function tiltFilter(){
-      const deg = parseFloat(tiltEl.value)||0;
+    function tiltFilter(tiltOverride){
+      const deg = tiltOverride !== undefined ? tiltOverride : (parseFloat(tiltEl.value)||0);
       if(Math.abs(deg)<0.1) return null;
-      // rotate filter: fill black edges
       return `rotate=${deg}*PI/180:fillcolor=black:ow=rotw(${deg}*PI/180):oh=roth(${deg}*PI/180)`;
     }
 
@@ -1412,27 +1700,34 @@
 
         const inputPath=`${mountPoint}/${file.name}`;
 
+        // ── Per-file overrides ──
+        const ov = (Number.isFinite(options.idx) && options.idx >= 0)
+                   ? (perFileOverrides.get(options.idx) || {}) : {};
+
         // ── Build args ──
         const args = [];
 
-        // Trim: put -ss before -i for speed
-        const trimStart = parseTrimTime(trimStartEl.value);
-        const trimEnd   = parseTrimTime(trimEndEl.value);
+        // Trim: per-file or global
+        const trimStartVal = ov.trimStart !== undefined ? ov.trimStart : trimStartEl.value;
+        const trimEndVal   = ov.trimEnd   !== undefined ? ov.trimEnd   : trimEndEl.value;
+        const trimStart = parseTrimTime(trimStartVal);
+        const trimEnd   = parseTrimTime(trimEndVal);
         if(trimStart > 0){ args.push('-ss', trimStart.toFixed(3)); }
 
         args.push('-i', inputPath);
 
-        // Trim end: use -t duration
         if(trimEnd > 0 && trimEnd > trimStart){
           args.push('-t', (trimEnd - trimStart).toFixed(3));
         }
 
-        // Video filter chain
+        // Video filter chain — use overrides where provided
         const vf = [];
-        const sf = scaleFilter();  if(sf) vf.push(sf);
-        const rf = rotationFilter(); if(rf) rf.split(',').forEach(f => vf.push(f));
-        const tf = tiltFilter();   if(tf) vf.push(tf);
-        const fpsv = fps.value;    if(fpsv!=='keep') vf.push(`fps=${fpsv}`);
+        const sf = scaleFilter(ov.mode || undefined);    if(sf) vf.push(sf);
+        const rf = rotationFilter(ov.rotation !== undefined ? ov.rotation : undefined);
+        if(rf) rf.split(',').forEach(f => vf.push(f));
+        const tf = tiltFilter(ov.tilt !== undefined ? ov.tilt : undefined);
+        if(tf) vf.push(tf);
+        const fpsv = fps.value; if(fpsv!=='keep') vf.push(`fps=${fpsv}`);
         if(vf.length) args.push('-vf', vf.join(','));
 
         // Codec
@@ -1477,7 +1772,11 @@
           lastUrl=URL.createObjectURL(outBlob);
           out.src=lastUrl; out.load(); dlBtn.disabled=false;
         }
-        if(options.autoSave) await saveBlob(blob,outName);
+        if(options.autoSave){
+          await saveBlob(blob, outName);
+          // Collect for potential merge
+          batchOutputBlobs.push({ name: outName, blob });
+        }
 
         setStatus('done','done');
         setSingleProgressIndeterminate(false); setSingleProgressPct(100);
@@ -1547,8 +1846,15 @@
       batchBtn.disabled=true; goBtn.disabled=true; dlBtn.disabled=true;
       let okCount=0, failCount=0;
       setBatchProgress(0); setBatchStatus(`running 0/${files.length}`);
+      batchOutputBlobs = [];
 
-      batchQueue=files.map((f,idx)=>({key:idx,name:f.name,state:'waiting',pct:0,log:'',durSec:0}));
+      // If queue was pre-populated (queued state), transition to waiting
+      // Otherwise populate fresh
+      if(!batchQueue.length || batchQueue[0].state !== 'queued'){
+        batchQueue=files.map((f,idx)=>({key:idx,name:f.name,state:'waiting',pct:0,log:'',durSec:0}));
+      } else {
+        batchQueue.forEach(it=>{ it.state='waiting'; it.pct=0; it.log=''; });
+      }
       activeRun={mode:'batch',idx:-1,name:'',pct:0};
       if(typeof renderActivity==='function') renderActivity();
 
@@ -1585,6 +1891,64 @@
       setBatchStatus(batchStop?`stopped: ${okCount} ok, ${failCount} failed`:`done: ${okCount} ok, ${failCount} failed`);
       stopBatchBtn.disabled=true; goBtn.disabled=!currentFile;
       updateBatchButtons();
+
+      // Merge if requested
+      const mergeEl = $('mergeOutput');
+      if(!batchStop && mergeEl && mergeEl.checked && batchOutputBlobs.length >= 2){
+        setBatchStatus('merging outputs…');
+        try{
+          await mergeOutputBlobs(batchOutputBlobs);
+          setBatchStatus(`done: ${okCount} ok — merged into 1 file`);
+        } catch(e){
+          appendLog('Merge failed: '+String(e));
+          setBatchStatus(`done: ${okCount} ok — merge failed (see log)`);
+        }
+      }
+    }
+
+    /* ═══════════════════════════════════════════
+       MERGE OUTPUT BLOBS
+    ════════════════════════════════════════════ */
+    async function mergeOutputBlobs(items){
+      // items: [{name, blob}]
+      appendLog(`Merging ${items.length} files…`);
+
+      // Write each blob into ffmpeg FS
+      const listLines = [];
+      for(let i=0; i<items.length; i++){
+        const fname = `merge_in_${i}.mp4`;
+        const buf   = await items[i].blob.arrayBuffer();
+        await ffmpeg.writeFile(fname, new Uint8Array(buf));
+        listLines.push(`file '${fname}'`);
+        appendLog(`  loaded ${items[i].name}`);
+      }
+
+      // Write concat list
+      const listStr = listLines.join('\n');
+      const enc = new TextEncoder();
+      await ffmpeg.writeFile('concat_list.txt', enc.encode(listStr));
+
+      // Run concat
+      const mergedFile = 'merged_output.mp4';
+      await ffmpeg.exec([
+        '-f','concat','-safe','0','-i','concat_list.txt',
+        '-c','copy','-movflags','+faststart',
+        mergedFile
+      ]);
+
+      const data = await ffmpeg.readFile(mergedFile);
+      const blob = new Blob([data.buffer], {type:'video/mp4'});
+      const mergedName = `batch_merged_${Date.now()}.mp4`;
+
+      await saveBlob(blob, mergedName);
+      appendLog(`Merge done → ${mergedName} (${humanBytes(blob.size)})`);
+
+      // Cleanup
+      for(let i=0; i<items.length; i++){
+        try{ await ffmpeg.deleteFile(`merge_in_${i}.mp4`); }catch(e){}
+      }
+      try{ await ffmpeg.deleteFile('concat_list.txt'); }catch(e){}
+      try{ await ffmpeg.deleteFile(mergedFile); }catch(e){}
     }
 
     /* ═══════════════════════════════════════════
@@ -1611,9 +1975,10 @@
         const vids=listVideosFromFolderFiles(files);
         batchFilesOverride=vids;
         setBatchMode(true); setSingleUIVisible(false);
-        setBatchStatus(vids.length?`${vids.length} files ready`:'pick a folder');
+        setBatchStatus(vids.length?`${vids.length} files detected — review below, then convert`:'pick a folder');
         setBatchProgress(0); updateBatchButtons();
-        appendLog(vids.length?`Batch files dropped: ${vids.length} video files.`:'No video files detected in drop.');
+        if(vids.length) populateBatchQueueFromFiles(vids);
+        appendLog(vids.length?`Batch files dropped: ${vids.length} video files queued.`:'No video files detected in drop.');
       });
     }
 
@@ -1626,8 +1991,10 @@
       batchFilesOverride=null; setBatchMode(true); setSingleUIVisible(false);
       const vids=getBatchFiles();
       if(!vids.length){ setBatchStatus('pick a folder'); setBatchProgress(0); updateBatchButtons(); return; }
-      setBatchStatus(`${vids.length} files ready`); setBatchProgress(0); updateBatchButtons();
-      appendLog(`Folder selected: ${vids.length} video files.`);
+      setBatchStatus(`${vids.length} files detected — review below, then convert`);
+      setBatchProgress(0); updateBatchButtons();
+      populateBatchQueueFromFiles(vids);
+      appendLog(`Folder selected: ${vids.length} video files queued.`);
     });
 
     pickOutDirBtn.addEventListener('click', pickOutputFolder);
