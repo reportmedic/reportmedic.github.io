@@ -27,8 +27,10 @@
   .rm-pageCard{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.03)}
   .rm-pageCard .rm-pageTop{display:flex; justify-content:space-between; align-items:center; gap:10px}
   .rm-pageCard .rm-pageNo{font-weight:700; font-size:12px; color:var(--muted)}
-  .rm-dropHint{font-size:12px; color:var(--muted); margin-top:8px}
-  .rm-grid2{display:grid; grid-template-columns: 1.2fr 1fr;}
+  .rm-dropHint{font-size:12px; color:var(--muted); margin-top:10px; min-height:18px;}
+  .rm-grid2{display:grid; grid-template-columns: 1.2fr 1fr; gap:16px; align-items:start;}
+.rm-grid2 > div{display:flex; flex-direction:column;}
+.rm-fieldBox{flex:1;}
   @media(max-width: 900px){ .rm-grid2{grid-template-columns: 1fr;} }
   .rm-status{min-height:20px}
   .rm-bad{color:#ffb4b4}
@@ -152,8 +154,8 @@
   .rm-lm-body p{margin:.55rem 0;}
 
   .rm-fieldLabel{display:block; margin-bottom:8px}
-  .rm-fieldBox{margin-top:10px}
-  .rm-topInputs .rm-fieldBox{margin-top:10px}
+  .rm-fieldBox{margin-top:0}
+  .rm-topInputs .rm-fieldBox{margin-top:0}
   .rm-dropzone{min-height:180px}
   .rm-dz-inner{min-height:180px; height:100%}
   .rm-check{display:flex; align-items:center; gap:6px; user-select:none}
@@ -171,7 +173,7 @@
   @media (max-width: 560px){ .grid4{grid-template-columns:1fr;} }
 
   .rm-topInputs{align-items:stretch}
-  .rm-panelhead{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:10px;}
+  .rm-panelhead{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:12px;}
   .rm-panelhead .rm-fieldLabel{margin:0}
   .rm-panelsub{margin-top:10px}
   .rm-topInputs .rm-fieldBox{margin-top:0}
@@ -181,6 +183,10 @@
   .rm-topInputs textarea.input{height:240px; resize:vertical}
 
   .rm-fieldLabel{display:block; margin-bottom:10px}
+
+:root{--rmPanelBoxH: 220px;}
+#phrases{min-height:var(--rmPanelBoxH); height:var(--rmPanelBoxH); resize:vertical;}
+.rm-dropzone, .rm-dropzoneBox, #dropZone{min-height:var(--rmPanelBoxH);}
 </style>
   
 
@@ -213,7 +219,20 @@
         <div class="tiny muted">Upload a TXT or CSV, or paste text below. Everything runs locally in your browser.</div>
       </div>
       <span class="pill tiny" id="meta"><b>SOURCE:</b><span class="muted">not loaded</span></span>
+    
+</div>
+
+    <div style="margin-top:16px">
+      <div class="rm-panelhead">
+        <label class="tiny muted rm-fieldLabel">Paste text (optional)</label>
+        <span class="tiny muted" id="pasteHint"> </span>
+      </div>
+      <div class="rm-fieldBox">
+        <textarea class="input" id="pasteText" style="width:100%; min-height:180px" placeholder="Paste text here…"></textarea>
+      </div>
+      <div class="rm-dropHint rm-panelsub">Pasting or typing updates results instantly. Uploading a file clears this box.</div>
     </div>
+
 
     <div class="hr2"></div>
 
@@ -915,7 +934,7 @@ function setKpis(phrasesN, totalMatches, rows, ms, sizeBytes, signals){
     await handleFileSelected(f);
   });
 
-  els.pasteText.addEventListener("input", ()=>{ handlePasteChanged(); });
+  if(els.pasteText) els.pasteText.addEventListener("input", ()=>{ handlePasteChanged(); });
 
   els.phrases.addEventListener("input", ()=>{ els.phrases.dataset.autoFilled = "0"; getPhrases(); scheduleAnalyze(); });
   ["optNouns","optMulti"].forEach(id=>{
