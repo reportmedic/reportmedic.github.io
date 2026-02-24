@@ -254,21 +254,21 @@ net 30"></textarea>
     <div class="hr2"></div>
 
     <div class="grid3" style="margin:0">
-      <div class="rm-kpi" title="Counts how many phrases are being tracked (typed in the box, or auto-detected).">
+      <div class="rm-kpi" data-tip="Total phrases counts how many unique targets you are measuring right now. If you typed phrases, each non empty line becomes one phrase. If you left the box blank, the tool auto detects the top items based on your options like nouns or multi word. This number helps you confirm your scope, so you do not accidentally analyze too few or too many phrases at once.">
         <div class="rm-kpi-top">
           <span class="rm-kpi-label">Total phrases</span>
         </div>
         <div class="rm-kpi-val" id="kpiPhrases">—</div>
         <div class="rm-kpi-sub tiny muted" id="kpiPhrasesSub">—</div>
       </div>
-      <div class="rm-kpi" title="Total number of occurrences found across all phrases (sum of counts).">
+      <div class="rm-kpi" data-tip="Total matches is the sum of all occurrences found across every phrase in the current run. If one phrase appears 10 times and another appears 5 times, Total matches becomes 15. This metric is useful for gauging repetition density, comparing drafts, and verifying that toggles like whole word or case sensitive are behaving as expected.">
         <div class="rm-kpi-top">
           <span class="rm-kpi-label">Total matches</span>
         </div>
         <div class="rm-kpi-val" id="kpiMatches">—</div>
         <div class="rm-kpi-sub tiny muted" id="kpiMatchesSub">—</div>
       </div>
-      <div class="rm-kpi" title="The phrase with the highest count. Subtext shows its count and share of total matches.">
+      <div class="rm-kpi" data-tip="Top phrase shows which single phrase has the highest occurrence count in your current text. The small line below shows its count and its share of the Total matches, which tells you how dominant that phrase is versus the rest. Use this to quickly spot overused terms, recurring names, or repeated boilerplate that might need editing.">
         <div class="rm-kpi-top">
           <span class="rm-kpi-label">Top phrase</span>
         </div>
@@ -331,6 +331,43 @@ net 30"></textarea>
 .rm-kpi-label{font-size:12px; color:var(--muted); font-weight:600}
 .rm-kpi-val{font-size:22px; font-weight:800; letter-spacing:.2px; margin-top:6px}
 .rm-kpi-sub{margin-top:2px}
+  /* KPI tooltips (instant, long-form) */
+  .rm-kpi{position:relative}
+  .rm-kpi[data-tip]::after{
+    content: attr(data-tip);
+    position:absolute;
+    left:12px;
+    right:12px;
+    bottom:calc(100% + 10px);
+    padding:12px 12px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.14);
+    background:rgba(20,24,30,.92);
+    color:rgba(255,255,255,.92);
+    font-size:12.5px;
+    line-height:1.35;
+    box-shadow:none;
+    opacity:0;
+    transform:translateY(0);
+    pointer-events:none;
+    z-index:50;
+  }
+  .rm-kpi[data-tip]::before{
+    content:'';
+    position:absolute;
+    left:26px;
+    bottom:calc(100% + 2px);
+    width:10px;
+    height:10px;
+    background:rgba(20,24,30,.92);
+    border-left:1px solid rgba(255,255,255,.14);
+    border-top:1px solid rgba(255,255,255,.14);
+    transform:rotate(45deg);
+    opacity:0;
+    pointer-events:none;
+    z-index:51;
+  }
+  .rm-kpi:hover::after, .rm-kpi:hover::before{opacity:1}
 .tbl{border-collapse:collapse}
 .tbl th,.tbl td{padding:10px 10px; border-bottom:1px solid rgba(255,255,255,.08); vertical-align:top}
 </style>
