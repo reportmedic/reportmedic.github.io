@@ -715,17 +715,24 @@ net 30"></textarea>
     const t = String(text || "");
     const lower = t.toLowerCase();
 
-    const wordTokens = lower.match(/[a-z0-9']+/g) || [];
+    // word tokens for most metrics
+    const wordTokens = lower.match(/[a-z0-9\']+/g) || [];
+    const totalWords = wordTokens.length;
+    const uniqWords = new Set(wordTokens).size;
+    const uniqueRatio = totalWords ? (uniqWords / totalWords) : 0;
+
+    // long words: > 8 letters
     let longWords = 0;
     for(const w of wordTokens){
       if(w.length > 8) longWords++;
     }
 
+    // common attribution verbs
     const attribList = [
       "said","says","say","told","tell","tells","added","add","adds","stated","state","states",
       "wrote","write","writes","reported","report","reports","noted","note","notes","explained","explain","explains",
       "argued","argue","argues","warned","warn","warns","claimed","claim","claims","announced","announce","announces",
-      "tweeted","tweet","tweets","posted","post","posts"
+      "tweeted","tweet","tweets","posted","post","posts","confirmed","confirm","confirms","denied","deny","denies"
     ];
     const attribSet = new Set(attribList);
     let attrib = 0;
@@ -733,25 +740,46 @@ net 30"></textarea>
       if(attribSet.has(w)) attrib++;
     }
 
+    // numeric mentions
     const numberMatches = t.match(/\b\d+(?:[.,]\d+)?%?\b/g) || [];
     const numbers = numberMatches.length;
 
-    const starters = new Map();
-    const rawSentences = t.split(/[.!?]+[\s\n]+|\n+/g);
+    // sentences
+    const rawSentences = t
+      .replace(/\s+/g, " ")
+      .split(/(?<=[.!?])\s+|\n+/g);
+    const sentences = [];
     for(const s of rawSentences){
       const trimmed = (s || "").trim();
-      if(!trimmed) continue;
-      const first = trimmed.match(/[A-Za-z0-9']+/);
-      if(!first) continue;
-      const w = first[0].toLowerCase();
-      starters.set(w, (starters.get(w) || 0) + 1);
+      if(trimmed) sentences.push(trimmed);
     }
-    let topStarter = "—";
+    const sentenceCount = sentences.length || 0;
+
+    // starters + sentence lengths
+    const starters = new Map();
+    let totalSentenceWords = 0;
+    let longSentences = 0;
+
+    for(const s of sentences){
+      const first = s.match(/[A-Za-z0-9\']+/);
+      if(first){
+        const w0 = first[0].toLowerCase();
+        starters.set(w0, (starters.get(w0) || 0) + 1);
+      }
+      const w = (s.toLowerCase().match(/[a-z0-9\']+/g) || []);
+      totalSentenceWords += w.length;
+      if(w.length > 20) longSentences++;
+    }
+
+    let topStarter = "n/a";
     let topStarterN = 0;
     for(const [k,v] of starters.entries()){
       if(v > topStarterN){ topStarterN = v; topStarter = k; }
     }
 
+    const avgSentenceLen = sentenceCount ? (totalSentenceWords / sentenceCount) : 0;
+
+    // overused word (ignoring short tokens + stop words)
     const stop = new Set([
       "the","and","for","with","that","this","from","have","has","had","are","was","were","you","your","but","not","they","their","them",
       "into","over","under","about","after","before","between","because","also","just","like","than","then","there","here","what","when","where",
@@ -764,14 +792,14 @@ net 30"></textarea>
       if(stop.has(w)) continue;
       freq.set(w, (freq.get(w) || 0) + 1);
     }
-    let overused = "—";
+    let overused = "n/a";
     let overusedN = 0;
     for(const [k,v] of freq.entries()){
       if(v > overusedN){ overusedN = v; overused = k; }
     }
 
+    // tone heuristic (10 types)
     const toneLex = {
-      neutral: [],
       confident: ["definitely","clearly","undeniably","certainly","always","never","must","will","proves","shows"],
       uncertain: ["maybe","perhaps","likely","unlikely","appears","seems","reportedly","allegedly","suggests","could","might"],
       urgent: ["urgent","immediately","now","critical","breaking","alert","emergency","deadline","asap","quickly"],
@@ -780,12 +808,12 @@ net 30"></textarea>
       analytical: ["data","evidence","analysis","trend","percent","rate","model","estimate","study","report","according"],
       informal: ["kind","sort","okay","yeah","lol","really","stuff","gonna","wanna","guys"],
       formal: ["therefore","however","moreover","nevertheless","furthermore","respectively","hereby","whereas","pursuant"],
-      empathetic: ["feel","felt","support","understand","care","help","safe","reassure","hope","worry"]
+      empathetic: ["feel","felt","support","understand","care","help","safe","reassure","hope","worry"],
+      critical: ["problem","issue","flaw","mistake","wrong","weak","concern","doubt","question","suspect"]
     };
 
     const toneScores = new Map();
     for(const [tone, words] of Object.entries(toneLex)){
-      if(!words.length) continue;
       let sc = 0;
       for(const w of wordTokens){
         if(words.includes(w)) sc++;
@@ -797,6 +825,71 @@ net 30"></textarea>
     for(const [k,v] of toneScores.entries()){
       if(v > toneScore){ toneScore = v; tone = k; }
     }
+    if(toneScore === 0) tone = "neutral";
+
+    // transition words (common connectors)
+    const transitionSet = new Set([
+      "however","therefore","moreover","meanwhile","furthermore","nevertheless","instead","otherwise","also","because",
+      "although","though","while","yet","still","thus","hence","then","so"
+    ]);
+    let transitions = 0;
+    for(const w of wordTokens){
+      if(transitionSet.has(w)) transitions++;
+    }
+
+    // paragraph distribution: short < 40 words, medium 40-100, long > 100
+    const paras = t.split(/\n\s*\n+/g).map(x=>x.trim()).filter(Boolean);
+    let paraCount = paras.length;
+    let pShort = 0, pMed = 0, pLong = 0;
+    for(const p of paras){
+      const wc = (p.toLowerCase().match(/[a-z0-9\']+/g) || []).length;
+      if(wc < 40) pShort++;
+      else if(wc <= 100) pMed++;
+      else pLong++;
+    }
+
+    // punctuation counts
+    const questions = (t.match(/\?/g) || []).length;
+    const exclaims = (t.match(/!/g) || []).length;
+
+    // quotes count (straight and curly)
+    const quotes = (t.match(/["“”'‘’]/g) || []).length;
+
+    // named entities (simple heuristic): distinct capitalized words not in a small ignore list
+    const ignoreCaps = new Set(["The","A","An","And","But","Or","If","In","On","At","For","From","With","To","Of","As","It","This","That","These","Those","I","We","He","She","They"]);
+    const capMatches = t.match(/\b[A-Z][a-z]{2,}\b/g) || [];
+    const ents = new Set();
+    for(const w of capMatches){
+      if(ignoreCaps.has(w)) continue;
+      ents.add(w);
+    }
+    const namedEntities = ents.size;
+
+    // syllable estimate for Flesch
+    function syllables(word){
+      const w = String(word || "").toLowerCase().replace(/[^a-z]/g, "");
+      if(!w) return 0;
+      // very small words
+      if(w.length <= 3) return 1;
+      // count vowel groups
+      let s = (w.match(/[aeiouy]+/g) || []).length;
+      // silent e
+      if(w.endsWith("e")) s = Math.max(1, s - 1);
+      // -le ending (table, bottle) often adds a syllable
+      if(w.endsWith("le") && w.length > 2 && !/[aeiouy]/.test(w[w.length-3])) s += 1;
+      return Math.max(1, s);
+    }
+
+    let syllableTotal = 0;
+    for(const w of wordTokens){
+      syllableTotal += syllables(w);
+    }
+
+    const ASL = sentenceCount ? (totalWords / sentenceCount) : 0; // average sentence length
+    const ASW = totalWords ? (syllableTotal / totalWords) : 0;   // average syllables per word
+    const flesch = (totalWords && sentenceCount) ? (206.835 - 1.015 * ASL - 84.6 * ASW) : 0;
+
+    const readMinutes = totalWords ? (totalWords / 200) : 0; // 200 wpm baseline
 
     return {
       longWords,
@@ -807,7 +900,23 @@ net 30"></textarea>
       overused,
       overusedN,
       tone,
-      toneScore
+      toneScore,
+      totalWords,
+      uniqWords,
+      uniqueRatio,
+      flesch,
+      readMinutes,
+      avgSentenceLen,
+      longSentences,
+      transitions,
+      paraCount,
+      pShort,
+      pMed,
+      pLong,
+      questions,
+      exclaims,
+      quotes,
+      namedEntities
     };
   }
 function setKpis(phrasesN, totalMatches, rows, ms, sizeBytes, signals){
