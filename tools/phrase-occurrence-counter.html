@@ -150,6 +150,15 @@
   .rm-lm-body ul{margin:6px 0 10px 18px;}
   .rm-lm-body li{margin:5px 0;}
   .rm-lm-body p{margin:.55rem 0;}
+
+  .rm-fieldLabel{display:block; margin-bottom:8px}
+  .rm-fieldBox{margin-top:10px}
+  .rm-topInputs .rm-fieldBox{margin-top:10px}
+  .rm-dropzone{min-height:180px}
+  .rm-dz-inner{min-height:180px; height:100%}
+  .rm-check{display:flex; align-items:center; gap:6px; user-select:none}
+  .rm-check input{accent-color: var(--rm-accent)}
+
 </style>
   
 
@@ -186,28 +195,39 @@
 
     <div class="hr2"></div>
 
-    <div class="rm-grid2" style="gap:14px; align-items:start">
+    <div class="rm-grid2 rm-topInputs" style="gap:14px; align-items:stretch">
   <div>
-    <label class="tiny muted">Upload TXT or CSV (optional)</label>
-    <input class="input" id="fileInput" type="file" accept=".txt,.csv,text/plain,text/csv" />
+    <label class="tiny muted rm-fieldLabel">Upload TXT or CSV (optional)</label>
+    <div class="rm-fieldBox">
+      <input class="input" id="fileInput" type="file" accept=".txt,.csv,text/plain,text/csv" />
+    </div>
     <div class="rm-dropHint">Tip: This runs locally in your browser. Nothing is uploaded.</div>
   </div>
 
   <div>
-    <div class="row" style="justify-content:space-between; align-items:baseline">
-      <label class="tiny muted">Phrases (optional, one per line)</label>
-      <span class="tiny muted" id="phraseCountHint">0 phrases</span>
+    <div class="row" style="justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap">
+      <label class="tiny muted rm-fieldLabel">Phrases (optional, one per line)</label>
+      <div class="row" style="gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end">
+        <span class="tiny muted" id="phraseCountHint">0 phrases</span>
+        <label class="rm-check tiny muted"><input id="optNouns" type="checkbox"/> Nouns</label>
+        <label class="rm-check tiny muted"><input id="optMulti" type="checkbox"/> Multi-word</label>
+      </div>
     </div>
-    <textarea class="input" id="phrases" style="min-height:140px; width:100%; resize:vertical" placeholder="invoice
+    <div class="rm-fieldBox">
+      <textarea class="input" id="phrases" style="min-height:180px; width:100%; resize:vertical" placeholder="invoice
 late fee
 net 30"></textarea>
-    <div class="rm-dropHint">Leave this blank to auto-detect the most frequent words.</div>
+    </div>
+    <div class="rm-dropHint">Leave this blank to auto-detect. Use the toggles to focus auto-detection on nouns or multi-word phrases.</div>
   </div>
 </div>
+</div>
 
-<div style="margin-top:14px">
-  <label class="tiny muted">Paste text (optional)</label>
-  <textarea class="input" id="pasteText" style="min-height:160px; width:100%; resize:vertical" placeholder="Paste text here. This will override the uploaded file."></textarea>
+<div class="rm-pasteBlock" style="margin-top:14px">
+  <label class="tiny muted rm-fieldLabel">Paste text (optional)</label>
+  <div class="rm-fieldBox">
+    <textarea class="input" id="pasteText" style="min-height:160px; width:100%; resize:vertical" placeholder="Paste text here. This will override the uploaded file."></textarea>
+  </div>
   <div class="rm-dropHint">As you paste, results update instantly.</div>
 </div>
 
@@ -327,6 +347,8 @@ net 30"></textarea>
     pasteText: $("pasteText"),
     phrases: $("phrases"),
     phraseCountHint: $("phraseCountHint"),
+    optNouns: $("optNouns"),
+    optMulti: $("optMulti"),
     caseSensitive: $("caseSensitive"),
     overlap: $("overlap"),
     wholeWord: $("wholeWord"),
@@ -585,7 +607,7 @@ net 30"></textarea>
     clearResultsOnly();
   }
 
-  els.phrases.addEventListener("input", ()=>{ getPhrases(); });
+  els.phrases.addEventListener("input", ()=>{ els.phrases.dataset.autoFilled = "0"; getPhrases(); });
 
   const debounce = (fn, wait=180)=>{
     let t;
@@ -657,30 +679,134 @@ net 30"></textarea>
 
   els.pasteText.addEventListener("input", ()=>{ handlePasteChanged(); });
 
-  els.phrases.addEventListener("input", ()=>{ getPhrases(); scheduleAnalyze(); });
+  els.phrases.addEventListener("input", ()=>{ els.phrases.dataset.autoFilled = "0"; getPhrases(); scheduleAnalyze(); });
+  ["optNouns","optMulti"].forEach(id=>{
+    const el = $(id);
+    if(el) el.addEventListener("change", ()=>{ scheduleAnalyze(); });
+  });
   ["caseSensitive","overlap","wholeWord"].forEach(id=>{
     const el = $(id);
     if(el) el.addEventListener("change", ()=> scheduleAnalyze());
   });
 
-  function autoDetectPhrases(text, limit){
-    const s = String(text || "");
-    // words only, keep digits inside words, drop very short tokens
-    const tokens = (s.match(/[A-Za-z0-9]+/g) || []).map(t=>t.toLowerCase()).filter(t=>t.length>=3);
+  function autoDetectPhrases(text, limit, mode){
+    const raw = String(text || "");
+    const lim = limit || 12;
+    const m = mode || {};
+    const wantNouns = !!m.nouns;
+    const wantMulti = !!m.multi;
+
     const stop = new Set([
       "the","and","for","with","that","this","you","your","are","was","were","from","have","has","had",
       "not","but","all","can","will","just","into","out","too","its","it's","they","them","then","than",
       "she","him","her","his","our","ours","their","there","here","when","what","which","who","how",
       "a","an","to","of","in","on","at","as","is","it","be","by","or"
     ]);
-    const freq = new Map();
-    for(const t of tokens){
-      if(stop.has(t)) continue;
-      freq.set(t, (freq.get(t)||0)+1);
+
+    function normToken(t){
+      const s = String(t || "");
+      return m.caseSensitive ? s : s.toLowerCase();
     }
-    const sorted = [...freq.entries()].sort((a,b)=>b[1]-a[1]).slice(0, limit||12).map(x=>x[0]);
-    return sorted;
+
+    const tokensOriginal = (raw.match(/[A-Za-z][A-Za-z0-9']*/g) || []);
+    const tokens = tokensOriginal.map(normToken).filter(t=>t.length>=3);
+
+    function topFromFreq(freqMap){
+      return [...freqMap.entries()]
+        .sort((a,b)=> (b[1]-a[1]) || (String(a[0]).length-String(b[0]).length))
+        .slice(0, lim)
+        .map(x=>x[0]);
+    }
+
+    function detectNouns(){
+      const nounSet = new Set();
+
+      // Proper-noun style: appears capitalized somewhere
+      const caps = (raw.match(/\b[A-Z][a-z][A-Za-z0-9']*\b/g) || []);
+      for(const w of caps){
+        const k = normToken(w);
+        if(k.length>=3 && !stop.has(k.toLowerCase())) nounSet.add(k);
+      }
+
+      // Determiner pattern: "the X", "a X", "my X" etc
+      const detRe = /\b(?:the|a|an|this|that|these|those|my|your|his|her|their|our)\s+([A-Za-z][A-Za-z0-9']{2,})\b/gi;
+      let mm;
+      while((mm = detRe.exec(raw)) !== null){
+        const k = normToken(mm[1]);
+        if(k.length>=3 && !stop.has(k.toLowerCase())) nounSet.add(k);
+      }
+
+      const freq = new Map();
+      for(const t of tokens){
+        const base = m.caseSensitive ? t : t.toLowerCase();
+        if(stop.has(base)) continue;
+        if(!nounSet.has(t)) continue;
+        freq.set(t, (freq.get(t)||0)+1);
+      }
+      return topFromFreq(freq);
+    }
+
+    function detectMulti(){
+      const cleaned = tokens.map(t=>t.trim()).filter(Boolean);
+      const freq = new Map();
+
+      for(let n=2; n<=4; n++){
+        for(let i=0; i<=cleaned.length-n; i++){
+          const gram = cleaned.slice(i, i+n);
+          const low = gram.map(x=>m.caseSensitive ? x : x.toLowerCase());
+
+          // skip grams that are entirely stopwords
+          if(low.every(x=>stop.has(x))) continue;
+
+          const key = gram.join(" ");
+          freq.set(key, (freq.get(key)||0)+1);
+        }
+      }
+
+      return [...freq.entries()]
+        .filter(([k,v])=>v>=2)
+        .sort((a,b)=> (b[1]-a[1]) || (b[0].length-a[0].length))
+        .slice(0, lim)
+        .map(x=>x[0]);
+    }
+
+    function detectWords(){
+      const freq = new Map();
+      for(const t of tokens){
+        const base = m.caseSensitive ? t : t.toLowerCase();
+        if(stop.has(base)) continue;
+        freq.set(t, (freq.get(t)||0)+1);
+      }
+      return topFromFreq(freq);
+    }
+
+    if(wantNouns || wantMulti){
+      const out = [];
+      const seen = new Set();
+
+      const addList = (arr)=>{
+        for(const x of arr){
+          const k = String(x);
+          if(seen.has(k)) continue;
+          seen.add(k);
+          out.push(k);
+          if(out.length >= lim) break;
+        }
+      };
+
+      // If both are selected, we mix them: nouns first, then multi-word (fills remaining).
+      if(wantNouns) addList(detectNouns());
+      if(out.length < lim && wantMulti) addList(detectMulti());
+
+      // Fallback if filter yields nothing
+      if(!out.length) return detectWords();
+      return out.slice(0, lim);
+    }
+
+    return detectWords();
   }
+
+
 
   function analyzeNow(){
     try{
@@ -700,9 +826,23 @@ net 30"></textarea>
       let phrases = getPhrases();
       let isAuto = false;
       if(!phrases.length){
-        phrases = autoDetectPhrases(t, 12);
+        phrases = autoDetectPhrases(t, 12, { nouns: els.optNouns && els.optNouns.checked, multi: els.optMulti && els.optMulti.checked, caseSensitive: opts.caseSensitive });
         isAuto = true;
         updatePhraseHint(phrases, true);
+
+        // Keep the auto list visible, but let user overwrite it by typing.
+        if(els.phrases){
+          const cur = String(els.phrases.value || "").trim();
+          const autoFilled = (els.phrases.dataset.autoFilled === "1");
+          if(!cur || autoFilled){
+            els.phrases.value = phrases.join("
+");
+            els.phrases.dataset.autoFilled = "1";
+          }
+        }
+      }else{
+        updatePhraseHint(phrases, false);
+        if(els.phrases) els.phrases.dataset.autoFilled = "0";
       }
 
       const t0 = performance.now();
