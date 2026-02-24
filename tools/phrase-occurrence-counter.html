@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta name="description" content="Count occurrences of phrases in TXT, CSV, or pasted text. Runs locally in your browser."/>
-<title>Phrase Occurrence Counter — ReportMedic</title>
+<title>Phrase Occurrence Counter - ReportMedic</title>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
 <link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
 <link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
@@ -208,7 +208,7 @@
 <div class="wrap">
   <div class="panel">
     <h1>Phrase Occurrence Counter <a class="rm-lm-link" data-rm-lm-open="rmLM" href="#">Learn more</a></h1>
-    <p class="sub">Count phrases in TXT, CSV, or pasted text — private, fast, and runs locally in your browser.</p>
+    <p class="sub">Count phrases in TXT, CSV, or pasted text - private, fast, and runs locally in your browser.</p>
     <div class="hr"></div>
 
 <div class="grid2">
@@ -289,78 +289,170 @@ net 30"></textarea>
 
     <div class="hr2"></div>
 
+    
     <div class="grid4" style="margin:0">
-      <div class="rm-kpi" data-tip="Total phrases counts how many unique targets you are measuring right now. If you typed phrases, each non empty line becomes one phrase. If you left the box blank, the tool auto detects the top items based on your options like nouns or multi word. This number helps you confirm your scope, so you do not accidentally analyze too few or too many phrases at once.">
+
+      <div class="rm-kpi" data-tip="Total phrases is the number of unique targets you are measuring right now. Each non empty line in the phrases box becomes one phrase. If you keep the box empty, the tool auto detects a short list using your options like nouns or multi word. This count helps you confirm the scope of what you are checking so you do not accidentally analyze too few or too many phrases in a single run.">
         <div class="rm-kpi-top">
           <span class="rm-kpi-label">Total phrases</span>
         </div>
-        <div class="rm-kpi-val" id="kpiPhrases">—</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiPhrasesSub">—</div>
+        <div class="rm-kpi-val" id="kpiPhrases">0</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiPhrasesSub">count</div>
       </div>
-      <div class="rm-kpi" data-tip="Total matches is the sum of all occurrences found across every phrase in the current run. If one phrase appears 10 times and another appears 5 times, Total matches becomes 15. This metric is useful for gauging repetition density, comparing drafts, and verifying that toggles like whole word or case sensitive are behaving as expected.">
+
+      <div class="rm-kpi" data-tip="Total matches is the sum of all occurrences found across every phrase in the current run. If one phrase appears 10 times and another appears 5 times, Total matches becomes 15. This is useful for judging repetition density, comparing drafts, and validating that options like whole word or case sensitive behave as expected.">
         <div class="rm-kpi-top">
           <span class="rm-kpi-label">Total matches</span>
         </div>
-        <div class="rm-kpi-val" id="kpiMatches">—</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiMatchesSub">—</div>
+        <div class="rm-kpi-val" id="kpiMatches">0</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiMatchesSub">Across phrases</div>
       </div>
-      <div class="rm-kpi" data-tip="Top phrase shows which single phrase has the highest occurrence count in your current text. The small line below shows its count and its share of the Total matches, which tells you how dominant that phrase is versus the rest. Use this to quickly spot overused terms, recurring names, or repeated boilerplate that might need editing.">
+
+      <div class="rm-kpi" data-tip="Top phrase shows which single phrase has the highest occurrence count in your current text. The line below shows the phrase itself so you can spot what dominates the writing. Use this to quickly catch overused terms, recurring names, repeated boilerplate, or a keyword that is crowding out the rest of your phrasing.">
         <div class="rm-kpi-top">
           <span class="rm-kpi-label">Top phrase</span>
         </div>
-        <div class="rm-kpi-val" id="kpiTop">—</div>
-        <div class="rm-kpi-sub tiny muted" id="kpiTopSub">—</div>
+        <div class="rm-kpi-val" id="kpiTop">0</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiTopSub">Top phrase text</div>
       </div>
 
-      <div class="rm-kpi" data-tip="Total long words counts how many word tokens in your text are longer than eight letters. It is a quick readability signal: a spike can mean the passage is dense, technical, or heavy on formal terms, while a lower number often reads faster. Use it to compare drafts, check whether a section became more complex after edits, and spot paragraphs that may need simpler wording for broader audiences.">
+      <div class="rm-kpi" data-tip="Total long words counts how many word tokens in your text are longer than eight letters. It is a quick readability signal. A spike can indicate dense, technical, or overly formal wording. Use it to compare drafts, locate heavy paragraphs, and decide where simpler language could improve flow without losing accuracy.">
         <div class="rm-kpi-top">
           <span class="rm-kpi-label">Total long words</span>
         </div>
-        <div class="rm-kpi-val" id="kpiLongWords">—</div>
+        <div class="rm-kpi-val" id="kpiLongWords">0</div>
         <div class="rm-kpi-sub tiny muted" id="kpiLongWordsSub">Words over 8 letters</div>
       </div>
 
-      <div class="rm-kpi" data-tip="Total attribution verbs estimates how often your text uses reporting verbs that introduce quotes, claims, or sources. Examples include said, says, told, added, stated, wrote, reported, noted, explained, argued, warned, and claimed. This helps journalists and editors keep attribution tight: too many can feel repetitive, too few can make sourcing unclear. Use it to balance quote driven writing with narrative context.">
+      <div class="rm-kpi" data-tip="Total attribution verbs estimates how often your text uses reporting verbs that introduce sources or quotes. Examples include said, says, told, added, stated, wrote, reported, noted, explained, argued, warned, and claimed. This helps keep attribution clear and varied. Too many can feel repetitive, too few can make sourcing unclear in a news style writeup.">
         <div class="rm-kpi-top">
           <span class="rm-kpi-label">Total attribution verbs</span>
         </div>
-        <div class="rm-kpi-val" id="kpiAttrib">—</div>
+        <div class="rm-kpi-val" id="kpiAttrib">0</div>
         <div class="rm-kpi-sub tiny muted" id="kpiAttribSub">Reporting verbs</div>
       </div>
 
-      <div class="rm-kpi" data-tip="Tone is a lightweight signal based on the kinds of words used in your text. The tool scans for common cues and picks the strongest match among ten tone types: neutral, confident, uncertain, urgent, positive, negative, analytical, informal, formal, and empathetic. It is not a perfect classifier, but it is useful as a draft check: if the detected tone surprises you, review word choices that may be nudging the voice.">
+      <div class="rm-kpi" data-tip="Tone is a lightweight signal based on cue words that often correlate with a writing style. The tool checks for cues and picks the strongest match among ten types: neutral, confident, uncertain, urgent, positive, negative, analytical, informal, formal, empathetic. It is not a perfect classifier, but it works well as a draft check. If the tone is surprising, review word choices that may be nudging voice.">
         <div class="rm-kpi-top">
           <span class="rm-kpi-label">Tone</span>
         </div>
-        <div class="rm-kpi-val" id="kpiTone">—</div>
+        <div class="rm-kpi-val" id="kpiTone">0</div>
         <div class="rm-kpi-sub tiny muted" id="kpiToneSub">Top detected tone</div>
       </div>
 
-      <div class="rm-kpi" data-tip="Numbers counts how many times numeric values appear in your text. This includes plain integers, decimals, and common percent forms. It is handy for fact heavy writing: you can verify whether a section is backed by enough quantitative detail, or spot when numbers start to overwhelm the narrative. For editors, it also helps when doing a fast scan for stats that may need sourcing, formatting, or verification.">
+      <div class="rm-kpi" data-tip="Numbers counts how many numeric values appear in your text, including integers, decimals, and percent forms. This is useful for fact heavy writing. You can quickly see whether a section is rich with stats, or whether numbers may be overwhelming the narrative. It also helps editors scan for figures that may need citations, formatting, or verification before publishing.">
         <div class="rm-kpi-top">
           <span class="rm-kpi-label">Numbers</span>
         </div>
-        <div class="rm-kpi-val" id="kpiNumbers">—</div>
+        <div class="rm-kpi-val" id="kpiNumbers">0</div>
         <div class="rm-kpi-sub tiny muted" id="kpiNumbersSub">Numeric mentions</div>
       </div>
 
-      <div class="rm-kpi" data-tip="Highest sentence starter shows the most common first word used at the beginning of your sentences. Repeating the same starter, like However or The, can make writing feel monotone even if the content is strong. Use this to vary rhythm: change a few openings, restructure sentences, or combine short sentences where needed. It is especially useful when polishing intros, transitions, and rapid update writing.">
+      <div class="rm-kpi" data-tip="Highest sentence starter shows the most common first word used at the beginning of your sentences. Repeating the same starter can make writing feel monotone even if the content is strong. Use this as a rhythm and variety check. Vary openings, reorder clauses, or combine short sentences to improve flow and pacing.">
         <div class="rm-kpi-top">
           <span class="rm-kpi-label">Highest sentence starter</span>
         </div>
-        <div class="rm-kpi-val" id="kpiStarter">—</div>
+        <div class="rm-kpi-val" id="kpiStarter">0</div>
         <div class="rm-kpi-sub tiny muted" id="kpiStarterSub">Most common opener</div>
       </div>
 
-      <div class="rm-kpi" data-tip="Overused word shows the single word that appears most often in your text after filtering out very common filler words. It is a quick way to catch repetition that slips in under deadline, like using the same adjective or verb too frequently. Treat it as a prompt, not a rule: sometimes repetition is intentional, but if the overused word is accidental, swap a few instances for synonyms or rewrite the sentence.">
+      <div class="rm-kpi" data-tip="Overused word shows the single word that appears most often after filtering very common filler words. It is a quick way to catch accidental repetition, such as repeating the same adjective or verb under deadline pressure. Treat it as a prompt. Sometimes repetition is intentional, but if it is not, swap a few instances for synonyms or rephrase sentences.">
         <div class="rm-kpi-top">
           <span class="rm-kpi-label">Overused word</span>
         </div>
-        <div class="rm-kpi-val" id="kpiOverused">—</div>
+        <div class="rm-kpi-val" id="kpiOverused">0</div>
         <div class="rm-kpi-sub tiny muted" id="kpiOverusedSub">Most frequent word</div>
       </div>
+
+      <div class="rm-kpi" data-tip="Unique word ratio estimates lexical variety by comparing the number of unique words to the total word count. A higher ratio suggests more varied vocabulary, while a lower ratio suggests repetition or heavy reuse of the same terms. Use this to compare drafts, check whether a section became repetitive, and spot when a story relies too heavily on the same phrasing or jargon.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Unique word ratio</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiUniqueRatio">0</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiUniqueRatioSub">Unique over total</div>
       </div>
-    </div>
+
+      <div class="rm-kpi" data-tip="Flesch Reading Ease is a readability score derived from sentence length and an estimated syllable count. Higher scores are easier to read, lower scores are more complex. This is a heuristic estimate, not a medical grade measurement, but it is very useful for fast editing. If the score drops after revisions, consider shorter sentences and simpler word choices.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Flesch Reading Ease</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiFlesch">0</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiFleschSub">Readability score</div>
+      </div>
+
+      <div class="rm-kpi" data-tip="Reading time estimates how long an average reader may take to read the text based on a typical reading speed. It helps writers and journalists gauge whether a draft is too long for the intended format and whether sections need tightening. Use it to compare versions and to plan where to add structure like subheads or summaries for better skimming.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Reading time</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiReadTime">0</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiReadTimeSub">Minutes to read</div>
+      </div>
+
+      <div class="rm-kpi" data-tip="Average sentence length shows the typical number of words per sentence in your text. Longer averages can indicate dense writing, while shorter averages can indicate punchy style or fragmented rhythm. Use it to balance clarity and flow. If the average is high, try splitting long sentences or reducing nested clauses.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Avg sentence length</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiAvgSent">0</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiAvgSentSub">Words per sentence</div>
+      </div>
+
+      <div class="rm-kpi" data-tip="Long sentences counts how many sentences exceed a length threshold, which is often where readers get lost. These sentences can be fine when carefully written, but a high count may signal run on phrasing, too many clauses, or unclear structure. Use this metric to quickly find places to split, simplify, or add punctuation for better readability.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Long sentences</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiLongSent">0</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiLongSentSub">Sentences over 20 words</div>
+      </div>
+
+      <div class="rm-kpi" data-tip="Transition words counts common connectors that help logic and flow, such as however, therefore, meanwhile, additionally, and for example. Too few transitions can make a piece feel choppy, while too many can feel mechanical. This metric helps you tune the narrative glue and improve clarity in explanatory writing and newsroom style context paragraphs.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Transition words</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiTransitions">0</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiTransitionsSub">Common connectors</div>
+      </div>
+
+      <div class="rm-kpi" data-tip="Paragraph distribution summarizes how many short, medium, and long paragraphs you have. Short paragraphs support skimming and pace, medium paragraphs carry most narrative load, and long paragraphs can feel heavy on screens. Use this to shape structure for your audience. If long paragraphs dominate, consider splitting into smaller units or adding subheads.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Paragraph distribution</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiParaDist">0</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiParaDistSub">Short, medium, long</div>
+      </div>
+
+      <div class="rm-kpi" data-tip="Questions counts how many question marks appear, which often correlates with rhetorical questions, interview framing, or conversational style. It is useful for tone control. Too many questions can feel informal or uncertain, while a few can engage the reader. Use it to check whether your draft matches the intended voice and genre.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Questions</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiQuestions">0</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiQuestionsSub">Question marks</div>
+      </div>
+
+      <div class="rm-kpi" data-tip="Exclamations counts how many exclamation marks appear. In news writing this is usually rare, while in marketing or personal writing it may be common. This metric helps you control emphasis. If the count is high, consider whether the tone feels too excited or promotional. Replace with stronger facts or cleaner phrasing when you want a more neutral voice.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Exclamations</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiExclaims">0</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiExclaimsSub">Exclamation marks</div>
+      </div>
+
+      <div class="rm-kpi" data-tip="Quotes estimates how much of your draft is framed as quoted material by counting quotation marks. This helps journalists and editors understand whether a story is quote heavy versus narrative heavy. Use it as a balance check. If quotes dominate, add context, paraphrase, or tighten attribution. If quotes are scarce, verify sourcing needs.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Quotes</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiQuotes">0</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiQuotesSub">Quote marks</div>
+      </div>
+
+      <div class="rm-kpi" data-tip="Named entities is a lightweight estimate of distinct proper name like tokens found in the text, such as people, organizations, and places. It uses capitalization heuristics, so it is approximate, but it is still helpful for draft review. Use it to sanity check whether key actors are present often enough, and to catch inconsistent spellings across a long piece.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Named entities</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiEntities">0</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiEntitiesSub">Distinct proper names</div>
+      </div>
+      </div>
+
 
     <div class="hr2"></div>
 
@@ -368,7 +460,7 @@ net 30"></textarea>
       <div class="card" style="padding:12px; margin:0">
         <div class="row" style="justify-content:space-between; align-items:center">
           <div class="tiny muted">Counts by phrase (top 15)</div>
-          <div class="tiny muted" id="kpiTime">—</div>
+          <div class="tiny muted" id="kpiTime">0</div>
         </div>
         <div style="height:260px; margin-top:8px">
           <canvas id="barChart"></canvas>
@@ -385,7 +477,7 @@ net 30"></textarea>
       <div class="card" style="padding:12px; margin:0">
         <div class="row" style="justify-content:space-between; align-items:center">
           <div class="tiny muted">Table</div>
-          <div class="tiny muted" id="tableHint">—</div>
+          <div class="tiny muted" id="tableHint">0</div>
         </div>
         <div class="hr2"></div>
         <div style="max-height:260px; overflow:auto; border:1px solid rgba(255,255,255,.10); border-radius:12px">
@@ -496,7 +588,30 @@ net 30"></textarea>
     kpiStarter: $("kpiStarter"),
     kpiStarterSub: $("kpiStarterSub"),
     kpiOverused: $("kpiOverused"),
+
     kpiOverusedSub: $("kpiOverusedSub"),
+    kpiUniqueRatio: $("kpiUniqueRatio"),
+    kpiUniqueRatioSub: $("kpiUniqueRatioSub"),
+    kpiFlesch: $("kpiFlesch"),
+    kpiFleschSub: $("kpiFleschSub"),
+    kpiReadTime: $("kpiReadTime"),
+    kpiReadTimeSub: $("kpiReadTimeSub"),
+    kpiAvgSent: $("kpiAvgSent"),
+    kpiAvgSentSub: $("kpiAvgSentSub"),
+    kpiLongSent: $("kpiLongSent"),
+    kpiLongSentSub: $("kpiLongSentSub"),
+    kpiTransitions: $("kpiTransitions"),
+    kpiTransitionsSub: $("kpiTransitionsSub"),
+    kpiParaDist: $("kpiParaDist"),
+    kpiParaDistSub: $("kpiParaDistSub"),
+    kpiQuestions: $("kpiQuestions"),
+    kpiQuestionsSub: $("kpiQuestionsSub"),
+    kpiExclaims: $("kpiExclaims"),
+    kpiExclaimsSub: $("kpiExclaimsSub"),
+    kpiQuotes: $("kpiQuotes"),
+    kpiQuotesSub: $("kpiQuotesSub"),
+    kpiEntities: $("kpiEntities"),
+    kpiEntitiesSub: $("kpiEntitiesSub"),
     tbody: $("tbody"),
     tableHint: $("tableHint"),
     barChart: $("barChart"),
@@ -697,13 +812,16 @@ net 30"></textarea>
   }
 function setKpis(phrasesN, totalMatches, rows, ms, sizeBytes, signals){
     els.kpiPhrases.textContent = phrasesN ? String(phrasesN) : "0";
-    els.kpiPhrasesSub.textContent = sizeBytes ? ("Source size " + prettyBytes(sizeBytes)) : "—";
-    els.kpiMatches.textContent = String(totalMatches);
-    els.kpiMatchesSub.textContent = totalMatches ? ("Across " + phrasesN + " phrases") : "No matches";
+    els.kpiPhrasesSub.textContent = "count";
+
+    els.kpiMatches.textContent = String(totalMatches || 0);
+    els.kpiMatchesSub.textContent = phrasesN ? ("Across " + phrasesN + " phrases") : "Across 0 phrases";
+
     const top = rows && rows.length ? rows[0] : null;
-    els.kpiTop.textContent = top && top.count ? String(top.count) : "0";
-    els.kpiTopSub.textContent = top ? top.phrase : "—";
-    els.kpiTime.textContent = (Number.isFinite(ms) ? (ms.toFixed(0) + " ms") : "—");
+    els.kpiTop.textContent = top ? String(top.count || 0) : "0";
+    els.kpiTopSub.textContent = top ? top.phrase : "n/a";
+
+    els.kpiTime.textContent = (Number.isFinite(ms) ? (ms.toFixed(0) + " ms") : "0 ms");
 
     if(signals){
       els.kpiLongWords.textContent = String(signals.longWords ?? 0);
@@ -713,18 +831,52 @@ function setKpis(phrasesN, totalMatches, rows, ms, sizeBytes, signals){
       els.kpiTone.textContent = String(signals.tone || "neutral");
       els.kpiToneSub.textContent = (signals.toneScore ? (String(signals.toneScore) + " cues") : "No cues found");
 
-      els.kpiStarter.textContent = signals.topStarter ? String(signals.topStarter) : "—";
-      els.kpiStarterSub.textContent = signals.topStarterN ? (String(signals.topStarterN) + " sentences") : "—";
+      els.kpiStarter.textContent = signals.topStarter ? String(signals.topStarter) : "n/a";
+      els.kpiStarterSub.textContent = signals.topStarterN ? (String(signals.topStarterN) + " sentences") : "0 sentences";
 
-      els.kpiOverused.textContent = signals.overused ? String(signals.overused) : "—";
-      els.kpiOverusedSub.textContent = signals.overusedN ? (String(signals.overusedN) + " uses") : "—";
+      els.kpiOverused.textContent = signals.overused ? String(signals.overused) : "n/a";
+      els.kpiOverusedSub.textContent = signals.overusedN ? (String(signals.overusedN) + " uses") : "0 uses";
+
+      const pct = (signals.uniqueRatio || 0) * 100;
+      els.kpiUniqueRatio.textContent = pct ? pct.toFixed(1) + "%" : "0.0%";
+      els.kpiUniqueRatioSub.textContent = (signals.uniqWords ?? 0) + " unique of " + (signals.totalWords ?? 0);
+
+      els.kpiFlesch.textContent = Number.isFinite(signals.flesch) ? (signals.flesch.toFixed(1)) : "0.0";
+      els.kpiFleschSub.textContent = "Readability score";
+
+      els.kpiReadTime.textContent = (signals.readMinutes ? signals.readMinutes.toFixed(1) : "0.0");
+      els.kpiReadTimeSub.textContent = "Minutes to read";
+
+      els.kpiAvgSent.textContent = (signals.avgSentenceLen ? signals.avgSentenceLen.toFixed(1) : "0.0");
+      els.kpiAvgSentSub.textContent = "Words per sentence";
+
+      els.kpiLongSent.textContent = String(signals.longSentences ?? 0);
+      els.kpiLongSentSub.textContent = "Sentences over 20 words";
+
+      els.kpiTransitions.textContent = String(signals.transitions ?? 0);
+      els.kpiTransitionsSub.textContent = "Common connectors";
+
+      els.kpiParaDist.textContent = String(signals.paraCount ?? 0);
+      els.kpiParaDistSub.textContent = "S " + (signals.pShort ?? 0) + ", M " + (signals.pMed ?? 0) + ", L " + (signals.pLong ?? 0);
+
+      els.kpiQuestions.textContent = String(signals.questions ?? 0);
+      els.kpiQuestionsSub.textContent = "Question marks";
+
+      els.kpiExclaims.textContent = String(signals.exclaims ?? 0);
+      els.kpiExclaimsSub.textContent = "Exclamation marks";
+
+      els.kpiQuotes.textContent = String(signals.quotes ?? 0);
+      els.kpiQuotesSub.textContent = "Quote marks";
+
+      els.kpiEntities.textContent = String(signals.namedEntities ?? 0);
+      els.kpiEntitiesSub.textContent = "Distinct proper names";
     } else {
-      els.kpiLongWords.textContent = "—";
-      els.kpiAttrib.textContent = "—";
-      els.kpiTone.textContent = "—";
-      els.kpiNumbers.textContent = "—";
-      els.kpiStarter.textContent = "—";
-      els.kpiOverused.textContent = "—";
+      // fallbacks
+      [
+        ["kpiLongWords","0"],["kpiAttrib","0"],["kpiTone","neutral"],["kpiNumbers","0"],["kpiStarter","n/a"],["kpiOverused","n/a"],
+        ["kpiUniqueRatio","0.0%"],["kpiFlesch","0.0"],["kpiReadTime","0.0"],["kpiAvgSent","0.0"],["kpiLongSent","0"],
+        ["kpiTransitions","0"],["kpiParaDist","0"],["kpiQuestions","0"],["kpiExclaims","0"],["kpiQuotes","0"],["kpiEntities","0"]
+      ].forEach(([id,val])=>{ if(els[id]) els[id].textContent = val; });
     }
   }
 
@@ -838,13 +990,36 @@ function setKpis(phrasesN, totalMatches, rows, ms, sizeBytes, signals){
   function clearResultsOnly(){
     lastRows = [];
     els.downloadCsv.disabled = true;
-    els.kpiPhrases.textContent = "—";
-    els.kpiPhrasesSub.textContent = "—";
-    els.kpiMatches.textContent = "—";
-    els.kpiMatchesSub.textContent = "—";
-    els.kpiTop.textContent = "—";
-    els.kpiTopSub.textContent = "—";
-    els.kpiTime.textContent = "—";
+    els.kpiPhrases.textContent = "0";
+    els.kpiPhrasesSub.textContent = "count";
+    els.kpiMatches.textContent = "0";
+    els.kpiMatchesSub.textContent = "Across phrases";
+    els.kpiTop.textContent = "0";
+    els.kpiTopSub.textContent = "Top phrase text";
+    if(els.kpiUniqueRatio) els.kpiUniqueRatio.textContent = "0.0%";
+    if(els.kpiUniqueRatioSub) els.kpiUniqueRatioSub.textContent = "Unique over total";
+    if(els.kpiFlesch) els.kpiFlesch.textContent = "0.0";
+    if(els.kpiFleschSub) els.kpiFleschSub.textContent = "Readability score";
+    if(els.kpiReadTime) els.kpiReadTime.textContent = "0.0";
+    if(els.kpiReadTimeSub) els.kpiReadTimeSub.textContent = "Minutes to read";
+    if(els.kpiAvgSent) els.kpiAvgSent.textContent = "0.0";
+    if(els.kpiAvgSentSub) els.kpiAvgSentSub.textContent = "Words per sentence";
+    if(els.kpiLongSent) els.kpiLongSent.textContent = "0";
+    if(els.kpiLongSentSub) els.kpiLongSentSub.textContent = "Sentences over 20 words";
+    if(els.kpiTransitions) els.kpiTransitions.textContent = "0";
+    if(els.kpiTransitionsSub) els.kpiTransitionsSub.textContent = "Common connectors";
+    if(els.kpiParaDist) els.kpiParaDist.textContent = "0";
+    if(els.kpiParaDistSub) els.kpiParaDistSub.textContent = "Short, medium, long";
+    if(els.kpiQuestions) els.kpiQuestions.textContent = "0";
+    if(els.kpiQuestionsSub) els.kpiQuestionsSub.textContent = "Question marks";
+    if(els.kpiExclaims) els.kpiExclaims.textContent = "0";
+    if(els.kpiExclaimsSub) els.kpiExclaimsSub.textContent = "Exclamation marks";
+    if(els.kpiQuotes) els.kpiQuotes.textContent = "0";
+    if(els.kpiQuotesSub) els.kpiQuotesSub.textContent = "Quote marks";
+    if(els.kpiEntities) els.kpiEntities.textContent = "0";
+    if(els.kpiEntitiesSub) els.kpiEntitiesSub.textContent = "Distinct proper names";
+
+    els.kpiTime.textContent = "0 ms";
     els.meta.innerHTML = "";
     els.tbody.innerHTML = "";
     els.tableHint.textContent = "";
