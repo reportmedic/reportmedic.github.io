@@ -28,6 +28,31 @@
   .rm-pageCard .rm-pageTop{display:flex; justify-content:space-between; align-items:center; gap:10px}
   .rm-pageCard .rm-pageNo{font-weight:700; font-size:12px; color:var(--muted)}
   .rm-dropHint{font-size:12px; color:var(--muted); margin-top:8px}
+  .rm-grid2{display:grid; grid-template-columns: 1.2fr 1fr;}
+  @media(max-width: 900px){ .rm-grid2{grid-template-columns: 1fr;} }
+
+  .rm-dropzone{
+    margin-top:8px;
+    border:1px dashed rgba(255,255,255,.22);
+    background: rgba(255,255,255,.03);
+    border-radius:14px;
+    padding:14px;
+    cursor:pointer;
+    transition: border-color .15s ease, background .15s ease, transform .15s ease;
+    outline:none;
+  }
+  .rm-dropzone:hover{ border-color: rgba(124,247,212,.38); background: rgba(255,255,255,.04); }
+  .rm-dropzone:focus{ box-shadow: 0 0 0 2px rgba(124,247,212,.25); }
+  .rm-dropzone.is-dragover{ border-color: rgba(124,247,212,.55); background: rgba(124,247,212,.06); transform: translateY(-1px); }
+  .rm-dropzoneTop{ display:flex; align-items:center; gap:12px; }
+  .rm-dropIcon{
+    width:34px; height:34px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.18);
+    font-weight:800;
+  }
+  .rm-fileInfo{ margin-top:10px; }
   .rm-status{min-height:20px}
   .rm-bad{color:#ffb4b4}
   .rm-good{color:#b7ffd7}
@@ -150,6 +175,8 @@
   .rm-lm-body p{margin:.55rem 0;}
 </style>
   
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <header>
@@ -182,32 +209,44 @@
 
     <div class="hr2"></div>
 
-    <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
-      <input class="input" id="fileInput" type="file" accept=".txt,.csv,text/plain,text/csv"/>
-      <button class="btn" id="usePaste" type="button">Use pasted text</button>
-      <button class="btn" id="clearAll" type="button">Clear</button>
+    <div class="rm-grid2" style="gap:14px; align-items:start">
+  <div>
+    <label class="tiny muted">Upload TXT or CSV (optional)</label>
+    <div class="rm-dropzone" id="dropZone" tabindex="0" role="button" aria-label="Upload a TXT or CSV file">
+      <div class="rm-dropzoneTop">
+        <div class="rm-dropIcon" aria-hidden="true">⬆︎</div>
+        <div>
+          <div style="font-weight:700">Drop a file here</div>
+          <div class="tiny muted">or click to choose a .txt or .csv file</div>
+        </div>
+      </div>
+      <div class="tiny muted rm-fileInfo" id="fileInfo">No file selected</div>
     </div>
+    <input class="input" id="fileInput" type="file" accept=".txt,.csv,text/plain,text/csv" style="display:none"/>
+    <div class="rm-dropHint">Tip: This runs locally in your browser. Nothing is uploaded.</div>
+  </div>
 
-    <div style="margin-top:12px">
-      <label class="tiny muted">Paste text (optional)</label>
-      <textarea class="input" id="pasteText" style="min-height:140px; width:100%; resize:vertical" placeholder="Paste text here if you are not uploading a file."></textarea>
-      <div class="rm-dropHint">Tip: For CSV, you can paste the full CSV content too.</div>
+  <div>
+    <div class="row" style="justify-content:space-between; align-items:baseline">
+      <label class="tiny muted">Phrases (optional, one per line)</label>
+      <span class="tiny muted" id="phraseCountHint">0 phrases</span>
     </div>
+    <textarea class="input" id="phrases" style="min-height:140px; width:100%; resize:vertical" placeholder="invoice
+late fee
+net 30"></textarea>
+    <div class="rm-dropHint">Leave this blank to auto-detect the most frequent words.</div>
+  </div>
+</div>
+
+<div style="margin-top:14px">
+  <label class="tiny muted">Paste text (optional)</label>
+  <textarea class="input" id="pasteText" style="min-height:160px; width:100%; resize:vertical" placeholder="Paste text here. This will override the uploaded file."></textarea>
+  <div class="rm-dropHint">As you paste, results update instantly.</div>
+</div>
 
     <div class="hr2"></div>
 
-    <div style="display:grid; gap:10px">
-      <div>
-        <div class="row" style="justify-content:space-between; align-items:center">
-          <label class="tiny muted">Phrases (one per line)</label>
-          <span class="tiny muted" id="phraseCountHint">0 phrases</span>
-        </div>
-        <textarea class="input" id="phrases" style="min-height:120px; width:100%; resize:vertical" placeholder="invoice
-late fee
-net 30"></textarea>
-      </div>
-
-      <div class="row" style="gap:12px; flex-wrap:wrap; align-items:center">
+    <div class="row" style="gap:12px; flex-wrap:wrap; align-items:center">
         <label class="tiny muted">Options</label>
         <label class="tiny"><input id="caseSensitive" type="checkbox"/> Case sensitive</label>
         <label class="tiny"><input id="overlap" type="checkbox"/> Allow overlapping matches</label>
@@ -316,15 +355,15 @@ net 30"></textarea>
 
   const els = {
     fileInput: $("fileInput"),
+    dropZone: $("dropZone"),
+    fileInfo: $("fileInfo"),
     pasteText: $("pasteText"),
-    usePaste: $("usePaste"),
     phrases: $("phrases"),
     phraseCountHint: $("phraseCountHint"),
     caseSensitive: $("caseSensitive"),
     overlap: $("overlap"),
     wholeWord: $("wholeWord"),
     analyze: $("analyze"),
-    clearAll: $("clearAll"),
     downloadCsv: $("downloadCsv"),
     status: $("status"),
     meta: $("meta"),
@@ -343,6 +382,7 @@ net 30"></textarea>
 
   let sourceText = "";
   let sourceLabel = "not loaded";
+  let activeSource = "none";
   let lastRows = [];
   let bar, donut;
 
@@ -372,11 +412,22 @@ net 30"></textarea>
     return (s||"").replace(/\r\n/g,"\n").replace(/\r/g,"\n");
   }
 
+  function updatePhraseHint(list, auto){
+    const n = (list && list.length) ? list.length : 0;
+    if(auto){
+      els.phraseCountHint.textContent = "Auto: " + n + (n===1 ? " phrase" : " phrases");
+    }else{
+      els.phraseCountHint.textContent = n + (n===1 ? " phrase" : " phrases");
+    }
+  }
+
   function getPhrases(){
     const raw = normalizeNewlines(els.phrases.value);
-    const list = raw.split("\n").map(x=>x.trim()).filter(Boolean);
-    els.phraseCountHint.textContent = list.length + (list.length===1 ? " phrase" : " phrases");
-    return [...new Set(list)];
+    const list = raw.split("
+").map(x=>x.trim()).filter(Boolean);
+    const uniq = [...new Set(list)];
+    updatePhraseHint(uniq, false);
+    return uniq;
   }
 
   function makeNeedle(phrase, opts){
@@ -452,6 +503,7 @@ net 30"></textarea>
   }
 
   function renderCharts(rows, total){
+    if(!window.Chart){ return; }
     destroyCharts();
     const top = rows.slice(0, 15);
     const labels = top.map(r=>r.phrase);
@@ -523,8 +575,9 @@ net 30"></textarea>
     const text = new TextDecoder("utf-8").decode(buf);
     sourceText = text;
     sourceLabel = file.name + " (" + prettyBytes(size) + ")";
+    setFileInfo(sourceLabel);
     updateMeta();
-    setStatus("Loaded file. Ready to count.", "rm-good");
+    setStatus("Loaded " + file.name + ". Results updated.", "rm-good");
     return size;
   }
 
@@ -536,14 +589,8 @@ net 30"></textarea>
     setStatus(text.trim() ? "Using pasted text. Ready to count." : "Paste text or upload a file first.", text.trim() ? "rm-good" : "rm-warn");
   }
 
-  function clearUi(){
-    sourceText = "";
-    sourceLabel = "not loaded";
+  function clearResultsOnly(){
     lastRows = [];
-    updateMeta();
-    setStatus("", null);
-    els.pasteText.value = "";
-    els.phrases.value = "";
     els.downloadCsv.disabled = true;
     els.kpiPhrases.textContent = "—";
     els.kpiPhrasesSub.textContent = "—";
@@ -552,38 +599,149 @@ net 30"></textarea>
     els.kpiTop.textContent = "—";
     els.kpiTopSub.textContent = "—";
     els.kpiTime.textContent = "—";
-    els.tableHint.textContent = "—";
-    renderTable([], 0);
+    els.meta.innerHTML = "";
+    els.tbody.innerHTML = "";
+    els.tableHint.textContent = "";
     destroyCharts();
-    els.fileInput.value = "";
-    els.phraseCountHint.textContent = "0 phrases";
+  }
+
+  function clearUi(resetInputs){
+    sourceText = "";
+    sourceLabel = "not loaded";
+    activeSource = "none";
+    updateMeta();
+    setStatus("", null);
+    if(resetInputs){
+      els.pasteText.value = "";
+      clearFile();
+      // phrases intentionally preserved
+    }
+    clearResultsOnly();
   }
 
   els.phrases.addEventListener("input", ()=>{ getPhrases(); });
 
-  els.fileInput.addEventListener("change", async ()=>{
-    const f = els.fileInput.files && els.fileInput.files[0];
-    if(!f) return;
+  const debounce = (fn, wait=180)=>{
+    let t;
+    return (...args)=>{
+      clearTimeout(t);
+      t = setTimeout(()=>fn(...args), wait);
+    };
+  };
+
+  const scheduleAnalyze = debounce(()=>{ analyzeNow(); }, 180);
+
+  function setActiveSource(kind){
+    activeSource = kind;
+    if(kind==="file"){
+      els.dropZone.classList.remove("rm-hidden");
+    }
+  }
+
+  function setFileInfo(text){
+    if(els.fileInfo) els.fileInfo.textContent = text || "No file selected";
+  }
+
+  function clearFile(){
+    els.fileInput.value = "";
+    setFileInfo("No file selected");
+  }
+
+  function clearPaste(){
+    els.pasteText.value = "";
+  }
+
+  async function handleFileSelected(file){
+    if(!file) return;
+    // file wins, and paste is cleared automatically
+    clearPaste();
+    activeSource = "file";
     try{
-      await loadFile(f);
+      await loadFile(file);
+      scheduleAnalyze();
     }catch(e){
       setStatus("Could not read file. " + (e && e.message ? e.message : ""), "rm-bad");
     }
+  }
+
+  function handlePasteChanged(){
+    const t = (els.pasteText.value || "");
+    if(t.trim().length){
+      // paste wins, and file selection is cleared automatically
+      clearFile();
+      activeSource = "paste";
+      sourceText = t;
+      sourceLabel = "pasted text";
+      scheduleAnalyze();
+    }else{
+      if(activeSource==="paste"){
+        sourceText = "";
+        sourceLabel = "not loaded";
+        clearUi(false);
+      }
+    }
+  }
+
+  // Drag zone wiring
+  els.dropZone.addEventListener("click", ()=> els.fileInput.click());
+  els.dropZone.addEventListener("keydown", (e)=>{ if(e.key==="Enter" || e.key===" "){ e.preventDefault(); els.fileInput.click(); } });
+
+  ["dragenter","dragover"].forEach(ev=>{
+    els.dropZone.addEventListener(ev, (e)=>{
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+      els.dropZone.classList.add("is-dragover");
+    });
+  });
+  ["dragleave","dragend"].forEach(ev=>{
+    els.dropZone.addEventListener(ev, ()=> els.dropZone.classList.remove("is-dragover"));
+  });
+  els.dropZone.addEventListener("drop", (e)=>{
+    e.preventDefault();
+    els.dropZone.classList.remove("is-dragover");
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if(f) handleFileSelected(f);
   });
 
-  els.usePaste.addEventListener("click", ()=>{ setFromPaste(); });
+  els.fileInput.addEventListener("change", async ()=>{
+    const f = els.fileInput.files && els.fileInput.files[0];
+    if(!f) return;
+    await handleFileSelected(f);
+  });
 
-  els.clearAll.addEventListener("click", ()=>{ clearUi(); });
+  els.pasteText.addEventListener("input", ()=>{ handlePasteChanged(); });
 
-  els.analyze.addEventListener("click", ()=>{
+  els.phrases.addEventListener("input", ()=>{ getPhrases(); scheduleAnalyze(); });
+  ["caseSensitive","overlap","wholeWord"].forEach(id=>{
+    const el = $(id);
+    if(el) el.addEventListener("change", ()=> scheduleAnalyze());
+  });
+
+  function autoDetectPhrases(text, limit){
+    const s = String(text || "");
+    // words only, keep digits inside words, drop very short tokens
+    const tokens = (s.match(/[A-Za-z0-9]+/g) || []).map(t=>t.toLowerCase()).filter(t=>t.length>=3);
+    const stop = new Set([
+      "the","and","for","with","that","this","you","your","are","was","were","from","have","has","had",
+      "not","but","all","can","will","just","into","out","too","its","it's","they","them","then","than",
+      "she","him","her","his","our","ours","their","there","here","when","what","which","who","how",
+      "a","an","to","of","in","on","at","as","is","it","be","by","or"
+    ]);
+    const freq = new Map();
+    for(const t of tokens){
+      if(stop.has(t)) continue;
+      freq.set(t, (freq.get(t)||0)+1);
+    }
+    const sorted = [...freq.entries()].sort((a,b)=>b[1]-a[1]).slice(0, limit||12).map(x=>x[0]);
+    return sorted;
+  }
+
+  function analyzeNow(){
     try{
-      const phrases = getPhrases();
-      if(!phrases.length){
-        setStatus("Add at least one phrase.", "rm-warn");
-        return;
-      }
-      if(!sourceText || !String(sourceText).trim()){
-        setStatus("Upload a TXT or CSV, or click Use pasted text.", "rm-warn");
+      const t = String(sourceText || "");
+      if(!t.trim()){
+        setStatus("Upload a file or paste text to see results.", "rm-warn");
+        clearResultsOnly();
         return;
       }
 
@@ -593,23 +751,31 @@ net 30"></textarea>
         wholeWord: !!els.wholeWord.checked
       };
 
+      let phrases = getPhrases();
+      let isAuto = false;
+      if(!phrases.length){
+        phrases = autoDetectPhrases(t, 12);
+        isAuto = true;
+        updatePhraseHint(phrases, true);
+      }
+
       const t0 = performance.now();
-      const { rows, total } = buildResults(String(sourceText), phrases, opts);
+      const rows = countAll(phrases, t, opts).sort((a,b)=>b.count-a.count);
       const ms = performance.now() - t0;
 
       lastRows = rows;
+      renderTable(rows);
+      renderKpis(rows, ms, isAuto);
+      renderCharts(rows, rows.reduce((s,r)=>s+r.count,0));
+      els.downloadCsv.disabled = !rows.length;
 
-      setKpis(phrases.length, total, rows, ms, sourceText.length);
-      renderTable(rows, total);
-      renderCharts(rows, total);
-
-      els.downloadCsv.disabled = false;
-
-      setStatus("Done. Counts are ready.", "rm-good");
+      setStatus("Updated.", "rm-good");
     }catch(e){
       setStatus("Error while counting. " + (e && e.message ? e.message : ""), "rm-bad");
     }
-  });
+  }
+
+  els.analyze.addEventListener("click", ()=>{ analyzeNow(); });
 
   els.downloadCsv.addEventListener("click", ()=>{
     if(!lastRows || !lastRows.length){
@@ -624,6 +790,7 @@ net 30"></textarea>
 
   updateMeta();
   renderTable([], 0);
+
 })();
 </script>
 <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
