@@ -101,18 +101,19 @@
 </div>
 
 
-<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true">
-  <div class="rm-lm" role="dialog" aria-modal="true" aria-label="PDF to Word (DOCX)">
-    <header>
-      <div class="t">PDF to Word (DOCX)</div>
-      <button class="rm-lm-close" type="button" data-rm-lm-close="rmLM">Close</button>
-    </header>
-    <div class="body">
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true" aria-label="PDF to Word (DOCX)">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">PDF to Word (DOCX)</h2>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
+    </div>
+
+    <div class="rm-lm-body">
       <ul>
         <li>Upload a PDF and extract text page-by-page using PDF.js.</li>
-<li>We rebuild lines (best effort) and generate a real .docx using the docx library.</li>
-<li>Great for normal text PDFs; multi-column/table-heavy documents may need cleanup.</li>
-<li>Everything runs locally in your browser — no uploads.</li>
+        <li>We rebuild lines (best effort) and generate a real .docx using the docx library.</li>
+        <li>Great for normal text PDFs; multi-column/table-heavy documents may need cleanup.</li>
+        <li>Everything runs locally in your browser — no uploads.</li>
       </ul>
       <div class="hint tiny muted" style="margin-top:10px">If the PDF is scanned, run OCR first so text exists to extract.</div>
     </div>
