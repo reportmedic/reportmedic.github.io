@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Word (DOCX) to Markdown — Convert .docx to .md — ReportMedic</title>
+  <title>Word (DOCX) to Markdown - Convert .docx to .md - ReportMedic</title>
   <meta name="description" content="Convert a Word document (.docx) into clean Markdown for editing and version control. Runs locally in your browser." />
   <link rel="icon" href="/favicon.ico" />
   <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" />
@@ -72,7 +72,7 @@
         <div class="row" style="justify-content:space-between; align-items:flex-start">
           <div>
             <div style="font-weight:700">Input</div>
-            <div class="tiny muted">Upload a file or paste text below — everything runs locally in your browser.</div>
+            <div class="tiny muted">Upload a file or paste text below, everything runs locally in your browser.</div>
           </div>
           <span class="pill tiny" id="inMeta"><b>IN:</b><span class="muted">not loaded</span></span>
         </div>
@@ -150,7 +150,7 @@
   <div class="rm-lm-dialog" role="document">
     <div class="rm-lm-head">
       <h3 class="rm-lm-title">How this tool works</h3>
-      <button class="rm-lm-x" data-rm-lm-close="rmLM" aria-label="Close">✕</button>
+      <button class="rm-lm-close" type="button" data-rm-lm-close="rmLM" aria-label="Close">×</button>
     </div>
     <div class="rm-lm-body">
       <div class="rm-lm-kicker">Local-only conversion</div>
@@ -280,7 +280,7 @@
       const result = await window.mammoth.convertToMarkdown({ arrayBuffer: buf });
       const md = (result && result.value) ? result.value : '';
       inputText.value = md;
-      setStatus('DOCX loaded — click Convert.');
+      setStatus('DOCX loaded, click Convert.');
       setTimeout(()=>setStatus(''), 1200);
     }catch(e){
       setStatus('Could not read this DOCX.');
