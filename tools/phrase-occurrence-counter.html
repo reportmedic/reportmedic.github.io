@@ -165,6 +165,22 @@
   .rm-topInputs #phrases{height:100%; min-height:0 !important; resize:none;}
   #phraseCountHint{white-space:nowrap;}
 
+
+  .grid4{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin-top:12px;}
+  @media (max-width: 1000px){ .grid4{grid-template-columns:repeat(2, minmax(0,1fr));} }
+  @media (max-width: 560px){ .grid4{grid-template-columns:1fr;} }
+
+  .rm-topInputs{align-items:stretch}
+  .rm-panelhead{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:10px;}
+  .rm-panelhead .rm-fieldLabel{margin:0}
+  .rm-panelsub{margin-top:10px}
+  .rm-topInputs .rm-fieldBox{margin-top:0}
+  #phraseCountHint{white-space:nowrap}
+
+  .rm-topInputs .rm-fieldBox{min-height:240px}
+  .rm-topInputs textarea.input{height:240px; resize:vertical}
+
+  .rm-fieldLabel{display:block; margin-bottom:10px}
 </style>
   
 
@@ -201,40 +217,35 @@
 
     <div class="hr2"></div>
 
-    <div class="rm-grid2 rm-topInputs" style="gap:14px; align-items:stretch">
+    
+<div class="rm-grid2 rm-topInputs" style="gap:14px">
   <div>
-    <label class="tiny muted rm-fieldLabel">Upload TXT or CSV (optional)</label>
+    <div class="rm-panelhead">
+      <label class="tiny muted rm-fieldLabel">Upload TXT or CSV (optional)</label>
+      <span class="tiny muted" id="fileHintRight"> </span>
+    </div>
     <div class="rm-fieldBox">
       <input class="input" id="fileInput" type="file" accept=".txt,.csv,text/plain,text/csv" />
     </div>
-    <div class="rm-dropHint">Tip: This runs locally in your browser. Nothing is uploaded.</div>
+    <div class="rm-dropHint rm-panelsub">Tip: This runs locally in your browser. Nothing is uploaded.</div>
   </div>
 
   <div>
-    <div class="row" style="justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap">
+    <div class="rm-panelhead">
       <label class="tiny muted rm-fieldLabel">Phrases (one per line)</label>
-      <div class="row" style="gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end">
-        <span class="tiny muted" id="phraseCountHint">0 phrases</span> </div>
+      <span class="tiny muted" id="phraseCountHint">0 phrases</span>
     </div>
     <div class="rm-fieldBox">
       <textarea class="input" id="phrases" style="width:100%" placeholder="invoice
 late fee
 net 30"></textarea>
     </div>
-    <div class="rm-dropHint">Leave this blank to auto-detect the most frequent words.</div>
+    <div class="rm-dropHint rm-panelsub">Leave this blank to auto-detect the most frequent words.</div>
   </div>
-</div>
-</div>
-
-<div class="rm-pasteBlock" style="margin-top:14px">
-  <label class="tiny muted rm-fieldLabel">Paste text (optional)</label>
-  <div class="rm-fieldBox">
-    <textarea class="input" id="pasteText" style="min-height:160px; width:100%; resize:vertical" placeholder="Paste text here. This will override the uploaded file."></textarea>
-  </div>
-  <div class="rm-dropHint">As you paste, results update instantly.</div>
 </div>
 
     <div class="hr2"></div>
+
 
     <div class="row" style="gap:12px; flex-wrap:wrap; align-items:center">
         <label class="tiny muted">Options</label>
@@ -259,7 +270,7 @@ net 30"></textarea>
 
     <div class="hr2"></div>
 
-    <div class="grid3" style="margin:0">
+    <div class="grid4" style="margin:0">
       <div class="rm-kpi" data-tip="Total phrases counts how many unique targets you are measuring right now. If you typed phrases, each non empty line becomes one phrase. If you left the box blank, the tool auto detects the top items based on your options like nouns or multi word. This number helps you confirm your scope, so you do not accidentally analyze too few or too many phrases at once.">
         <div class="rm-kpi-top">
           <span class="rm-kpi-label">Total phrases</span>
@@ -280,6 +291,54 @@ net 30"></textarea>
         </div>
         <div class="rm-kpi-val" id="kpiTop">—</div>
         <div class="rm-kpi-sub tiny muted" id="kpiTopSub">—</div>
+
+      <div class="rm-kpi" data-tip="Total long words counts how many word tokens in your text are longer than eight letters. It is a quick readability signal: a spike can mean the passage is dense, technical, or heavy on formal terms, while a lower number often reads faster. Use it to compare drafts, check whether a section became more complex after edits, and spot paragraphs that may need simpler wording for broader audiences.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Total long words</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiLongWords">—</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiLongWordsSub">Words over 8 letters</div>
+      </div>
+
+      <div class="rm-kpi" data-tip="Total attribution verbs estimates how often your text uses reporting verbs that introduce quotes, claims, or sources. Examples include said, says, told, added, stated, wrote, reported, noted, explained, argued, warned, and claimed. This helps journalists and editors keep attribution tight: too many can feel repetitive, too few can make sourcing unclear. Use it to balance quote driven writing with narrative context.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Total attribution verbs</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiAttrib">—</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiAttribSub">Reporting verbs</div>
+      </div>
+
+      <div class="rm-kpi" data-tip="Tone is a lightweight signal based on the kinds of words used in your text. The tool scans for common cues and picks the strongest match among ten tone types: neutral, confident, uncertain, urgent, positive, negative, analytical, informal, formal, and empathetic. It is not a perfect classifier, but it is useful as a draft check: if the detected tone surprises you, review word choices that may be nudging the voice.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Tone</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiTone">—</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiToneSub">Top detected tone</div>
+      </div>
+
+      <div class="rm-kpi" data-tip="Numbers counts how many times numeric values appear in your text. This includes plain integers, decimals, and common percent forms. It is handy for fact heavy writing: you can verify whether a section is backed by enough quantitative detail, or spot when numbers start to overwhelm the narrative. For editors, it also helps when doing a fast scan for stats that may need sourcing, formatting, or verification.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Numbers</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiNumbers">—</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiNumbersSub">Numeric mentions</div>
+      </div>
+
+      <div class="rm-kpi" data-tip="Highest sentence starter shows the most common first word used at the beginning of your sentences. Repeating the same starter, like However or The, can make writing feel monotone even if the content is strong. Use this to vary rhythm: change a few openings, restructure sentences, or combine short sentences where needed. It is especially useful when polishing intros, transitions, and rapid update writing.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Highest sentence starter</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiStarter">—</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiStarterSub">Most common opener</div>
+      </div>
+
+      <div class="rm-kpi" data-tip="Overused word shows the single word that appears most often in your text after filtering out very common filler words. It is a quick way to catch repetition that slips in under deadline, like using the same adjective or verb too frequently. Treat it as a prompt, not a rule: sometimes repetition is intentional, but if the overused word is accidental, swap a few instances for synonyms or rewrite the sentence.">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Overused word</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiOverused">—</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiOverusedSub">Most frequent word</div>
+      </div>
       </div>
     </div>
 
@@ -405,6 +464,19 @@ net 30"></textarea>
     kpiTop: $("kpiTop"),
     kpiTopSub: $("kpiTopSub"),
     kpiTime: $("kpiTime"),
+
+    kpiLongWords: $("kpiLongWords"),
+    kpiLongWordsSub: $("kpiLongWordsSub"),
+    kpiAttrib: $("kpiAttrib"),
+    kpiAttribSub: $("kpiAttribSub"),
+    kpiTone: $("kpiTone"),
+    kpiToneSub: $("kpiToneSub"),
+    kpiNumbers: $("kpiNumbers"),
+    kpiNumbersSub: $("kpiNumbersSub"),
+    kpiStarter: $("kpiStarter"),
+    kpiStarterSub: $("kpiStarterSub"),
+    kpiOverused: $("kpiOverused"),
+    kpiOverusedSub: $("kpiOverusedSub"),
     tbody: $("tbody"),
     tableHint: $("tableHint"),
     barChart: $("barChart"),
@@ -502,7 +574,108 @@ net 30"></textarea>
     return { rows, total };
   }
 
-  function setKpis(phrasesN, totalMatches, rows, ms, sizeBytes){
+  
+
+  function analyzeWritingSignals(text){
+    const t = String(text || "");
+    const lower = t.toLowerCase();
+
+    const wordTokens = lower.match(/[a-z0-9']+/g) || [];
+    let longWords = 0;
+    for(const w of wordTokens){
+      if(w.length > 8) longWords++;
+    }
+
+    const attribList = [
+      "said","says","say","told","tell","tells","added","add","adds","stated","state","states",
+      "wrote","write","writes","reported","report","reports","noted","note","notes","explained","explain","explains",
+      "argued","argue","argues","warned","warn","warns","claimed","claim","claims","announced","announce","announces",
+      "tweeted","tweet","tweets","posted","post","posts"
+    ];
+    const attribSet = new Set(attribList);
+    let attrib = 0;
+    for(const w of wordTokens){
+      if(attribSet.has(w)) attrib++;
+    }
+
+    const numberMatches = t.match(/\b\d+(?:[.,]\d+)?%?\b/g) || [];
+    const numbers = numberMatches.length;
+
+    const starters = new Map();
+    const rawSentences = t.split(/[.!?]+[\s\n]+|\n+/g);
+    for(const s of rawSentences){
+      const trimmed = (s || "").trim();
+      if(!trimmed) continue;
+      const first = trimmed.match(/[A-Za-z0-9']+/);
+      if(!first) continue;
+      const w = first[0].toLowerCase();
+      starters.set(w, (starters.get(w) || 0) + 1);
+    }
+    let topStarter = "—";
+    let topStarterN = 0;
+    for(const [k,v] of starters.entries()){
+      if(v > topStarterN){ topStarterN = v; topStarter = k; }
+    }
+
+    const stop = new Set([
+      "the","and","for","with","that","this","from","have","has","had","are","was","were","you","your","but","not","they","their","them",
+      "into","over","under","about","after","before","between","because","also","just","like","than","then","there","here","what","when","where",
+      "who","whom","which","why","how","a","an","to","of","in","on","at","as","is","it","be","or","if","we","i","he","she","his","her",
+      "our","us","my","me","so","do","does","did","can","could","will","would","should","may","might","must"
+    ]);
+    const freq = new Map();
+    for(const w of wordTokens){
+      if(w.length < 3) continue;
+      if(stop.has(w)) continue;
+      freq.set(w, (freq.get(w) || 0) + 1);
+    }
+    let overused = "—";
+    let overusedN = 0;
+    for(const [k,v] of freq.entries()){
+      if(v > overusedN){ overusedN = v; overused = k; }
+    }
+
+    const toneLex = {
+      neutral: [],
+      confident: ["definitely","clearly","undeniably","certainly","always","never","must","will","proves","shows"],
+      uncertain: ["maybe","perhaps","likely","unlikely","appears","seems","reportedly","allegedly","suggests","could","might"],
+      urgent: ["urgent","immediately","now","critical","breaking","alert","emergency","deadline","asap","quickly"],
+      positive: ["good","great","success","improve","improved","benefit","strong","wins","growth","positive","happy"],
+      negative: ["bad","worse","fail","failed","risk","crisis","concern","decline","negative","angry","fear"],
+      analytical: ["data","evidence","analysis","trend","percent","rate","model","estimate","study","report","according"],
+      informal: ["kind","sort","okay","yeah","lol","really","stuff","gonna","wanna","guys"],
+      formal: ["therefore","however","moreover","nevertheless","furthermore","respectively","hereby","whereas","pursuant"],
+      empathetic: ["feel","felt","support","understand","care","help","safe","reassure","hope","worry"]
+    };
+
+    const toneScores = new Map();
+    for(const [tone, words] of Object.entries(toneLex)){
+      if(!words.length) continue;
+      let sc = 0;
+      for(const w of wordTokens){
+        if(words.includes(w)) sc++;
+      }
+      toneScores.set(tone, sc);
+    }
+    let tone = "neutral";
+    let toneScore = 0;
+    for(const [k,v] of toneScores.entries()){
+      if(v > toneScore){ toneScore = v; tone = k; }
+    }
+
+    return {
+      longWords,
+      attrib,
+      numbers,
+      topStarter,
+      topStarterN,
+      overused,
+      overusedN,
+      tone,
+      toneScore
+    };
+  }
+function setKpis(phrasesN, totalMatches, rows, ms, sizeBytes, signals){
     els.kpiPhrases.textContent = phrasesN ? String(phrasesN) : "0";
     els.kpiPhrasesSub.textContent = sizeBytes ? ("Source size " + prettyBytes(sizeBytes)) : "—";
     els.kpiMatches.textContent = String(totalMatches);
@@ -511,6 +684,28 @@ net 30"></textarea>
     els.kpiTop.textContent = top && top.count ? String(top.count) : "0";
     els.kpiTopSub.textContent = top ? top.phrase : "—";
     els.kpiTime.textContent = (Number.isFinite(ms) ? (ms.toFixed(0) + " ms") : "—");
+
+    if(signals){
+      els.kpiLongWords.textContent = String(signals.longWords ?? 0);
+      els.kpiAttrib.textContent = String(signals.attrib ?? 0);
+      els.kpiNumbers.textContent = String(signals.numbers ?? 0);
+
+      els.kpiTone.textContent = String(signals.tone || "neutral");
+      els.kpiToneSub.textContent = (signals.toneScore ? (String(signals.toneScore) + " cues") : "No cues found");
+
+      els.kpiStarter.textContent = signals.topStarter ? String(signals.topStarter) : "—";
+      els.kpiStarterSub.textContent = signals.topStarterN ? (String(signals.topStarterN) + " sentences") : "—";
+
+      els.kpiOverused.textContent = signals.overused ? String(signals.overused) : "—";
+      els.kpiOverusedSub.textContent = signals.overusedN ? (String(signals.overusedN) + " uses") : "—";
+    } else {
+      els.kpiLongWords.textContent = "—";
+      els.kpiAttrib.textContent = "—";
+      els.kpiTone.textContent = "—";
+      els.kpiNumbers.textContent = "—";
+      els.kpiStarter.textContent = "—";
+      els.kpiOverused.textContent = "—";
+    }
   }
 
   function renderTable(rows, total){
@@ -898,7 +1093,8 @@ net 30"></textarea>
 
       lastRows = rows;
       renderTable(rows, totalMatches);
-      setKpis(phrases.length, totalMatches, rows, ms, null);
+      const signals = analyzeWritingSignals(t);
+      setKpis(phrases.length, totalMatches, rows, ms, null, signals);
       if(isAuto){ els.tableHint.textContent = "No phrases provided. Auto-picked a small set from your text. Paste or type your own phrases to be exact."; } else { els.tableHint.textContent = rows.length ? "Sorted by highest count." : "No matches found."; }
       renderCharts(rows, totalMatches);
       els.downloadCsv.disabled = !rows.length;
