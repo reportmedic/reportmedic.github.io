@@ -159,6 +159,12 @@
   .rm-check{display:flex; align-items:center; gap:6px; user-select:none}
   .rm-check input{accent-color: var(--rm-accent)}
 
+
+  /* Phrase counter layout tweaks */
+  .rm-topInputs .rm-fieldBox{height:240px;}
+  .rm-topInputs #phrases{height:100%; min-height:0 !important; resize:none;}
+  #phraseCountHint{white-space:nowrap;}
+
 </style>
   
 
@@ -211,7 +217,7 @@
         <span class="tiny muted" id="phraseCountHint">0 phrases</span> </div>
     </div>
     <div class="rm-fieldBox">
-      <textarea class="input" id="phrases" style="min-height:180px; width:100%; resize:vertical" placeholder="invoice
+      <textarea class="input" id="phrases" style="width:100%" placeholder="invoice
 late fee
 net 30"></textarea>
     </div>
@@ -539,6 +545,7 @@ net 30"></textarea>
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: { duration: 3000 },
         plugins: { legend: { display: false }, tooltip: { enabled: true } },
         scales: {
           x: { ticks: { color: "rgba(240,246,255,.75)" }, grid: { color: "rgba(255,255,255,.06)" } },
