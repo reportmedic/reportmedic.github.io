@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>X Keyword Tracker — ReportMedic</title>
+  <meta name="description" content="Track up to 5 X.com keyword searches in vertical panes. Set your own refresh interval. Runs in your browser." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+
+<style>
+/* ── Page-level overrides ───────────────────────────────── */
+.panel h1{display:flex; align-items:baseline; gap:.55rem; flex-wrap:wrap;}
+
+/* ── Toolbar (global controls) ──────────────────────────── */
+.tracker-toolbar{
+  display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+  margin-bottom:14px;
+}
+.tracker-toolbar label{
+  display:flex; align-items:center; gap:8px;
+  font-size:12.5px; opacity:.9; margin:0;
+}
+.tracker-toolbar input[type="number"]{
+  width:72px; padding:7px 9px; font-size:13px;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:10px; color:inherit; outline:none;
+}
+.tracker-toolbar input[type="number"]:focus{
+  border-color:rgba(96,165,250,.55);
+  box-shadow:0 0 0 3px rgba(96,165,250,.16);
+}
+.spacer-auto{flex:1;}
+
+/* ── Panes container ────────────────────────────────────── */
+#panesWrap{
+  display:flex; gap:12px; align-items:stretch;
+  min-height:520px;
+}
+
+/* ── Single pane ────────────────────────────────────────── */
+.x-pane{
+  flex:1; min-width:0;
+  display:flex; flex-direction:column;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:16px;
+  overflow:hidden;
+  transition: border-color .14s ease;
+}
+.x-pane:hover{ border-color:rgba(255,255,255,.22); }
+
+/* pane header */
+.x-pane-head{
+  padding:10px 12px 9px;
+  background:rgba(0,0,0,.18);
+  border-bottom:1px solid rgba(255,255,255,.10);
+  display:flex; flex-direction:column; gap:7px;
+}
+.x-pane-head-row{
+  display:flex; align-items:center; gap:8px;
+}
+.pane-num{
+  width:22px; height:22px; border-radius:7px; flex-shrink:0;
+  background:rgba(110,168,255,.14); border:1px solid rgba(110,168,255,.26);
+  color:var(--brand); font-weight:800; font-size:11px;
+  display:flex; align-items:center; justify-content:center;
+}
+.x-pane-keyword-input{
+  flex:1; min-width:0;
+  padding:6px 9px; font-size:12.5px;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:9px; color:inherit; outline:none;
+  font-family:inherit;
+}
+.x-pane-keyword-input:focus{
+  border-color:rgba(96,165,250,.55);
+  box-shadow:0 0 0 3px rgba(96,165,250,.14);
+}
+.btn-remove-pane{
+  width:26px; height:26px; border-radius:8px; flex-shrink:0;
+  background:rgba(255,80,80,.10); border:1px solid rgba(255,80,80,.22);
+  color:rgba(255,120,120,.9); cursor:pointer; font-size:15px; line-height:1;
+  display:flex; align-items:center; justify-content:center;
+  transition: background .12s ease, border-color .12s ease;
+}
+.btn-remove-pane:hover{ background:rgba(255,80,80,.22); border-color:rgba(255,80,80,.45); }
+
+/* countdown ring + timer area */
+.x-pane-timer-row{
+  display:flex; align-items:center; gap:8px;
+}
+.ring-wrap{
+  width:32px; height:32px; flex-shrink:0;
+  position:relative;
+}
+.ring-wrap svg{width:32px; height:32px; transform:rotate(-90deg);}
+.ring-track{ fill:none; stroke:rgba(255,255,255,.10); stroke-width:3; }
+.ring-prog{
+  fill:none; stroke:var(--brand); stroke-width:3;
+  stroke-linecap:round;
+  stroke-dasharray: 82; /* 2π×13 */
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset .9s linear, stroke .3s;
+}
+.ring-label{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:8px; font-weight:800; color:var(--brand);
+  transform:rotate(0);
+}
+.x-pane-timer-row .pill{
+  font-size:11px; margin:0; padding:4px 8px;
+}
+.countdown-text{font-size:11px; opacity:.8; flex:1;}
+
+/* pane body — the "preview" / CTA area */
+.x-pane-body{
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:14px; padding:18px 14px; text-align:center;
+}
+.x-logo{
+  width:52px; height:52px; border-radius:16px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+  display:flex; align-items:center; justify-content:center;
+}
+.x-logo svg{ width:28px; height:28px; fill:var(--text); }
+
+.x-pane-kw-badge{
+  font-size:15px; font-weight:800; letter-spacing:-.3px;
+  color:var(--brand); word-break:break-all; padding:0 6px;
+  min-height:22px;
+}
+.x-pane-kw-badge.empty{ color:rgba(255,255,255,.28); font-weight:400; font-size:13px; }
+
+.x-pane-body .desc-small{
+  font-size:11.5px; color:var(--muted); line-height:1.45; max-width:200px;
+}
+.btn-open-x{
+  font-family:inherit; font-size:12.5px; font-weight:700;
+  padding:8px 14px; border-radius:10px; cursor:pointer;
+  border:none;
+  background:linear-gradient(135deg,rgba(110,168,255,1),rgba(124,247,212,1));
+  color:#061021;
+  display:inline-flex; align-items:center; gap:6px;
+  transition: opacity .14s ease, transform .12s ease;
+}
+.btn-open-x:hover{ opacity:.88; transform:translateY(-1px); }
+.btn-open-x:disabled{ opacity:.38; cursor:not-allowed; transform:none; }
+
+/* flash animation when auto-refresh fires */
+@keyframes flashPane {
+  0%   { background:rgba(110,168,255,.22); }
+  100% { background:rgba(255,255,255,.055); }
+}
+.x-pane.flashing{ animation: flashPane .8s ease forwards; }
+
+/* ── Empty state when 0 panes (shouldn't happen, but safe) ─ */
+#emptyState{
+  display:none; flex:1;
+  align-items:center; justify-content:center;
+  color:var(--muted); font-size:13px; text-align:center;
+}
+
+/* ── Add pane button ─────────────────────────────────────── */
+.btn-add-pane{
+  border:2px dashed rgba(255,255,255,.22);
+  background:transparent; color:rgba(255,255,255,.5);
+  border-radius:16px; cursor:pointer; font-family:inherit;
+  font-size:13px; font-weight:600;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  padding:12px 18px; align-self:stretch; min-width:52px;
+  transition: border-color .14s ease, color .14s ease, background .14s ease;
+}
+.btn-add-pane:hover{
+  border-color:rgba(110,168,255,.50);
+  color:var(--brand); background:rgba(110,168,255,.06);
+}
+.btn-add-pane:disabled{ opacity:.28; cursor:not-allowed; }
+
+/* ── rm-kv pairs ─────────────────────────────────────────── */
+.rm-kv{display:flex;gap:8px;font-size:12px;line-height:1.4;}
+.rm-kv .k{opacity:.65;min-width:90px;}
+.rm-kv .v{font-weight:700;}
+
+/* ── Responsive: stack panes vertically on narrow screens ── */
+@media(max-width:680px){
+  #panesWrap{ flex-direction:column; }
+  .btn-add-pane{ min-height:52px; }
+}
+</style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap" style="max-width:1280px;">
+  <div class="panel">
+    <h1>X Keyword Tracker <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Monitor up to 5 keyword searches on X.com side-by-side. Set a refresh interval and each pane will auto-open your search at the right moment — so you never miss a trending term.</p>
+
+    <div class="hr"></div>
+
+    <!-- Toolbar -->
+    <div class="tracker-toolbar">
+      <label>
+        ⏱ Refresh every
+        <input type="number" id="refreshMins" min="1" max="120" value="5" style="width:60px" />
+        min
+      </label>
+      <button class="btn primary" id="btnApplyRefresh" type="button" style="padding:7px 13px;font-size:12.5px">Apply</button>
+
+      <div class="spacer-auto"></div>
+
+      <span class="pill tiny" id="globalStatus">
+        <b>Status:</b><span class="muted" id="globalStatusText">running</span>
+      </span>
+
+      <button class="btn" id="btnPauseAll" type="button" style="padding:7px 12px;font-size:12.5px">⏸ Pause All</button>
+      <button class="btn" id="btnResumeAll" type="button" style="padding:7px 12px;font-size:12.5px" disabled>▶ Resume All</button>
+      <button class="btn" id="btnOpenAll" type="button" style="padding:7px 12px;font-size:12.5px">↗ Open All</button>
+    </div>
+
+    <!-- Panes row -->
+    <div id="panesWrap">
+      <!-- panes injected by JS -->
+      <div id="emptyState" style="display:none;">No panes. Click + Add Pane.</div>
+      <button class="btn-add-pane" id="btnAddPane" type="button">
+        <span style="font-size:20px;line-height:1">＋</span> Add Pane
+      </button>
+    </div>
+
+  </div><!-- /.panel -->
+
+  <div class="footer">© 2026 ReportMedic</div>
+</div>
+
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
+<!-- Learn More Modal -->
+<div aria-hidden="true" aria-label="X Keyword Tracker details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">X Keyword Tracker</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Monitor up to 5 X.com keyword searches simultaneously</li>
+        <li>Stay on top of trending topics, brand mentions, or competitors</li>
+        <li>Set auto-refresh intervals so searches open at the right cadence</li>
+      </ul>
+      <h3>How it works</h3>
+      <ul>
+        <li>Each pane holds one keyword — type it in the pane header</li>
+        <li>Set a global refresh interval (default: 5 min) and click Apply</li>
+        <li>When the timer hits zero, the pane flashes and opens X.com search in a new tab</li>
+        <li>Use "Open All" to immediately open all keywords in new tabs</li>
+        <li>Pause/Resume controls let you stop all timers at once</li>
+      </ul>
+      <h3>Tips</h3>
+      <ul>
+        <li>Use X search operators like <b>"phrase"</b>, <b>from:handle</b>, <b>#hashtag</b>, or <b>lang:en</b></li>
+        <li>Add up to 5 panes — fewer panes means each occupies more width</li>
+        <li>Your keywords and interval are saved in this tab until you close it</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── Modal wiring ───────────────────────────────────── */
+(function rmLmWireUp(){
+  const setOpen = (id, isOpen) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    document.documentElement.classList.toggle('rmNoScroll', isOpen);
+    document.body.classList.toggle('rmNoScroll', isOpen);
+  };
+  document.querySelectorAll('[data-rm-lm-open]').forEach(a => {
+    a.addEventListener('click', e => { e.preventDefault(); setOpen(a.dataset.rmLmOpen, true); });
+  });
+  document.querySelectorAll('[data-rm-lm-close]').forEach(b => {
+    b.addEventListener('click', () => setOpen(b.dataset.rmLmClose, false));
+  });
+  document.querySelectorAll('.rm-lm-backdrop').forEach(bd => {
+    bd.addEventListener('click', e => { if(e.target === bd) setOpen(bd.id, false); });
+  });
+})();
+
+/* ── Tracker core ───────────────────────────────────── */
+(function Tracker(){
+
+  const MAX_PANES  = 5;
+  const CIRC       = 2 * Math.PI * 13; // r=13 → ~81.68, keep as exact
+  const $ = id => document.getElementById(id);
+
+  const state = {
+    panes:   [],          // [{id, keyword, secsLeft, intervalId, paused}]
+    secs:    5 * 60,      // global refresh seconds
+    paused:  false,
+    nextId:  1
+  };
+
+  /* helpers ──────────────────────────────────────────── */
+  function fmt(s){
+    const m = String(Math.floor(s/60)).padStart(2,'0');
+    const sec = String(s % 60).padStart(2,'0');
+    return `${m}:${sec}`;
+  }
+
+  function xUrl(kw){
+    return 'https://x.com/search?q=' + encodeURIComponent(kw.trim()) + '&src=typed_query&f=live';
+  }
+
+  function openX(kw){
+    if(!kw || !kw.trim()) return;
+    window.open(xUrl(kw), '_blank', 'noopener');
+  }
+
+  /* ── Build a pane DOM element ───────────────────────── */
+  function buildPane(id, keyword){
+    const el = document.createElement('div');
+    el.className = 'x-pane';
+    el.id = 'pane-' + id;
+
+    const circum = Math.round(CIRC * 100) / 100;
+    const paneIdx = () => state.panes.findIndex(p => p.id === id) + 1;
+
+    el.innerHTML = `
+      <div class="x-pane-head">
+        <div class="x-pane-head-row">
+          <div class="pane-num" id="pn-${id}">${paneIdx()}</div>
+          <input class="x-pane-keyword-input" id="kw-${id}" type="text"
+            placeholder="keyword, #hashtag, from:handle…"
+            value="${escHtml(keyword)}" autocomplete="off" spellcheck="false" />
+          <button class="btn-remove-pane" id="rm-${id}" title="Remove this pane" type="button">×</button>
+        </div>
+        <div class="x-pane-timer-row">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 32 32">
+              <circle class="ring-track" cx="16" cy="16" r="13"/>
+              <circle class="ring-prog" id="ring-${id}" cx="16" cy="16" r="13"
+                stroke-dasharray="${circum}" stroke-dashoffset="0"/>
+            </svg>
+            <div class="ring-label" id="rlabel-${id}">⏱</div>
+          </div>
+          <div class="countdown-text" id="cd-${id}">--:--</div>
+          <button class="btn" style="padding:4px 9px;font-size:11px" id="pause-${id}" type="button">⏸</button>
+          <button class="btn" style="padding:4px 9px;font-size:11px" id="restart-${id}" type="button">↺</button>
+        </div>
+      </div>
+      <div class="x-pane-body">
+        <div class="x-logo">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.254 5.622 5.91-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+        </div>
+        <div class="x-pane-kw-badge ${keyword ? '' : 'empty'}" id="badge-${id}">
+          ${keyword ? escHtml(keyword) : 'Enter a keyword above'}
+        </div>
+        <div class="desc-small">Opens X.com search in a new tab. Use operators like <b>#tag</b>, <b>"phrase"</b>, <b>from:handle</b>.</div>
+        <button class="btn-open-x" id="open-${id}" type="button" ${keyword ? '' : 'disabled'}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.254 5.622 5.91-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Search on X
+        </button>
+      </div>
+    `;
+
+    return el;
+  }
+
+  function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  /* ── Render / sync panes to DOM ─────────────────────── */
+  function render(){
+    const wrap = $('panesWrap');
+    const addBtn = $('btnAddPane');
+
+    // clear existing pane els (keep addBtn)
+    wrap.querySelectorAll('.x-pane').forEach(el => el.remove());
+
+    state.panes.forEach((p, idx) => {
+      const el = buildPane(p.id, p.keyword);
+      wrap.insertBefore(el, addBtn);
+      wirePane(p);
+    });
+
+    // update indices labels
+    state.panes.forEach((p, idx) => {
+      const numEl = $('pn-' + p.id);
+      if(numEl) numEl.textContent = idx + 1;
+    });
+
+    // disable add btn at max
+    addBtn.disabled = (state.panes.length >= MAX_PANES);
+
+    // hide/show empty
+    $('emptyState').style.display = state.panes.length === 0 ? 'flex' : 'none';
+
+    // refresh timers display
+    state.panes.forEach(p => updateTimerDisplay(p));
+  }
+
+  /* ── Wire events for a pane after DOM insertion ─────── */
+  function wirePane(p){
+    // keyword input
+    const kwInput = $('kw-' + p.id);
+    kwInput.addEventListener('input', () => {
+      const val = kwInput.value.trim();
+      p.keyword = kwInput.value;
+      const badge = $('badge-' + p.id);
+      const openBtn = $('open-' + p.id);
+      if(val){
+        badge.textContent = val;
+        badge.classList.remove('empty');
+        openBtn.disabled = false;
+      } else {
+        badge.textContent = 'Enter a keyword above';
+        badge.classList.add('empty');
+        openBtn.disabled = true;
+      }
+    });
+
+    // open button
+    $('open-' + p.id).addEventListener('click', () => openX(p.keyword));
+
+    // remove button
+    $('rm-' + p.id).addEventListener('click', () => removePane(p.id));
+
+    // pause toggle
+    $('pause-' + p.id).addEventListener('click', () => {
+      p.paused = !p.paused;
+      $('pause-' + p.id).textContent = p.paused ? '▶' : '⏸';
+      $('pause-' + p.id).title = p.paused ? 'Resume' : 'Pause';
+    });
+
+    // restart
+    $('restart-' + p.id).addEventListener('click', () => {
+      p.secsLeft = state.secs;
+      updateTimerDisplay(p);
+    });
+  }
+
+  /* ── Timer display update ───────────────────────────── */
+  function updateTimerDisplay(p){
+    const cdEl = $('cd-' + p.id);
+    const ringEl = $('ring-' + p.id);
+    const rlabelEl = $('rlabel-' + p.id);
+    if(!cdEl || !ringEl) return;
+
+    const total = state.secs || 1;
+    const ratio = p.secsLeft / total;
+    const circum = 2 * Math.PI * 13;
+    const offset = circum * (1 - ratio);
+
+    ringEl.style.strokeDashoffset = offset.toFixed(2);
+
+    // colour shift: green → brand → orange as it counts down
+    if(ratio > 0.5)      ringEl.style.stroke = 'var(--brand2)';
+    else if(ratio > 0.2) ringEl.style.stroke = 'var(--brand)';
+    else                 ringEl.style.stroke = '#f97316';
+
+    cdEl.textContent = p.paused ? '⏸ ' + fmt(p.secsLeft) : fmt(p.secsLeft);
+
+    rlabelEl.textContent = p.paused ? '⏸' : (ratio <= 0.1 ? '🔴' : '⏱');
+  }
+
+  /* ── Global tick (every second) ─────────────────────── */
+  function tick(){
+    if(state.paused) return;
+    state.panes.forEach(p => {
+      if(p.paused) return;
+      p.secsLeft--;
+      if(p.secsLeft <= 0){
+        p.secsLeft = state.secs;
+        // Flash + auto-open
+        const paneEl = $('pane-' + p.id);
+        if(paneEl){
+          paneEl.classList.remove('flashing');
+          void paneEl.offsetWidth; // reflow
+          paneEl.classList.add('flashing');
+        }
+        openX(p.keyword);
+      }
+      updateTimerDisplay(p);
+    });
+  }
+
+  /* ── Add / remove panes ─────────────────────────────── */
+  function addPane(keyword){
+    if(state.panes.length >= MAX_PANES) return;
+    const id = state.nextId++;
+    const pane = { id, keyword: keyword || '', secsLeft: state.secs, paused: false };
+    state.panes.push(pane);
+    render();
+    // focus the new keyword input
+    setTimeout(() => { const el = $('kw-' + id); if(el) el.focus(); }, 60);
+  }
+
+  function removePane(id){
+    state.panes = state.panes.filter(p => p.id !== id);
+    const el = $('pane-' + id);
+    if(el) el.remove();
+    // update number badges
+    state.panes.forEach((p, idx) => {
+      const numEl = $('pn-' + p.id);
+      if(numEl) numEl.textContent = idx + 1;
+    });
+    $('btnAddPane').disabled = (state.panes.length >= MAX_PANES);
+    $('emptyState').style.display = state.panes.length === 0 ? 'flex' : 'none';
+  }
+
+  /* ── Controls ───────────────────────────────────────── */
+  $('btnAddPane').addEventListener('click', () => addPane(''));
+
+  $('btnApplyRefresh').addEventListener('click', () => {
+    const v = parseInt($('refreshMins').value, 10);
+    if(isNaN(v) || v < 1) return;
+    state.secs = v * 60;
+    // reset all pane timers
+    state.panes.forEach(p => { p.secsLeft = state.secs; updateTimerDisplay(p); });
+    setGlobalStatus('Refresh set to ' + v + ' min');
+    setTimeout(() => setGlobalStatus('running'), 2500);
+  });
+
+  $('btnPauseAll').addEventListener('click', () => {
+    state.paused = true;
+    $('btnPauseAll').disabled = true;
+    $('btnResumeAll').disabled = false;
+    setGlobalStatus('paused');
+  });
+
+  $('btnResumeAll').addEventListener('click', () => {
+    state.paused = false;
+    $('btnPauseAll').disabled = false;
+    $('btnResumeAll').disabled = true;
+    setGlobalStatus('running');
+  });
+
+  $('btnOpenAll').addEventListener('click', () => {
+    state.panes.forEach(p => openX(p.keyword));
+  });
+
+  function setGlobalStatus(txt){
+    $('globalStatusText').textContent = ' ' + txt;
+  }
+
+  /* ── Bootstrap ──────────────────────────────────────── */
+  // Start with 2 default panes
+  addPane('');
+  addPane('');
+
+  // Global tick every second
+  setInterval(tick, 1000);
+
+})();
+</script>
+</body>
+</html>
