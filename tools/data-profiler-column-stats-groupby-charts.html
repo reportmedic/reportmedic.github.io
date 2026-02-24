@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>File Analyzer (CSV Profiler) — ReportMedic</title>
-  <meta name="description" content="Profile a CSV/TXT locally: unique-value cards, filters, group-by summaries, pivot tables, and charts — built for data modellers.">
+  <title>File Analyzer (CSV Profiler)  -  ReportMedic</title>
+  <meta name="description" content="Profile a CSV/TXT locally: unique-value cards, filters, group-by summaries, pivot tables, and charts  -  built for data modellers.">
   <link rel="stylesheet" href="/assets/css/styles.css">
   <style>
 .fa-root{
@@ -226,8 +226,8 @@
 
   <div class="wrap">
     <div class="panel">
-      <h1>File Analyzer <a href="#" id="learnMoreBtn" style="font-size:12px; font-weight:800; text-decoration:none; border-bottom:1px dashed rgba(255,255,255,.28); margin-left:8px;">Learn more</a></h1>
-      <p class="sub">A local-first CSV/TXT profiler for data modellers: unique-value cards, filters, group-by summaries, pivots, and charts — so you can validate structure before mapping or modeling.</p>
+      <h1>File Analyzer <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+      <p class="sub">A local-first CSV/TXT profiler for data modellers: unique-value cards, filters, group-by summaries, pivots, and charts  -  so you can validate structure before mapping or modeling.</p>
       <div class="tiny muted" style="margin-top:6px;"><a href="/fix-my-report.html" style="text-decoration:none; border-bottom:1px dashed rgba(255,255,255,.25);">Need a second set of eyes? Get human help →</a></div>
 
       <div class="hr"></div>
@@ -475,47 +475,71 @@
   
 
 
-<!-- Learn More modal -->
-<div id="lmOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:60;"></div>
-<div id="lmModal" style="display:none; position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); width:min(860px, 92vw); max-height:80vh; overflow:auto; z-index:70; border:1px solid var(--border); border-radius:16px; background:rgba(8,12,22,.96); box-shadow:0 18px 50px rgba(0,0,0,.55);">
-  <div style="display:flex; align-items:center; gap:10px; padding:14px 14px 10px; border-bottom:1px solid var(--border);">
-    <strong style="font-size:14px;">File Analyzer — what it does</strong>
-    <div class="spacer"></div>
-    <button class="btn" id="lmCloseBtn" type="button">Close</button>
-  </div>
-  <div style="padding:14px;">
-    <div class="small">
-      <p><strong>Purpose:</strong> help data modellers quickly understand a dataset’s shape before building models, mappings, and transformations.</p>
+<!-- Learn more modal -->
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">File Analyzer</h2>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <p><b>Purpose:</b> help data modellers quickly understand a dataset’s shape before building models, mappings, and transformations.</p>
+
+      <h3>What you get</h3>
       <ul>
-        <li><strong>Column cards:</strong> unique counts + quick type hints (numeric vs text).</li>
-        <li><strong>Preview:</strong> scrollable table with sortable columns and configurable preview size.</li>
-        <li><strong>Filters:</strong> stack multiple rules (AND/OR) and instantly see the impact.</li>
-        <li><strong>Group-by:</strong> summarize by any field and view a bar chart (Top N).</li>
-        <li><strong>Pivot:</strong> rows × columns cross-tab with selectable aggregation.</li>
-        <li><strong>Local-only:</strong> processing happens in your browser; files aren’t uploaded.</li>
+        <li><b>Column cards:</b> unique counts plus quick type hints (numeric vs text)</li>
+        <li><b>Preview:</b> scrollable table with sortable columns and configurable preview size</li>
+        <li><b>Filters:</b> stack multiple rules (AND/OR) and instantly see the impact</li>
+        <li><b>Group by:</b> summarize by any field and view a bar chart (Top N)</li>
+        <li><b>Pivot:</b> rows × columns cross-tab with selectable aggregation</li>
+        <li><b>Local only:</b> processing happens in your browser, files aren’t uploaded</li>
       </ul>
     </div>
   </div>
 </div>
+
 <script>
 (function(){
-  const open = () => { 
-    document.getElementById('lmOverlay').style.display='block';
-    document.getElementById('lmModal').style.display='block';
-    document.body.classList.add('rmNoScroll');
-  };
-  const close = () => { 
-    document.getElementById('lmOverlay').style.display='none';
-    document.getElementById('lmModal').style.display='none';
-    document.body.classList.remove('rmNoScroll');
-  };
-  const btn = document.getElementById('learnMoreBtn');
-  if(btn) btn.addEventListener('click', (e)=>{ e.preventDefault(); open(); });
-  document.getElementById('lmOverlay').addEventListener('click', close);
-  document.getElementById('lmCloseBtn').addEventListener('click', close);
-  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
+  function openLM(id){
+    const bd = document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute("aria-hidden","false");
+    document.body.classList.add("rmNoScroll");
+    const btn = bd.querySelector(".rm-lm-close");
+    if(btn) btn.focus();
+  }
+  function closeLM(id){
+    const bd = document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute("aria-hidden","true");
+    document.body.classList.remove("rmNoScroll");
+  }
+  document.addEventListener("click", function(e){
+    const a = e.target.closest("[data-rm-lm-open]");
+    if(a){
+      e.preventDefault();
+      openLM(a.getAttribute("data-rm-lm-open"));
+      return;
+    }
+    const close = e.target.closest("[data-rm-lm-close]");
+    if(close){
+      e.preventDefault();
+      closeLM(close.getAttribute("data-rm-lm-close"));
+      return;
+    }
+    const bd = e.target.classList && e.target.classList.contains("rm-lm-backdrop") ? e.target : null;
+    if(bd) closeLM(bd.id);
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Escape") return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(function(bd){
+      bd.setAttribute("aria-hidden","true");
+    });
+    document.body.classList.remove("rmNoScroll");
+  });
 })();
 </script>
+
 
 
   <script>
@@ -1053,7 +1077,7 @@ keys.forEach(k => {
       }
       value = uniq.size;
     } else {
-      // No measure selected — unique of what? fall back to group count
+      // No measure selected  -  unique of what? fall back to group count
       value = rec.count;
     }
   } else {
