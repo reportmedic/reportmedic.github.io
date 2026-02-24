@@ -170,6 +170,20 @@
     #sizePill.est-large{border-color:rgba(245,196,66,.45);background:rgba(245,196,66,.08);}
     #sizePill.est-small{border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.08);}
 
+    /* ── H.265 warning banner ── */
+    #h265Warning{
+      display:none;
+      margin-top:10px;
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid rgba(245,196,66,.5);
+      background:rgba(245,196,66,.08);
+      font-size:13px;
+      line-height:1.5;
+    }
+    #h265Warning strong{color:rgba(245,196,66,.95);}
+    #h265Warning.visible{display:block;}
+
     /* ── Batch badge ── */
     .rm-batch-badge{font-size:10px;padding:2px 7px;border-radius:999px;background:rgba(110,168,255,.12);color:rgba(110,168,255,.8);border:1px solid rgba(110,168,255,.2);margin-left:6px;}
   </style>
@@ -348,6 +362,10 @@
               Strip GPS / metadata
             </label>
             <span class="pill tiny" id="sizePill" style="margin-left:auto"><b>Est.:</b><span class="muted">–</span></span>
+          </div>
+
+          <div id="h265Warning">
+            <strong>⚠ H.265 is very slow in-browser</strong> — the WASM encoder has no SIMD and runs single-threaded, so a 1-minute clip can take <strong>30–60 minutes</strong>. Progress will appear stuck at 0% during the x265 analysis pass — it has not crashed. For practical use, stick with <strong>H.264 at CRF 26–28</strong> which produces similar sizes much faster. H.265 is only worth it for very short clips or if you can leave it running.
           </div>
 
           <div class="hr"></div>
@@ -531,7 +549,7 @@
           <li>Best for reducing GoPro-style 2K/4K exports for sharing.</li>
           <li>Nothing is uploaded — your file stays on your machine.</li>
           <li>Use <strong>Quick Presets</strong> for the fastest workflow.</li>
-          <li>H.265 produces ~40% smaller files at the same quality but plays back on modern devices only.</li>
+          <li>H.265 produces ~40% smaller files at the same quality but <strong>is very slow in-browser</strong> (no SIMD, 1 thread — expect 30–60 min per minute of footage). Use H.264 CRF 26–28 for similar results at practical speed.</li>
           <li>Strip GPS/metadata before sharing publicly (checked by default).</li>
           <li>Trim first, then compress — shorter clips = much smaller output.</li>
           <li>If a very large file fails, try 720p or trim the clip first.</li>
@@ -671,7 +689,7 @@
       share:    { mode:'1080',       preset:'veryfast', fps:'30',   ab:'128k', codec:'h264', crf:28, mute:false },
       reels:    { mode:'vertical916',preset:'veryfast', fps:'30',   ab:'128k', codec:'h264', crf:26, mute:false },
       youtube:  { mode:'keep',       preset:'veryfast', fps:'keep', ab:'160k', codec:'h264', crf:22, mute:false },
-      archive:  { mode:'720',        preset:'veryfast', fps:'30',   ab:'96k',  codec:'h265', crf:32, mute:false },
+      archive:  { mode:'720',        preset:'veryfast', fps:'30',   ab:'96k',  codec:'h264', crf:32, mute:false },
       whatsapp: { mode:'720',        preset:'veryfast', fps:'30',   ab:'96k',  codec:'h264', crf:30, mute:false },
     };
 
@@ -695,6 +713,10 @@
         customRow.classList.toggle('rm-hide', mode.value !== 'custom');
         updateCrfLabel();
         updateEstimate();
+
+        // Hide H.265 warning (all presets use h264 now)
+        const warn = document.getElementById('h265Warning');
+        if(warn) warn.classList.remove('visible');
 
         // Active highlight
         document.querySelectorAll('.rm-preset-btn').forEach(b => b.classList.remove('active'));
@@ -869,7 +891,12 @@
       updateEstimate();
       clearActivePreset();
     });
-    codecEl.addEventListener('change', () => { updateEstimate(); clearActivePreset(); });
+    codecEl.addEventListener('change', () => {
+      updateEstimate();
+      clearActivePreset();
+      const warn = document.getElementById('h265Warning');
+      if(warn) warn.classList.toggle('visible', codecEl.value === 'h265');
+    });
     fps.addEventListener('change', clearActivePreset);
     ab.addEventListener('change', clearActivePreset);
     mute.addEventListener('change', clearActivePreset);
@@ -1341,6 +1368,11 @@
       loadBtn.disabled=true; if(batchLoadBtn) batchLoadBtn.disabled=true;
       setStatus('processing','processing');
       appendLog('---');
+
+      // Warn about H.265 slowness upfront in the log
+      if(codecEl.value === 'h265'){
+        appendLog('⚠ H.265 selected: WASM x265 has no SIMD and runs single-threaded. Progress will show 0% during the analysis pass — this is normal. A 1-min clip may take 30–60 min. Consider H.264 CRF 26 for faster results.');
+      }
 
       isRunning=true; progressTouched=false;
       setSingleProgressPct(0); setSingleProgressIndeterminate(true);
