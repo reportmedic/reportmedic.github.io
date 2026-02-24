@@ -858,8 +858,11 @@ net 30"></textarea>
         overlap: !!els.overlap.checked,
         wholeWord: !!els.wholeWord.checked
       };
-
-      let phrases = getPhrases();
+      // If phrases were auto-filled, treat as auto mode so toggles update immediately.
+      let phrases = [];
+      if(!(els.phrases && els.phrases.dataset && els.phrases.dataset.autoFilled === "1")){
+        phrases = getPhrases();
+      }
       let isAuto = false;
       if(!phrases.length){
         phrases = autoDetectPhrases(t, 12, { nouns: els.optNouns && els.optNouns.checked, multi: els.optMulti && els.optMulti.checked, caseSensitive: opts.caseSensitive });
