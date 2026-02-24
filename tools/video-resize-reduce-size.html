@@ -2016,6 +2016,18 @@
     /* ═══════════════════════════════════════════
        INIT
     ════════════════════════════════════════════ */
+    // Force-close dialogs on load and on back-forward cache restore
+    function forceCloseDialogs(){
+      try{ if(perFileDialog && perFileDialog.open) perFileDialog.close(); }catch(e){}
+      try{ if(rowDialog && rowDialog.open) rowDialog.close(); }catch(e){}
+      if(perFileDialog) perFileDialog.removeAttribute('open');
+      if(rowDialog) rowDialog.removeAttribute('open');
+      pfEditingIdx = -1;
+      rowDialogKey = null;
+    }
+    forceCloseDialogs();
+    window.addEventListener('pageshow', forceCloseDialogs);
+
     setSingleUIVisible(false);
     setBatchMode(false);
     setPill(beforeP,'Before','–');
