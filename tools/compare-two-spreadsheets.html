@@ -187,38 +187,38 @@
 
 
 <script>
-(function(){
-  function openLM(id){
-    const bd=document.getElementById(id);
-    if(!bd) return;
-    bd.setAttribute('aria-hidden','false');
-    const btn=bd.querySelector('.rm-lm-close');
-    if(btn) btn.focus();
-  }
-  function closeLM(id){
-    const bd=document.getElementById(id);
-    if(!bd) return;
-    bd.setAttribute('aria-hidden','true');
-  }
-  document.addEventListener('click', function(e){
-    const a=e.target.closest('[data-rm-lm-open]');
-    if(a){
+(function rmLmWireUp(){
+  const openers = document.querySelectorAll('[data-rm-lm-open]');
+  const closers = document.querySelectorAll('[data-rm-lm-close]');
+  const setOpen = (id, isOpen) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    document.documentElement.classList.toggle('rmNoScroll', isOpen);
+    document.body.classList.toggle('rmNoScroll', isOpen);
+  };
+  openers.forEach(a=>{
+    a.addEventListener('click', (e)=>{
       e.preventDefault();
-      openLM(a.getAttribute('data-rm-lm-open'));
-      return;
-    }
-    const close=e.target.closest('[data-rm-lm-close]');
-    if(close){
-      e.preventDefault();
-      closeLM(close.getAttribute('data-rm-lm-close'));
-      return;
-    }
-    const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
-    if(bd) closeLM(bd.id);
+      const id = a.getAttribute('data-rm-lm-open');
+      if(id) setOpen(id, true);
+    });
   });
-  document.addEventListener('keydown', function(e){
+  closers.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.getAttribute('data-rm-lm-close');
+      if(id) setOpen(id, false);
+    });
+  });
+  document.addEventListener('keydown', (e)=>{
     if(e.key !== 'Escape') return;
-    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute('aria-hidden','true'));
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(el=>{
+      setOpen(el.id, false);
+    });
+  });
+  document.addEventListener('click', (e)=>{
+    const bd = e.target && e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+    if(bd && bd.id) setOpen(bd.id, false);
   });
 })();
 </script>
