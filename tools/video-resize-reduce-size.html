@@ -16,20 +16,6 @@
   <script defer src="/assets/js/rm-tools-drawer.js"></script>
 
   <style>
-    /* Learn-more modal (page-local) */
-    .rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
-    .rm-lm-link:hover{opacity:1;}
-    .rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:16px; z-index:9999;}
-    .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
-    .rm-lm{width:min(900px, 100%); background:rgba(20,20,24,.96); border:1px solid rgba(255,255,255,.12); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35);}
-    .rm-lm header{display:flex; align-items:center; justify-content:space-between; padding:14px 14px 10px; border-bottom:1px solid rgba(255,255,255,.10);}
-    .rm-lm header .t{font-weight:800; letter-spacing:.2px;}
-    .rm-lm .rm-lm-close{background:transparent; border:1px solid rgba(255,255,255,.18); color:inherit; border-radius:10px; padding:8px 10px; cursor:pointer;}
-    .rm-lm .rm-lm-close:hover{border-color:rgba(255,255,255,.28);}
-    .rm-lm .body{padding:14px;}
-    .rm-lm .body ul{margin:8px 0 0 18px;}
-    .rm-lm .body li{margin:6px 0;}
-
     .rm-kv{display:grid; grid-template-columns:160px 1fr; gap:8px; margin-top:10px;}
     .rm-kv .k{opacity:.8;}
     .rm-kv .v{word-break:break-word;}
@@ -366,7 +352,12 @@
           </div>
         </div>
       </div>
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+  <a class="btn primary" href="/#toolbox" target=_blank rel=noopener>Back to Toolbox</a>
+  <a class="btn" href="/docs/contact.html" target=_blank rel=noopener>Contact</a>
+</div>
     </div>
+    <div class="footer">© 2026 ReportMedic</div>
   </div>
 
   <footer class="rm-footer">
@@ -385,30 +376,32 @@
     </div>
   </footer>
 
-  <div class="rm-lm-backdrop" id="rmLM" aria-hidden="true">
-    <div class="rm-lm" role="dialog" aria-modal="true" aria-label="Video Resize / Reduce Size">
-      <header>
-        <div class="t">Video Resize / Reduce Size</div>
-        <button class="rm-lm-close" type="button" data-rm-lm-close="rmLM">Close</button>
-      </header>
-      <div class="body">
-        <ul>
-          <li>Best for reducing GoPro-style 2K/4K exports for sharing.</li>
-          <li>Nothing is uploaded - your file stays on your machine.</li>
-          <li>Choose a target resolution, then fine-tune quality with CRF (higher = smaller).</li>
-          <li>If a very large file fails, try 720p or split the clip before converting.</li>
-        </ul>
-        <div class="rm-kv">
-          <div class="k">Good default</div>
-          <div class="v">1080p • CRF 28 • Very fast • AAC 128k</div>
-          <div class="k">Smaller</div>
-          <div class="v">720p • CRF 30–32</div>
-          <div class="k">Better quality</div>
-          <div class="v">1080p • CRF 22–26 (bigger files)</div>
-        </div>
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true">
+  <div class="rm-lm-dialog" role="dialog" aria-modal="true" aria-label="Video Resize / Reduce Size">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Video Resize / Reduce Size</h2>
+      <button class="rm-lm-close" type="button" data-rm-lm-close="rmLM">Close</button>
+    </div>
+
+    <div class="rm-lm-body">
+      <ul>
+        <li>Best for reducing GoPro-style 2K/4K exports for sharing.</li>
+        <li>Nothing is uploaded - your file stays on your machine.</li>
+        <li>Choose a target resolution, then fine-tune quality with CRF (higher = smaller).</li>
+        <li>If a very large file fails, try 720p or split the clip before converting.</li>
+      </ul>
+
+      <div class="rm-kv">
+        <div class="k">Good default</div>
+        <div class="v">1080p • CRF 28 • Very fast • AAC 128k</div>
+        <div class="k">Smaller</div>
+        <div class="v">720p • CRF 30–32</div>
+        <div class="k">Better quality</div>
+        <div class="v">1080p • CRF 22–26 (bigger files)</div>
       </div>
     </div>
   </div>
+</div>
 
   <script>
   (function(){
