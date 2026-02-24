@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="Count occurrences of phrases in TXT, CSV, or pasted text. Runs locally in your browser."/>
+<title>Phrase Occurrence Counter — ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+
+<style>
+  .rm-modebar{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+  .rm-modebar .btn{border:1px solid rgba(255,255,255,.14)}
+  .rm-modebar .btn.is-active{outline:2px solid rgba(124,247,212,.35)}
+  .rm-mini{font-size:12px}
+  .rm-list{list-style:none; padding:0; margin:10px 0 0;}
+  .rm-item{display:flex; gap:10px; align-items:center; padding:10px; border:1px solid rgba(255,255,255,.12); border-radius:14px; margin:8px 0; background:rgba(255,255,255,.03)}
+  .rm-handle{cursor:grab; user-select:none; font-size:14px; padding:6px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18)}
+  .rm-thumb{width:64px; height:64px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.10); display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.22)}
+  .rm-thumb img,.rm-thumb canvas{max-width:100%; max-height:100%; display:block}
+  .rm-item .rm-grow{flex:1; min-width:0}
+  .rm-k{font-weight:700}
+  .rm-v{color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .rm-gridThumbs{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-top:12px}
+  .rm-pageCard{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.03)}
+  .rm-pageCard .rm-pageTop{display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .rm-pageCard .rm-pageNo{font-weight:700; font-size:12px; color:var(--muted)}
+  .rm-dropHint{font-size:12px; color:var(--muted); margin-top:8px}
+  .rm-status{min-height:20px}
+  .rm-bad{color:#ffb4b4}
+  .rm-good{color:#b7ffd7}
+  .rm-warn{color:#ffe7a8}
+  .rm-hidden{display:none !important}
+
+  /* Learn more - dark glass premium modal (single source of truth) */
+  :root{
+    --lm-radius: 18px;
+    --lm-border: rgba(255,255,255,.14);
+    --lm-text: rgba(240,246,255,.92);
+    --lm-muted: rgba(240,246,255,.68);
+  }
+
+  /* Keep Learn more inline with the page title */
+  .panel h1{
+    display:flex;
+    align-items:baseline;
+    gap:.55rem;
+    flex-wrap:wrap;
+  }
+
+  .rm-lm-link{
+    font-size:.82rem;
+    margin-left:.55rem;
+    text-decoration:underline;
+    text-underline-offset:3px;
+    opacity:.85;
+    white-space:nowrap;
+  }
+  .rm-lm-link:hover{opacity:1;}
+
+  .rm-lm-backdrop{
+    position:fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    z-index:9999;
+
+    background:
+      radial-gradient(1200px 600px at 20% 10%, rgba(120,170,255,.18), transparent 60%),
+      radial-gradient(900px 500px at 85% 20%, rgba(0,220,255,.10), transparent 55%),
+      rgba(2,6,23,.72);
+    backdrop-filter: blur(4px) saturate(1.2);
+    -webkit-backdrop-filter: blur(4px) saturate(1.2);
+  }
+  .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+
+  .rm-lm-dialog{
+    width:min(640px, 100%);
+    border-radius: var(--lm-radius);
+    overflow:hidden;
+
+    background: rgba(10, 14, 25, .3);
+    border: 1px solid var(--lm-border);
+    backdrop-filter: blur(14px) saturate(1.15);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    box-shadow: 0 20px 60px rgba(0,0,0,.45);
+
+    transform: translateY(10px) scale(.985);
+    opacity: 0;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+  .rm-lm-backdrop[aria-hidden="false"] .rm-lm-dialog{
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  .rm-lm-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 16px;
+    border-bottom:1px solid rgba(255,255,255,.10);
+
+    background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+  }
+
+  .rm-lm-title{
+    margin:0;
+    font-size:1.05rem;
+    letter-spacing:-.01em;
+    font-weight:650;
+    color: var(--lm-text);
+  }
+
+  .rm-lm-close{
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    padding:6px 10px;
+    border-radius:12px;
+    cursor:pointer;
+    color: rgba(240,246,255,.82);
+    font-size:1.1rem;
+    line-height:1;
+  }
+  .rm-lm-close:hover{
+    background: rgba(255,255,255,.10);
+    color: rgba(240,246,255,.95);
+  }
+  .rm-lm-close:active{transform: translateY(1px);}
+
+  .rm-lm-body{
+    padding:14px 16px 16px;
+    font-size:.95rem;
+    line-height:1.55;
+    color: var(--lm-muted);
+  }
+  .rm-lm-body h3{
+    margin:12px 0 6px;
+    font-size:.92rem;
+    font-weight:700;
+    color: var(--lm-text);
+    letter-spacing:-.01em;
+  }
+  .rm-lm-body ul{margin:6px 0 10px 18px;}
+  .rm-lm-body li{margin:5px 0;}
+  .rm-lm-body p{margin:.55rem 0;}
+</style>
+  
+</head>
+<body>
+<header>
+<div class="nav">
+<a class="logo" href="/" style="text-decoration:none;">
+<div class="mark"></div>
+<div>ReportMedic</div>
+</a>
+<div class="spacer"></div>
+<a class="btn" href="/">Home</a>
+<button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+<a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+</div>
+</header>
+<div class="wrap">
+  <div class="panel">
+    <h1>Phrase Occurrence Counter <a class="rm-lm-link" data-rm-lm-open="rmLM" href="#">Learn more</a></h1>
+    <p class="sub">Count phrases in TXT, CSV, or pasted text — private, fast, and runs locally in your browser.</p>
+    <div class="hr"></div>
+
+<div class="grid2">
+  <div class="card">
+    <div class="row" style="justify-content:space-between; align-items:flex-start">
+      <div>
+        <div style="font-weight:700">Input text</div>
+        <div class="tiny muted">Upload a TXT or CSV, or paste text below. Everything runs locally in your browser.</div>
+      </div>
+      <span class="pill tiny" id="meta"><b>SOURCE:</b><span class="muted">not loaded</span></span>
+    </div>
+
+    <div class="hr2"></div>
+
+    <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+      <input class="input" id="fileInput" type="file" accept=".txt,.csv,text/plain,text/csv"/>
+      <button class="btn" id="usePaste" type="button">Use pasted text</button>
+      <button class="btn" id="clearAll" type="button">Clear</button>
+    </div>
+
+    <div style="margin-top:12px">
+      <label class="tiny muted">Paste text (optional)</label>
+      <textarea class="input" id="pasteText" style="min-height:140px; width:100%; resize:vertical" placeholder="Paste text here if you are not uploading a file."></textarea>
+      <div class="rm-dropHint">Tip: For CSV, you can paste the full CSV content too.</div>
+    </div>
+
+    <div class="hr2"></div>
+
+    <div style="display:grid; gap:10px">
+      <div>
+        <div class="row" style="justify-content:space-between; align-items:center">
+          <label class="tiny muted">Phrases (one per line)</label>
+          <span class="tiny muted" id="phraseCountHint">0 phrases</span>
+        </div>
+        <textarea class="input" id="phrases" style="min-height:120px; width:100%; resize:vertical" placeholder="invoice
+late fee
+net 30"></textarea>
+      </div>
+
+      <div class="row" style="gap:12px; flex-wrap:wrap; align-items:center">
+        <label class="tiny muted">Options</label>
+        <label class="tiny"><input id="caseSensitive" type="checkbox"/> Case sensitive</label>
+        <label class="tiny"><input id="overlap" type="checkbox"/> Allow overlapping matches</label>
+        <label class="tiny"><input id="wholeWord" type="checkbox"/> Whole word</label>
+      </div>
+
+      <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+        <button class="btn primary" id="analyze" type="button">Count occurrences</button>
+        <button class="btn" id="downloadCsv" type="button" disabled>Download results (CSV)</button>
+        <span class="tiny muted rm-status" id="status"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:700">Results</div>
+    <div class="tiny muted" style="margin-top:4px">Metric cards and charts help you spot what repeats most.</div>
+
+    <div class="hr2"></div>
+
+    <div class="grid3" style="margin:0">
+      <div class="rm-kpi">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Total phrases</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiPhrases">—</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiPhrasesSub">—</div>
+      </div>
+      <div class="rm-kpi">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Total matches</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiMatches">—</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiMatchesSub">—</div>
+      </div>
+      <div class="rm-kpi">
+        <div class="rm-kpi-top">
+          <span class="rm-kpi-label">Top phrase</span>
+        </div>
+        <div class="rm-kpi-val" id="kpiTop">—</div>
+        <div class="rm-kpi-sub tiny muted" id="kpiTopSub">—</div>
+      </div>
+    </div>
+
+    <div class="hr2"></div>
+
+    <div style="display:grid; gap:14px">
+      <div class="card" style="padding:12px; margin:0">
+        <div class="row" style="justify-content:space-between; align-items:center">
+          <div class="tiny muted">Counts by phrase (top 15)</div>
+          <div class="tiny muted" id="kpiTime">—</div>
+        </div>
+        <div style="height:260px; margin-top:8px">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card" style="padding:12px; margin:0">
+        <div class="tiny muted">Distribution (top 6)</div>
+        <div style="height:220px; margin-top:8px">
+          <canvas id="donutChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card" style="padding:12px; margin:0">
+        <div class="row" style="justify-content:space-between; align-items:center">
+          <div class="tiny muted">Table</div>
+          <div class="tiny muted" id="tableHint">—</div>
+        </div>
+        <div class="hr2"></div>
+        <div style="max-height:260px; overflow:auto; border:1px solid rgba(255,255,255,.10); border-radius:12px">
+          <table class="tbl" style="margin:0; width:100%">
+            <thead>
+              <tr>
+                <th style="position:sticky; top:0; background:rgba(18,22,30,.92)">Phrase</th>
+                <th style="position:sticky; top:0; background:rgba(18,22,30,.92); width:120px">Count</th>
+                <th style="position:sticky; top:0; background:rgba(18,22,30,.92); width:120px">Share</th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+              <tr><td class="muted tiny" colspan="3">No results yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* KPI cards (local to this tool, aligned to ReportMedic style) */
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+@media (max-width: 900px){ .grid3{grid-template-columns:1fr} }
+.rm-kpi{border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:12px; background:rgba(255,255,255,.03)}
+.rm-kpi-top{display:flex; justify-content:space-between; align-items:center; gap:10px}
+.rm-kpi-label{font-size:12px; color:var(--muted); font-weight:600}
+.rm-kpi-val{font-size:22px; font-weight:800; letter-spacing:.2px; margin-top:6px}
+.rm-kpi-sub{margin-top:2px}
+.tbl{border-collapse:collapse}
+.tbl th,.tbl td{padding:10px 10px; border-bottom:1px solid rgba(255,255,255,.08); vertical-align:top}
+</style>
+
+<script>
+(function(){
+  const $ = (id)=>document.getElementById(id);
+
+  const els = {
+    fileInput: $("fileInput"),
+    pasteText: $("pasteText"),
+    usePaste: $("usePaste"),
+    phrases: $("phrases"),
+    phraseCountHint: $("phraseCountHint"),
+    caseSensitive: $("caseSensitive"),
+    overlap: $("overlap"),
+    wholeWord: $("wholeWord"),
+    analyze: $("analyze"),
+    clearAll: $("clearAll"),
+    downloadCsv: $("downloadCsv"),
+    status: $("status"),
+    meta: $("meta"),
+    kpiPhrases: $("kpiPhrases"),
+    kpiPhrasesSub: $("kpiPhrasesSub"),
+    kpiMatches: $("kpiMatches"),
+    kpiMatchesSub: $("kpiMatchesSub"),
+    kpiTop: $("kpiTop"),
+    kpiTopSub: $("kpiTopSub"),
+    kpiTime: $("kpiTime"),
+    tbody: $("tbody"),
+    tableHint: $("tableHint"),
+    barChart: $("barChart"),
+    donutChart: $("donutChart")
+  };
+
+  let sourceText = "";
+  let sourceLabel = "not loaded";
+  let lastRows = [];
+  let bar, donut;
+
+  function setStatus(msg, kind){
+    els.status.textContent = msg || "";
+    els.status.classList.remove("rm-bad","rm-good","rm-warn");
+    if(kind) els.status.classList.add(kind);
+  }
+
+  function prettyBytes(n){
+    if(!Number.isFinite(n)) return "—";
+    const units=["B","KB","MB","GB"];
+    let i=0; let v=n;
+    while(v>=1024 && i<units.length-1){ v/=1024; i++; }
+    return (v>=10 || i===0 ? v.toFixed(0) : v.toFixed(1)) + " " + units[i];
+  }
+
+  function updateMeta(){
+    els.meta.innerHTML = "<b>SOURCE:</b><span class='muted'>"+escapeHtml(sourceLabel)+"</span>";
+  }
+
+  function escapeHtml(s){
+    return (s||"").replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
+  }
+
+  function normalizeNewlines(s){
+    return (s||"").replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+  }
+
+  function getPhrases(){
+    const raw = normalizeNewlines(els.phrases.value);
+    const list = raw.split("\n").map(x=>x.trim()).filter(Boolean);
+    els.phraseCountHint.textContent = list.length + (list.length===1 ? " phrase" : " phrases");
+    return [...new Set(list)];
+  }
+
+  function makeNeedle(phrase, opts){
+    const esc = phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const word = opts.wholeWord ? "\\b" + esc + "\\b" : esc;
+    const flags = opts.caseSensitive ? "g" : "gi";
+    return new RegExp(word, flags);
+  }
+
+  function countWithRegex(hay, re, overlap){
+    if(!overlap) {
+      const m = hay.match(re);
+      return m ? m.length : 0;
+    }
+    // overlapping matches: move one char forward after each hit
+    let count = 0;
+    let lastIndex = 0;
+    const flags = re.flags.includes("g") ? re.flags : re.flags + "g";
+    const r = new RegExp(re.source, flags);
+    while(true){
+      r.lastIndex = lastIndex;
+      const m = r.exec(hay);
+      if(!m) break;
+      count++;
+      lastIndex = m.index + 1;
+      if(lastIndex > hay.length) break;
+    }
+    return count;
+  }
+
+  function buildResults(text, phrases, opts){
+    const rows = [];
+    let total = 0;
+    for(const p of phrases){
+      if(!p) continue;
+      const re = makeNeedle(p, opts);
+      const c = countWithRegex(text, re, opts.overlap);
+      rows.push({ phrase: p, count: c });
+      total += c;
+    }
+    rows.sort((a,b)=> b.count - a.count || a.phrase.localeCompare(b.phrase));
+    return { rows, total };
+  }
+
+  function setKpis(phrasesN, totalMatches, rows, ms, sizeBytes){
+    els.kpiPhrases.textContent = phrasesN ? String(phrasesN) : "0";
+    els.kpiPhrasesSub.textContent = sizeBytes ? ("Source size " + prettyBytes(sizeBytes)) : "—";
+    els.kpiMatches.textContent = String(totalMatches);
+    els.kpiMatchesSub.textContent = totalMatches ? ("Across " + phrasesN + " phrases") : "No matches";
+    const top = rows && rows.length ? rows[0] : null;
+    els.kpiTop.textContent = top && top.count ? String(top.count) : "0";
+    els.kpiTopSub.textContent = top ? top.phrase : "—";
+    els.kpiTime.textContent = (Number.isFinite(ms) ? (ms.toFixed(0) + " ms") : "—");
+  }
+
+  function renderTable(rows, total){
+    if(!rows || !rows.length){
+      els.tbody.innerHTML = "<tr><td class='muted tiny' colspan='3'>No results yet.</td></tr>";
+      els.tableHint.textContent = "—";
+      return;
+    }
+    const shown = rows.slice(0, 200);
+    els.tableHint.textContent = "Showing " + shown.length + " of " + rows.length;
+    els.tbody.innerHTML = shown.map(r=>{
+      const share = total ? ((r.count/total)*100) : 0;
+      return "<tr><td>"+escapeHtml(r.phrase)+"</td><td>"+r.count+"</td><td>"+share.toFixed(1)+"%</td></tr>";
+    }).join("");
+  }
+
+  function destroyCharts(){
+    if(bar){ bar.destroy(); bar=null; }
+    if(donut){ donut.destroy(); donut=null; }
+  }
+
+  function renderCharts(rows, total){
+    destroyCharts();
+    const top = rows.slice(0, 15);
+    const labels = top.map(r=>r.phrase);
+    const data = top.map(r=>r.count);
+
+    bar = new Chart(els.barChart.getContext("2d"), {
+      type: "bar",
+      data: { labels, datasets: [{ label: "Count", data }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { enabled: true } },
+        scales: {
+          x: { ticks: { color: "rgba(240,246,255,.75)" }, grid: { color: "rgba(255,255,255,.06)" } },
+          y: { ticks: { color: "rgba(240,246,255,.75)" }, grid: { color: "rgba(255,255,255,.06)" }, beginAtZero: true }
+        }
+      }
+    });
+
+    const top6 = rows.slice(0, 6);
+    const donutLabels = top6.map(r=>r.phrase);
+    const donutData = top6.map(r=>r.count);
+    const other = rows.slice(6).reduce((s,r)=>s+r.count,0);
+    if(other){
+      donutLabels.push("Other");
+      donutData.push(other);
+    }
+
+    donut = new Chart(els.donutChart.getContext("2d"), {
+      type: "doughnut",
+      data: { labels: donutLabels, datasets: [{ data: donutData }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "bottom", labels: { color: "rgba(240,246,255,.75)", boxWidth: 10 } },
+          tooltip: { enabled: true }
+        }
+      }
+    });
+  }
+
+  function toCsv(rows, total){
+    const header = ["phrase","count","share_pct"];
+    const lines = [header.join(",")];
+    for(const r of rows){
+      const share = total ? ((r.count/total)*100) : 0;
+      const phrase = r.phrase.replace(/"/g,'""');
+      lines.push("\"" + phrase + "\"," + r.count + "," + share.toFixed(2));
+    }
+    return lines.join("\n");
+  }
+
+  function download(filename, content){
+    const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function loadFile(file){
+    const buf = await file.arrayBuffer();
+    const size = buf.byteLength || 0;
+    const text = new TextDecoder("utf-8").decode(buf);
+    sourceText = text;
+    sourceLabel = file.name + " (" + prettyBytes(size) + ")";
+    updateMeta();
+    setStatus("Loaded file. Ready to count.", "rm-good");
+    return size;
+  }
+
+  function setFromPaste(){
+    const text = els.pasteText.value || "";
+    sourceText = text;
+    sourceLabel = text.trim() ? ("pasted text (" + text.length.toLocaleString() + " chars)") : "not loaded";
+    updateMeta();
+    setStatus(text.trim() ? "Using pasted text. Ready to count." : "Paste text or upload a file first.", text.trim() ? "rm-good" : "rm-warn");
+  }
+
+  function clearUi(){
+    sourceText = "";
+    sourceLabel = "not loaded";
+    lastRows = [];
+    updateMeta();
+    setStatus("", null);
+    els.pasteText.value = "";
+    els.phrases.value = "";
+    els.downloadCsv.disabled = true;
+    els.kpiPhrases.textContent = "—";
+    els.kpiPhrasesSub.textContent = "—";
+    els.kpiMatches.textContent = "—";
+    els.kpiMatchesSub.textContent = "—";
+    els.kpiTop.textContent = "—";
+    els.kpiTopSub.textContent = "—";
+    els.kpiTime.textContent = "—";
+    els.tableHint.textContent = "—";
+    renderTable([], 0);
+    destroyCharts();
+    els.fileInput.value = "";
+    els.phraseCountHint.textContent = "0 phrases";
+  }
+
+  els.phrases.addEventListener("input", ()=>{ getPhrases(); });
+
+  els.fileInput.addEventListener("change", async ()=>{
+    const f = els.fileInput.files && els.fileInput.files[0];
+    if(!f) return;
+    try{
+      await loadFile(f);
+    }catch(e){
+      setStatus("Could not read file. " + (e && e.message ? e.message : ""), "rm-bad");
+    }
+  });
+
+  els.usePaste.addEventListener("click", ()=>{ setFromPaste(); });
+
+  els.clearAll.addEventListener("click", ()=>{ clearUi(); });
+
+  els.analyze.addEventListener("click", ()=>{
+    try{
+      const phrases = getPhrases();
+      if(!phrases.length){
+        setStatus("Add at least one phrase.", "rm-warn");
+        return;
+      }
+      if(!sourceText || !String(sourceText).trim()){
+        setStatus("Upload a TXT or CSV, or click Use pasted text.", "rm-warn");
+        return;
+      }
+
+      const opts = {
+        caseSensitive: !!els.caseSensitive.checked,
+        overlap: !!els.overlap.checked,
+        wholeWord: !!els.wholeWord.checked
+      };
+
+      const t0 = performance.now();
+      const { rows, total } = buildResults(String(sourceText), phrases, opts);
+      const ms = performance.now() - t0;
+
+      lastRows = rows;
+
+      setKpis(phrases.length, total, rows, ms, sourceText.length);
+      renderTable(rows, total);
+      renderCharts(rows, total);
+
+      els.downloadCsv.disabled = false;
+
+      setStatus("Done. Counts are ready.", "rm-good");
+    }catch(e){
+      setStatus("Error while counting. " + (e && e.message ? e.message : ""), "rm-bad");
+    }
+  });
+
+  els.downloadCsv.addEventListener("click", ()=>{
+    if(!lastRows || !lastRows.length){
+      setStatus("No results to download yet.", "rm-warn");
+      return;
+    }
+    const total = lastRows.reduce((s,r)=>s+r.count,0);
+    const csv = toCsv(lastRows, total);
+    download("phrase_counts.csv", csv);
+    setStatus("Downloaded phrase_counts.csv", "rm-good");
+  });
+
+  updateMeta();
+  renderTable([], 0);
+})();
+</script>
+<div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+  <a class="btn primary" href="/#toolbox" target=_blank rel=noopener>Back to Toolbox</a>
+  <a class="btn" href="/docs/contact.html" target=_blank rel=noopener>Contact</a>
+</div>
+  </div>
+  <div class="footer">© 2026 ReportMedic</div>
+</div>
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+<div class="rm-footer-brand">
+<div class="rm-footer-name">ReportMedic</div>
+<div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+</div>
+<div class="rm-footer-links">
+<a href="/fix-my-report.html">Fix My Report</a>
+<a href="/#tools">Tools</a>
+<a href="/docs/">Docs</a>
+<a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+</div>
+<div class="rm-footer-meta">© 2026 ReportMedic</div>
+</div>
+</footer>
+<div aria-hidden="true" aria-label="Phrase Occurrence Counter details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Phrase Occurrence Counter</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    
+<div class="rm-lm-body">
+  <h3>What this helps with</h3>
+  <ul>
+    <li>Check repeated phrases in a report, email thread, transcript, or notes</li>
+    <li>Measure how often key terms show up in a CSV export</li>
+    <li>Compare wording consistency across drafts</li>
+  </ul>
+
+  <h3>How it works</h3>
+  <ul>
+    <li>You provide phrases and text (upload or paste)</li>
+    <li>We count occurrences for each phrase and summarize the results</li>
+    <li>Charts and metric cards make patterns obvious at a glance</li>
+  </ul>
+
+  <h3>Privacy</h3>
+  <ul>
+    <li>Your file stays on your device</li>
+    <li>No uploads, no server processing</li>
+  </ul>
+
+  <h3>Tips</h3>
+  <ul>
+    <li>Use Whole word for words like fee, plan, or due</li>
+    <li>Use Case sensitive if capitalization matters</li>
+    <li>Overlapping matches can help with patterns like AAAA containing AAA twice</li>
+  </ul>
+</div>
+
