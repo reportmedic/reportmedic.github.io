@@ -222,30 +222,32 @@
     </div>
   </footer>
 
-  <div class="rm-lm-backdrop" id="rmLM" aria-hidden="true">
-    <div class="rm-lm" role="dialog" aria-modal="true" aria-label="Split Video into Clips">
-      <header>
-        <div class="t">Split Video into Clips</div>
-        <button class="rm-lm-close" type="button" data-rm-lm-close="rmLM">Close</button>
-      </header>
-      <div class="body">
-        <ul>
-          <li>Split by custom time ranges, fixed durations, equal parts, or approximate size.</li>
-          <li>Nothing is uploaded — the file stays on your machine.</li>
-          <li><b>Fast</b> mode copies streams (quick) but may cut on keyframes.</li>
-          <li><b>Exact</b> mode re-encodes for precise boundaries (slower, uses more CPU).</li>
-        </ul>
-        <div class="rm-kv">
-          <div class="k">Common use</div>
-          <div class="v">25 MB clips for email / portals</div>
-          <div class="k">Quickest</div>
-          <div class="v">Fast mode • fixed duration</div>
-          <div class="k">Most accurate</div>
-          <div class="v">Exact mode • custom ranges</div>
-        </div>
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true">
+  <div class="rm-lm-dialog" role="dialog" aria-modal="true" aria-label="Split Video into Clips">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Split Video into Clips</h2>
+      <button class="rm-lm-close" type="button" data-rm-lm-close="rmLM" aria-label="Close">×</button>
+    </div>
+
+    <div class="rm-lm-body">
+      <ul>
+        <li>Split by custom time ranges, fixed durations, equal parts, or approximate size.</li>
+        <li>Nothing is uploaded — the file stays on your machine.</li>
+        <li><b>Fast</b> mode copies streams (quick) but may cut on keyframes.</li>
+        <li><b>Exact</b> mode re-encodes for precise boundaries (slower, uses more CPU).</li>
+      </ul>
+
+      <div class="rm-kv">
+        <div class="k">Common use</div>
+        <div class="v">25 MB clips for email / portals</div>
+        <div class="k">Quickest</div>
+        <div class="v">Fast mode • fixed duration</div>
+        <div class="k">Most accurate</div>
+        <div class="v">Exact mode • custom ranges</div>
       </div>
     </div>
   </div>
+</div>
 
   <script>
   (function(){
