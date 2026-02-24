@@ -504,7 +504,6 @@
     const bd = document.getElementById(id);
     if(!bd) return;
     bd.setAttribute("aria-hidden","false");
-    document.body.classList.add("rmNoScroll");
     const btn = bd.querySelector(".rm-lm-close");
     if(btn) btn.focus();
   }
@@ -512,7 +511,6 @@
     const bd = document.getElementById(id);
     if(!bd) return;
     bd.setAttribute("aria-hidden","true");
-    document.body.classList.remove("rmNoScroll");
   }
   document.addEventListener("click", function(e){
     const a = e.target.closest("[data-rm-lm-open]");
@@ -535,7 +533,6 @@
     document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(function(bd){
       bd.setAttribute("aria-hidden","true");
     });
-    document.body.classList.remove("rmNoScroll");
   });
 })();
 </script>
