@@ -423,8 +423,7 @@ net 30"></textarea>
 
   function getPhrases(){
     const raw = normalizeNewlines(els.phrases.value);
-    const list = raw.split("
-").map(x=>x.trim()).filter(Boolean);
+    const list = raw.split("\n").map(x=>x.trim()).filter(Boolean);
     const uniq = [...new Set(list)];
     updatePhraseHint(uniq, false);
     return uniq;
