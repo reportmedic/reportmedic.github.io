@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CSV to PDF — Export CSV/TSV as PDF — ReportMedic</title>
+  <title>CSV to PDF - Export CSV/TSV as PDF - ReportMedic</title>
   <meta name="description" content="Convert CSV/TSV exports to a clean, shareable PDF snapshot. Runs locally in your browser." />
   <link rel="icon" href="/favicon.ico" />
   <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png" />
@@ -16,6 +16,10 @@
   <script defer src="/assets/js/rm-dropzone.js"></script>
   <script defer src="/assets/js/rm-tools-drawer.js"></script>
 
+  <style>
+    /* Keep Learn more inline with the page title */
+    .panel h1{display:flex; align-items:baseline; gap:.55rem; flex-wrap:wrap;}
+  </style>
 </head>
 
 <body class="tools-page">
@@ -35,7 +39,7 @@
 <div class="wrap">
   <div class="panel">
     <h1>CSV to PDF <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
-    <p class="sub">Turn CSV exports into a readable PDF you can send with confidence — no uploads. Runs locally in your browser.</p>
+    <p class="sub">Turn CSV exports into a readable PDF you can send with confidence. No uploads. Runs locally in your browser.</p>
     <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
 
     <div class="hr"></div>
@@ -140,58 +144,77 @@
   </div>
 </footer>
   
-<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true">
-  <div class="rm-lm" role="dialog" aria-modal="true" aria-label="CSV to PDF">
-    <header>
-      <div class="t">CSV to PDF</div>
-      <button class="rm-lm-close" type="button" data-rm-lm-close="rmLM">Close</button>
-    </header>
-    <div class="body">
+<div aria-hidden="true" aria-label="CSV to PDF details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">CSV to PDF</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
       <ul>
-        <li>Upload a CSV/TSV export (or a .txt file with comma/tab-separated values).</li>
-<li>Choose whether the first row is a header.</li>
-<li>Convert to a readable PDF and download.</li>
-<li>All processing runs locally in your browser.</li>
+        <li>Share a clean snapshot of CSV or TSV exports</li>
+        <li>Turn wide tables into a readable PDF for email or reviews</li>
+        <li>Print or archive a lightweight table view with a timestamp</li>
       </ul>
-      <div class="hint tiny muted" style="margin-top:10px">If the CSV uses a weird delimiter, try saving it again from Excel as CSV (UTF-8).</div>
+
+      <h3>How it works</h3>
+      <ul>
+        <li>You upload a CSV, TSV, or delimiter separated TXT file</li>
+        <li>The tool renders a table preview, then prints it to PDF</li>
+        <li>You can adjust paper size, orientation, and scale for wide files</li>
+      </ul>
+
+      <h3>Privacy</h3>
+      <ul>
+        <li>Your file stays on your device</li>
+        <li>No uploads, no server processing</li>
+      </ul>
+
+      <h3>Tips</h3>
+      <ul>
+        <li>If columns look cramped, switch to Landscape and reduce Scale</li>
+        <li>If parsing looks wrong, re export as CSV (UTF-8) from Excel</li>
+      </ul>
     </div>
   </div>
 </div>
 
 
 <script>
-(function(){
-  function openLM(id){
-    const bd=document.getElementById(id);
-    if(!bd) return;
-    bd.setAttribute('aria-hidden','false');
-    const btn=bd.querySelector('.rm-lm-close');
-    if(btn) btn.focus();
-  }
-  function closeLM(id){
-    const bd=document.getElementById(id);
-    if(!bd) return;
-    bd.setAttribute('aria-hidden','true');
-  }
-  document.addEventListener('click', function(e){
-    const a=e.target.closest('[data-rm-lm-open]');
-    if(a){
+(function rmLmWireUp(){
+  const openers = document.querySelectorAll('[data-rm-lm-open]');
+  const closers = document.querySelectorAll('[data-rm-lm-close]');
+  const setOpen = (id, isOpen) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    document.documentElement.classList.toggle('rmNoScroll', isOpen);
+    document.body.classList.toggle('rmNoScroll', isOpen);
+  };
+  openers.forEach(a=>{
+    a.addEventListener('click', (e)=>{
       e.preventDefault();
-      openLM(a.getAttribute('data-rm-lm-open'));
-      return;
-    }
-    const close=e.target.closest('[data-rm-lm-close]');
-    if(close){
-      e.preventDefault();
-      closeLM(close.getAttribute('data-rm-lm-close'));
-      return;
-    }
-    const bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
-    if(bd) closeLM(bd.id);
+      const id = a.getAttribute('data-rm-lm-open');
+      if(id) setOpen(id, true);
+    });
   });
-  document.addEventListener('keydown', function(e){
+  closers.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.getAttribute('data-rm-lm-close');
+      if(id) setOpen(id, false);
+    });
+  });
+  document.addEventListener('keydown', (e)=>{
     if(e.key !== 'Escape') return;
-    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute('aria-hidden','true'));
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(el=>{
+      setOpen(el.id, false);
+    });
+  });
+  document.addEventListener('click', (e)=>{
+    const bd = e.target && e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+    if(bd && bd.id) setOpen(bd.id, false);
   });
 })();
 </script>
@@ -278,7 +301,7 @@
       const pdf = await worker.outputPdf("blob");
       lastPdfBlob = pdf;
       $("downloadBtn").disabled = false;
-      setStatus("done — ready to download");
+      setStatus("done, ready to download");
     } catch(err){
       console.error(err);
       setStatus("error building PDF");
