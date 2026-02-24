@@ -16,23 +16,7 @@
   <script defer src="/assets/js/rm-tools-drawer.js"></script>
 
   <style>
-    /* Learn-more modal (page-local) */
-    .rm-lm-link{font-size:.85rem; margin-left:.5rem; text-decoration:underline; opacity:.85;}
-    .rm-lm-link:hover{opacity:1;}
-    .rm-lm-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:16px; z-index:9999;}
-    .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
-    .rm-lm{width:min(900px, 100%); background:rgba(20,20,24,.96); border:1px solid rgba(255,255,255,.12); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35);}
-    .rm-lm header{display:flex; align-items:center; justify-content:space-between; padding:14px 14px 10px; border-bottom:1px solid rgba(255,255,255,.10);}
-    .rm-lm header .t{font-weight:800; letter-spacing:.2px;}
-    .rm-lm .rm-lm-close{background:transparent; border:1px solid rgba(255,255,255,.18); color:inherit; border-radius:10px; padding:8px 10px; cursor:pointer;}
-    .rm-lm .rm-lm-close:hover{border-color:rgba(255,255,255,.28);}
-    .rm-lm .body{padding:14px;}
-    .rm-lm .body ul{margin:8px 0 0 18px;}
-    .rm-lm .body li{margin:6px 0;}
 
-    .rm-kv{display:grid; grid-template-columns:160px 1fr; gap:8px; margin-top:10px;}
-    .rm-kv .k{opacity:.8;}
-    .rm-kv .v{word-break:break-word;}
 
     .rm-log{height:150px; overflow:auto; border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:10px; background:rgba(255,255,255,.03); font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px; color:rgba(255,255,255,.88);}
     .rm-progress{width:100%; height:10px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden; border:1px solid rgba(255,255,255,.10);}
@@ -197,29 +181,36 @@
     </div>
   </footer>
 
-  <div class="rm-lm-backdrop" id="rmLM" aria-hidden="true">
-    <div class="rm-lm" role="dialog" aria-modal="true" aria-label="Merge Videos / Join Clips">
-      <header>
-        <div class="t">Merge Videos / Join Clips</div>
-        <button class="rm-lm-close" type="button" data-rm-lm-close="rmLM">Close</button>
-      </header>
-      <div class="body">
+  <!-- Learn more modal -->
+  <div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="rm-lm-dialog">
+      <div class="rm-lm-head">
+        <h2 class="rm-lm-title">Merge Videos / Join Clips</h2>
+        <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
+      </div>
+      <div class="rm-lm-body">
+        <h3>Best for</h3>
         <ul>
-          <li><b>Fast join</b>: quickest and keeps original quality, but requires clips to match (codec/resolution/fps).</li>
-          <li><b>Compatible join</b>: re-encodes to a consistent output and is more forgiving for mixed clips.</li>
-          <li>Nothing is uploaded — merging happens locally in your browser.</li>
+          <li>Joining 2+ clips into one MP4, fully in your browser</li>
+          <li>Fast merges when clips match (same codec, resolution, FPS)</li>
+          <li>Mixed clips by re-encoding into a compatible output</li>
         </ul>
-        <div class="rm-kv">
-          <div class="k">Quickest</div>
-          <div class="v">Fast join • same camera/app exports</div>
-          <div class="k">Most compatible</div>
-          <div class="v">Compatible join • normalize to 1080p</div>
-          <div class="k">Audio note</div>
-          <div class="v">“Keep audio” requires all clips to have audio tracks</div>
-        </div>
+
+        <h3>Merge modes</h3>
+        <ul>
+          <li><b>Fast join</b>: no re-encode, keeps original quality, but clips must match</li>
+          <li><b>Compatible join</b>: re-encodes to a consistent output, works for mixed clips</li>
+        </ul>
+
+        <h3>Tips</h3>
+        <ul>
+          <li>If Fast join fails, switch to Compatible join and normalize to 1080p</li>
+          <li>If some clips have no audio, choose Video only in Compatible join</li>
+        </ul>
       </div>
     </div>
   </div>
+
 
   <script>
   (function(){
