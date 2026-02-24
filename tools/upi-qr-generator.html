@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UPI QR Generator + Scanner - ReportMedic</title>
+  <meta name="description" content="Generate a UPI payment QR code from a UPI ID (VPA) and optional amount or note. Also decode a QR from an image. Runs locally in your browser." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
+  <script defer src="/assets/js/rm-dropzone.js"></script>
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+  <style>
+    .panel h1{display:flex; align-items:baseline; gap:.55rem; flex-wrap:wrap;}
+    .qrBox{display:flex; gap:14px; flex-wrap:wrap; align-items:flex-start; justify-content:space-between;}
+    .qrCanvasWrap{border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:12px; width:320px; max-width:100%;}
+    .qrCanvasWrap canvas{display:block; width:100%; height:auto; border-radius:10px;}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .kv2{display:grid; grid-template-columns: 160px 1fr; gap:8px 12px; margin-top:10px;}
+    .kv2 .k{color:rgba(255,255,255,.70); font-size:12px;}
+    .kv2 .v{font-size:12px; overflow-wrap:anywhere;}
+  </style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>UPI QR Generator + Scanner <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Create a UPI payment QR code from a UPI ID (VPA). Optionally include amount and note. You can also decode a QR from an image. Everything runs locally in your browser.</p>
+    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+
+    <div class="hr"></div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="row" style="gap:10px; flex-wrap:wrap; justify-content:space-between">
+          <div>
+            <div style="font-weight:800">Generate UPI QR</div>
+            <div class="tiny muted">Make a scannable QR for any UPI app</div>
+          </div>
+          <span class="pill tiny" id="statusPill"><b>Status:</b><span class="muted"> enter a UPI ID to start</span></span>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="qrBox">
+          <div style="flex:1; min-width:260px">
+            <div class="row" style="gap:10px; flex-wrap:wrap">
+              <div style="flex:1; min-width:240px">
+                <label class="tiny muted" for="pa">UPI ID (VPA) (required)</label>
+                <input id="pa" class="input mono" placeholder="example@bank" autocomplete="off" />
+                <div class="tiny muted" style="margin-top:6px">Tip: It usually looks like name@bank (no spaces).</div>
+              </div>
+            </div>
+
+            <div class="grid2" style="margin-top:12px">
+              <div>
+                <label class="tiny muted" for="pn">Payee name (optional)</label>
+                <input id="pn" class="input" placeholder="Store or person name" autocomplete="off" />
+              </div>
+              <div>
+                <label class="tiny muted" for="am">Amount (optional)</label>
+                <input id="am" class="input mono" placeholder="100.00" inputmode="decimal" autocomplete="off" />
+                <div class="tiny muted" style="margin-top:6px">Currency is INR.</div>
+              </div>
+            </div>
+
+            <div class="grid2" style="margin-top:12px">
+              <div>
+                <label class="tiny muted" for="tn">Note (optional)</label>
+                <input id="tn" class="input" placeholder="What is this for" autocomplete="off" />
+              </div>
+              <div>
+                <label class="tiny muted" for="tr">Reference (optional)</label>
+                <input id="tr" class="input mono" placeholder="INV-123" autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap">
+              <button class="btn primary" id="genBtn" type="button" disabled>Generate</button>
+              <button class="btn" id="copyBtn" type="button" disabled>Copy link</button>
+              <button class="btn" id="dlBtn" type="button" disabled>Download QR (.png)</button>
+              <button class="btn" id="resetBtn" type="button">Reset</button>
+            </div>
+
+            <div style="margin-top:12px">
+              <label class="tiny muted" for="upiLink">UPI link</label>
+              <textarea id="upiLink" class="input mono" rows="3" readonly></textarea>
+            </div>
+
+            <div class="tiny muted" style="margin-top:10px">
+              Works great for invoices, shop displays, or sharing a payment request. On mobile, tapping the link usually opens a UPI app.
+            </div>
+          </div>
+
+          <div class="qrCanvasWrap">
+            <div class="tiny muted" style="margin-bottom:8px">QR preview</div>
+            <canvas id="qrCanvas" width="280" height="280" aria-label="QR code preview"></canvas>
+            <div class="tiny muted" style="margin-top:10px; line-height:1.45">
+              If a scanner fails, try removing amount or note, then generate again.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:800">Decode QR from image</div>
+        <div class="tiny muted" style="margin-top:4px">Upload a screenshot or photo of a QR. If it is a UPI link, we will parse the fields.</div>
+
+        <div class="hr"></div>
+
+        <div>
+          <input id="qrFile" class="input" type="file" accept="image/*" />
+        </div>
+
+        <div class="row" style="margin-top:10px; gap:10px; flex-wrap:wrap">
+          <button class="btn" id="useDecodedBtn" type="button" disabled>Use in generator</button>
+          <button class="btn" id="copyDecodedBtn" type="button" disabled>Copy decoded text</button>
+          <span class="pill tiny" id="decodePill"><b>Decode:</b><span class="muted"> waiting</span></span>
+        </div>
+
+        <div style="margin-top:12px">
+          <div style="font-weight:800; margin-bottom:6px">Decoded payload</div>
+          <div class="tiny muted mono" id="decodedText" style="line-height:1.45; overflow-wrap:anywhere">No QR decoded yet.</div>
+        </div>
+
+        <div id="parsedWrap" style="margin-top:12px; display:none">
+          <div style="font-weight:800; margin-bottom:6px">Parsed details</div>
+          <div class="kv2" id="parsedKv"></div>
+        </div>
+
+        <canvas id="scanCanvas" width="600" height="600" style="display:none"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">© 2026 ReportMedic</div>
+</div>
+
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
+<div aria-hidden="true" aria-label="UPI QR details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">UPI QR Generator + Scanner</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Create a payment QR for a UPI ID (VPA)</li>
+        <li>Optionally add amount, note, and reference</li>
+        <li>Decode a QR from an image to see the embedded link</li>
+      </ul>
+
+      <h3>How it works</h3>
+      <ul>
+        <li>We build a UPI deep link in the common upi://pay format</li>
+        <li>We generate the QR locally in your browser</li>
+        <li>For decoding, we read pixels from your image and extract the QR text</li>
+      </ul>
+
+      <h3>Privacy</h3>
+      <ul>
+        <li>Your data stays on your device</li>
+        <li>No uploads, no server processing</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+(function rmLmWireUp(){
+  const openers = document.querySelectorAll('[data-rm-lm-open]');
+  const closers = document.querySelectorAll('[data-rm-lm-close]');
+  const setOpen = (id, isOpen) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    document.documentElement.classList.toggle('rmNoScroll', isOpen);
+    document.body.classList.toggle('rmNoScroll', isOpen);
+  };
+  openers.forEach(a=>{
+    a.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const id = a.getAttribute('data-rm-lm-open');
+      if(id) setOpen(id, true);
+    });
+  });
+  closers.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.getAttribute('data-rm-lm-close');
+      if(id) setOpen(id, false);
+    });
+  });
+  document.addEventListener('keydown', (e)=>{
+    if(e.key !== 'Escape') return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(el=>{
+      setOpen(el.id, false);
+    });
+  });
+  document.addEventListener('click', (e)=>{
+    const bd = e.target && e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+    if(bd && bd.id) setOpen(bd.id, false);
+  });
+})();
+</script>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  const els = {
+    pa: $("pa"), pn: $("pn"), am: $("am"), tn: $("tn"), tr: $("tr"),
+    genBtn: $("genBtn"), copyBtn: $("copyBtn"), dlBtn: $("dlBtn"), resetBtn: $("resetBtn"),
+    upiLink: $("upiLink"), statusPill: $("statusPill"),
+    qrCanvas: $("qrCanvas"),
+    qrFile: $("qrFile"), decodePill: $("decodePill"),
+    decodedText: $("decodedText"),
+    parsedWrap: $("parsedWrap"), parsedKv: $("parsedKv"),
+    useDecodedBtn: $("useDecodedBtn"), copyDecodedBtn: $("copyDecodedBtn"),
+    scanCanvas: $("scanCanvas"),
+  };
+
+  const state = {
+    lastUpi: "",
+    lastQrPngReady: false,
+    decoded: "",
+    decodedParsed: null,
+  };
+
+  function escapeHtml(s){
+    return String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function setStatus(msg){
+    els.statusPill.innerHTML = "<b>Status:</b><span class='muted'> " + escapeHtml(msg) + "</span>";
+  }
+  function setDecodeStatus(msg){
+    els.decodePill.innerHTML = "<b>Decode:</b><span class='muted'> " + escapeHtml(msg) + "</span>";
+  }
+
+  function normalizeVpa(v){
+    return String(v ?? "").trim().replace(/\s+/g, "");
+  }
+
+  function normalizeAmt(v){
+    const s = String(v ?? "").trim();
+    if(!s) return "";
+    const cleaned = s.replace(/,/g,"");
+    const n = Number(cleaned);
+    if(!Number.isFinite(n) || n < 0) return null;
+    return n.toFixed(2);
+  }
+
+  function buildUpiUri(){
+    const pa = normalizeVpa(els.pa.value);
+    const pn = String(els.pn.value ?? "").trim();
+    const tn = String(els.tn.value ?? "").trim();
+    const tr = String(els.tr.value ?? "").trim();
+    const amNorm = normalizeAmt(els.am.value);
+
+    if(!pa) return { ok:false, msg:"enter a UPI ID", uri:"" };
+    if(!pa.includes("@")) return { ok:false, msg:"UPI ID should include @", uri:"" };
+    if(amNorm === null) return { ok:false, msg:"amount must be a number", uri:"" };
+
+    const params = [];
+    params.push(["pa", pa]);
+    if(pn) params.push(["pn", pn]);
+    if(amNorm) params.push(["am", amNorm]);
+    params.push(["cu", "INR"]);
+    if(tn) params.push(["tn", tn]);
+    if(tr) params.push(["tr", tr]);
+
+    const qs = params.map(([k,v]) => encodeURIComponent(k) + "=" + encodeURIComponent(v)).join("&");
+    return { ok:true, msg:"ready", uri:"upi://pay?" + qs };
+  }
+
+  async function renderQr(uri){
+    try{
+      els.qrCanvas.width = 280;
+      els.qrCanvas.height = 280;
+      await QRCode.toCanvas(els.qrCanvas, uri, { width: 280, margin: 2 });
+      state.lastQrPngReady = true;
+      setStatus("done: QR generated");
+    }catch(e){
+      console.error(e);
+      state.lastQrPngReady = false;
+      setStatus("could not generate QR");
+    }
+  }
+
+  function refresh(){
+    const res = buildUpiUri();
+    els.upiLink.value = res.uri || "";
+    els.genBtn.disabled = !res.ok;
+    els.copyBtn.disabled = !res.ok;
+    els.dlBtn.disabled = !(res.ok && state.lastQrPngReady && res.uri === state.lastUpi);
+    if(!res.ok){
+      setStatus(res.msg);
+      state.lastQrPngReady = false;
+      return;
+    }
+    setStatus(res.msg);
+  }
+
+  function resetAll(){
+    els.pa.value = "";
+    els.pn.value = "";
+    els.am.value = "";
+    els.tn.value = "";
+    els.tr.value = "";
+    els.upiLink.value = "";
+    const ctx = els.qrCanvas.getContext("2d");
+    ctx.clearRect(0,0,els.qrCanvas.width, els.qrCanvas.height);
+    state.lastUpi = "";
+    state.lastQrPngReady = false;
+    refresh();
+  }
+
+  els.pa.addEventListener("input", refresh);
+  els.pn.addEventListener("input", refresh);
+  els.am.addEventListener("input", refresh);
+  els.tn.addEventListener("input", refresh);
+  els.tr.addEventListener("input", refresh);
+
+  els.genBtn.addEventListener("click", async () => {
+    const res = buildUpiUri();
+    if(!res.ok) return;
+    setStatus("generating...");
+    state.lastUpi = res.uri;
+    state.lastQrPngReady = false;
+    await renderQr(res.uri);
+    els.dlBtn.disabled = !(state.lastQrPngReady && res.uri === state.lastUpi);
+    els.copyBtn.disabled = false;
+  });
+
+  els.copyBtn.addEventListener("click", async () => {
+    const res = buildUpiUri();
+    if(!res.ok) return;
+    try{
+      await navigator.clipboard.writeText(res.uri);
+      setStatus("copied");
+      setTimeout(refresh, 900);
+    }catch(e){
+      setStatus("copy failed");
+    }
+  });
+
+  els.dlBtn.addEventListener("click", () => {
+    const res = buildUpiUri();
+    if(!res.ok) return;
+    if(!state.lastQrPngReady || state.lastUpi !== res.uri){
+      setStatus("generate QR first");
+      return;
+    }
+    try{
+      const a = document.createElement("a");
+      a.href = els.qrCanvas.toDataURL("image/png");
+      const pa = normalizeVpa(els.pa.value).replace(/[^a-zA-Z0-9@._-]/g,"");
+      a.download = `upi_qr_${pa || "payment"}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setStatus("downloaded");
+      setTimeout(refresh, 900);
+    }catch(e){
+      setStatus("download failed");
+    }
+  });
+
+  els.resetBtn.addEventListener("click", resetAll);
+
+  function parseQueryString(qs){
+    const out = {};
+    String(qs || "").split("&").forEach(part => {
+      if(!part) return;
+      const idx = part.indexOf("=");
+      const k = idx >= 0 ? part.slice(0, idx) : part;
+      const v = idx >= 0 ? part.slice(idx + 1) : "";
+      const key = decodeURIComponent(k.replace(/\+/g, "%20"));
+      const val = decodeURIComponent(v.replace(/\+/g, "%20"));
+      out[key] = val;
+    });
+    return out;
+  }
+
+  function parseUpi(uri){
+    const s = String(uri || "").trim();
+    if(!s.toLowerCase().startsWith("upi://")) return null;
+    const qIdx = s.indexOf("?");
+    const path = qIdx >= 0 ? s.slice(0, qIdx) : s;
+    if(!path.toLowerCase().startsWith("upi://pay")) return null;
+    const qs = qIdx >= 0 ? s.slice(qIdx + 1) : "";
+    const p = parseQueryString(qs);
+    return {
+      pa: p.pa || "",
+      pn: p.pn || "",
+      am: p.am || "",
+      cu: p.cu || "",
+      tn: p.tn || "",
+      tr: p.tr || ""
+    };
+  }
+
+  function renderParsed(obj){
+    if(!obj){
+      els.parsedWrap.style.display = "none";
+      els.parsedKv.innerHTML = "";
+      return;
+    }
+    const rows = [
+      ["UPI ID (pa)", obj.pa],
+      ["Payee name (pn)", obj.pn],
+      ["Amount (am)", obj.am],
+      ["Currency (cu)", obj.cu],
+      ["Note (tn)", obj.tn],
+      ["Reference (tr)", obj.tr],
+    ];
+    els.parsedKv.innerHTML = rows.map(([k,v]) => (
+      "<div class='k'>" + escapeHtml(k) + "</div><div class='v mono'>" + escapeHtml(v || "") + "</div>"
+    )).join("");
+    els.parsedWrap.style.display = "block";
+  }
+
+  async function decodeFromImageFile(file){
+    try{
+      setDecodeStatus("reading image...");
+      els.useDecodedBtn.disabled = true;
+      els.copyDecodedBtn.disabled = true;
+      state.decoded = "";
+      state.decodedParsed = null;
+      renderParsed(null);
+      els.decodedText.textContent = "Decoding...";
+
+      const dataUrl = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onerror = () => reject(r.error);
+        r.onload = () => resolve(r.result);
+        r.readAsDataURL(file);
+      });
+
+      const img = await new Promise((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = () => reject(new Error("image load failed"));
+        i.src = dataUrl;
+      });
+
+      const canvas = els.scanCanvas;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+      const maxSide = 900;
+      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * scale));
+      const h = Math.max(1, Math.round(img.height * scale));
+      canvas.width = w;
+      canvas.height = h;
+      ctx.clearRect(0,0,w,h);
+      ctx.drawImage(img, 0, 0, w, h);
+
+      const imageData = ctx.getImageData(0, 0, w, h);
+      const code = jsQR(imageData.data, w, h);
+      if(!code || !code.data){
+        els.decodedText.textContent = "No QR found in this image.";
+        setDecodeStatus("no QR found");
+        return;
+      }
+
+      state.decoded = String(code.data);
+      els.decodedText.innerHTML = escapeHtml(state.decoded);
+
+      const parsed = parseUpi(state.decoded);
+      state.decodedParsed = parsed;
+      if(parsed){
+        renderParsed(parsed);
+        setDecodeStatus("UPI link detected");
+        els.useDecodedBtn.disabled = false;
+      } else {
+        renderParsed(null);
+        setDecodeStatus("decoded");
+      }
+
+      els.copyDecodedBtn.disabled = false;
+    }catch(e){
+      console.error(e);
+      els.decodedText.textContent = "Could not decode this image.";
+      setDecodeStatus("error");
+    }
+  }
+
+  els.qrFile.addEventListener("change", (e) => {
+    const f = e.target.files && e.target.files[0];
+    if(f) decodeFromImageFile(f);
+  });
+
+  els.copyDecodedBtn.addEventListener("click", async () => {
+    if(!state.decoded) return;
+    try{
+      await navigator.clipboard.writeText(state.decoded);
+      setDecodeStatus("copied");
+      setTimeout(()=>setDecodeStatus(state.decodedParsed ? "UPI link detected" : "decoded"), 900);
+    }catch(e){
+      setDecodeStatus("copy failed");
+    }
+  });
+
+  els.useDecodedBtn.addEventListener("click", () => {
+    const p = state.decodedParsed;
+    if(!p) return;
+    els.pa.value = p.pa || "";
+    els.pn.value = p.pn || "";
+    els.am.value = p.am || "";
+    els.tn.value = p.tn || "";
+    els.tr.value = p.tr || "";
+    refresh();
+    setStatus("fields filled from decoded QR");
+  });
+
+  resetAll();
+  setDecodeStatus("waiting");
+})();
+</script>
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6997965e73d8cb1c357e66ee/1jhs26oms';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+</body>
+</html>
