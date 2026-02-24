@@ -21,7 +21,7 @@
     /* ── Log / progress ── */
     .rm-log{height:140px;overflow:auto;border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:10px;background:rgba(255,255,255,.03);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;font-size:12px;color:rgba(255,255,255,.88);}
     .rm-progress{width:100%;height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid rgba(255,255,255,.10);}
-    .rm-progress>div{height:100%;width:0%;background:linear-gradient(135deg,rgba(180,0,30,.95),rgba(220,30,50,.95));}
+    .rm-progress>div{height:100%;width:0%;background:linear-gradient(135deg,rgba(210,130,0,.95),rgba(250,160,0,.95));}
     .rm-progress.indeterminate{position:relative;overflow:hidden;}
     .rm-progress.indeterminate #bar{width:35%;animation:rmIndet 1.1s infinite linear;}
     @keyframes rmIndet{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}
@@ -31,15 +31,15 @@
     @media(max-width:860px){.rm-upload-zones{grid-template-columns:1fr}}
     .rm-dropzone{border:1px dashed rgba(255,255,255,.22);border-radius:14px;padding:14px;background:rgba(255,255,255,.03);cursor:pointer;transition:border-color .12s,background .12s;}
     .rm-dropzone:hover{border-color:rgba(255,255,255,.30);}
-    .rm-dropzone.is-dragover{border-color:rgba(220,30,50,.75);background:rgba(220,30,50,.08);}
+    .rm-dropzone.is-dragover{border-color:rgba(250,160,0,.75);background:rgba(250,160,0,.08);}
     .rm-dropzone .dz-title{font-weight:800;}
     .rm-dropzone .dz-sub{margin-top:4px;}
 
     /* ── Quick presets ── */
     .rm-presets-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
     .rm-preset-btn{font-size:12px;padding:7px 12px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);cursor:pointer;transition:all .12s;white-space:nowrap;}
-    .rm-preset-btn:hover{border-color:rgba(220,30,50,.5);color:var(--text);background:rgba(220,30,50,.06);}
-    .rm-preset-btn.active{background:linear-gradient(135deg,rgba(180,0,30,.2),rgba(220,30,50,.2));border-color:rgba(220,30,50,.6);color:rgba(220,30,50,.95);font-weight:700;}
+    .rm-preset-btn:hover{border-color:rgba(250,160,0,.5);color:var(--text);background:rgba(250,160,0,.06);}
+    .rm-preset-btn.active{background:linear-gradient(135deg,rgba(210,130,0,.2),rgba(250,160,0,.2));border-color:rgba(250,160,0,.6);color:rgba(250,160,0,.95);font-weight:700;}
     .rm-presets-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);align-self:center;}
 
     /* ── Section header (Transform / Trim) ── */
@@ -72,15 +72,15 @@
     /* ── Extras row (checkboxes + codec estimate) ── */
     .rm-extras-row{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:10px;}
     .rm-check-label{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none;}
-    .rm-check-label input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:rgba(220,30,50,.9);}
+    .rm-check-label input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:rgba(250,160,0,.9);}
     .rm-check-label:hover{color:var(--text);}
 
     /* ── Rotation button group ── */
     .rm-rot-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
     .rm-rot-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);cursor:pointer;font-size:18px;min-width:52px;transition:all .12s;line-height:1;}
     .rm-rot-btn .rm-rot-label{font-size:10px;font-weight:700;}
-    .rm-rot-btn:hover{border-color:rgba(220,30,50,.4);color:var(--text);background:rgba(220,30,50,.05);}
-    .rm-rot-btn.active{border-color:rgba(220,30,50,.7);background:rgba(220,30,50,.1);color:rgba(220,30,50,.95);}
+    .rm-rot-btn:hover{border-color:rgba(250,160,0,.4);color:var(--text);background:rgba(250,160,0,.05);}
+    .rm-rot-btn.active{border-color:rgba(250,160,0,.7);background:rgba(250,160,0,.1);color:rgba(250,160,0,.95);}
 
     /* ── Tilt row ── */
     .rm-tilt-row{display:grid;grid-template-columns:120px 1fr auto auto;gap:10px;align-items:center;margin-top:10px;}
@@ -196,9 +196,9 @@
 
     /* ── Gear button ── */
     .rm-gear-btn{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:rgba(255,255,255,.5);cursor:pointer;font-size:14px;flex-shrink:0;position:relative;transition:all .12s;}
-    .rm-gear-btn:hover{border-color:rgba(220,30,50,.45);color:rgba(220,30,50,.9);background:rgba(220,30,50,.07);}
-    .rm-gear-btn.has-override{border-color:rgba(220,30,50,.5);color:rgba(220,30,50,.9);}
-    .rm-gear-btn .rm-override-dot{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:rgba(220,30,50,.9);display:none;}
+    .rm-gear-btn:hover{border-color:rgba(250,160,0,.45);color:rgba(250,160,0,.9);background:rgba(250,160,0,.07);}
+    .rm-gear-btn.has-override{border-color:rgba(250,160,0,.5);color:rgba(250,160,0,.9);}
+    .rm-gear-btn .rm-override-dot{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:rgba(250,160,0,.9);display:none;}
     .rm-gear-btn.has-override .rm-override-dot{display:block;}
     .rm-gear-btn:disabled{opacity:.35;cursor:default;}
 
@@ -219,32 +219,38 @@
     .rm-pf-rot-group{display:flex;flex-wrap:wrap;gap:5px;}
     .rm-pf-rot-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);cursor:pointer;font-size:16px;min-width:44px;transition:all .12s;line-height:1;}
     .rm-pf-rot-btn .rm-rot-label{font-size:9px;font-weight:700;}
-    .rm-pf-rot-btn:hover{border-color:rgba(220,30,50,.4);color:var(--text);}
-    .rm-pf-rot-btn.active{border-color:rgba(220,30,50,.7);background:rgba(220,30,50,.1);color:rgba(220,30,50,.95);}
+    .rm-pf-rot-btn:hover{border-color:rgba(250,160,0,.4);color:var(--text);}
+    .rm-pf-rot-btn.active{border-color:rgba(250,160,0,.7);background:rgba(250,160,0,.1);color:rgba(250,160,0,.95);}
     .rm-pf-tilt-row{display:grid;grid-template-columns:60px 1fr auto auto;gap:8px;align-items:center;margin-top:6px;}
     .rm-pf-tilt-row input[type=range]{width:100%;min-width:0;}
     .rm-pf-trim-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
     .rm-pf-actions{display:flex;gap:8px;padding:10px 12px;border-top:1px solid rgba(255,255,255,.10);flex-shrink:0;}
     .rm-pf-reset{margin-right:auto;}
     .rm-pf-global-note{font-size:11px;color:var(--muted);margin-top:6px;}
+
+    /* ── Learn-more modal: 80 % height, scrollable body ── */
+    .rm-lm-dialog{max-height:80vh !important;display:flex !important;flex-direction:column !important;overflow:hidden !important;}
+    .rm-lm-body{overflow-y:auto !important;flex:1 !important;}
   </style>
 </head>
 
 <body class="tools-page">
   <header>
     <div class="nav">
-      <a class="logo" href="/" style="text-decoration:none;display:flex;align-items:center;gap:10px;">
-        <span style="font-size:22px">🎥</span>
-        <div style="font-weight:900;letter-spacing:-.5px;">DJI Clip Studio</div>
+      <a class="logo" href="/" style="text-decoration:none;">
+        <div class="mark"></div>
+        <div>ReportMedic</div>
       </a>
       <div class="spacer"></div>
-      <span class="pill tiny" style="border-color:rgba(220,30,50,.4);background:rgba(220,30,50,.08);color:rgba(220,30,50,.9);">Mavic · Mini · Air · Osmo · FPV</span>
+      <a class="btn" href="/">Home</a>
+      <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+      <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
     </div>
   </header>
 
   <div class="wrap">
     <div class="panel">
-      <h1>DJI Video Compressor <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">How it works</a></h1>
+      <h1>DJI Video Compressor <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
       <p class="sub">Downscale, rotate, trim and compress your DJI Mavic, Mini, Air, Osmo & FPV drone footage for sharing — runs entirely in your browser, nothing is ever uploaded.</p>
       <div class="tiny muted" id="humanFallback" style="margin-top:10px">🔒 100% private · no account needed · no file size limit (RAM permitting)</div>
       <div class="hr"></div>
@@ -252,14 +258,14 @@
       <div class="hr"></div>
       <!-- GoPro compatibility banner -->
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;margin-top:-4px;">
-        <span class="pill tiny" style="border-color:rgba(220,30,50,.25);background:rgba(180,0,30,.07);">🚁 Mavic 3 / 3 Pro</span>
-        <span class="pill tiny" style="border-color:rgba(220,30,50,.25);background:rgba(180,0,30,.07);">🚁 Mini 4 / 3 / 2</span>
-        <span class="pill tiny" style="border-color:rgba(220,30,50,.25);background:rgba(180,0,30,.07);">🚁 Air 3 / 2S</span>
-        <span class="pill tiny" style="border-color:rgba(220,30,50,.25);background:rgba(180,0,30,.07);">📷 Osmo Pocket 3</span>
-        <span class="pill tiny" style="border-color:rgba(220,30,50,.25);background:rgba(180,0,30,.07);">📷 Osmo Action 4</span>
-        <span class="pill tiny" style="border-color:rgba(220,30,50,.25);background:rgba(180,0,30,.07);">⚡ FPV / Avata 2</span>
-        <span class="pill tiny" style="border-color:rgba(220,30,50,.25);background:rgba(180,0,30,.07);">🎞 Zenmuse X9</span>
-        <span class="pill tiny" style="margin-left:auto;border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.08);color:rgba(34,197,94,.9);">🔒 100% local · no uploads</span>
+        <span class="pill tiny" style="border-color:rgba(250,160,0,.25);background:rgba(210,130,0,.07);">🚁 Mavic 3 / 3 Pro</span>
+        <span class="pill tiny" style="border-color:rgba(250,160,0,.25);background:rgba(210,130,0,.07);">🚁 Mini 4 / 3 / 2</span>
+        <span class="pill tiny" style="border-color:rgba(250,160,0,.25);background:rgba(210,130,0,.07);">🚁 Air 3 / 2S</span>
+        <span class="pill tiny" style="border-color:rgba(250,160,0,.25);background:rgba(210,130,0,.07);">📷 Osmo Pocket 3</span>
+        <span class="pill tiny" style="border-color:rgba(250,160,0,.25);background:rgba(210,130,0,.07);">📷 Osmo Action 4</span>
+        <span class="pill tiny" style="border-color:rgba(250,160,0,.25);background:rgba(210,130,0,.07);">⚡ FPV / Avata 2</span>
+        <span class="pill tiny" style="border-color:rgba(250,160,0,.25);background:rgba(210,130,0,.07);">🎞 Zenmuse X9</span>
+        <span class="pill tiny" style="border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.08);color:rgba(34,197,94,.9);">🔒 100% local · no uploads</span>
       </div>
 
       <div class="grid2">
@@ -648,31 +654,34 @@
       </div>
 
       <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
-        <span class="pill tiny" style="border-color:rgba(220,30,50,.3);background:rgba(220,30,50,.06);color:rgba(220,30,50,.8);">🔒 100% local · nothing uploaded</span>
-        <span class="pill tiny" style="border-color:rgba(180,0,30,.3);background:rgba(180,0,30,.06);">Works with Mavic 3 · Mini 4 · Air 3 · Osmo Pocket 3 · FPV · Avata 2</span>
+        <a class="btn primary" href="/#tools" rel="noopener">Back to Toolbox</a>
+        <a class="btn" href="/docs/contact.html" rel="noopener">Contact</a>
       </div>
     </div>
-    <div class="footer">DJI Clip Studio — free, private, browser-based</div>
+    <div class="footer">© 2026 ReportMedic</div>
   </div>
 
   <footer class="rm-footer">
     <div class="rm-footer-inner">
       <div class="rm-footer-brand">
-        <div class="rm-footer-name">🎥 DJI Clip Studio</div>
-        <div class="rm-footer-tag">Free DJI drone video compressor — runs entirely in your browser.</div>
+        <div class="rm-footer-name">ReportMedic</div>
+        <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
       </div>
       <div class="rm-footer-links">
-        <span class="tiny muted">Supports Mavic · Mini · Air · Osmo · FPV · Avata · Zenmuse</span>
+        <a href="/fix-my-report.html">Fix My Report</a>
+        <a href="/#tools">Tools</a>
+        <a href="/docs/">Docs</a>
+        <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
       </div>
-      <div class="rm-footer-meta">Powered by FFmpeg.wasm · No uploads · No account</div>
+      <div class="rm-footer-meta">© 2026 ReportMedic</div>
     </div>
   </footer>
 
-  <!-- How it works modal -->
+  <!-- Learn more modal -->
   <div class="rm-lm-backdrop" id="rmLM" aria-hidden="true">
     <div class="rm-lm-dialog" role="dialog" aria-modal="true" aria-label="DJI Video Compressor">
       <div class="rm-lm-head">
-        <h2 class="rm-lm-title">🚁 DJI Video Compressor — How it works</h2>
+        <h2 class="rm-lm-title">🚁 DJI Video Compressor — Learn more</h2>
         <button class="rm-lm-close" type="button" data-rm-lm-close="rmLM" aria-label="Close">×</button>
       </div>
       <div class="rm-lm-body">
