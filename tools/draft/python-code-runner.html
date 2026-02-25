@@ -37,9 +37,12 @@
     .py-status{display:flex; gap:8px; align-items:center;}
     .py-status .pill{font-size:11px; padding:5px 8px;}
 
-    .py-actions-top{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
-    .py-actions-top .btn{padding:6px 10px; font-size:12px; border-radius:8px; border:1px solid rgba(255,255,255,.14)}
+    .py-actions-top{display:flex; gap:8px; flex-wrap:nowrap; align-items:center; justify-content:flex-end; white-space:nowrap; overflow-x:auto; max-width:100%;}
+    .py-actions-top .btn{padding:6px 10px; font-size:12px; border-radius:8px; border:1px solid rgba(255,255,255,.14); flex:0 0 auto; white-space:nowrap;}
     .py-actions-top .btn.primary{border-color: rgba(124,247,212,.28)}
+
+    .py-samples-grid{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; margin-top:10px;}
+    .py-samples-grid .btn{width:100%;}
   </style>
 </head>
 
@@ -114,7 +117,7 @@ Alice
         <div style="width:320px; max-width:100%">
           <div style="font-weight:700">Quick samples</div>
           <div class="tiny muted">Click to load</div>
-          <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+          <div class="py-samples-grid">
             <button class="btn" type="button" data-sample="hello">Hello</button>
             <button class="btn" type="button" data-sample="csv">Parse CSV</button>
             <button class="btn" type="button" data-sample="text">Text cleanup</button>
@@ -329,8 +332,8 @@ Alice
           pyodideReady = (async () => {
             send("status", {text:"loading"});
             const p = await loadPyodide({ indexURL: "${PYODIDE_BASE}" });
-            p.setStdout({ batched: (s) => send("stdout", {text:s}) });
-            p.setStderr({ batched: (s) => send("stderr", {text:s}) });
+            p.setStdout({ write: (s) => send("stdout", {text:s}) });
+            p.setStderr({ write: (s) => send("stderr", {text:s}) });
             pyodide = p;
             send("status", {text:"ready"});
             return pyodide;
