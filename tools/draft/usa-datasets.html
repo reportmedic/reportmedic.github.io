@@ -30,18 +30,20 @@
   .ds-controls{
     display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;
   }
+  .ds-controls > *{flex-shrink:0;}
+  .ds-controls-right{display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;}
   .ds-search-wrap{
-    position:relative;flex:0 1 320px;min-width:180px;
+    position:relative;flex:0 1 300px;min-width:180px;
   }
   .ds-search-wrap svg{
-    position:absolute;left:11px;top:50%;transform:translateY(-50%);
-    width:15px;height:15px;stroke:rgba(255,255,255,.3);fill:none;
+    position:absolute;left:12px;top:50%;transform:translateY(-50%);
+    width:14px;height:14px;stroke:rgba(255,255,255,.3);fill:none;
     stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;
   }
   .ds-search{
-    width:100%;padding:8px 12px 8px 32px;border-radius:9px;
+    width:100%;padding:8px 36px 8px 34px;border-radius:9px;
     border:1.5px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);
-    color:#fff;font-size:.82rem;outline:none;transition:border-color .2s;
+    color:#fff;font-size:.82rem;outline:none;transition:border-color .2s;box-sizing:border-box;
   }
   .ds-search::placeholder{color:rgba(255,255,255,.3);font-size:.8rem;}
   .ds-search:focus{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.06);}
@@ -147,7 +149,7 @@
     padding:7px 10px;border-radius:9px;font-size:.78rem;
     border:1.5px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);
     color:rgba(255,255,255,.55);cursor:pointer;outline:none;transition:border-color .2s;
-    flex:0 0 auto;
+    width:fit-content;max-width:160px;
   }
   .ds-sort:focus{border-color:rgba(255,255,255,.25);}
   .ds-sort option{background:#1a1a2e;color:#fff;}
@@ -184,14 +186,16 @@
         <input class="ds-search" id="dsSearch" type="text" placeholder="Search datasets, columns, categories…" autocomplete="off" />
         <span class="ds-kbd">/</span>
       </div>
-      <select class="ds-sort" id="dsSort">
-        <option value="cat">Sort: category</option>
-        <option value="name">Sort: A → Z</option>
-        <option value="cols">Sort: columns</option>
-      </select>
-      <div class="ds-view-toggle">
-        <button class="ds-view-btn active" data-view="grid" type="button">Grid</button>
-        <button class="ds-view-btn" data-view="list" type="button">List</button>
+      <div class="ds-controls-right">
+        <select class="ds-sort" id="dsSort">
+          <option value="cat">Sort: category</option>
+          <option value="name">Sort: A → Z</option>
+          <option value="cols">Sort: columns</option>
+        </select>
+        <div class="ds-view-toggle">
+          <button class="ds-view-btn active" data-view="grid" type="button">Grid</button>
+          <button class="ds-view-btn" data-view="list" type="button">List</button>
+        </div>
       </div>
       <div class="ds-stats" id="dsStats"></div>
     </div>
