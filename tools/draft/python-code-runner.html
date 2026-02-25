@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="description" content="Run Python code locally in your browser with a fast editor, optional stdin, and shareable links. Powered by WebAssembly. Nothing is uploaded."/>
+  <title>Python Code Runner - Run Python locally in your browser - ReportMedic</title>
+
+  <link rel="icon" sizes="any" href="/favicon.ico"/>
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/reportmedic-48.png?v=1"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png"/>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+  <style>
+    .py-grid{display:grid; grid-template-columns:1.15fr .85fr; gap:14px;}
+    @media (max-width: 980px){ .py-grid{grid-template-columns:1fr; } }
+
+    .py-editor, .py-stdin, .py-out{
+      width:100%;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.45;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color: inherit;
+      padding: 12px;
+      outline: none;
+    }
+    .py-editor{min-height: 420px; resize: vertical;}
+    .py-stdin{min-height: 120px; resize: vertical;}
+    .py-out{min-height: 420px; overflow:auto; white-space: pre-wrap; word-break: break-word; margin:0;}
+    .py-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
+    .py-actions .btn{border:1px solid rgba(255,255,255,.14)}
+    .py-actions .btn.primary{border-color: rgba(124,247,212,.28)}
+    .py-tips{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
+    .py-tips .pill{border:1px solid rgba(255,255,255,.12)}
+  </style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Python Code Runner <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Run Python locally in your browser for quick data checks, math, text transforms, and mini scripts. Great for validating report logic before you ship a spreadsheet or dashboard.</p>
+
+    <div class="hr"></div>
+
+    <div class="card">
+      <div class="py-grid">
+        <div>
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <div style="font-weight:700">Editor</div>
+              <div class="tiny muted">Autosaves in your browser</div>
+            </div>
+            <span class="pill tiny" id="enginePill"><b>Engine:</b> <span class="muted">starting</span></span>
+          </div>
+
+          <textarea id="code" class="py-editor" spellcheck="false"></textarea>
+
+          <div class="py-actions">
+            <button class="btn primary" id="runBtn" type="button">Run</button>
+            <button class="btn" id="stopBtn" type="button" disabled>Stop</button>
+            <button class="btn" id="clearBtn" type="button">Clear output</button>
+            <button class="btn" id="shareBtn" type="button">Copy share link</button>
+          </div>
+
+          <div class="py-tips">
+            <span class="pill tiny">Tip: paste CSV into a triple-quoted string</span>
+            <span class="pill tiny">Tip: use print() for output</span>
+            <span class="pill tiny">Tip: sys.version shows the runtime</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <div style="font-weight:700">Output</div>
+              <div class="tiny muted">stdout and errors</div>
+            </div>
+            <span class="pill tiny" id="runPill"><b>Run:</b> <span class="muted">idle</span></span>
+          </div>
+
+          <pre id="out" class="py-out"></pre>
+        </div>
+      </div>
+
+      <div class="hr" style="margin:14px 0"></div>
+
+      <div class="row" style="gap:14px; align-items:flex-start">
+        <div style="flex:1">
+          <div style="font-weight:700">Optional stdin</div>
+          <div class="tiny muted">Each line is consumed by input()</div>
+          <textarea id="stdin" class="py-stdin" spellcheck="false" placeholder="Example:
+Alice
+42"></textarea>
+        </div>
+        <div style="width:320px; max-width:100%">
+          <div style="font-weight:700">Quick samples</div>
+          <div class="tiny muted">Click to load</div>
+          <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+            <button class="btn" type="button" data-sample="hello">Hello</button>
+            <button class="btn" type="button" data-sample="csv">Parse CSV</button>
+            <button class="btn" type="button" data-sample="text">Text cleanup</button>
+            <button class="btn" type="button" data-sample="math">Quick math</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div style="font-weight:700">Why this fits ReportMedic</div>
+      <p class="tiny muted" style="margin:6px 0 0">
+        Use Python to sanity-check report formulas, reconcile totals, validate date logic, or prototype a cleaning rule. Everything runs on your machine, so sensitive files and numbers stay private while you iterate fast.
+      </p>
+    </div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
+<!-- Learn more modal -->
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Python Code Runner</h2>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>Best for</h3>
+      <ul>
+        <li>Recalculating totals and checking report math before exporting</li>
+        <li>Cleaning text, parsing CSV snippets, validating date rules, or building quick lookup tables</li>
+        <li>Testing a transformation step before you bake it into a pipeline</li>
+      </ul>
+
+      <h3>How it runs</h3>
+      <ul>
+        <li>Python executes inside your browser via WebAssembly</li>
+        <li>Nothing is uploaded, your code and data stay local</li>
+        <li>Use stdin to simulate input() calls line by line</li>
+      </ul>
+
+      <h3>Share links</h3>
+      <ul>
+        <li>Copy share link to capture your current editor content inside the URL</li>
+        <li>Great for sending a reproducible snippet to a teammate for review</li>
+      </ul>
+
+      <div class="rm-kv">
+        <div class="k">Pro tip</div>
+        <div class="v">Paste a small CSV sample into a triple-quoted string, then splitlines() and parse.</div>
+      </div>
+    </div>
+    <div class="rm-lm-foot">
+      <button class="btn primary" type="button" data-rm-lm-close="rmLM">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $ = (sel, root=document)=>root.querySelector(sel);
+  const out = $("#out");
+  const codeEl = $("#code");
+  const stdinEl = $("#stdin");
+  const runBtn = $("#runBtn");
+  const stopBtn = $("#stopBtn");
+  const clearBtn = $("#clearBtn");
+  const shareBtn = $("#shareBtn");
+  const enginePill = $("#enginePill");
+  const runPill = $("#runPill");
+
+  function setEngineState(text){
+    enginePill.innerHTML = "<b>Engine:</b> <span class=\"muted\">"+escapeHtml(text)+"</span>";
+  }
+  function setRunState(text){
+    runPill.innerHTML = "<b>Run:</b> <span class=\"muted\">"+escapeHtml(text)+"</span>";
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;" }[c]));
+  }
+  function append(text){
+    out.textContent += text;
+    out.scrollTop = out.scrollHeight;
+  }
+  function appendLine(text){
+    append(text + "\n");
+  }
+  function clearOut(){
+    out.textContent = "";
+  }
+
+  // Learn more modal (same behavior as other tools)
+  function openLM(id){ const bd=document.getElementById(id); if(!bd) return; bd.setAttribute("aria-hidden","false"); document.body.classList.add("rm-modal-open"); }
+  function closeLM(id){ const bd=document.getElementById(id); if(!bd) return; bd.setAttribute("aria-hidden","true"); document.body.classList.remove("rm-modal-open"); }
+
+  document.addEventListener("click", function(e){
+    const a = e.target.closest("[data-rm-lm-open]");
+    if(a){ e.preventDefault(); openLM(a.getAttribute("data-rm-lm-open")); return; }
+    const close = e.target.closest("[data-rm-lm-close]");
+    if(close){ e.preventDefault(); closeLM(close.getAttribute("data-rm-lm-close")); return; }
+    const bd = e.target.classList && e.target.classList.contains("rm-lm-backdrop") ? e.target : null;
+    if(bd) closeLM(bd.id);
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Escape") return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(bd=>bd.setAttribute("aria-hidden","true"));
+    document.body.classList.remove("rm-modal-open");
+  });
+
+  // Samples
+  const samples = {
+    hello: `print("Hello from ReportMedic Python!")\nimport sys\nprint(sys.version)`,
+    math: `import math\nnums = [3, 7, 21, 42]\nprint("sum:", sum(nums))\nprint("mean:", sum(nums)/len(nums))\nprint("sqrt(2):", math.sqrt(2))`,
+    text: `s = "  ReportMedic   fixes   messy   exports\nwith    fast   tools  " \nwords = s.split()\nprint("words:", words)\nprint("clean:", " ".join(words))`,
+    csv: `import csv, io\nraw = """name,amount\nAlice,120\nBob,80\n"""\nf = io.StringIO(raw)\nr = list(csv.DictReader(f))\nprint(r)\nprint("total:", sum(int(x["amount"]) for x in r))`
+  };
+  document.querySelectorAll("[data-sample]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const k = btn.getAttribute("data-sample");
+      if(samples[k]){ codeEl.value = samples[k]; persist(); }
+    });
+  });
+
+  // Persist editor content
+  const LS_CODE = "rm_python_runner_code_v1";
+  const LS_STDIN = "rm_python_runner_stdin_v1";
+
+  function persist(){
+    try{
+      localStorage.setItem(LS_CODE, codeEl.value || "");
+      localStorage.setItem(LS_STDIN, stdinEl.value || "");
+    }catch(_){}
+  }
+  codeEl.addEventListener("input", persist);
+  stdinEl.addEventListener("input", persist);
+
+  function loadFromStorage(){
+    try{
+      const c = localStorage.getItem(LS_CODE);
+      const s = localStorage.getItem(LS_STDIN);
+      if(c && !codeEl.value) codeEl.value = c;
+      if(s && !stdinEl.value) stdinEl.value = s;
+    }catch(_){}
+  }
+
+  // Share link (encodes editor only)
+  function toB64Url(str){
+    const bytes = new TextEncoder().encode(str);
+    let bin = "";
+    bytes.forEach(b => bin += String.fromCharCode(b));
+    return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  }
+  function fromB64Url(b64url){
+    const b64 = b64url.replace(/-/g,"+").replace(/_/g,"/");
+    const pad = b64.length % 4 ? "=".repeat(4 - (b64.length % 4)) : "";
+    const bin = atob(b64 + pad);
+    const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  }
+  function applyShareParam(){
+    const u = new URL(location.href);
+    const p = u.searchParams.get("code");
+    if(!p) return;
+    try{
+      const decoded = fromB64Url(p);
+      if(decoded) codeEl.value = decoded;
+    }catch(_){}
+  }
+
+  shareBtn.addEventListener("click", async () => {
+    const u = new URL(location.href);
+    u.searchParams.set("code", toB64Url(codeEl.value || ""));
+    try{
+      await navigator.clipboard.writeText(u.toString());
+      appendLine("");
+      appendLine("[share link copied]");
+    }catch(_){
+      appendLine("");
+      appendLine("[share link ready]");
+      appendLine(u.toString());
+    }
+  });
+
+  clearBtn.addEventListener("click", clearOut);
+
+  // Worker-based Python runtime (Stop = restart worker)
+  const PYODIDE_BASE = "https://cdn.jsdelivr.net/pyodide/v0.25.1/full/";
+  let worker = null;
+  let busy = false;
+
+  function makeWorker(){
+    const workerSrc = `
+      self.importScripts("${PYODIDE_BASE}pyodide.js");
+      let pyodideReady = null;
+      let pyodide = null;
+
+      function send(type, payload){ self.postMessage(Object.assign({type}, payload||{})); }
+
+      async function ensure(){
+        if(pyodide) return pyodide;
+        if(!pyodideReady){
+          pyodideReady = (async () => {
+            send("status", {text:"loading"});
+            const p = await loadPyodide({ indexURL: "${PYODIDE_BASE}" });
+            p.setStdout({ batched: (s) => send("stdout", {text:s}) });
+            p.setStderr({ batched: (s) => send("stderr", {text:s}) });
+            pyodide = p;
+            send("status", {text:"ready"});
+            return pyodide;
+          })();
+        }
+        return pyodideReady;
+      }
+
+      async function runWithStdin(code, stdin){
+        const p = await ensure();
+        p.globals.set("__rm_stdin", stdin || "");
+        await p.runPythonAsync(\`
+import builtins
+__rm_lines = __rm_stdin.splitlines()
+__rm_i = 0
+def _rm_input(prompt=""):
+    global __rm_i
+    if prompt:
+        print(prompt, end="")
+    if __rm_i >= len(__rm_lines):
+        raise EOFError("stdin exhausted")
+    v = __rm_lines[__rm_i]
+    __rm_i += 1
+    return v
+builtins.input = _rm_input
+\`);
+        return await p.runPythonAsync(code);
+      }
+
+      self.onmessage = async (e) => {
+        const msg = e.data || {};
+        if(msg.type === "run"){
+          const t0 = Date.now();
+          send("run", {state:"start"});
+          try{
+            const res = await runWithStdin(msg.code || "", msg.stdin || "");
+            if(res !== undefined && res !== null){
+              send("result", {text:String(res)});
+            }
+            send("run", {state:"done", ms:(Date.now()-t0)});
+          }catch(err){
+            send("error", {text:(err && (err.stack || err.message)) ? String(err.stack || err.message) : String(err)});
+            send("run", {state:"done", ms:(Date.now()-t0)});
+          }
+        }
+      };
+    `;
+    const blob = new Blob([workerSrc], {type:"text/javascript"});
+    const url = URL.createObjectURL(blob);
+    const w = new Worker(url);
+    URL.revokeObjectURL(url);
+    return w;
+  }
+
+  function ensureWorker(){
+    if(worker) return;
+    worker = makeWorker();
+    worker.onmessage = (e) => {
+      const msg = e.data || {};
+      if(msg.type === "status"){
+        setEngineState(msg.text || "");
+        return;
+      }
+      if(msg.type === "stdout"){
+        append(msg.text || "");
+        return;
+      }
+      if(msg.type === "stderr"){
+        append(msg.text || "");
+        return;
+      }
+      if(msg.type === "result"){
+        appendLine("");
+        appendLine(String(msg.text || ""));
+        return;
+      }
+      if(msg.type === "error"){
+        appendLine("");
+        appendLine(String(msg.text || ""));
+        return;
+      }
+      if(msg.type === "run"){
+        if(msg.state === "start"){
+          busy = true;
+          stopBtn.disabled = false;
+          runBtn.disabled = true;
+          setRunState("running");
+        }else if(msg.state === "done"){
+          busy = false;
+          stopBtn.disabled = true;
+          runBtn.disabled = false;
+          setRunState((msg.ms || 0) + " ms");
+        }
+      }
+    };
+    worker.onerror = () => { setEngineState("error"); };
+  }
+
+  function stopWorker(){
+    if(!worker) return;
+    try{ worker.terminate(); }catch(_){}
+    worker = null;
+    busy = false;
+    stopBtn.disabled = true;
+    runBtn.disabled = false;
+    setRunState("stopped");
+    ensureWorker();
+  }
+
+  stopBtn.addEventListener("click", () => {
+    appendLine("");
+    appendLine("[stopped]");
+    stopWorker();
+  });
+
+  runBtn.addEventListener("click", () => {
+    ensureWorker();
+    appendLine("");
+    appendLine(">>> running");
+    worker.postMessage({type:"run", code: codeEl.value || "", stdin: stdinEl.value || ""});
+  });
+
+  // Boot
+  applyShareParam();
+  loadFromStorage();
+  if(!codeEl.value){
+    codeEl.value = samples.hello;
+  }
+  ensureWorker();
+  setRunState("idle");
+  setEngineState("loading");
+
+})();
+</script>
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6997965e73d8cb1c357e66ee/1jhs26oms';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+</body>
+</html>
