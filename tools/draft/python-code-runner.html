@@ -32,11 +32,14 @@
     .py-editor{min-height: 420px; resize: vertical;}
     .py-stdin{min-height: 120px; resize: vertical;}
     .py-out{min-height: 420px; overflow:auto; white-space: pre-wrap; word-break: break-word; margin:0;}
-    .py-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
-    .py-actions .btn{border:1px solid rgba(255,255,255,.14)}
-    .py-actions .btn.primary{border-color: rgba(124,247,212,.28)}
-    .py-tips{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
-    .py-tips .pill{border:1px solid rgba(255,255,255,.12)}
+
+    .pill{border-radius:6px;}
+    .py-status{display:flex; gap:8px; align-items:center;}
+    .py-status .pill{font-size:11px; padding:5px 8px;}
+
+    .py-actions-top{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+    .py-actions-top .btn{padding:6px 10px; font-size:12px; border-radius:8px; border:1px solid rgba(255,255,255,.14)}
+    .py-actions-top .btn.primary{border-color: rgba(124,247,212,.28)}
   </style>
 </head>
 
@@ -58,6 +61,7 @@
   <div class="panel">
     <h1>Python Code Runner <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
     <p class="sub">Run Python locally in your browser for quick data checks, math, text transforms, and mini scripts. Great for validating report logic before you ship a spreadsheet or dashboard.</p>
+    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
 
     <div class="hr"></div>
 
@@ -69,32 +73,28 @@
               <div style="font-weight:700">Editor</div>
               <div class="tiny muted">Autosaves in your browser</div>
             </div>
-            <span class="pill tiny" id="enginePill"><b>Engine:</b> <span class="muted">starting</span></span>
+            <div class="py-status">
+              <span class="pill tiny" id="enginePill"><b>Engine:</b> <span class="muted">starting</span></span>
+              <span class="pill tiny" id="runPill"><b>Run:</b> <span class="muted">idle</span></span>
+            </div>
           </div>
 
           <textarea id="code" class="py-editor" spellcheck="false"></textarea>
 
-          <div class="py-actions">
-            <button class="btn primary" id="runBtn" type="button">Run</button>
-            <button class="btn" id="stopBtn" type="button" disabled>Stop</button>
-            <button class="btn" id="clearBtn" type="button">Clear output</button>
-            <button class="btn" id="shareBtn" type="button">Copy share link</button>
-          </div>
-
-          <div class="py-tips">
-            <span class="pill tiny">Tip: paste CSV into a triple-quoted string</span>
-            <span class="pill tiny">Tip: use print() for output</span>
-            <span class="pill tiny">Tip: sys.version shows the runtime</span>
-          </div>
         </div>
 
         <div>
-          <div class="row" style="justify-content:space-between">
+          <div class="row" style="justify-content:space-between; align-items:flex-start">
             <div>
               <div style="font-weight:700">Output</div>
               <div class="tiny muted">stdout and errors</div>
             </div>
-            <span class="pill tiny" id="runPill"><b>Run:</b> <span class="muted">idle</span></span>
+            <div class="py-actions-top" aria-label="Run controls">
+              <button class="btn primary" id="runBtn" type="button">Run</button>
+              <button class="btn" id="stopBtn" type="button" disabled>Stop</button>
+              <button class="btn" id="clearBtn" type="button">Clear</button>
+              <button class="btn" id="shareBtn" type="button">Share</button>
+            </div>
           </div>
 
           <pre id="out" class="py-out"></pre>
@@ -124,12 +124,6 @@ Alice
       </div>
     </div>
 
-    <div class="card" style="margin-top:14px">
-      <div style="font-weight:700">Why this fits ReportMedic</div>
-      <p class="tiny muted" style="margin:6px 0 0">
-        Use Python to sanity-check report formulas, reconcile totals, validate date logic, or prototype a cleaning rule. Everything runs on your machine, so sensitive files and numbers stay private while you iterate fast.
-      </p>
-    </div>
   </div>
 </div>
 
