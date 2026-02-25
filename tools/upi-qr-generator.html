@@ -249,6 +249,21 @@
       }
     }
 
+  
+    /* Stack Decode card below Generate card */
+    .panel > .grid2{
+      grid-template-columns: 1fr !important;
+    }
+
+    /* Make form and QR preview split the available width (about half and half) */
+    .qrBox{
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    }
+    .qrCanvasWrap{
+      width:100% !important;
+      max-width:none !important;
+    }
+
   </style>
 </head>
 
