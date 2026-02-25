@@ -264,6 +264,28 @@
       max-width:none !important;
     }
 
+  
+    /* Final width fix: panes above Decode use full available width */
+    .panel > .grid2{
+      grid-template-columns: 1fr !important;
+    }
+    .qrBox{
+      width:100% !important;
+      display:grid !important;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+      gap:14px !important;
+      align-items:start !important;
+    }
+    .rm-form-col{
+      width:auto !important;
+      max-width:none !important;
+      min-width:0 !important;
+    }
+    .qrCanvasWrap{
+      width:100% !important;
+      max-width:none !important;
+    }
+
   </style>
 </head>
 
