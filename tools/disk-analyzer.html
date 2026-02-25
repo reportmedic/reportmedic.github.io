@@ -1351,6 +1351,7 @@ document.addEventListener('dblclick', e => {
 // ═══════════════════════════════════════════════════════════════
 // EXPORT CSV
 // ═══════════════════════════════════════════════════════════════
+function exportCSV() {
   const headers = ['Path','Name','Type','Extension','Category','Size (bytes)','Size','% of Total','% of Parent','Direct Items','All Items','Depth','Last Modified'];
   const rows = [headers];
   for (const n of sortNodes(flatFiltered)) {
