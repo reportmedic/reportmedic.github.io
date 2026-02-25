@@ -3,202 +3,354 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>X Keyword Tracker — ReportMedic</title>
-  <meta name="description" content="Track up to 5 X.com keyword searches in vertical panes. Set your own refresh interval. Runs in your browser." />
+  <title>Keyword Tracker — ReportMedic</title>
+  <meta name="description" content="Track up to 5 keyword searches side-by-side across X, Google, Bing, DuckDuckGo and more. Results appear inside each pane." />
   <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="/assets/css/styles.css" />
-
 <style>
-/* ── Page-level overrides ───────────────────────────────── */
-.panel h1{display:flex; align-items:baseline; gap:.55rem; flex-wrap:wrap;}
+/* ── Design tokens (mirrors styles.css) ──────────────── */
+:root{
+  --bg:#0b1220; --bg-top:#152238; --bg-mid:#0f1a2b; --bg-bot:#0b1220;
+  --card:rgba(255,255,255,.08); --card-2:rgba(255,255,255,.06);
+  --text:rgba(238,246,255,.96); --muted:rgba(238,246,255,.78);
+  --brand:#6ea8ff; --brand2:#7cf7d4;
+  --border:rgba(255,255,255,.14); --border-strong:rgba(255,255,255,.18);
+  --shadow:0 12px 30px rgba(0,0,0,.35); --radius:16px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+  font-size:14.5px; line-height:1.5; color:var(--text);
+  background:
+    radial-gradient(1200px 640px at 18% 0%,rgba(96,165,250,.22),transparent 60%),
+    radial-gradient(980px 560px at 85% 12%,rgba(94,234,212,.18),transparent 58%),
+    radial-gradient(760px 520px at 55% 95%,rgba(167,139,250,.14),transparent 60%),
+    linear-gradient(180deg,var(--bg-top) 0%,var(--bg-mid) 55%,var(--bg-bot) 100%);
+  min-height:100vh;
+  display:flex; flex-direction:column;
+}
+a{color:inherit}
 
-/* ── Toolbar (global controls) ──────────────────────────── */
-.tracker-toolbar{
-  display:flex; flex-wrap:wrap; align-items:center; gap:10px;
-  margin-bottom:14px;
+/* ── Header ───────────────────────────────────────────── */
+header{
+  position:sticky; top:0; z-index:20;
+  backdrop-filter:blur(10px);
+  background:rgba(15,24,40,.70);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
 }
-.tracker-toolbar label{
-  display:flex; align-items:center; gap:8px;
-  font-size:12.5px; opacity:.9; margin:0;
+.nav{
+  max-width:100%; padding:10px 16px;
+  display:flex; align-items:center; gap:12px;
 }
-.tracker-toolbar input[type="number"]{
-  width:72px; padding:7px 9px; font-size:13px;
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.2px;text-decoration:none}
+.mark{width:30px;height:30px;border-radius:9px;background:url("/assets/img/reportmedic-48.png") no-repeat center/contain}
+.spacer{flex:1}
+
+/* ── Buttons ──────────────────────────────────────────── */
+.btn{
+  font-family:inherit; font-size:13px;
+  border:1px solid var(--border); background:rgba(255,255,255,.04);
+  color:var(--text); padding:7px 11px; border-radius:6px; cursor:pointer;
+  font-weight:600; text-decoration:none;
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  white-space:nowrap; line-height:1;
+}
+.btn.primary{border:none;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021}
+.btn:not(:disabled):hover{border-color:rgba(255,255,255,.30)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* ── Pill ─────────────────────────────────────────────── */
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.06);
+  font-size:11.5px;
+}
+
+/* ── HR ───────────────────────────────────────────────── */
+.hr{height:1px;background:var(--border);margin:10px 0}
+
+/* ── Inputs ───────────────────────────────────────────── */
+input[type="text"],input[type="number"],select{
+  padding:6px 10px; font-size:13px;
   background:rgba(255,255,255,.07);
   border:1px solid rgba(255,255,255,.16);
-  border-radius:10px; color:inherit; outline:none;
+  border-radius:10px; color:inherit; outline:none; font-family:inherit;
 }
-.tracker-toolbar input[type="number"]:focus{
+input:focus,select:focus{
   border-color:rgba(96,165,250,.55);
   box-shadow:0 0 0 3px rgba(96,165,250,.16);
 }
-.spacer-auto{flex:1;}
+select option{background:#0f1a2b;color:var(--text)}
 
-/* ── Panes container ────────────────────────────────────── */
-#panesWrap{
-  display:flex; gap:12px; align-items:stretch;
-  min-height:520px;
+/* ── Page body ────────────────────────────────────────── */
+.page-body{
+  flex:1; display:flex; flex-direction:column;
+  padding:12px 12px 0; min-height:0;
 }
 
-/* ── Single pane ────────────────────────────────────────── */
+/* ── Top control panel ────────────────────────────────── */
+.top-panel{
+  background:linear-gradient(180deg,var(--card),var(--card-2)),
+    radial-gradient(720px 260px at 18% 0%,rgba(96,165,250,.10),transparent 60%);
+  border:1px solid var(--border); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:12px 14px;
+  flex-shrink:0;
+}
+.top-panel h1{
+  margin:0 0 3px; font-size:21px; line-height:1.15; letter-spacing:-.2px;
+  display:flex; align-items:baseline; gap:.5rem; flex-wrap:wrap;
+}
+.sub{color:var(--muted);margin:0 0 10px;font-size:13px;line-height:1.5}
+.rm-lm-link{font-size:.76rem;margin-left:.4rem;text-decoration:underline;
+  text-underline-offset:3px;opacity:.8;white-space:nowrap}
+.rm-lm-link:hover{opacity:1}
+
+/* ── Toolbar ──────────────────────────────────────────── */
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.toolbar label{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;opacity:.88;white-space:nowrap;
+}
+.toolbar input[type="number"]{width:56px;padding:5px 8px;font-size:12px}
+.spacer-auto{flex:1;min-width:0}
+
+/* ── Panes row ────────────────────────────────────────── */
+#panesWrap{
+  display:flex; gap:10px; flex:1; min-height:0;
+  margin-top:10px; align-items:stretch;
+}
+
+/* ── Single pane ──────────────────────────────────────── */
 .x-pane{
   flex:1; min-width:0;
   display:flex; flex-direction:column;
-  background:rgba(255,255,255,.055);
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:16px;
-  overflow:hidden;
-  transition: border-color .14s ease;
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--border);
+  border-radius:14px; overflow:hidden;
+  transition:border-color .14s ease;
 }
-.x-pane:hover{ border-color:rgba(255,255,255,.22); }
+.x-pane:hover{border-color:rgba(255,255,255,.24)}
 
-/* pane header */
-.x-pane-head{
-  padding:10px 12px 9px;
-  background:rgba(0,0,0,.18);
+/* pane head */
+.pane-head{
+  padding:8px 10px 7px;
+  background:rgba(0,0,0,.22);
   border-bottom:1px solid rgba(255,255,255,.10);
-  display:flex; flex-direction:column; gap:7px;
+  display:flex; flex-direction:column; gap:6px;
+  flex-shrink:0;
 }
-.x-pane-head-row{
-  display:flex; align-items:center; gap:8px;
-}
+.pane-row1,.pane-row2{display:flex;align-items:center;gap:6px}
+
+/* pane number badge */
 .pane-num{
-  width:22px; height:22px; border-radius:7px; flex-shrink:0;
-  background:rgba(110,168,255,.14); border:1px solid rgba(110,168,255,.26);
-  color:var(--brand); font-weight:800; font-size:11px;
-  display:flex; align-items:center; justify-content:center;
+  width:20px;height:20px;border-radius:6px;flex-shrink:0;
+  background:rgba(110,168,255,.14);border:1px solid rgba(110,168,255,.26);
+  color:var(--brand);font-weight:800;font-size:10px;
+  display:flex;align-items:center;justify-content:center;
 }
-.x-pane-keyword-input{
-  flex:1; min-width:0;
-  padding:6px 9px; font-size:12.5px;
-  background:rgba(255,255,255,.07);
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:9px; color:inherit; outline:none;
-  font-family:inherit;
-}
-.x-pane-keyword-input:focus{
-  border-color:rgba(96,165,250,.55);
-  box-shadow:0 0 0 3px rgba(96,165,250,.14);
-}
-.btn-remove-pane{
-  width:26px; height:26px; border-radius:8px; flex-shrink:0;
-  background:rgba(255,80,80,.10); border:1px solid rgba(255,80,80,.22);
-  color:rgba(255,120,120,.9); cursor:pointer; font-size:15px; line-height:1;
-  display:flex; align-items:center; justify-content:center;
-  transition: background .12s ease, border-color .12s ease;
-}
-.btn-remove-pane:hover{ background:rgba(255,80,80,.22); border-color:rgba(255,80,80,.45); }
 
-/* countdown ring + timer area */
-.x-pane-timer-row{
-  display:flex; align-items:center; gap:8px;
+/* engine select */
+.engine-pick{
+  flex-shrink:0; padding:5px 7px; font-size:11.5px;
+  border-radius:8px; max-width:138px;
 }
-.ring-wrap{
-  width:32px; height:32px; flex-shrink:0;
-  position:relative;
-}
-.ring-wrap svg{width:32px; height:32px; transform:rotate(-90deg);}
-.ring-track{ fill:none; stroke:rgba(255,255,255,.10); stroke-width:3; }
-.ring-prog{
-  fill:none; stroke:var(--brand); stroke-width:3;
-  stroke-linecap:round;
-  stroke-dasharray: 82; /* 2π×13 */
-  stroke-dashoffset: 0;
-  transition: stroke-dashoffset .9s linear, stroke .3s;
-}
-.ring-label{
-  position:absolute; inset:0;
-  display:flex; align-items:center; justify-content:center;
-  font-size:8px; font-weight:800; color:var(--brand);
-  transform:rotate(0);
-}
-.x-pane-timer-row .pill{
-  font-size:11px; margin:0; padding:4px 8px;
-}
-.countdown-text{font-size:11px; opacity:.8; flex:1;}
 
-/* pane body — the "preview" / CTA area */
-.x-pane-body{
-  flex:1; display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  gap:14px; padding:18px 14px; text-align:center;
+/* keyword input */
+.kw-input{
+  flex:1;min-width:0;padding:5px 9px;font-size:12.5px;border-radius:8px;
 }
-.x-logo{
-  width:52px; height:52px; border-radius:16px;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.12);
-  display:flex; align-items:center; justify-content:center;
-}
-.x-logo svg{ width:28px; height:28px; fill:var(--text); }
+.kw-input::placeholder{opacity:.42}
 
-.x-pane-kw-badge{
-  font-size:15px; font-weight:800; letter-spacing:-.3px;
-  color:var(--brand); word-break:break-all; padding:0 6px;
-  min-height:22px;
+/* icon buttons */
+.ibtn{
+  width:26px;height:26px;border-radius:7px;flex-shrink:0;cursor:pointer;
+  border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
+  color:var(--text);font-size:13px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .12s,border-color .12s;
 }
-.x-pane-kw-badge.empty{ color:rgba(255,255,255,.28); font-weight:400; font-size:13px; }
-
-.x-pane-body .desc-small{
-  font-size:11.5px; color:var(--muted); line-height:1.45; max-width:200px;
-}
-.btn-open-x{
-  font-family:inherit; font-size:12.5px; font-weight:700;
-  padding:8px 14px; border-radius:10px; cursor:pointer;
+.ibtn:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28)}
+.ibtn.danger{border-color:rgba(255,80,80,.22);background:rgba(255,80,80,.08);color:rgba(255,110,110,.9)}
+.ibtn.danger:hover{background:rgba(255,80,80,.22);border-color:rgba(255,80,80,.45)}
+.ibtn.go{
   border:none;
   background:linear-gradient(135deg,rgba(110,168,255,1),rgba(124,247,212,1));
-  color:#061021;
-  display:inline-flex; align-items:center; gap:6px;
-  transition: opacity .14s ease, transform .12s ease;
+  color:#061021;font-size:11.5px;font-weight:700;
+  width:auto;padding:0 10px;border-radius:8px;height:26px;
 }
-.btn-open-x:hover{ opacity:.88; transform:translateY(-1px); }
-.btn-open-x:disabled{ opacity:.38; cursor:not-allowed; transform:none; }
+.ibtn.go:hover{opacity:.88}
 
-/* flash animation when auto-refresh fires */
-@keyframes flashPane {
-  0%   { background:rgba(110,168,255,.22); }
-  100% { background:rgba(255,255,255,.055); }
+/* timer strip */
+.timer-strip{display:flex;align-items:center;gap:7px}
+.ring-wrap{width:26px;height:26px;flex-shrink:0;position:relative}
+.ring-wrap svg{width:26px;height:26px;transform:rotate(-90deg)}
+.ring-track{fill:none;stroke:rgba(255,255,255,.10);stroke-width:2.5}
+.ring-prog{
+  fill:none;stroke:var(--brand2);stroke-width:2.5;stroke-linecap:round;
+  stroke-dasharray:63;stroke-dashoffset:0;
+  transition:stroke-dashoffset .95s linear, stroke .4s;
 }
-.x-pane.flashing{ animation: flashPane .8s ease forwards; }
+.ring-icon{
+  position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;font-size:9px;
+}
+.cd-text{font-size:11px;opacity:.72;font-variant-numeric:tabular-nums;min-width:36px}
+.embed-badge{
+  font-size:10px;padding:2px 7px;border-radius:999px;
+  border:1px solid;white-space:nowrap;margin-left:auto;
+}
+.embed-badge.ok{border-color:rgba(124,247,212,.35);color:var(--brand2);background:rgba(124,247,212,.08)}
+.embed-badge.blocked{border-color:rgba(251,191,36,.35);color:#fbbf24;background:rgba(251,191,36,.08)}
+.embed-badge.pending{border-color:rgba(255,255,255,.14);color:var(--muted);background:transparent}
 
-/* ── Empty state when 0 panes (shouldn't happen, but safe) ─ */
-#emptyState{
-  display:none; flex:1;
-  align-items:center; justify-content:center;
-  color:var(--muted); font-size:13px; text-align:center;
+/* pane body */
+.pane-body{
+  flex:1;min-height:0;position:relative;
+  background:#0b1220;
+}
+.pane-body iframe{
+  position:absolute;inset:0;width:100%;height:100%;
+  border:none;display:none;background:#fff;
 }
 
-/* ── Add pane button ─────────────────────────────────────── */
+/* overlay (idle / blocked) */
+.pane-overlay{
+  position:absolute;inset:0;z-index:5;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:12px;padding:22px 18px;text-align:center;
+  background:rgba(11,18,32,.90);
+  backdrop-filter:blur(2px);
+  transition:opacity .2s;
+}
+.pane-overlay.hidden{opacity:0;pointer-events:none}
+
+.overlay-icon-wrap{
+  width:46px;height:46px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid rgba(255,255,255,.13);
+  background:rgba(255,255,255,.05);
+  font-size:20px;
+}
+.overlay-kw{
+  font-size:15px;font-weight:800;color:var(--brand);
+  word-break:break-all;padding:0 8px;min-height:18px;
+}
+.overlay-kw.empty{color:rgba(255,255,255,.25);font-weight:400;font-size:12px}
+.overlay-title{font-size:13px;font-weight:800;color:var(--text)}
+.overlay-sub{font-size:11.5px;color:var(--muted);line-height:1.45;max-width:220px}
+
+/* add-pane button */
 .btn-add-pane{
-  border:2px dashed rgba(255,255,255,.22);
-  background:transparent; color:rgba(255,255,255,.5);
-  border-radius:16px; cursor:pointer; font-family:inherit;
-  font-size:13px; font-weight:600;
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  padding:12px 18px; align-self:stretch; min-width:52px;
-  transition: border-color .14s ease, color .14s ease, background .14s ease;
+  align-self:stretch;
+  border:2px dashed rgba(255,255,255,.16);
+  background:transparent;color:rgba(255,255,255,.38);
+  border-radius:14px;cursor:pointer;font-family:inherit;
+  font-size:12px;font-weight:600;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:5px;
+  padding:12px 14px;min-width:46px;
+  transition:border-color .14s,color .14s,background .14s;
+  flex-shrink:0;
 }
-.btn-add-pane:hover{
-  border-color:rgba(110,168,255,.50);
-  color:var(--brand); background:rgba(110,168,255,.06);
+.btn-add-pane:not(:disabled):hover{
+  border-color:rgba(110,168,255,.48);
+  color:var(--brand);background:rgba(110,168,255,.06);
 }
-.btn-add-pane:disabled{ opacity:.28; cursor:not-allowed; }
+.btn-add-pane:disabled{opacity:.22;cursor:not-allowed}
+.btn-add-pane .plus{font-size:20px;line-height:1}
 
-/* ── rm-kv pairs ─────────────────────────────────────────── */
-.rm-kv{display:flex;gap:8px;font-size:12px;line-height:1.4;}
-.rm-kv .k{opacity:.65;min-width:90px;}
-.rm-kv .v{font-weight:700;}
+/* flash on refresh */
+@keyframes flashBorder{
+  0%{box-shadow:0 0 0 3px rgba(110,168,255,.65)}
+  100%{box-shadow:0 0 0 3px rgba(110,168,255,0)}
+}
+.x-pane.flash{animation:flashBorder .9s ease forwards}
 
-/* ── Responsive: stack panes vertically on narrow screens ── */
+/* footer */
+.page-footer{
+  text-align:center;font-size:11.5px;color:var(--muted);
+  padding:8px 0;flex-shrink:0;
+}
+.rm-footer{
+  margin-top:0;padding:12px 16px;
+  border-top:1px solid rgba(255,255,255,.10);
+  background:rgba(0,0,0,.12);flex-shrink:0;
+}
+.rm-footer-inner{
+  max-width:100%;display:flex;flex-wrap:wrap;gap:10px;
+  align-items:center;justify-content:space-between;
+}
+.rm-footer-name{font-weight:700;letter-spacing:.2px}
+.rm-footer-tag{color:var(--muted);font-size:12px;margin-top:2px}
+.rm-footer-links{display:flex;flex-wrap:wrap;gap:12px}
+.rm-footer-links a{
+  color:rgba(238,246,255,.88);text-decoration:none;
+  font-size:12px;border-bottom:1px dashed rgba(238,246,255,.22);
+}
+.rm-footer-links a:hover{border-bottom-style:solid}
+.rm-footer-meta{color:var(--muted);font-size:11.5px}
+
+/* modal */
+.rm-lm-backdrop{
+  position:fixed;inset:0;display:none;align-items:center;
+  justify-content:center;padding:24px;z-index:9999;
+  background:radial-gradient(1200px 600px at 20% 10%,rgba(120,170,255,.18),transparent 60%),
+    rgba(2,6,23,.80);
+  backdrop-filter:blur(4px) saturate(1.2);
+}
+.rm-lm-backdrop[aria-hidden="false"]{display:flex}
+.rm-lm-dialog{
+  width:min(620px,100%);border-radius:18px;overflow:hidden;
+  background:rgba(10,14,25,.3);border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(14px) saturate(1.15);
+  box-shadow:0 20px 60px rgba(0,0,0,.45);
+  transform:translateY(10px) scale(.985);opacity:0;
+  transition:transform 180ms ease,opacity 180ms ease;
+}
+.rm-lm-backdrop[aria-hidden="false"] .rm-lm-dialog{transform:translateY(0) scale(1);opacity:1}
+.rm-lm-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.10);
+  background:rgba(0,0,0,.18);
+}
+.rm-lm-title{margin:0;font-size:1rem;font-weight:800;color:rgba(240,246,255,.92)}
+.rm-lm-close{
+  width:32px;height:32px;border-radius:9px;
+  border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
+  color:inherit;cursor:pointer;font-size:17px;line-height:1;
+  display:grid;place-items:center;
+}
+.rm-lm-close:hover{background:rgba(255,255,255,.12)}
+.rm-lm-body{padding:14px 16px 16px;font-size:.92rem;line-height:1.55;color:rgba(240,246,255,.72)}
+.rm-lm-body h3{margin:12px 0 5px;font-size:.88rem;font-weight:700;color:rgba(240,246,255,.92)}
+.rm-lm-body ul{margin:5px 0 10px 18px}
+.rm-lm-body li{margin:4px 0}
+.embed-table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:6px}
+.embed-table td,.embed-table th{padding:5px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08)}
+.embed-table th{opacity:.6;font-weight:600}
+.embed-table .ok{color:var(--brand2)}
+.embed-table .no{color:#f97316;opacity:.85}
+.rmNoScroll{overflow:hidden}
+
+/* responsive */
 @media(max-width:680px){
-  #panesWrap{ flex-direction:column; }
-  .btn-add-pane{ min-height:52px; }
+  #panesWrap{flex-direction:column}
+  .btn-add-pane{min-height:44px;flex-direction:row}
 }
 </style>
 </head>
 
 <body class="tools-page">
+
 <header>
   <div class="nav">
-    <a class="logo" href="/" style="text-decoration:none;">
+    <a class="logo" href="/">
       <div class="mark"></div>
       <div>ReportMedic</div>
     </a>
@@ -209,50 +361,44 @@
   </div>
 </header>
 
-<div class="wrap" style="max-width:1280px;">
-  <div class="panel">
-    <h1>X Keyword Tracker <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
-    <p class="sub">Monitor up to 5 keyword searches on X.com side-by-side. Set a refresh interval and each pane will auto-open your search at the right moment — so you never miss a trending term.</p>
+<div class="page-body">
 
+  <!-- Control panel -->
+  <div class="top-panel">
+    <h1>Keyword Tracker <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Monitor up to 5 keyword searches side-by-side. Pick a search engine per pane — embeddable engines show results right here; others open in a new tab.</p>
     <div class="hr"></div>
-
-    <!-- Toolbar -->
-    <div class="tracker-toolbar">
+    <div class="toolbar">
       <label>
-        ⏱ Refresh every
-        <input type="number" id="refreshMins" min="1" max="120" value="5" style="width:60px" />
+        ⏱ Auto-refresh every
+        <input type="number" id="refreshMins" min="1" max="999" value="5" />
         min
       </label>
-      <button class="btn primary" id="btnApplyRefresh" type="button" style="padding:7px 13px;font-size:12.5px">Apply</button>
-
+      <button class="btn primary" id="btnApply" type="button" style="padding:5px 12px;font-size:12px">Apply</button>
       <div class="spacer-auto"></div>
-
-      <span class="pill tiny" id="globalStatus">
-        <b>Status:</b><span class="muted" id="globalStatusText">running</span>
+      <span class="pill" id="globalPill">
+        <b>Status:</b>&ensp;<span id="globalTxt">running</span>
       </span>
-
-      <button class="btn" id="btnPauseAll" type="button" style="padding:7px 12px;font-size:12.5px">⏸ Pause All</button>
-      <button class="btn" id="btnResumeAll" type="button" style="padding:7px 12px;font-size:12.5px" disabled>▶ Resume All</button>
-      <button class="btn" id="btnOpenAll" type="button" style="padding:7px 12px;font-size:12.5px">↗ Open All</button>
+      <button class="btn" id="btnPause"   type="button">⏸ Pause All</button>
+      <button class="btn" id="btnResume"  type="button" disabled>▶ Resume All</button>
+      <button class="btn" id="btnOpenAll" type="button">↗ Open All</button>
     </div>
+  </div>
 
-    <!-- Panes row -->
-    <div id="panesWrap">
-      <!-- panes injected by JS -->
-      <div id="emptyState" style="display:none;">No panes. Click + Add Pane.</div>
-      <button class="btn-add-pane" id="btnAddPane" type="button">
-        <span style="font-size:20px;line-height:1">＋</span> Add Pane
-      </button>
-    </div>
+  <!-- Pane container -->
+  <div id="panesWrap">
+    <button class="btn-add-pane" id="btnAdd" type="button">
+      <span class="plus">＋</span>
+      <span>Add&nbsp;Pane</span>
+    </button>
+  </div>
 
-  </div><!-- /.panel -->
-
-  <div class="footer">© 2026 ReportMedic</div>
+  <div class="page-footer">© 2026 ReportMedic</div>
 </div>
 
 <footer class="rm-footer">
   <div class="rm-footer-inner">
-    <div class="rm-footer-brand">
+    <div>
       <div class="rm-footer-name">ReportMedic</div>
       <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
     </div>
@@ -267,323 +413,487 @@
 </footer>
 
 <!-- Learn More Modal -->
-<div aria-hidden="true" aria-label="X Keyword Tracker details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+<div aria-hidden="true" aria-label="Keyword Tracker details" aria-modal="true"
+     class="rm-lm-backdrop" id="rmLM" role="dialog">
   <div class="rm-lm-dialog">
     <div class="rm-lm-head">
-      <h2 class="rm-lm-title">X Keyword Tracker</h2>
+      <h2 class="rm-lm-title">Keyword Tracker — How it works</h2>
       <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
     </div>
     <div class="rm-lm-body">
-      <h3>What this helps with</h3>
+      <h3>What you can do</h3>
       <ul>
-        <li>Monitor up to 5 X.com keyword searches simultaneously</li>
-        <li>Stay on top of trending topics, brand mentions, or competitors</li>
-        <li>Set auto-refresh intervals so searches open at the right cadence</li>
+        <li>Track up to 5 keywords in vertical panes — add or remove panes freely</li>
+        <li>Pick a different search engine per pane (DuckDuckGo, Google, X.com, etc.)</li>
+        <li>Set a global auto-refresh interval — each pane reloads on its own countdown</li>
+        <li>Pause/resume all timers globally, or control each pane individually</li>
+        <li>↗ Open All instantly fires all searches in new tabs at once</li>
       </ul>
-      <h3>How it works</h3>
+      <h3>Embed support by engine</h3>
+      <p>Most search engines block iframe embedding via browser security headers.
+         Engines marked <span class="ok">✓ Embeds</span> show results directly in the pane.
+         Others display a fallback with an "Open in new tab" button — the search still works.</p>
+      <table class="embed-table">
+        <tr><th>Engine</th><th>In-pane</th><th>Notes</th></tr>
+        <tr><td>DuckDuckGo</td><td class="ok">✓ Embeds</td><td>Best choice for in-pane monitoring</td></tr>
+        <tr><td>Startpage</td><td class="ok">✓ Embeds</td><td>Google results, privacy-focused</td></tr>
+        <tr><td>Brave Search</td><td class="ok">✓ Embeds</td><td>Independent index</td></tr>
+        <tr><td>X.com</td><td class="no">↗ New tab</td><td>Blocks iframes</td></tr>
+        <tr><td>Google</td><td class="no">↗ New tab</td><td>Blocks iframes</td></tr>
+        <tr><td>Bing</td><td class="no">↗ New tab</td><td>Blocks iframes</td></tr>
+        <tr><td>Yahoo</td><td class="no">↗ New tab</td><td>Blocks iframes</td></tr>
+        <tr><td>Reddit</td><td class="no">↗ New tab</td><td>Blocks iframes</td></tr>
+        <tr><td>YouTube</td><td class="no">↗ New tab</td><td>Blocks iframes</td></tr>
+        <tr><td>MSN</td><td class="no">↗ New tab</td><td>Blocks iframes</td></tr>
+      </table>
+      <h3>Operator tips</h3>
       <ul>
-        <li>Each pane holds one keyword — type it in the pane header</li>
-        <li>Set a global refresh interval (default: 5 min) and click Apply</li>
-        <li>When the timer hits zero, the pane flashes and opens X.com search in a new tab</li>
-        <li>Use "Open All" to immediately open all keywords in new tabs</li>
-        <li>Pause/Resume controls let you stop all timers at once</li>
-      </ul>
-      <h3>Tips</h3>
-      <ul>
-        <li>Use X search operators like <b>"phrase"</b>, <b>from:handle</b>, <b>#hashtag</b>, or <b>lang:en</b></li>
-        <li>Add up to 5 panes — fewer panes means each occupies more width</li>
-        <li>Your keywords and interval are saved in this tab until you close it</li>
+        <li>X.com: <b>from:handle</b>, <b>#hashtag</b>, <b>"exact phrase"</b>, <b>lang:en</b></li>
+        <li>Google/DDG: <b>site:example.com</b>, <b>filetype:pdf</b>, <b>intitle:keyword</b></li>
+        <li>Reddit: add <b>site:reddit.com</b> in a Google/DDG pane for deep dives</li>
       </ul>
     </div>
   </div>
 </div>
 
 <script>
-/* ── Modal wiring ───────────────────────────────────── */
-(function rmLmWireUp(){
-  const setOpen = (id, isOpen) => {
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
-    document.documentElement.classList.toggle('rmNoScroll', isOpen);
-    document.body.classList.toggle('rmNoScroll', isOpen);
-  };
-  document.querySelectorAll('[data-rm-lm-open]').forEach(a => {
-    a.addEventListener('click', e => { e.preventDefault(); setOpen(a.dataset.rmLmOpen, true); });
+/* ════════════════════════════════════════════════
+   Modal wire-up
+════════════════════════════════════════════════ */
+(function(){
+  function setOpen(id,open){
+    const el=document.getElementById(id); if(!el)return;
+    el.setAttribute('aria-hidden',open?'false':'true');
+    document.documentElement.classList.toggle('rmNoScroll',open);
+    document.body.classList.toggle('rmNoScroll',open);
+  }
+  document.querySelectorAll('[data-rm-lm-open]').forEach(a=>{
+    a.addEventListener('click',e=>{e.preventDefault();setOpen(a.dataset.rmLmOpen,true);});
   });
-  document.querySelectorAll('[data-rm-lm-close]').forEach(b => {
-    b.addEventListener('click', () => setOpen(b.dataset.rmLmClose, false));
+  document.querySelectorAll('[data-rm-lm-close]').forEach(b=>{
+    b.addEventListener('click',()=>setOpen(b.dataset.rmLmClose,false));
   });
-  document.querySelectorAll('.rm-lm-backdrop').forEach(bd => {
-    bd.addEventListener('click', e => { if(e.target === bd) setOpen(bd.id, false); });
+  document.querySelectorAll('.rm-lm-backdrop').forEach(bd=>{
+    bd.addEventListener('click',e=>{if(e.target===bd)setOpen(bd.id,false);});
   });
 })();
 
-/* ── Tracker core ───────────────────────────────────── */
+/* ════════════════════════════════════════════════
+   Tracker core
+════════════════════════════════════════════════ */
 (function Tracker(){
 
-  const MAX_PANES  = 5;
-  const CIRC       = 2 * Math.PI * 13; // r=13 → ~81.68, keep as exact
-  const $ = id => document.getElementById(id);
+  /* ── Engine definitions ───────────────────────────── */
+  const ENGINES = [
+    // ── embeddable ─────────────────────────────────────
+    { id:'ddg',       label:'DuckDuckGo',  icon:'🦆', group:'in-pane', embeds:true,
+      url:q=>`https://duckduckgo.com/?q=${E(q)}&ia=web` },
+    { id:'startpage', label:'Startpage',   icon:'🔏', group:'in-pane', embeds:true,
+      url:q=>`https://www.startpage.com/sp/search?query=${E(q)}` },
+    { id:'brave',     label:'Brave Search',icon:'🦁', group:'in-pane', embeds:true,
+      url:q=>`https://search.brave.com/search?q=${E(q)}&source=web` },
+    // ── new-tab only ────────────────────────────────────
+    { id:'x',         label:'X.com',       icon:'✕',  group:'new-tab', embeds:false,
+      url:q=>`https://x.com/search?q=${E(q)}&src=typed_query&f=live` },
+    { id:'google',    label:'Google',      icon:'G',  group:'new-tab', embeds:false,
+      url:q=>`https://www.google.com/search?q=${E(q)}` },
+    { id:'bing',      label:'Bing',        icon:'B',  group:'new-tab', embeds:false,
+      url:q=>`https://www.bing.com/search?q=${E(q)}` },
+    { id:'yahoo',     label:'Yahoo',       icon:'Y!', group:'new-tab', embeds:false,
+      url:q=>`https://search.yahoo.com/search?p=${E(q)}` },
+    { id:'msn',       label:'MSN',         icon:'M',  group:'new-tab', embeds:false,
+      url:q=>`https://www.msn.com/en-us/search?q=${E(q)}` },
+    { id:'reddit',    label:'Reddit',      icon:'R',  group:'new-tab', embeds:false,
+      url:q=>`https://www.reddit.com/search/?q=${E(q)}&sort=new` },
+    { id:'youtube',   label:'YouTube',     icon:'▶',  group:'new-tab', embeds:false,
+      url:q=>`https://www.youtube.com/results?search_query=${E(q)}` },
+  ];
+  const ENG = Object.fromEntries(ENGINES.map(e=>[e.id,e]));
 
-  const state = {
-    panes:   [],          // [{id, keyword, secsLeft, intervalId, paused}]
-    secs:    5 * 60,      // global refresh seconds
-    paused:  false,
-    nextId:  1
-  };
+  function E(q){ return encodeURIComponent((q||'').trim()); }
+  function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  /* helpers ──────────────────────────────────────────── */
-  function fmt(s){
-    const m = String(Math.floor(s/60)).padStart(2,'0');
-    const sec = String(s % 60).padStart(2,'0');
-    return `${m}:${sec}`;
+  /* ring circumference: r=10 → 2π×10 ≈ 62.83 */
+  const CIRC = +(2*Math.PI*10).toFixed(2);
+
+  /* ── App state ────────────────────────────────────── */
+  const S = { panes:[], secs:5*60, paused:false, nextId:1 };
+  const MAX = 5;
+
+  const $  = id => document.getElementById(id);
+
+  /* ── Engine <select> HTML ─────────────────────────── */
+  function engOpts(sel){
+    return [
+      {label:'— Embeds in pane ✓', ids:['ddg','startpage','brave']},
+      {label:'— Opens new tab ↗',  ids:['x','google','bing','yahoo','msn','reddit','youtube']}
+    ].map(g=>`
+      <optgroup label="${g.label}">
+        ${g.ids.map(id=>{
+          const e=ENG[id];
+          return `<option value="${id}"${id===sel?' selected':''}>${e.icon} ${e.label}</option>`;
+        }).join('')}
+      </optgroup>
+    `).join('');
   }
 
-  function xUrl(kw){
-    return 'https://bing.com/search?q=' + encodeURIComponent(kw.trim()) + '&src=typed_query&f=live';
-  }
+  /* ── Build pane HTML ──────────────────────────────── */
+  function buildPane(p){
+    const div = document.createElement('div');
+    div.className = 'x-pane';
+    div.id = 'pane-'+p.id;
+    div.innerHTML = `
+      <div class="pane-head">
 
-  function openX(kw){
-    if(!kw || !kw.trim()) return;
-    window.open(xUrl(kw), '_blank', 'noopener');
-  }
-
-  /* ── Build a pane DOM element ───────────────────────── */
-  function buildPane(id, keyword){
-    const el = document.createElement('div');
-    el.className = 'x-pane';
-    el.id = 'pane-' + id;
-
-    const circum = Math.round(CIRC * 100) / 100;
-    const paneIdx = () => state.panes.findIndex(p => p.id === id) + 1;
-
-    el.innerHTML = `
-      <div class="x-pane-head">
-        <div class="x-pane-head-row">
-          <div class="pane-num" id="pn-${id}">${paneIdx()}</div>
-          <input class="x-pane-keyword-input" id="kw-${id}" type="text"
-            placeholder="keyword, #hashtag, from:handle…"
-            value="${escHtml(keyword)}" autocomplete="off" spellcheck="false" />
-          <button class="btn-remove-pane" id="rm-${id}" title="Remove this pane" type="button">×</button>
+        <div class="pane-row1">
+          <div class="pane-num" id="pn-${p.id}">?</div>
+          <select class="engine-pick" id="eng-${p.id}">${engOpts(p.engineId)}</select>
+          <input class="kw-input" id="kw-${p.id}" type="text"
+            placeholder="keyword, #hashtag, site:example.com…"
+            value="${esc(p.keyword)}" autocomplete="off" spellcheck="false"/>
+          <button class="ibtn go" id="go-${p.id}" type="button">Search</button>
+          <button class="ibtn danger" id="rm-${p.id}" title="Remove pane" type="button">✕</button>
         </div>
-        <div class="x-pane-timer-row">
+
+        <div class="pane-row2">
           <div class="ring-wrap">
-            <svg viewBox="0 0 32 32">
-              <circle class="ring-track" cx="16" cy="16" r="13"/>
-              <circle class="ring-prog" id="ring-${id}" cx="16" cy="16" r="13"
-                stroke-dasharray="${circum}" stroke-dashoffset="0"/>
+            <svg viewBox="0 0 24 24">
+              <circle class="ring-track" cx="12" cy="12" r="10"/>
+              <circle class="ring-prog" id="ring-${p.id}" cx="12" cy="12" r="10"
+                stroke-dasharray="${CIRC}" stroke-dashoffset="0"/>
             </svg>
-            <div class="ring-label" id="rlabel-${id}">⏱</div>
+            <div class="ring-icon" id="ri-${p.id}">⏱</div>
           </div>
-          <div class="countdown-text" id="cd-${id}">--:--</div>
-          <button class="btn" style="padding:4px 9px;font-size:11px" id="pause-${id}" type="button">⏸</button>
-          <button class="btn" style="padding:4px 9px;font-size:11px" id="restart-${id}" type="button">↺</button>
+          <div class="cd-text" id="cd-${p.id}">--:--</div>
+          <button class="ibtn" id="pp-${p.id}" title="Pause this pane" type="button">⏸</button>
+          <button class="ibtn" id="rt-${p.id}" title="Restart timer"   type="button">↺</button>
+          <button class="ibtn" id="rl-${p.id}" title="Reload now"      type="button">⟳</button>
+          <span class="embed-badge pending" id="eb-${p.id}">···</span>
         </div>
+
       </div>
-      <div class="x-pane-body">
-        <div class="x-logo">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.254 5.622 5.91-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-          </svg>
+      <div class="pane-body" id="pb-${p.id}">
+
+        <!-- iframe (hidden until search fires) -->
+        <iframe id="fr-${p.id}"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"
+          title="Search pane ${p.id}"></iframe>
+
+        <!-- overlay (idle / blocked) -->
+        <div class="pane-overlay" id="ov-${p.id}">
+          <div class="overlay-icon-wrap" id="oico-${p.id}"></div>
+          <div class="overlay-kw empty" id="okw-${p.id}">Enter a keyword above</div>
+          <div class="overlay-title" id="otit-${p.id}" style="display:none"></div>
+          <div class="overlay-sub"   id="osub-${p.id}"></div>
+          <button class="btn primary" id="otab-${p.id}"
+            style="display:none;padding:7px 14px;font-size:12.5px;margin-top:2px">
+            ↗ Open in new tab
+          </button>
         </div>
-        <div class="x-pane-kw-badge ${keyword ? '' : 'empty'}" id="badge-${id}">
-          ${keyword ? escHtml(keyword) : 'Enter a keyword above'}
-        </div>
-        <div class="desc-small">Opens X.com search in a new tab. Use operators like <b>#tag</b>, <b>"phrase"</b>, <b>from:handle</b>.</div>
-        <button class="btn-open-x" id="open-${id}" type="button" ${keyword ? '' : 'disabled'}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.254 5.622 5.91-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-          Search on X
-        </button>
+
       </div>
     `;
-
-    return el;
+    return div;
   }
 
-  function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-  /* ── Render / sync panes to DOM ─────────────────────── */
-  function render(){
-    const wrap = $('panesWrap');
-    const addBtn = $('btnAddPane');
-
-    // clear existing pane els (keep addBtn)
-    wrap.querySelectorAll('.x-pane').forEach(el => el.remove());
-
-    state.panes.forEach((p, idx) => {
-      const el = buildPane(p.id, p.keyword);
-      wrap.insertBefore(el, addBtn);
-      wirePane(p);
-    });
-
-    // update indices labels
-    state.panes.forEach((p, idx) => {
-      const numEl = $('pn-' + p.id);
-      if(numEl) numEl.textContent = idx + 1;
-    });
-
-    // disable add btn at max
-    addBtn.disabled = (state.panes.length >= MAX_PANES);
-
-    // hide/show empty
-    $('emptyState').style.display = state.panes.length === 0 ? 'flex' : 'none';
-
-    // refresh timers display
-    state.panes.forEach(p => updateTimerDisplay(p));
-  }
-
-  /* ── Wire events for a pane after DOM insertion ─────── */
+  /* ── Wire events ──────────────────────────────────── */
   function wirePane(p){
-    // keyword input
-    const kwInput = $('kw-' + p.id);
-    kwInput.addEventListener('input', () => {
-      const val = kwInput.value.trim();
-      p.keyword = kwInput.value;
-      const badge = $('badge-' + p.id);
-      const openBtn = $('open-' + p.id);
-      if(val){
-        badge.textContent = val;
-        badge.classList.remove('empty');
-        openBtn.disabled = false;
-      } else {
-        badge.textContent = 'Enter a keyword above';
-        badge.classList.add('empty');
-        openBtn.disabled = true;
-      }
+    const kwEl  = $('kw-'+p.id);
+    const engEl = $('eng-'+p.id);
+
+    kwEl.addEventListener('input',()=>{
+      p.keyword = kwEl.value;
+      updateKwBadge(p);
+    });
+    kwEl.addEventListener('keydown',e=>{ if(e.key==='Enter') search(p); });
+
+    engEl.addEventListener('change',()=>{
+      p.engineId = engEl.value;
+      if(p.keyword.trim()) search(p);
+      else idleOverlay(p);
     });
 
-    // open button
-    $('open-' + p.id).addEventListener('click', () => openX(p.keyword));
+    $('go-'+p.id).addEventListener('click',()=> search(p));
+    $('rm-'+p.id).addEventListener('click',()=> removePane(p.id));
 
-    // remove button
-    $('rm-' + p.id).addEventListener('click', () => removePane(p.id));
-
-    // pause toggle
-    $('pause-' + p.id).addEventListener('click', () => {
+    $('pp-'+p.id).addEventListener('click',()=>{
       p.paused = !p.paused;
-      $('pause-' + p.id).textContent = p.paused ? '▶' : '⏸';
-      $('pause-' + p.id).title = p.paused ? 'Resume' : 'Pause';
+      $('pp-'+p.id).textContent = p.paused ? '▶' : '⏸';
+      $('pp-'+p.id).title       = p.paused ? 'Resume' : 'Pause';
     });
 
-    // restart
-    $('restart-' + p.id).addEventListener('click', () => {
-      p.secsLeft = state.secs;
-      updateTimerDisplay(p);
+    $('rt-'+p.id).addEventListener('click',()=>{
+      p.secsLeft = S.secs;
+      updateTimer(p);
+    });
+    $('rl-'+p.id).addEventListener('click',()=> search(p));
+  }
+
+  /* ── Search ───────────────────────────────────────── */
+  function search(p){
+    const kw  = (p.keyword||'').trim();
+    const eng = ENG[p.engineId];
+    if(!kw||!eng) return;
+
+    const url = eng.url(kw);
+
+    if(eng.embeds){
+      tryEmbed(p, eng, kw, url);
+    } else {
+      showNewTabOverlay(p, eng, kw, url);
+    }
+  }
+
+  function tryEmbed(p, eng, kw, url){
+    const fr  = $('fr-'+p.id);
+    const ov  = $('ov-'+p.id);
+    setBadge(p.id,'pending','loading…');
+
+    /* show iframe, hide overlay while loading */
+    fr.style.display  = 'block';
+    ov.classList.add('hidden');
+
+    fr.src = url;
+
+    fr.onload = ()=>{
+      try{
+        /* Accessing contentDocument without throwing = browser served
+           its own error page (blocked). Cross-origin success → SecurityError. */
+        const doc = fr.contentDocument;
+        const body = doc && doc.body;
+        if(!body || body.innerHTML.trim() === ''){
+          embedBlocked(p, eng, kw, url);
+        } else {
+          /* Same-origin or browser error page with content — treat as blocked
+             unless it truly looks like a search results page */
+          embedBlocked(p, eng, kw, url);
+        }
+      } catch(e){
+        /* SecurityError = cross-origin page loaded successfully ✓ */
+        setBadge(p.id,'ok','✓ Embedded');
+        ov.classList.add('hidden');
+      }
+    };
+    fr.onerror = ()=> embedBlocked(p, eng, kw, url);
+  }
+
+  function embedBlocked(p, eng, kw, url){
+    const fr = $('fr-'+p.id);
+    fr.style.display = 'none';
+    fr.src = 'about:blank';
+    setBadge(p.id,'blocked','↗ New tab');
+    showOverlay(p, {
+      icon:    eng.icon,
+      kw,
+      title:   eng.label + ' blocks in-pane embedding',
+      sub:     'This site prevents iframe display. Open in a new tab to view results.',
+      showBtn: true, url
     });
   }
 
-  /* ── Timer display update ───────────────────────────── */
-  function updateTimerDisplay(p){
-    const cdEl = $('cd-' + p.id);
-    const ringEl = $('ring-' + p.id);
-    const rlabelEl = $('rlabel-' + p.id);
-    if(!cdEl || !ringEl) return;
-
-    const total = state.secs || 1;
-    const ratio = p.secsLeft / total;
-    const circum = 2 * Math.PI * 13;
-    const offset = circum * (1 - ratio);
-
-    ringEl.style.strokeDashoffset = offset.toFixed(2);
-
-    // colour shift: green → brand → orange as it counts down
-    if(ratio > 0.5)      ringEl.style.stroke = 'var(--brand2)';
-    else if(ratio > 0.2) ringEl.style.stroke = 'var(--brand)';
-    else                 ringEl.style.stroke = '#f97316';
-
-    cdEl.textContent = p.paused ? '⏸ ' + fmt(p.secsLeft) : fmt(p.secsLeft);
-
-    rlabelEl.textContent = p.paused ? '⏸' : (ratio <= 0.1 ? '🔴' : '⏱');
+  function showNewTabOverlay(p, eng, kw, url){
+    const fr = $('fr-'+p.id);
+    fr.style.display = 'none';
+    fr.src = 'about:blank';
+    setBadge(p.id,'blocked','↗ New tab');
+    showOverlay(p, {
+      icon:    eng.icon,
+      kw,
+      title:   eng.label + ' opens in a new tab',
+      sub:     'This engine does not allow in-pane embedding.',
+      showBtn: true, url
+    });
   }
 
-  /* ── Global tick (every second) ─────────────────────── */
+  function idleOverlay(p){
+    const eng = ENG[p.engineId]||{};
+    $('fr-'+p.id).style.display = 'none';
+    $('fr-'+p.id).src = 'about:blank';
+    setBadge(p.id,'pending', eng.embeds ? 'Embeds ✓' : '↗ New tab');
+    showOverlay(p, {
+      icon:    eng.icon||'?',
+      kw:      '',
+      title:   null,
+      sub:     eng.embeds
+        ? 'Type a keyword above and press Search — results appear here.'
+        : 'Type a keyword above — '+eng.label+' will open in a new tab.',
+      showBtn: false
+    });
+  }
+
+  /* ── Overlay helpers ──────────────────────────────── */
+  function showOverlay(p, opts){
+    const ov    = $('ov-'+p.id);
+    const kwEl  = $('okw-'+p.id);
+    const titEl = $('otit-'+p.id);
+    const subEl = $('osub-'+p.id);
+    const btnEl = $('otab-'+p.id);
+    const icoEl = $('oico-'+p.id);
+
+    // icon
+    if(opts.icon && opts.icon.length <= 2){
+      icoEl.textContent = opts.icon;
+      icoEl.style.fontSize = '20px';
+    } else {
+      icoEl.innerHTML = xSvg(22);
+    }
+
+    // keyword badge
+    if(opts.kw){
+      kwEl.textContent = opts.kw;
+      kwEl.classList.remove('empty');
+    } else {
+      kwEl.textContent = p.keyword.trim() ? p.keyword.trim() : 'Enter a keyword above';
+      kwEl.classList.toggle('empty', !p.keyword.trim());
+    }
+
+    // title
+    if(opts.title){ titEl.textContent = opts.title; titEl.style.display='block'; }
+    else           { titEl.style.display='none'; }
+
+    subEl.textContent = opts.sub||'';
+
+    // new-tab button
+    if(opts.showBtn && opts.url){
+      btnEl.style.display = 'inline-flex';
+      btnEl.onclick = ()=> window.open(opts.url,'_blank','noopener');
+    } else {
+      btnEl.style.display = 'none';
+    }
+
+    ov.classList.remove('hidden');
+  }
+
+  function xSvg(size){
+    return `<svg viewBox="0 0 24 24" fill="currentColor" width="${size}" height="${size}">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.254 5.622 5.91-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+    </svg>`;
+  }
+
+  function updateKwBadge(p){
+    const el = $('okw-'+p.id);
+    if(!el) return;
+    const kw = (p.keyword||'').trim();
+    el.textContent = kw || 'Enter a keyword above';
+    el.classList.toggle('empty', !kw);
+  }
+
+  function setBadge(id, cls, txt){
+    const el = $('eb-'+id); if(!el)return;
+    el.className = 'embed-badge '+cls;
+    el.textContent = txt;
+  }
+
+  /* ── Timer ────────────────────────────────────────── */
+  function fmt(s){
+    return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+  }
+
+  function updateTimer(p){
+    const cdEl   = $('cd-'+p.id);
+    const ringEl = $('ring-'+p.id);
+    const riEl   = $('ri-'+p.id);
+    if(!cdEl||!ringEl) return;
+
+    const ratio  = p.secsLeft / (S.secs||1);
+    const offset = +(CIRC*(1-ratio)).toFixed(2);
+    ringEl.style.strokeDashoffset = offset;
+
+    if(ratio>0.55)     ringEl.style.stroke='var(--brand2)';
+    else if(ratio>0.2) ringEl.style.stroke='var(--brand)';
+    else               ringEl.style.stroke='#f97316';
+
+    cdEl.textContent = p.paused ? '⏸ '+fmt(p.secsLeft) : fmt(p.secsLeft);
+    riEl.textContent = p.paused ? '⏸' : (ratio<=0.12 ? '🔴' : '⏱');
+  }
+
+  /* global tick every second */
   function tick(){
-    if(state.paused) return;
-    state.panes.forEach(p => {
+    if(S.paused) return;
+    S.panes.forEach(p=>{
       if(p.paused) return;
       p.secsLeft--;
-      if(p.secsLeft <= 0){
-        p.secsLeft = state.secs;
-        // Flash + auto-open
-        const paneEl = $('pane-' + p.id);
-        if(paneEl){
-          paneEl.classList.remove('flashing');
-          void paneEl.offsetWidth; // reflow
-          paneEl.classList.add('flashing');
-        }
-        openX(p.keyword);
+      if(p.secsLeft<=0){
+        p.secsLeft = S.secs;
+        const el = $('pane-'+p.id);
+        if(el){ el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+        if(p.keyword.trim()) search(p);
       }
-      updateTimerDisplay(p);
+      updateTimer(p);
     });
   }
 
-  /* ── Add / remove panes ─────────────────────────────── */
-  function addPane(keyword){
-    if(state.panes.length >= MAX_PANES) return;
-    const id = state.nextId++;
-    const pane = { id, keyword: keyword || '', secsLeft: state.secs, paused: false };
-    state.panes.push(pane);
-    render();
-    // focus the new keyword input
-    setTimeout(() => { const el = $('kw-' + id); if(el) el.focus(); }, 60);
+  /* ── Add / remove ─────────────────────────────────── */
+  function addPane(kw, engId){
+    if(S.panes.length>=MAX) return;
+    const id = S.nextId++;
+    const p  = { id, keyword:kw||'', engineId:engId||'ddg', secsLeft:S.secs, paused:false };
+    S.panes.push(p);
+
+    const wrap = $('panesWrap');
+    const btn  = $('btnAdd');
+    const el   = buildPane(p);
+    wrap.insertBefore(el, btn);
+    wirePane(p);
+    renumber();
+    idleOverlay(p);
+    updateTimer(p);
+    $('btnAdd').disabled = S.panes.length>=MAX;
+
+    setTimeout(()=>{ const kEl=$('kw-'+id); if(kEl) kEl.focus(); }, 60);
   }
 
   function removePane(id){
-    state.panes = state.panes.filter(p => p.id !== id);
-    const el = $('pane-' + id);
-    if(el) el.remove();
-    // update number badges
-    state.panes.forEach((p, idx) => {
-      const numEl = $('pn-' + p.id);
-      if(numEl) numEl.textContent = idx + 1;
+    S.panes = S.panes.filter(p=>p.id!==id);
+    const el=$('pane-'+id); if(el) el.remove();
+    renumber();
+    $('btnAdd').disabled = S.panes.length>=MAX;
+  }
+
+  function renumber(){
+    S.panes.forEach((p,i)=>{ const el=$('pn-'+p.id); if(el) el.textContent=i+1; });
+  }
+
+  /* ── Global controls ──────────────────────────────── */
+  $('btnApply').addEventListener('click',()=>{
+    const v = parseInt($('refreshMins').value,10);
+    if(isNaN(v)||v<1) return;
+    S.secs = v*60;
+    S.panes.forEach(p=>{ p.secsLeft=S.secs; updateTimer(p); });
+    setTxt('Refresh set — '+v+' min');
+    setTimeout(()=>setTxt('running'),2200);
+  });
+
+  $('btnPause').addEventListener('click',()=>{
+    S.paused=true;
+    $('btnPause').disabled=true;
+    $('btnResume').disabled=false;
+    setTxt('paused');
+  });
+  $('btnResume').addEventListener('click',()=>{
+    S.paused=false;
+    $('btnPause').disabled=false;
+    $('btnResume').disabled=true;
+    setTxt('running');
+  });
+
+  $('btnOpenAll').addEventListener('click',()=>{
+    S.panes.forEach(p=>{
+      const kw=(p.keyword||'').trim();
+      const e=ENG[p.engineId];
+      if(kw&&e) window.open(e.url(kw),'_blank','noopener');
     });
-    $('btnAddPane').disabled = (state.panes.length >= MAX_PANES);
-    $('emptyState').style.display = state.panes.length === 0 ? 'flex' : 'none';
-  }
-
-  /* ── Controls ───────────────────────────────────────── */
-  $('btnAddPane').addEventListener('click', () => addPane(''));
-
-  $('btnApplyRefresh').addEventListener('click', () => {
-    const v = parseInt($('refreshMins').value, 10);
-    if(isNaN(v) || v < 1) return;
-    state.secs = v * 60;
-    // reset all pane timers
-    state.panes.forEach(p => { p.secsLeft = state.secs; updateTimerDisplay(p); });
-    setGlobalStatus('Refresh set to ' + v + ' min');
-    setTimeout(() => setGlobalStatus('running'), 2500);
   });
 
-  $('btnPauseAll').addEventListener('click', () => {
-    state.paused = true;
-    $('btnPauseAll').disabled = true;
-    $('btnResumeAll').disabled = false;
-    setGlobalStatus('paused');
-  });
+  $('btnAdd').addEventListener('click',()=> addPane('','ddg'));
 
-  $('btnResumeAll').addEventListener('click', () => {
-    state.paused = false;
-    $('btnPauseAll').disabled = false;
-    $('btnResumeAll').disabled = true;
-    setGlobalStatus('running');
-  });
+  function setTxt(t){ $('globalTxt').textContent=t; }
 
-  $('btnOpenAll').addEventListener('click', () => {
-    state.panes.forEach(p => openX(p.keyword));
-  });
+  /* ── Boot with 2 default panes ────────────────────── */
+  addPane('','ddg');
+  addPane('','ddg');
 
-  function setGlobalStatus(txt){
-    $('globalStatusText').textContent = ' ' + txt;
-  }
-
-  /* ── Bootstrap ──────────────────────────────────────── */
-  // Start with 2 default panes
-  addPane('');
-  addPane('');
-
-  // Global tick every second
-  setInterval(tick, 1000);
+  setInterval(tick,1000);
 
 })();
 </script>
