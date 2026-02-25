@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Auto Refresh URL Monitor - ReportMedic</title>
+  <meta name="description" content="Monitor up to 5 URLs side by side. Each pane auto refreshes on its own schedule with a live countdown. Runs locally in your browser." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+
+  <script defer src="/assets/js/rm-dropzone.js"></script>
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+  <style>
+    .panel h1{display:flex; align-items:baseline; gap:.55rem; flex-wrap:wrap;}
+    .rmTopBar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between}
+    .rmTopBar .left{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .rmTopBar .right{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .rmPaneGrid{display:flex; gap:12px; align-items:stretch; flex-wrap:nowrap; overflow-x:auto; padding-bottom:2px;}
+    .rmPane{flex:1 1 320px; min-width:240px; display:flex; flex-direction:column;}
+    .rmPaneHead{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;}
+    .rmPaneControls{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-top:10px;}
+    .rmField{flex:1; min-width:200px}
+    .rmField label{display:block; margin-bottom:6px}
+    .rmNum{max-width:120px}
+    .rmPaneFrameWrap{margin-top:10px; border:1px solid rgba(255,255,255,.10); border-radius:12px; overflow:hidden; background:rgba(255,255,255,.03); flex:1; display:flex; flex-direction:column;}
+    .rmPaneFrameWrap iframe{width:100%; height:520px; border:0; background:#111;}
+    .rmMiniRow{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; padding:10px 10px 0;}
+    .rmMiniRow .meta{color:rgba(255,255,255,.70); font-size:12px; line-height:1.35}
+    .rmMiniRow .meta b{color:rgba(255,255,255,.92)}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .rmPill{white-space:nowrap}
+    .rmUrlInput{width:100%; box-sizing:border-box}
+    .rmHint{margin-top:8px}
+  </style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Auto Refresh URL Monitor <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Watch multiple URLs at once. Add up to 5 panes side by side, set a unique refresh duration for each pane, and see a live countdown timer before the next refresh. Runs locally in your browser.</p>
+    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+
+    <div class="hr"></div>
+
+    <div class="card">
+      <div class="rmTopBar">
+        <div class="left">
+          <button class="btn primary" id="addPaneBtn" type="button">Add pane</button>
+          <button class="btn" id="startAllBtn" type="button">Start all</button>
+          <button class="btn" id="stopAllBtn" type="button">Stop all</button>
+          <button class="btn" id="resetBtn" type="button">Reset</button>
+        </div>
+        <div class="right">
+          <div class="row" style="gap:10px; align-items:center">
+            <span class="tiny muted" style="min-width:170px">Default refresh (minutes)</span>
+            <input id="defaultMins" class="input mono rmNum" inputmode="numeric" pattern="[0-9]*" value="2" />
+          </div>
+          <span class="pill tiny rmPill" id="statusPill"><b>Status:</b><span class="muted"> add a pane to start</span></span>
+        </div>
+      </div>
+
+      <div class="tiny muted rmHint">
+        Tip: Paste a URL, set minutes, then Start. Each pane refreshes independently and shows its own countdown.
+      </div>
+
+      <div class="hr"></div>
+
+      <div id="paneGrid" class="rmPaneGrid"></div>
+    </div>
+  </div>
+
+  <div class="footer">© 2026 ReportMedic</div>
+</div>
+
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
+<div aria-hidden="true" aria-label="Auto Refresh URL Monitor details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Auto Refresh URL Monitor</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Keep dashboards, trackers, and pages updated automatically</li>
+        <li>Compare multiple URLs side by side in separate panes</li>
+        <li>Use different refresh schedules per pane</li>
+      </ul>
+
+      <h3>How it works</h3>
+      <ul>
+        <li>Add up to 5 panes</li>
+        <li>Each pane has its own URL and refresh minutes</li>
+        <li>A live countdown shows exactly when each pane will refresh</li>
+      </ul>
+
+      <h3>Privacy</h3>
+      <ul>
+        <li>Your URLs stay on your device</li>
+        <li>No uploads, no server processing</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+(function rmLmWireUp(){
+  const openers = document.querySelectorAll('[data-rm-lm-open]');
+  const closers = document.querySelectorAll('[data-rm-lm-close]');
+  const setOpen = (id, isOpen) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    document.documentElement.classList.toggle('rmNoScroll', isOpen);
+    document.body.classList.toggle('rmNoScroll', isOpen);
+  };
+  openers.forEach(a=>{
+    a.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const id = a.getAttribute('data-rm-lm-open');
+      if(id) setOpen(id, true);
+    });
+  });
+  closers.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.getAttribute('data-rm-lm-close');
+      if(id) setOpen(id, false);
+    });
+  });
+  document.addEventListener('keydown', (e)=>{
+    if(e.key !== 'Escape') return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(el=>{
+      setOpen(el.id, false);
+    });
+  });
+  document.addEventListener('click', (e)=>{
+    const bd = e.target && e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+    if(bd && bd.id) setOpen(bd.id, false);
+  });
+})();
+</script>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const paneGrid = $("paneGrid");
+  const statusPill = $("statusPill");
+  const defaultMinsEl = $("defaultMins");
+
+  const MAX_PANES = 5;
+
+  const state = {
+    panes: [],
+    tickHandle: null,
+    nextId: 1
+  };
+
+  function escapeHtml(s){
+    return String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function setStatus(msg){
+    statusPill.innerHTML = "<b>Status:</b><span class='muted'> " + escapeHtml(msg) + "</span>";
+  }
+
+  function onlyDigits(s){
+    return String(s ?? "").replace(/\D+/g, "");
+  }
+
+  function parseMins(s, fallback){
+    const d = onlyDigits(s);
+    if(!d) return fallback;
+    const n = Number(d);
+    if(!Number.isFinite(n) || n <= 0) return fallback;
+    return Math.min(999, Math.max(1, Math.floor(n)));
+  }
+
+  function normalizeUrl(raw){
+    const v = String(raw ?? "").trim();
+    if(!v) return "";
+    if(/^https?:\/\//i.test(v)) return v;
+    if(/^file:\/\//i.test(v)) return v;
+    return "https://" + v;
+  }
+
+  function splitHash(url){
+    const idx = url.indexOf("#");
+    if(idx < 0) return { base:url, hash:"" };
+    return { base:url.slice(0, idx), hash:url.slice(idx) };
+  }
+
+  function withCacheBust(url){
+    const u = normalizeUrl(url);
+    if(!u) return "";
+    const parts = splitHash(u);
+    const base = parts.base;
+    const hash = parts.hash || "";
+    const sep = base.includes("?") ? "&" : "?";
+    return base + sep + "rmts=" + Date.now() + hash;
+  }
+
+  function fmtCountdown(ms){
+    const s = Math.max(0, Math.floor(ms / 1000));
+    const mm = String(Math.floor(s / 60)).padStart(2, "0");
+    const ss = String(s % 60).padStart(2, "0");
+    return mm + ":" + ss;
+  }
+
+  function makePaneDom(p){
+    const el = document.createElement("div");
+    el.className = "card rmPane";
+    el.dataset.paneId = String(p.id);
+
+    el.innerHTML = `
+      <div class="rmPaneHead">
+        <div>
+          <div style="font-weight:800">Pane ${p.id}</div>
+          <div class="tiny muted">URL auto refresh with countdown</div>
+        </div>
+        <span class="pill tiny rmPill" id="pill_${p.id}"><b>Timer:</b><span class="muted"> stopped</span></span>
+      </div>
+
+      <div class="rmPaneControls">
+        <div class="rmField" style="min-width:220px">
+          <label class="tiny muted" for="url_${p.id}">URL</label>
+          <input id="url_${p.id}" class="input mono rmUrlInput" placeholder="https://example.com" autocomplete="off" />
+        </div>
+
+        <div class="rmField" style="flex:0 0 auto">
+          <label class="tiny muted" for="mins_${p.id}">Minutes</label>
+          <input id="mins_${p.id}" class="input mono rmNum" inputmode="numeric" pattern="[0-9]*" value="${escapeHtml(String(p.mins))}" />
+        </div>
+
+        <div class="rmField" style="flex:0 0 auto; min-width:200px">
+          <label class="tiny muted">Actions</label>
+          <div class="row" style="gap:10px; flex-wrap:wrap">
+            <button class="btn primary" id="start_${p.id}" type="button">Start</button>
+            <button class="btn" id="stop_${p.id}" type="button" disabled>Stop</button>
+            <button class="btn" id="open_${p.id}" type="button" disabled>Open</button>
+            <button class="btn" id="remove_${p.id}" type="button">Remove</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="rmMiniRow">
+        <div class="meta" id="meta_${p.id}">
+          <div><b>Last refresh:</b> <span class="muted">never</span></div>
+          <div><b>Next refresh:</b> <span class="muted">-</span></div>
+        </div>
+      </div>
+
+      <div class="rmPaneFrameWrap">
+        <iframe id="frame_${p.id}" title="Pane ${p.id}"></iframe>
+      </div>
+    `;
+
+    return el;
+  }
+
+  function getPane(id){
+    return state.panes.find(x => x.id === id) || null;
+  }
+
+  function updatePaneButtons(id){
+    const p = getPane(id);
+    if(!p) return;
+    const startBtn = $("start_" + id);
+    const stopBtn = $("stop_" + id);
+    const openBtn = $("open_" + id);
+    const urlVal = normalizeUrl($("url_" + id).value);
+
+    const hasUrl = !!urlVal;
+    startBtn.disabled = !hasUrl || p.running;
+    stopBtn.disabled = !p.running;
+    openBtn.disabled = !hasUrl;
+  }
+
+  function updateAllButtons(){
+    $("addPaneBtn").disabled = state.panes.length >= MAX_PANES;
+    $("startAllBtn").disabled = state.panes.length === 0;
+    $("stopAllBtn").disabled = state.panes.length === 0;
+  }
+
+  function setPill(id, msg){
+    const pill = $("pill_" + id);
+    if(!pill) return;
+    pill.innerHTML = "<b>Timer:</b><span class='muted'> " + escapeHtml(msg) + "</span>";
+  }
+
+  function setMeta(id, lastTxt, nextTxt){
+    const el = $("meta_" + id);
+    if(!el) return;
+    el.innerHTML = `
+      <div><b>Last refresh:</b> <span class="muted">${escapeHtml(lastTxt)}</span></div>
+      <div><b>Next refresh:</b> <span class="muted">${escapeHtml(nextTxt)}</span></div>
+    `;
+  }
+
+  function nowClock(){
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    const ss = String(d.getSeconds()).padStart(2, "0");
+    return hh + ":" + mm + ":" + ss;
+  }
+
+  function refreshFrame(p){
+    const frame = $("frame_" + p.id);
+    const url = normalizeUrl($("url_" + p.id).value);
+    if(!url) return;
+
+    frame.src = withCacheBust(url);
+    p.lastAt = Date.now();
+    p.nextAt = Date.now() + (p.mins * 60 * 1000);
+    setMeta(p.id, nowClock(), new Date(p.nextAt).toLocaleTimeString());
+  }
+
+  function startPane(id){
+    const p = getPane(id);
+    if(!p) return;
+
+    const url = normalizeUrl($("url_" + id).value);
+    if(!url) return;
+
+    p.mins = parseMins($("mins_" + id).value, 2);
+    $("mins_" + id).value = String(p.mins);
+
+    p.running = true;
+    p.nextAt = Date.now() + (p.mins * 60 * 1000);
+    if(!p.lastAt) setMeta(p.id, "never", new Date(p.nextAt).toLocaleTimeString());
+    setPill(p.id, "refresh in " + fmtCountdown(p.nextAt - Date.now()));
+    updatePaneButtons(id);
+
+    refreshFrame(p);
+    ensureTicking();
+    setStatus("running " + state.panes.filter(x=>x.running).length + " pane(s)");
+  }
+
+  function stopPane(id){
+    const p = getPane(id);
+    if(!p) return;
+    p.running = false;
+    p.nextAt = 0;
+    setPill(p.id, "stopped");
+    setMeta(p.id, p.lastAt ? nowClock() : "never", "-");
+    updatePaneButtons(id);
+    setStatus("running " + state.panes.filter(x=>x.running).length + " pane(s)");
+    maybeStopTicking();
+  }
+
+  function removePane(id){
+    const idx = state.panes.findIndex(x => x.id === id);
+    if(idx < 0) return;
+    state.panes.splice(idx, 1);
+    const el = paneGrid.querySelector('[data-pane-id="' + id + '"]');
+    if(el) el.remove();
+    renumberPanes();
+    updateAllButtons();
+    maybeStopTicking();
+    setStatus(state.panes.length ? "pane removed" : "add a pane to start");
+  }
+
+  function renumberPanes(){
+    // Keep IDs stable internally, but refresh titles for neatness
+    state.panes.forEach((p, i) => {
+      const card = paneGrid.querySelector('[data-pane-id="' + p.id + '"]');
+      if(!card) return;
+      const title = card.querySelector(".rmPaneHead div div");
+      if(title) title.textContent = "Pane " + (i + 1);
+      const frame = $("frame_" + p.id);
+      if(frame) frame.title = "Pane " + (i + 1);
+    });
+  }
+
+  function addPane(){
+    if(state.panes.length >= MAX_PANES) return;
+
+    const mins = parseMins(defaultMinsEl.value, 2);
+    defaultMinsEl.value = String(mins);
+
+    const p = {
+      id: state.nextId++,
+      mins,
+      running: false,
+      nextAt: 0,
+      lastAt: 0
+    };
+    state.panes.push(p);
+
+    const el = makePaneDom(p);
+    paneGrid.appendChild(el);
+
+    const urlEl = $("url_" + p.id);
+    const minsEl = $("mins_" + p.id);
+    const startBtn = $("start_" + p.id);
+    const stopBtn = $("stop_" + p.id);
+    const openBtn = $("open_" + p.id);
+    const removeBtn = $("remove_" + p.id);
+
+    urlEl.addEventListener("input", () => updatePaneButtons(p.id));
+    minsEl.addEventListener("input", () => {
+      minsEl.value = onlyDigits(minsEl.value);
+      const pane = getPane(p.id);
+      if(!pane) return;
+      pane.mins = parseMins(minsEl.value, mins);
+      if(pane.running){
+        pane.nextAt = Date.now() + (pane.mins * 60 * 1000);
+      }
+      updatePaneButtons(p.id);
+    });
+
+    startBtn.addEventListener("click", () => startPane(p.id));
+    stopBtn.addEventListener("click", () => stopPane(p.id));
+    removeBtn.addEventListener("click", () => removePane(p.id));
+
+    openBtn.addEventListener("click", () => {
+      const u = normalizeUrl(urlEl.value);
+      if(!u) return;
+      window.open(u, "_blank", "noopener");
+    });
+
+    updatePaneButtons(p.id);
+    updateAllButtons();
+    setStatus("pane added");
+  }
+
+  function ensureTicking(){
+    if(state.tickHandle) return;
+    state.tickHandle = window.setInterval(tick, 1000);
+  }
+
+  function maybeStopTicking(){
+    const anyRunning = state.panes.some(p => p.running);
+    if(anyRunning) return;
+    if(state.tickHandle){
+      window.clearInterval(state.tickHandle);
+      state.tickHandle = null;
+    }
+  }
+
+  function tick(){
+    const now = Date.now();
+    state.panes.forEach(p => {
+      if(!p.running) return;
+      const minsEl = $("mins_" + p.id);
+      const updatedMins = parseMins(minsEl.value, p.mins || 2);
+      p.mins = updatedMins;
+      minsEl.value = String(updatedMins);
+
+      if(!p.nextAt) p.nextAt = now + (p.mins * 60 * 1000);
+      const left = p.nextAt - now;
+
+      if(left <= 0){
+        refreshFrame(p);
+        setPill(p.id, "refresh in " + fmtCountdown(p.nextAt - Date.now()));
+      } else {
+        setPill(p.id, "refresh in " + fmtCountdown(left));
+      }
+    });
+  }
+
+  function startAll(){
+    state.panes.forEach(p => {
+      const url = normalizeUrl($("url_" + p.id).value);
+      if(!url) return;
+      if(!p.running) startPane(p.id);
+    });
+  }
+
+  function stopAll(){
+    state.panes.forEach(p => {
+      if(p.running) stopPane(p.id);
+    });
+  }
+
+  function resetAll(){
+    state.panes.slice().forEach(p => removePane(p.id));
+    state.panes = [];
+    paneGrid.innerHTML = "";
+    setStatus("add a pane to start");
+    updateAllButtons();
+    maybeStopTicking();
+  }
+
+  $("addPaneBtn").addEventListener("click", addPane);
+  $("startAllBtn").addEventListener("click", startAll);
+  $("stopAllBtn").addEventListener("click", stopAll);
+  $("resetBtn").addEventListener("click", resetAll);
+
+  defaultMinsEl.addEventListener("input", () => {
+    defaultMinsEl.value = onlyDigits(defaultMinsEl.value);
+    const v = parseMins(defaultMinsEl.value, 2);
+    defaultMinsEl.value = String(v);
+  });
+
+  updateAllButtons();
+  setStatus("add a pane to start");
+})();
+</script>
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6997965e73d8cb1c357e66ee/1jhs26oms';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+</body>
+</html>
