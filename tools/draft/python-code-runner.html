@@ -37,8 +37,8 @@
     .py-status{display:flex; gap:8px; align-items:center;}
     .py-status .pill{font-size:11px; padding:5px 8px;}
 
-    .py-actions-top{display:flex; gap:8px; flex-wrap:nowrap; align-items:center; justify-content:flex-end; white-space:nowrap; overflow-x:auto; max-width:100%;}
-    .py-actions-top .btn{padding:6px 10px; font-size:12px; border-radius:8px; border:1px solid rgba(255,255,255,.14); flex:0 0 auto; white-space:nowrap;}
+    .py-actions-top{display:flex; gap:6px; flex-wrap:nowrap; align-items:center; justify-content:flex-start; white-space:nowrap; overflow-x:auto; max-width:100%;}
+    .py-actions-top .btn{padding:6px 9px; font-size:12px; border-radius:8px; border:1px solid rgba(255,255,255,.14); flex:0 0 auto; white-space:nowrap;}
     .py-actions-top .btn.primary{border-color: rgba(124,247,212,.28)}
 
     .py-samples-grid{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; margin-top:10px;}
@@ -332,8 +332,16 @@ Alice
           pyodideReady = (async () => {
             send("status", {text:"loading"});
             const p = await loadPyodide({ indexURL: "${PYODIDE_BASE}" });
-            p.setStdout({ write: (s) => send("stdout", {text:s}) });
-            p.setStderr({ write: (s) => send("stderr", {text:s}) });
+            const __rm_decoder = new TextDecoder("utf-8");
+            const __rm_norm = (s) => {
+              if(s === undefined || s === null) return "";
+              if(typeof s === "string") return s;
+              if(s instanceof Uint8Array) return __rm_decoder.decode(s);
+              if(Array.isArray(s)) return __rm_decoder.decode(new Uint8Array(s));
+              return String(s);
+            };
+            p.setStdout({ batched: (s) => send("stdout", {text: __rm_norm(s)}) });
+            p.setStderr({ batched: (s) => send("stderr", {text: __rm_norm(s)}) });
             pyodide = p;
             send("status", {text:"ready"});
             return pyodide;
