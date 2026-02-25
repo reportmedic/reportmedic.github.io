@@ -26,18 +26,37 @@
   .cat-chip:hover{border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.85);}
   .cat-chip.active{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.35);color:#fff;}
 
-  /* ── Search ── */
-  .ds-search-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
-  .ds-search{
-    flex:1;min-width:220px;padding:10px 14px;border-radius:10px;
-    border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);
-    color:#fff;font-size:.88rem;outline:none;transition:border-color .2s;
+  /* ── Controls bar ── */
+  .ds-controls{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;
   }
-  .ds-search::placeholder{color:rgba(255,255,255,.35);}
-  .ds-search:focus{border-color:rgba(255,255,255,.3);}
+  .ds-search-wrap{
+    position:relative;flex:0 1 320px;min-width:180px;
+  }
+  .ds-search-wrap svg{
+    position:absolute;left:11px;top:50%;transform:translateY(-50%);
+    width:15px;height:15px;stroke:rgba(255,255,255,.3);fill:none;
+    stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;
+  }
+  .ds-search{
+    width:100%;padding:8px 12px 8px 32px;border-radius:9px;
+    border:1.5px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);
+    color:#fff;font-size:.82rem;outline:none;transition:border-color .2s;
+  }
+  .ds-search::placeholder{color:rgba(255,255,255,.3);font-size:.8rem;}
+  .ds-search:focus{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.06);}
+  .ds-search:focus + .ds-kbd{display:none;}
+  .ds-kbd{
+    position:absolute;right:10px;top:50%;transform:translateY(-50%);
+    font-size:.62rem;font-family:'SF Mono',Menlo,Consolas,monospace;
+    padding:2px 6px;border-radius:4px;
+    background:rgba(255,255,255,.07);color:rgba(255,255,255,.28);
+    border:1px solid rgba(255,255,255,.08);pointer-events:none;
+    line-height:1.3;
+  }
 
   /* ── Stats pill ── */
-  .ds-stats{font-size:.75rem;color:rgba(255,255,255,.45);white-space:nowrap;}
+  .ds-stats{font-size:.72rem;color:rgba(255,255,255,.38);margin-left:auto;white-space:nowrap;}
 
   /* ── Dataset Cards ── */
   .ds-grid{display:grid;grid-template-columns:1fr;gap:12px;}
@@ -113,22 +132,24 @@
   .ds-empty b{color:rgba(255,255,255,.5);}
 
   /* ── View toggle ── */
-  .ds-view-toggle{display:flex;gap:2px;border:1.5px solid rgba(255,255,255,.1);border-radius:8px;overflow:hidden;}
+  .ds-view-toggle{display:flex;gap:0;border:1.5px solid rgba(255,255,255,.10);border-radius:9px;overflow:hidden;flex:0 0 auto;}
   .ds-view-btn{
-    padding:6px 12px;font-size:.72rem;font-weight:600;cursor:pointer;
-    background:transparent;color:rgba(255,255,255,.4);border:none;transition:all .2s;
+    padding:7px 11px;font-size:.7rem;font-weight:600;cursor:pointer;
+    background:transparent;color:rgba(255,255,255,.35);border:none;transition:all .2s;
   }
-  .ds-view-btn.active{background:rgba(255,255,255,.1);color:#fff;}
-  .ds-view-btn:hover:not(.active){color:rgba(255,255,255,.6);}
+  .ds-view-btn.active{background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);}
+  .ds-view-btn:hover:not(.active){color:rgba(255,255,255,.55);}
 
   .ds-grid.list-view{grid-template-columns:1fr !important;}
 
   /* ── Sort dropdown ── */
   .ds-sort{
-    padding:6px 10px;border-radius:8px;font-size:.75rem;
-    border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);
-    color:rgba(255,255,255,.6);cursor:pointer;outline:none;
+    padding:7px 10px;border-radius:9px;font-size:.78rem;
+    border:1.5px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);
+    color:rgba(255,255,255,.55);cursor:pointer;outline:none;transition:border-color .2s;
+    flex:0 0 auto;
   }
+  .ds-sort:focus{border-color:rgba(255,255,255,.25);}
   .ds-sort option{background:#1a1a2e;color:#fff;}
 </style>
 
@@ -157,26 +178,28 @@
     <div class="hr"></div>
 
     <!-- Controls row -->
-    <div class="ds-search-row">
-      <input class="ds-search" id="dsSearch" type="text" placeholder="Search datasets, columns, categories…" autocomplete="off" />
+    <div class="ds-controls">
+      <div class="ds-search-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="ds-search" id="dsSearch" type="text" placeholder="Search datasets, columns, categories…" autocomplete="off" />
+        <span class="ds-kbd">/</span>
+      </div>
       <select class="ds-sort" id="dsSort">
-        <option value="cat">Sort by category</option>
-        <option value="name">Sort by name (A→Z)</option>
-        <option value="cols">Sort by column count</option>
+        <option value="cat">Sort: category</option>
+        <option value="name">Sort: A → Z</option>
+        <option value="cols">Sort: columns</option>
       </select>
       <div class="ds-view-toggle">
         <button class="ds-view-btn active" data-view="grid" type="button">Grid</button>
         <button class="ds-view-btn" data-view="list" type="button">List</button>
       </div>
+      <div class="ds-stats" id="dsStats"></div>
     </div>
 
     <!-- Category chips -->
     <div class="cat-bar" id="catBar">
       <button class="cat-chip active" data-cat="all" type="button">All</button>
     </div>
-
-    <!-- Stats -->
-    <div class="ds-stats" id="dsStats"></div>
 
     <!-- Dataset grid -->
     <div class="ds-grid" id="dsGrid" style="margin-top:12px;"></div>
