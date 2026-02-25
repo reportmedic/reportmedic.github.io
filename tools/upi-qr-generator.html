@@ -101,6 +101,19 @@
       grid-template-columns: 1fr !important;
     }
 
+  
+    /* Make inputs actually fill the available column width */
+    .input{
+      width:100%;
+      box-sizing:border-box;
+    }
+
+    /* Give the left form column a stronger default width on desktop */
+    .rm-form-col{
+      flex: 1 1 640px;
+      width: 640px;
+    }
+
   </style>
 </head>
 
