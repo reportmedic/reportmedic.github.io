@@ -166,6 +166,29 @@
       }
     }
 
+  
+    /* Prevent overlap between cards by constraining the generator layout inside its own card */
+    .qrBox{
+      display:grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+      gap:14px;
+      align-items:start;
+    }
+    .rm-form-col{
+      min-width:0;
+      width:auto;
+      max-width:100%;
+    }
+    .qrCanvasWrap{
+      width:100%;
+      margin-left:0;
+    }
+    @media (max-width: 980px){
+      .qrBox{
+        grid-template-columns: 1fr;
+      }
+    }
+
   </style>
 </head>
 
