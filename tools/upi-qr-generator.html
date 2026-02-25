@@ -135,6 +135,37 @@
       }
     }
 
+  
+    /* Layout fix: keep QR preview locked to the right, let the form take remaining width */
+    .qrBox{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      flex-wrap:nowrap;
+    }
+    .rm-form-col{
+      flex:1 1 auto;
+      min-width:0;
+      max-width:none;
+    }
+    .rmFormGrid > div{
+      min-width:0;
+    }
+    .qrCanvasWrap{
+      flex:0 0 340px;
+      width:340px;
+      margin-left:auto;
+    }
+
+    @media (max-width: 980px){
+      .qrBox{flex-wrap:wrap;}
+      .qrCanvasWrap{
+        flex:1 1 320px;
+        width:auto;
+        margin-left:0;
+      }
+    }
+
   </style>
 </head>
 
