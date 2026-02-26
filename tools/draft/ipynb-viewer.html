@@ -38,7 +38,7 @@
   .nb-upload-icon{
     width:42px;height:42px;margin:0 auto 12px;opacity:.35;
   }
-  .nb-upload-title{font-weight:700;font-size:.95rem;margin-bottom:4px;margin-top:4px;}
+  .nb-upload-title{font-weight:700;font-size:.95rem;margin-bottom:4px;}
   .nb-upload-hint{font-size:.78rem;color:rgba(255,255,255,.4);}
   .nb-upload-input{
     position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
@@ -137,7 +137,7 @@
 
     <!-- Upload zone -->
     <div class="nb-upload-zone" id="dropZone">
-      <input class="nb-upload-input" id="fileInput" type="file" accept=".ipynb,.json,application/x-ipynb+json" />
+      <input class="nb-upload-input" id="fileInput" type="file" accept=".ipynb,.json,application/x-ipynb+json" data-rm-dropzone="off" />
       <div class="nb-upload-title">Drop a .ipynb file here or click to browse</div>
       <div class="nb-upload-hint">Jupyter Notebook files (.ipynb) · Runs locally in your browser</div>
     </div>
