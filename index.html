@@ -86,7 +86,7 @@
   <section class="hero">
     <div class="panel">
       <h1>Make reports safe to share — in minutes.</h1>
-      <p class="sub">Clean, validate, compare, convert, and explain reports with 47 focused tools you can trust — without building a workflow. Everything runs locally in your browser.</p>
+      <p class="sub">Clean, validate, compare, convert, and explain reports with 56 focused tools you can trust — without building a workflow. Everything runs locally in your browser.</p>
       <div class="searchRow">
         <input id="search" placeholder="Search tools… e.g., validate, compare, clean, video, pdf"/>
         <button class="btn" id="clearBtn">Clear</button>
@@ -103,7 +103,7 @@
       </div>
       <div class="kpis">
         <div class="kpi">
-          <strong>47 tools</strong>
+          <strong>56 tools</strong>
           <span>Search • Categories • Sidebar panel</span>
         </div>
         <div class="kpi">
@@ -137,7 +137,7 @@
       <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
         <a class="btn" href="/tools/compare-two-files-find-differences.html">Open Compare</a>
         <a class="btn" href="/tools/validate-data-schema-and-columns.html">Open Validator</a>
-        <button class="btn" id="quickAll">Browse All 47</button>
+        <button class="btn" id="quickAll">Browse All 56</button>
       </div>
       <div class="hr"></div>
       <div class="small">
@@ -167,7 +167,7 @@
 <aside aria-label="All Tools" class="drawer" id="drawer">
   <div class="drawerHeader">
     <button class="btn" id="closeDrawerBtn">✕ Close</button>
-    <strong id="drawerTitle">All Tools (47)</strong>
+    <strong id="drawerTitle">All Tools (56)</strong>
     <div class="spacer"></div>
   </div>
   <div class="drawerSearch">
@@ -180,7 +180,7 @@
 
 <script>
   /* ─────────────────────────────────────────
-     TOOL REGISTRY  (47 tools)
+     TOOL REGISTRY  (56 tools)
   ───────────────────────────────────────── */
   const tools = [
     // ── Compare
@@ -207,6 +207,12 @@
     { id:"data-profiler-column-stats-groupby-charts",name:"Data Profiler",              icon:"📊", cat:["Analyze"],                   desc:"Profile any CSV/XLSX: column stats, groupby summaries, and distribution charts in one view.", tags:["profile","stats","charts","groupby"] },
     { id:"phrase-occurrence-counter",               name:"Phrase Occurrence Counter",    icon:"🔢", cat:["Analyze"],                   desc:"Count how often specific words or phrases appear in any text or data file.", tags:["count","text","frequency","words"] },
     { id:"query-csv-with-sql-online",               name:"SQL Query on CSV",            icon:"⌗",  cat:["Analyze"],                   desc:"Run SQL SELECT queries directly on CSV/XLSX files in your browser — no database needed.", tags:["sql","query","filter","csv"] },
+    { id:"python-code-runner",                      name:"Python Code Runner",          icon:"🐍",  cat:["Analyze"],                   desc:"Run Python code locally in your browser with a fast editor, optional stdin, and shareable links.", tags:["python","code","wasm","run"] },
+    { id:"ipynb-viewer",                            name:"Jupyter Notebook Viewer",     icon:"📓",  cat:["Analyze","Export"],           desc:"Open and render Jupyter Notebook (.ipynb) files — view code cells, outputs, Markdown, and plots.", tags:["jupyter","notebook","ipynb","viewer"] },
+    { id:"disk-analyzer",                           name:"Disk Space Analyzer",         icon:"💾",  cat:["Analyze"],                   desc:"Analyze any local folder and see exactly what's using disk space — tree, treemap, and file type breakdown.", tags:["disk","storage","folder","space"] },
+    { id:"eu-datasets",                             name:"EU Datasets",                 icon:"🇪🇺",  cat:["Analyze"],                   desc:"Browse 100 ready-to-use EU datasets across demographics, economy, health, housing, energy and more.", tags:["eu","europe","csv","dataset","open data"] },
+    { id:"india-datasets",                          name:"India Datasets",              icon:"🇮🇳",  cat:["Analyze"],                   desc:"Browse 100 ready-to-use India datasets across demographics, economy, health, housing, energy and more.", tags:["india","csv","dataset","open data"] },
+    { id:"usa-datasets",                            name:"USA Datasets",                icon:"🇺🇸",  cat:["Analyze"],                   desc:"Browse 100 ready-to-use USA datasets across demographics, economy, health, housing, energy and more.", tags:["usa","america","csv","dataset","open data"] },
 
     // ── Convert
     { id:"markdown-to-html",                        name:"Markdown → HTML",             icon:"⌁",  cat:["Convert"],                   desc:"Convert Markdown into clean, preview-ready HTML.",                         tags:["md","html","convert"] },
@@ -240,6 +246,7 @@
     // ── Export / Misc
     { id:"link-shortener-with-qr",                  name:"Link Shortener + QR",         icon:"🔗",  cat:["Export"],                    desc:"Shorten a URL (optional) and instantly generate a QR code for it.",        tags:["qr","link","url","short"] },
     { id:"qr-code-generator-and-scanner",           name:"QR Code Generator & Scanner", icon:"▣",  cat:["Export"],                    desc:"Generate QR codes for any text/URL, or scan QR codes from camera or image.", tags:["qr","scan","camera"] },
+    { id:"upi-qr-generator",                       name:"UPI QR Generator + Scanner", icon:"₹",  cat:["Export"],                    desc:"Generate a UPI payment QR code from a UPI ID and optional amount, or decode a QR from an image.", tags:["upi","qr","payment","india"] },
     { id:"strong-password-generator",               name:"Password Generator",          icon:"🔑",  cat:["Export"],                    desc:"Generate cryptographically strong random passwords with one click.",        tags:["password","security","random"] },
     { id:"online-notepad-rich-text-editor",         name:"Online Notepad",              icon:"🗒",  cat:["Export"],                    desc:"Rich-text notes with find/replace, formatting, and local saving.",          tags:["notes","richtext","editor"] },
 
@@ -247,6 +254,8 @@
     { id:"video-resize-reduce-size",                name:"Video Resize / Compress",     icon:"🎬",  cat:["Video"],                     desc:"Reduce video file size and resize resolution — runs entirely in your browser.", tags:["video","compress","resize","mp4"] },
     { id:"split-video-into-clips",                  name:"Split Video into Clips",      icon:"✂",  cat:["Video"],                     desc:"Split a video into multiple clips by time range or intervals, locally.",    tags:["video","split","clip","trim"] },
     { id:"merge-videos-join-clips",                 name:"Merge Videos",                icon:"⧉",  cat:["Video"],                     desc:"Join multiple video clips into a single file — no upload, no server.",      tags:["video","merge","join","combine"] },
+    { id:"gopro-video-compressor",                  name:"GoPro Video Compressor",      icon:"📷",  cat:["Video"],                     desc:"Compress, resize, rotate, trim and strip GPS metadata from GoPro Hero, Max & Fusion footage.", tags:["gopro","video","compress","action cam"] },
+    { id:"dji-video-compressor",                    name:"DJI Video Compressor",        icon:"🛸",  cat:["Video"],                     desc:"Compress, resize, rotate, trim and strip GPS metadata from DJI Mavic, Mini, Air, Osmo and FPV footage.", tags:["dji","drone","video","compress"] },
   ];
 
   /* ─────────────────────────────────────────
