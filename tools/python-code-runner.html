@@ -28,17 +28,16 @@
       color: inherit;
       padding: 12px;
       outline: none;
-      margin-top: 6px;
     }
-    .py-editor{min-height: 420px; resize: vertical;}
-    .py-stdin{min-height: 120px; resize: vertical;}
-    .py-out{min-height: 420px; overflow:auto; white-space: pre-wrap; word-break: break-word; margin:0;}
+    .py-editor{min-height: 420px; resize: vertical; margin-top:10px;}
+    .py-stdin{min-height: 120px; resize: vertical; margin-top:10px;}
+    .py-out{min-height: 420px; overflow:auto; white-space: pre-wrap; word-break: break-word; margin:10px 0 0;}
 
     .pill{border-radius:6px;}
-    .py-status{display:flex; gap:8px; align-items:center; margin-left:auto;}
+    .py-status{display:flex; gap:8px; align-items:center;}
     .py-status .pill{font-size:11px; padding:5px 8px;}
 
-    .py-actions-top{display:flex; gap:6px; flex-wrap:nowrap; align-items:center; justify-content:flex-end; white-space:nowrap; flex:0 0 auto; margin-left:auto;}
+    .py-actions-top{display:flex; gap:6px; flex-wrap:nowrap; align-items:center; justify-content:flex-start; white-space:nowrap; flex:0 0 auto;}
     .py-actions-top .btn{padding:6px 9px; font-size:12px; border-radius:8px; border:1px solid rgba(255,255,255,.14); flex:0 0 auto; white-space:nowrap;}
     .py-actions-top .btn.primary{border-color: rgba(124,247,212,.28)}
 
@@ -374,6 +373,10 @@ builtins.input = _rm_input
 
       self.onmessage = async (e) => {
         const msg = e.data || {};
+        if(msg.type === "init"){
+          await ensure();
+          return;
+        }
         if(msg.type === "run"){
           const t0 = Date.now();
           send("run", {state:"start"});
@@ -439,6 +442,7 @@ builtins.input = _rm_input
       }
     };
     worker.onerror = () => { setEngineState("error"); };
+    worker.postMessage({type:"init"});
   }
 
   function stopWorker(){
@@ -473,7 +477,6 @@ builtins.input = _rm_input
   }
   ensureWorker();
   setRunState("idle");
-  setEngineState("loading");
 
 })();
 </script>
