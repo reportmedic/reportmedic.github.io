@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>File Analyzer (CSV Profiler)  -  ReportMedic</title>
+  <meta name="description" content="Profile a CSV/TXT locally: unique-value cards, filters, group-by summaries, pivot tables, and charts  -  built for data modellers.">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <style>
+.fa-root{
+      --fa-bg: transparent;
+      --fa-panel: rgba(255,255,255,.06);
+      --fa-table-head-bg: rgba(15,23,42,.96);
+      --fa-ink: var(--text);
+      --fa-sub: var(--muted);
+      --fa-line: rgba(255,255,255,.14);
+      --fa-brand: var(--brand);
+      --fa-radius:16px;
+      --fa-shadow: 0 10px 24px rgba(0,0,0,.22);
+    }
+    .fa-root, .fa-root *{box-sizing:border-box;}
+    .fa-root{
+      margin:0;
+      padding:0;
+      font-family: inherit;
+      background: var(--fa-bg);
+      color: var(--fa-ink);
+    }
+.fa-wrap{max-width:1200px;margin:0 auto;}
+    .fa-header{
+      display:flex;justify-content:space-between;gap:12px;
+      align-items:flex-start;margin-bottom:14px;
+    }
+    .fa-kicker{
+      font-size:12px;text-transform:uppercase;letter-spacing:.14em;
+      color:var(--fa-sub);margin-bottom:2px;
+    }
+    .fa-title{font-size:20px;font-weight:650;}
+    .fa-sub{font-size:12px;color:var(--fa-sub);max-width:520px;}
+    .fa-badge-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+    .fa-badge{
+      font-size:12px;padding:4px 8px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);background:rgba(110,168,255,.10);color:rgba(238,246,255,.92);
+      display:inline-flex;align-items:center;gap:4px;
+    }
+
+    .fa-main{
+      display:grid;
+  grid-template-columns: minmax(0,3fr) minmax(0,1fr);
+  gap:14px;
+  align-items:flex-start;
+  
+    }
+    @media(max-width:960px){.fa-main{grid-template-columns:1fr;}}
+
+    .fa-panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.04));border-radius:var(--fa-radius);
+      border:1px solid rgba(255,255,255,.14);box-shadow: var(--fa-shadow);
+      padding:12px 14px;
+	  min-width:0;  
+    }
+    .fa-panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;}
+    .fa-panel-title{font-size:13px;font-weight:600;color:var(--fa-ink);}
+    .fa-panel-sub{font-size:12px;color:var(--fa-sub);}
+
+    .fa-root label{font-size:12px;color:var(--fa-sub);}
+    .fa-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;align-items:flex-end;}
+    .fa-row > div{display:flex;flex-direction:column;gap:2px;}
+    .fa-root input[type="text"], .fa-root select{
+      width:100%;
+      padding:9px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.07);
+      color: inherit;
+      font-size:13px;
+      outline:none;
+    }
+    .fa-root input[type="file"]{
+      width:100%;
+      padding:9px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.07);
+      color: inherit;
+      font-size:13px;
+      outline:none;
+    }
+    .fa-root input[type="number"]{
+      width:100%;
+      padding:9px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.07);
+      color: inherit;
+      font-size:13px;
+      outline:none;
+    }
+
+    .fa-table-wrap{
+      border-radius:10px;border:1px solid rgba(255,255,255,.14);overflow:auto;
+      max-height:55vh;background:rgba(255,255,255,.02);
+    }
+    .fa-root table{border-collapse:collapse;width:100%;font-size:12px;}
+    .fa-root thead{position:sticky;top:0;z-index:5;background:var(--fa-table-head-bg);}
+    .fa-root thead th{position:sticky;top:0;z-index:6;background:var(--fa-table-head-bg);}
+    .fa-root thead th{box-shadow:0 1px 0 rgba(255,255,255,.12);}
+    .fa-root th, .fa-root td{padding:4px 6px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);}
+    .fa-root th{
+      font-size:12px;color:rgba(238,246,255,.72);text-transform:uppercase;
+      letter-spacing:.06em;cursor:pointer;white-space:nowrap;
+    }
+    .fa-root th.fa-sort-asc::after{content:" ▲";font-size:10px;color:var(--fa-ink);}
+    .fa-root th.fa-sort-desc::after{content:" ▼";font-size:10px;color:var(--fa-ink);}
+    .fa-root tbody tr:nth-child(even){background:rgba(255,255,255,.04);}
+    .fa-root tbody tr:hover{background:rgba(110,168,255,.10);}
+
+    .fa-info{font-size:12px;color:var(--fa-sub);margin-top:4px;}
+
+    .fa-summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;}
+    .fa-summary-item{border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);padding:8px 9px;}
+    .fa-summary-k{font-size:16px;font-weight:700;color:var(--fa-ink);}
+    .fa-summary-.fa-root label{font-size:12px;color:var(--fa-ink);margin-top:2px;}
+    .fa-summary-sub{font-size:10px;color:var(--fa-sub);margin-top:2px;}
+
+    .fa-section-title{font-size:12px;font-weight:600;margin-bottom:4px;color:var(--fa-ink);}
+    .fa-filter-inline{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;margin-top:4px;}
+	
+	
+	.fa-filter-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:flex-end;
+  margin-bottom:6px;
+}
+
+.fa-filter-row .fa-filter-logic{
+  min-width:70px;
+}
+
+.fa-filter-row:first-child .fa-filter-logic{
+  display:none; /* hide AND/OR for first row */
+}
+
+	
+    .fa-help{font-size:10px;color:var(--fa-sub);margin-top:3px;}
+
+    .fa-chart-box{
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.04);
+      padding:6px;
+      min-height:180px;
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      overflow:auto; /* chart scrolls horizontally inside 75% area */
+    }
+    .fa-chart-box svg{
+      height:200px;
+      display:block; /* prevent shrink-to-fit */
+    }
+
+    /* Group-by + chart under main table, side-by-side */
+    .fa-group-chart-wrap{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:10px;
+      align-items:flex-start;
+    }
+    .fa-group-panel{
+      flex:0 0 280px;
+      max-width:320px;
+    }
+    .fa-chart-panel{
+      flex:1 1 0;
+      min-width:0;
+    }
+
+
+    .fa-code{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      font-size:10px;background:rgba(255,255,255,.02);border-radius:6px;padding:3px 6px;
+    }
+    .fa-root button.fa-btn{
+      border:none;
+      background: linear-gradient(135deg, rgba(110,168,255,1), rgba(124,247,212,1));
+      color:#061021;
+      padding:8px 12px;
+      border-radius:12px;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow: 0 10px 22px rgba(0,0,0,.18);
+    }
+    .fa-root button.fa-btn:hover{transform:translateY(-1px);}
+    .fa-root button.fa-btn:active{transform:translateY(1px) scale(.98);}
+
+  /* Make the embedded analyzer breathe nicely inside ReportMedic panel */
+  .fa-root .fa-wrap{ max-width: 1100px; margin:0 auto; }
+  .fa-root .fa-title{ letter-spacing: -.2px; }
+  .fa-root .fa-kicker{ opacity:.86; }
+  .fa-root .fa-help{ color: var(--muted); }
+  .fa-root .fa-panel-title{ font-size:14px; }
+  .fa-root .fa-section-title{ font-size:12px; letter-spacing:.22px; text-transform:uppercase; opacity:.9; }
+  .fa-root .fa-table-wrap{ background: rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.10); }
+  .fa-root table th{ color: rgba(238,246,255,.78); }
+  .fa-root table tr:hover td{ background: rgba(110,168,255,.10); }
+  .fa-root .fa-summary-item{ background: rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.12); }
+  .fa-root .fa-chart-box{ background: rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.12); }
+  </style>
+  <script defer src="/assets/js/rm-dropzone.js"></script>
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+</head>
+<body class="tools-page">
+  <header>
+    <div class="nav">
+      <div class="logo"><div class="mark"></div> ReportMedic</div>
+      <div class="spacer"></div>
+      <a class="btn" href="/">Home</a>
+      <a class="btn" id="openDrawerBtn" href="#">All Tools</a>
+      <a class="btn primary" id="navFixMyReport" href="/fix-my-report.html">Live Agent</a>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="panel">
+      <h1>File Analyzer <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+      <p class="sub">A local-first CSV/TXT profiler for data modellers: unique-value cards, filters, group-by summaries, pivots, and charts  -  so you can validate structure before mapping or modeling.</p>
+      <div class="tiny muted" style="margin-top:6px;"><a href="/fix-my-report.html" style="text-decoration:none; border-bottom:1px dashed rgba(255,255,255,.25);">Need a second set of eyes? Get human help →</a></div>
+
+      <div class="hr"></div>
+
+      <div class="fa-root">
+<div class="fa-wrap">
+
+  <div class="fa-main">
+    <!-- LEFT: data + filters -->
+    <div class="fa-panel">
+      <div class="fa-panel-header">
+        <div>
+          <div class="fa-panel-title">Data preview</div>
+          <div class="fa-panel-sub">Upload a CSV/TXT, choose a delimiter, then browse and sort instantly.</div>
+        
+          <div class="fa-badge-row" style="margin-top:8px;">
+            <span class="fa-badge">📄 <span id="faMetaRows">0 rows</span></span>
+            <span class="fa-badge">🔢 <span id="faMetaCols">0 columns</span></span>
+            <span class="fa-badge">🧪 <span id="faMetaTypes">0 numeric / 0 text</span></span>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="fa-row">
+        <div style="flex:1 1 100%; min-width:0;">
+          <label>File (CSV / TXT)</label>
+
+          <!-- Drop zone (click to open picker OR drop file) -->
+          <input id="faFile" type="file" accept=".csv,.txt,text/plain,text/csv" data-rm-dropzone-size="compact">
+        </div>
+      </div>
+
+      <div class="fa-row">
+        <div style="flex:0 0 170px; min-width:150px;">
+          <label>Delimiter</label>
+          <select id="faDelim">
+            <option value=",">Comma (,)</option>
+            <option value=";">Semicolon (;)</option>
+            <option value="\\t">Tab (	)</option>
+            <option value="|">Pipe (|)</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <div style="flex:0 0 90px;">
+          <label>&nbsp;</label>
+          <input id="faDelimCustom" type="text" maxlength="3" placeholder="e.g. ^" style="width:100%;display:none;">
+        </div>
+        <div style="flex:0 0 150px; min-width:140px;">
+          <label>Show rows</label>
+          <select id="faPreviewCount">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+      </div>
+
+<div class="fa-section-title">Filter</div>
+
+<!-- Container for multiple filter rows -->
+<div id="faFilterContainer">
+  <!-- First filter row -->
+  <div class="fa-filter-inline fa-filter-row">
+    <!-- Logic (hidden for first row, shown for later rows) -->
+    <div class="fa-filter-logic">
+      <label>Logic</label>
+      <select class="faFilterLogic">
+        <option value="AND">AND</option>
+        <option value="OR">OR</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Column</label>
+      <select id="faFilterCol" class="faFilterCol"></select>
+    </div>
+    <div>
+      <label>Operator</label>
+      <select id="faFilterOp" class="faFilterOp">
+        <option value="">(none)</option>
+        <option value="eq">is equal</option>
+        <option value="ne">is not equal</option>
+        <option value="contains">contains</option>
+        <option value="gt">&gt;</option>
+        <option value="lt">&lt;</option>
+        <option value="between">in between</option>
+      </select>
+    </div>
+    <div>
+      <label>Value</label>
+      <input id="faFilterVal" class="faFilterVal" type="text" placeholder="Value">
+    </div>
+    <div>
+      <label>And</label>
+      <input id="faFilterVal2" class="faFilterVal2" type="text" placeholder="Second (for between)" style="width:110px;">
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:4px; display:flex; gap:8px; align-items:center;">
+  <button type="button" class="fa-btn" id="faBtnApplyFilter">Apply</button>
+  <button type="button" class="fa-btn" id="faAddFilter">+ Add filter</button>
+</div>
+
+      <div class="fa-help">
+        First charts & tables appear after the first 100 rows are parsed, then refresh
+        every 2,000 rows. Large files will show a running progress indicator.
+      </div>
+
+      <div class="fa-table-wrap" style="margin-top:8px;">
+        <table>
+          <thead id="faPreviewHead"></thead>
+          <tbody id="faPreviewBody"></tbody>
+        </table>
+      </div>
+      <div id="faPreviewInfo" class="fa-info">Load a CSV/TXT file to begin.</div>
+
+      <!-- Group by + Chart in 75% area (side-by-side) -->
+      <div class="fa-group-chart-wrap">
+        <div class="fa-group-panel">
+          <div class="fa-section-title">Group by</div>
+          <div class="fa-row">
+            <div>
+              <label>Group field</label>
+              <select id="faGroupDim"></select>
+            </div>
+            <div>
+              <label>Measure</label>
+              <select id="faGroupMeasure"></select>
+            </div>
+            <div>
+              <label>Aggregation</label>
+              <select id="faGroupAgg">
+                <option value="count">Count</option>
+                <option value="sum">Sum</option>
+                <option value="avg">Average</option>
+                <option value="count_unique">Count Unique</option>
+              </select>
+
+            </div>
+          </div>
+          <div class="fa-table-wrap" style="margin-bottom:8px;max-height:150px;">
+            <table>
+              <thead>
+                <tr><th>Group</th><th>Value</th><th>Rows</th></tr>
+              </thead>
+              <tbody id="faGroupBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+<div class="fa-chart-panel">
+  <div class="fa-row" style="margin-bottom:4px;">
+    <div style="flex:1 1 auto;">
+      <div class="fa-section-title">Chart</div>
+      <div class="fa-help">Chart is driven by the current group-by selection.</div>
+    </div>
+    <div>
+      <label>Show groups</label>
+      <select id="faChartLimit">
+        <option value="5" selected>Top 5</option>
+        <option value="10">Top 10</option>
+        <option value="20">Top 20</option>
+        <option value="50">Top 50</option>
+        <option value="100">Top 100</option>
+        <option value="all">All</option>
+      </select>
+    </div>
+  </div>
+  <div id="faChart" class="fa-chart-box">Load data and pick a group field to see a bar chart.</div>
+</div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT: summaries & pivot ONLY -->
+    <div class="fa-panel">
+      <div class="fa-panel-header">
+        <div>
+          <div class="fa-panel-title">Fields & pivot</div>
+          <div class="fa-panel-sub">Auto-detect text vs numeric, then pivot.</div>
+        </div>
+      </div>
+
+      <div class="fa-section-title">Fields · unique values</div>
+      <div id="faSummary" class="fa-summary-grid" style="margin-bottom:10px;"></div>
+
+      <div class="fa-section-title">Pivot (rows × columns)</div>
+      <div class="fa-row">
+        <div>
+          <label>Row field</label>
+          <select id="faPivotRow"></select>
+        </div>
+        <div>
+          <label>Column field</label>
+          <select id="faPivotCol"></select>
+        </div>
+        <div>
+          <label>Value</label>
+          <select id="faPivotVal"></select>
+        </div>
+        <div>
+          <label>Aggregation</label>
+          <select id="faPivotAgg">
+            <option value="count">Count</option>
+            <option value="countDistinct">Count Unique</option>
+            <option value="sum">Sum</option>
+            <option value="avg">Average</option>
+          </select>
+        </div>
+      </div>
+      <div class="fa-table-wrap" style="margin-bottom:8px;max-height:180px;">
+        <table>
+          <thead id="faPivotHead"></thead>
+          <tbody id="faPivotBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+      </div>
+    </div>
+	  <div class="footer">© 2026 ReportMedic</div>
+</div>
+	
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+  
+
+
+<!-- Learn more modal -->
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">File Analyzer</h2>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <p><b>Purpose:</b> help data modellers quickly understand a dataset’s shape before building models, mappings, and transformations.</p>
+
+      <h3>What you get</h3>
+      <ul>
+        <li><b>Column cards:</b> unique counts plus quick type hints (numeric vs text)</li>
+        <li><b>Preview:</b> scrollable table with sortable columns and configurable preview size</li>
+        <li><b>Filters:</b> stack multiple rules (AND/OR) and instantly see the impact</li>
+        <li><b>Group by:</b> summarize by any field and view a bar chart (Top N)</li>
+        <li><b>Pivot:</b> rows × columns cross-tab with selectable aggregation</li>
+        <li><b>Local only:</b> processing happens in your browser, files aren’t uploaded</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  function openLM(id){
+    const bd = document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute("aria-hidden","false");
+    const btn = bd.querySelector(".rm-lm-close");
+    if(btn) btn.focus();
+  }
+  function closeLM(id){
+    const bd = document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute("aria-hidden","true");
+  }
+  document.addEventListener("click", function(e){
+    const a = e.target.closest("[data-rm-lm-open]");
+    if(a){
+      e.preventDefault();
+      openLM(a.getAttribute("data-rm-lm-open"));
+      return;
+    }
+    const close = e.target.closest("[data-rm-lm-close]");
+    if(close){
+      e.preventDefault();
+      closeLM(close.getAttribute("data-rm-lm-close"));
+      return;
+    }
+    const bd = e.target.classList && e.target.classList.contains("rm-lm-backdrop") ? e.target : null;
+    if(bd) closeLM(bd.id);
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Escape") return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(function(bd){
+      bd.setAttribute("aria-hidden","true");
+    });
+  });
+})();
+</script>
+
+
+
+
+  <script>
+(function(){
+    "use strict";
+    const $ = (id) => document.getElementById(id);
+
+    // State
+    let header = [];
+    let rawRows = [];
+    let filteredRows = [];
+    let colTypes = {};
+    let sortState = { col:null, dir:"asc" };
+    let lastGroupResult = [];
+    let lastText = "";
+    let allLines = [];
+    let headerLineIndex = -1;
+    let totalDataLines = 0;
+    let processedLines = 0;
+    let streaming = false;
+    let currentDelimiter = ",";
+    let dropdownsInitialized = false;
+    let delimiterAutodetected = false;
+    let uiBound = false;
+
+    // ─── PERFORMANCE TUNING (optimized for large files) ──────────────
+    const INITIAL_RENDER = 100;      // first charts after 100 rows
+    const BATCH_SIZE     = 5000;     // rows per processing chunk (was 400)
+    const TIME_BUDGET_MS = 40;       // max ms per frame before yielding
+    let   REFRESH_EVERY  = 2000;     // adaptive: recalculated per file
+
+    // Abort controller for cancelling in-flight parses
+    let parseGeneration = 0;
+
+    function escapeHtml(str){
+      return String(str == null ? "" : str)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#39;");
+    }
+
+    function splitLine(line){
+      return line.split(currentDelimiter);
+    }
+
+    // ─── Smarter yielding ────────────────────────────────────────────
+    // Uses requestAnimationFrame to yield back to the browser's event
+    // loop so Chrome never thinks the page is unresponsive.
+    function yieldToMain(){
+      return new Promise(resolve => {
+        if (typeof requestIdleCallback === "function"){
+          requestIdleCallback(resolve, { timeout: 100 });
+        } else {
+          requestAnimationFrame(() => setTimeout(resolve, 0));
+        }
+      });
+    }
+
+    function updateProgressLabel(){
+      const infoEl = $("faPreviewInfo");
+      if (!infoEl) return;
+
+      if (!totalDataLines){
+        if (!rawRows.length){
+          infoEl.textContent = "Load a CSV/TXT file to begin.";
+        } else {
+          infoEl.textContent = rawRows.length + " rows loaded.";
+        }
+        return;
+      }
+      const pct = Math.min(100, Math.round((processedLines / totalDataLines) * 100));
+      const basis = filteredRows.length || rawRows.length;
+      infoEl.textContent =
+        "Processed " + processedLines.toLocaleString() + " of ~" + totalDataLines.toLocaleString() +
+        " rows (" + pct + "%). " +
+        "Preview & charts use " + basis.toLocaleString() + " rows so far.";
+    }
+
+    function detectTypes(){
+      colTypes = {};
+      header.forEach(function(col){
+        let numeric = true;
+        let checked = 0;
+        for (let i = 0; i < rawRows.length && checked < 40; i++){
+          const v = rawRows[i][col];
+          if (v === "" || v == null) continue;
+          checked++;
+          const num = Number(v);
+          if (!isFinite(num)){ numeric = false; break; }
+        }
+        colTypes[col] = numeric ? "number" : "string";
+      });
+    }
+
+    function evalFilterCondition(row, cfg){
+      const col = cfg.col;
+      const op  = cfg.op;
+      const v1  = cfg.v1;
+      const v2  = cfg.v2;
+      const type = colTypes[col] || "string";
+      const vRaw = row[col];
+
+      if (type === "number"){
+        const v = Number(vRaw);
+        const a = Number(v1);
+        const b = Number(v2);
+
+        if (op === "eq") return String(vRaw) === String(v1);
+        if (op === "ne") return String(vRaw) !== String(v1);
+        if (op === "gt") return isFinite(v) && isFinite(a) && v > a;
+        if (op === "lt") return isFinite(v) && isFinite(a) && v < a;
+        if (op === "between") return isFinite(v) && isFinite(a) && isFinite(b) && v >= a && v <= b;
+        if (op === "contains"){
+          const vs = String(vRaw == null ? "" : vRaw);
+          const needle = String(v1 == null ? "" : v1);
+          return vs.toLowerCase().indexOf(needle.toLowerCase()) !== -1;
+        }
+        return true;
+      } else {
+        const vStr   = String(vRaw == null ? "" : vRaw);
+        const needle = String(v1 == null ? "" : v1);
+
+        if (op === "eq") return vStr === needle;
+        if (op === "ne") return vStr !== needle;
+        if (op === "contains") return vStr.toLowerCase().indexOf(needle.toLowerCase()) !== -1;
+        if (op === "gt") return vStr > v1;
+        if (op === "lt") return vStr < v1;
+        if (op === "between") return vStr >= v1 && vStr <= v2;
+        return true;
+      }
+    }
+
+    function applyFilters(){
+      filteredRows = rawRows.slice();
+
+      const container = $("faFilterContainer");
+      if (!container) return;
+
+      const rows = Array.from(container.querySelectorAll(".fa-filter-row"));
+      const configs = [];
+
+      rows.forEach((rowEl, idx) => {
+        const colSel   = rowEl.querySelector(".faFilterCol") || $("faFilterCol");
+        const opSel    = rowEl.querySelector(".faFilterOp")  || $("faFilterOp");
+        const val1El   = rowEl.querySelector(".faFilterVal")  || $("faFilterVal");
+        const val2El   = rowEl.querySelector(".faFilterVal2") || $("faFilterVal2");
+        const logicSel = rowEl.querySelector(".faFilterLogic");
+
+        const col = colSel && colSel.value;
+        const op  = opSel && opSel.value;
+
+        if (!col || !op) return;
+
+        configs.push({
+          col,
+          op,
+          v1: val1El ? val1El.value : "",
+          v2: val2El ? val2El.value : "",
+          logic: idx === 0 ? "AND" : ((logicSel && logicSel.value) || "AND")
+        });
+      });
+
+      if (!configs.length) return;
+
+      filteredRows = rawRows.filter(row => {
+        let result = evalFilterCondition(row, configs[0]);
+        for (let i = 1; i < configs.length; i++){
+          const cfg  = configs[i];
+          const cond = evalFilterCondition(row, cfg);
+          if (cfg.logic === "OR"){
+            result = result || cond;
+          } else {
+            result = result && cond;
+          }
+        }
+        return result;
+      });
+    }
+
+
+    function applySort(){
+      if (!sortState.col) return;
+      const col = sortState.col;
+      const dir = sortState.dir === "desc" ? -1 : 1;
+      const type = colTypes[col] || "string";
+
+      filteredRows.sort((a,b) => {
+        let va = a[col];
+        let vb = b[col];
+        if (type === "number"){
+          let na = Number(va);
+          let nb = Number(vb);
+          if (!isFinite(na)) na = 0;
+          if (!isFinite(nb)) nb = 0;
+          return (na - nb) * dir;
+        } else {
+          va = String(va == null ? "" : va);
+          vb = String(vb == null ? "" : vb);
+          if (va < vb) return -1 * dir;
+          if (va > vb) return  1 * dir;
+          return 0;
+        }
+      });
+    }
+
+    function renderMeta(){
+      const rows = rawRows.length;
+      const cols = header.length;
+      let numCount = 0, textCount = 0;
+      header.forEach(col => {
+        if (colTypes[col] === "number") numCount++;
+        else textCount++;
+      });
+      $("faMetaRows").textContent  = rows.toLocaleString() + " rows";
+      $("faMetaCols").textContent  = cols + " columns";
+      $("faMetaTypes").textContent = numCount + " numeric / " + textCount + " text";
+    }
+
+    function renderPreview(){
+      const headEl = $("faPreviewHead");
+      const bodyEl = $("faPreviewBody");
+      headEl.innerHTML = "";
+      bodyEl.innerHTML = "";
+
+      if (!header.length){
+        updateProgressLabel();
+        return;
+      }
+
+      const trHead = document.createElement("tr");
+      header.forEach(col => {
+        const th = document.createElement("th");
+        th.textContent = col;
+        th.dataset.col = col;
+        if (sortState.col === col){
+          th.classList.add(sortState.dir === "desc" ? "fa-sort-desc" : "fa-sort-asc");
+        }
+        th.addEventListener("click", () => {
+          if (sortState.col === col){
+            sortState.dir = (sortState.dir === "asc" ? "desc" : "asc");
+          } else {
+            sortState.col = col;
+            sortState.dir = "asc";
+          }
+          applySort();
+          renderPreview();
+        });
+        trHead.appendChild(th);
+      });
+      headEl.appendChild(trHead);
+
+      const maxRowsSel = $("faPreviewCount");
+      let maxRows = parseInt(maxRowsSel.value,10);
+      if (!isFinite(maxRows) || maxRows <= 0) maxRows = 10;
+
+      // Use DocumentFragment for fewer reflows
+      const frag = document.createDocumentFragment();
+      const rowsToShow = filteredRows.slice(0, maxRows);
+      rowsToShow.forEach(row => {
+        const tr = document.createElement("tr");
+        header.forEach(col => {
+          const td = document.createElement("td");
+          td.textContent = row[col];
+          tr.appendChild(td);
+        });
+        frag.appendChild(tr);
+      });
+      bodyEl.appendChild(frag);
+
+      updateProgressLabel();
+    }
+
+    function renderSummary(){
+      const host = $("faSummary");
+      host.innerHTML = "";
+      if (!header.length) return;
+
+      const scanRows = (filteredRows && filteredRows.length) ? filteredRows : rawRows;
+      if (!scanRows || !scanRows.length) return;
+
+      const MAX_SCAN = 50000;
+      const step = (scanRows.length > MAX_SCAN) ? Math.ceil(scanRows.length / MAX_SCAN) : 1;
+
+      const frag = document.createDocumentFragment();
+      header.forEach(col => {
+        const seen = Object.create(null);
+        let nonEmpty = 0;
+        for (let i = 0; i < scanRows.length; i += step) {
+          const v = scanRows[i][col];
+          if (v == null || v === "") continue;
+          nonEmpty++;
+          const key = String(v);
+          seen[key] = true;
+        }
+        const uniq = Object.keys(seen).length;
+
+        const box = document.createElement("div");
+        box.className = "fa-summary-item";
+        box.innerHTML =
+          '<div class="fa-summary-k">' + uniq + '</div>' +
+          '<div class="fa-summary-label">' + escapeHtml(col) + '</div>' +
+          '<div class="fa-summary-sub">unique values across ' + nonEmpty + ' non-empty rows</div>';
+
+        frag.appendChild(box);
+      });
+      host.appendChild(frag);
+    }
+
+
+    function populateColumnSelects(){
+      if (!header.length) return;
+
+      const filterCol    = $("faFilterCol");
+      const groupDim     = $("faGroupDim");
+      const groupMeasure = $("faGroupMeasure");
+      const pivotRow     = $("faPivotRow");
+      const pivotCol     = $("faPivotCol");
+      const pivotVal     = $("faPivotVal");
+
+      const prev = {
+        filterCol:    filterCol    ? filterCol.value    : null,
+        groupDim:     groupDim     ? groupDim.value     : null,
+        groupMeasure: groupMeasure ? groupMeasure.value : null,
+        pivotRow:     pivotRow     ? pivotRow.value     : null,
+        pivotCol:     pivotCol     ? pivotCol.value     : null,
+        pivotVal:     pivotVal     ? pivotVal.value     : null
+      };
+
+      let firstText = null;
+      let secondText = null;
+      let firstNumeric = null;
+      header.forEach(col => {
+        const t = colTypes[col] || "string";
+        if (t === "string"){
+          if (!firstText) firstText = col;
+          else if (!secondText) secondText = col;
+        } else if (t === "number"){
+          if (!firstNumeric) firstNumeric = col;
+        }
+      });
+
+      [filterCol, groupDim, groupMeasure, pivotRow, pivotCol, pivotVal].forEach(sel => {
+        if (sel) sel.innerHTML = "";
+      });
+
+      if (filterCol){
+        const optNone = document.createElement("option");
+        optNone.value = "";
+        optNone.textContent = "(auto)";
+        filterCol.appendChild(optNone);
+      }
+
+      header.forEach(col => {
+        let o;
+
+        if (filterCol){
+          o = document.createElement("option");
+          o.value = col;
+          o.textContent = col;
+          filterCol.appendChild(o);
+        }
+
+        if (groupDim){
+          o = document.createElement("option");
+          o.value = col;
+          o.textContent = col;
+          groupDim.appendChild(o);
+        }
+
+        if (groupMeasure){
+          o = document.createElement("option");
+          o.value = col;
+          o.textContent = col;
+          groupMeasure.appendChild(o);
+        }
+
+        if (pivotRow){
+          o = document.createElement("option");
+          o.value = col;
+          o.textContent = col;
+          pivotRow.appendChild(o);
+        }
+
+        if (pivotCol){
+          o = document.createElement("option");
+          o.value = col;
+          o.textContent = col;
+          pivotCol.appendChild(o);
+        }
+
+        if (pivotVal){
+          o = document.createElement("option");
+          o.value = col;
+          o.textContent = col;
+          pivotVal.appendChild(o);
+        }
+      });
+
+      function valueExists(sel, v){
+        if (!sel || v == null) return false;
+        for (let i = 0; i < sel.options.length; i++){
+          if (sel.options[i].value === v) return true;
+        }
+        return false;
+      }
+
+      function setWithFallback(sel, prevVal, fallbackVal){
+        if (!sel) return;
+        if (prevVal && valueExists(sel, prevVal)){
+          sel.value = prevVal;
+        } else if (fallbackVal && valueExists(sel, fallbackVal)){
+          sel.value = fallbackVal;
+        }
+      }
+
+      if (!dropdownsInitialized){
+        if (filterCol){
+          filterCol.value = "";
+        }
+
+        if (groupDim){
+          if (firstText && valueExists(groupDim, firstText)){
+            groupDim.value = firstText;
+          } else if (header.length){
+            groupDim.value = header[0];
+          }
+        }
+
+        if (groupMeasure){
+          if (firstNumeric && valueExists(groupMeasure, firstNumeric)){
+            groupMeasure.value = firstNumeric;
+          } else if (header.length){
+            groupMeasure.value = header[0];
+          }
+        }
+
+        if (pivotRow){
+          if (firstText && valueExists(pivotRow, firstText)){
+            pivotRow.value = firstText;
+          } else if (header.length){
+            pivotRow.value = header[0];
+          }
+        }
+
+        if (pivotCol){
+          const colChoice = secondText || firstText || header[0];
+          if (colChoice && valueExists(pivotCol, colChoice)){
+            pivotCol.value = colChoice;
+          }
+        }
+
+        if (pivotVal){
+          if (firstNumeric && valueExists(pivotVal, firstNumeric)){
+            pivotVal.value = firstNumeric;
+          } else if (header.length){
+            pivotVal.value = header[0];
+          }
+        }
+
+      } else {
+        setWithFallback(filterCol,    prev.filterCol,    "");
+        setWithFallback(groupDim,     prev.groupDim,     firstText || header[0]);
+        setWithFallback(groupMeasure, prev.groupMeasure, firstNumeric || header[0]);
+        setWithFallback(pivotRow,     prev.pivotRow,     firstText || header[0]);
+        setWithFallback(pivotCol,     prev.pivotCol,     secondText || firstText || header[0]);
+        setWithFallback(pivotVal,     prev.pivotVal,     firstNumeric || header[0]);
+      }
+
+      dropdownsInitialized = true;
+    }
+
+
+    function renderGroup(){
+      const dimSel     = $("faGroupDim");
+      const measureSel = $("faGroupMeasure");
+      const aggSel     = $("faGroupAgg");
+      const body       = $("faGroupBody");
+      body.innerHTML = "";
+      lastGroupResult = [];
+
+      if (!filteredRows.length || !header.length) return;
+
+      let dim = dimSel.value;
+      if (!dim){
+        for (let i=0;i<header.length;i++){
+          const col = header[i];
+          if (colTypes[col] === "string"){ dim = col; break; }
+        }
+        dimSel.value = dim || "";
+      }
+      if (!dim) return;
+
+      const measure = measureSel.value;
+      const agg = aggSel.value || "count";
+
+      const map = Object.create(null);
+      filteredRows.forEach(row => {
+        const key = String(row[dim] == null ? "" : row[dim]);
+        if (!map[key]) map[key] = { sum:0, count:0 };
+        let val = 1;
+        if (measure && colTypes[measure] === "number"){
+          const n = Number(row[measure]);
+          if (isFinite(n)) val = n; else val = 0;
+        }
+        map[key].sum += val;
+        map[key].count++;
+      });
+
+const keys = Object.keys(map).sort();
+keys.forEach(k => {
+  const rec = map[k];
+  let value;
+
+  if (agg === "count") {
+    value = rec.count;
+  } else if (agg === "sum") {
+    value = rec.sum;
+  } else if (agg === "avg") {
+    value = rec.count ? (rec.sum / rec.count) : 0;
+  } else if (agg === "count_unique") {
+    if (rec.uniqSet && rec.uniqSet instanceof Set) {
+      value = rec.uniqSet.size;
+    } else if (typeof measure !== 'undefined' && measure) {
+      const uniq = new Set();
+      for (let i = 0; i < filteredRows.length; i++) {
+        const row = filteredRows[i];
+        const keyVal = String(row[dim] == null ? '' : row[dim]);
+        if (keyVal === k) {
+          uniq.add(String(row[measure] == null ? '' : row[measure]));
+        }
+      }
+      value = uniq.size;
+    } else {
+      value = rec.count;
+    }
+  } else {
+    value = rec.count;
+  }
+
+  lastGroupResult.push({ key: k, value: value, rows: rec.count });
+});
+
+
+      lastGroupResult.sort((a,b) => b.value - a.value);
+
+      const frag = document.createDocumentFragment();
+      lastGroupResult.forEach(rec => {
+        const tr = document.createElement("tr");
+        let td;
+        td = document.createElement("td"); td.textContent = rec.key;   tr.appendChild(td);
+        td = document.createElement("td"); td.textContent = rec.value; tr.appendChild(td);
+        td = document.createElement("td"); td.textContent = rec.rows;  tr.appendChild(td);
+        frag.appendChild(tr);
+      });
+      body.appendChild(frag);
+    }
+
+
+    function renderPivot(){
+      const rowField = $("faPivotRow").value;
+      const colField = $("faPivotCol").value;
+      const valField = $("faPivotVal").value;
+      const agg      = $("faPivotAgg").value || "count";
+      const head = $("faPivotHead");
+      const body = $("faPivotBody");
+      head.innerHTML = "";
+      body.innerHTML = "";
+
+      if (!rowField || !colField || !valField || !filteredRows.length) return;
+
+      const matrix = Object.create(null);
+      const rowKeys = [];
+      const colKeys = [];
+
+      filteredRows.forEach(row => {
+        const rk = String(row[rowField] == null ? "" : row[rowField]);
+        const ck = String(row[colField] == null ? "" : row[colField]);
+        if (!matrix[rk]){ matrix[rk] = Object.create(null); rowKeys.push(rk); }
+        if (!matrix[rk][ck]){
+          matrix[rk][ck] = { sum:0, count:0, distinct:new Set() };
+          if (colKeys.indexOf(ck) === -1) colKeys.push(ck);
+        }
+        const rawVal = row[valField];
+        let val = 1;
+        if (colTypes[valField] === "number"){
+          const n = Number(rawVal);
+          if (isFinite(n)) val = n; else val = 0;
+        }
+        matrix[rk][ck].sum += val;
+        matrix[rk][ck].count++;
+        if (rawVal != null && rawVal !== ""){
+          matrix[rk][ck].distinct.add(String(rawVal));
+        }
+      });
+
+      colKeys.sort();
+      rowKeys.sort();
+
+      const trHead = document.createElement("tr");
+      const th0 = document.createElement("th");
+      th0.textContent = rowField + " \\ ";
+      trHead.appendChild(th0);
+      colKeys.forEach(ck => {
+        const th = document.createElement("th");
+        th.textContent = ck;
+        trHead.appendChild(th);
+      });
+      head.appendChild(trHead);
+
+      const frag = document.createDocumentFragment();
+      rowKeys.forEach(rk => {
+        const tr = document.createElement("tr");
+        const tdLabel = document.createElement("td");
+        tdLabel.textContent = rk;
+        tr.appendChild(tdLabel);
+        colKeys.forEach(ck => {
+          const cell = matrix[rk][ck];
+          let display = "";
+          if (cell){
+            if (agg === "count") display = cell.count;
+            else if (agg === "sum") display = cell.sum;
+            else if (agg === "avg") display = cell.count ? (cell.sum / cell.count).toFixed(2) : "";
+            else if (agg === "countDistinct") display = cell.distinct ? cell.distinct.size : 0;
+          }
+          const td = document.createElement("td");
+          td.textContent = display;
+          tr.appendChild(td);
+        });
+        frag.appendChild(tr);
+      });
+      body.appendChild(frag);
+    }
+
+function getChartLimit(){
+  const sel = $("faChartLimit");
+  if (!sel) return 20;
+  const v = sel.value;
+  if (v === "all") return Infinity;
+  const n = parseInt(v, 10);
+  return (isFinite(n) && n > 0) ? n : 20;
+}
+
+function renderChart(){
+  const host = $("faChart");
+  host.innerHTML = "";
+  if (!lastGroupResult.length){
+    host.textContent = "Load data and choose a group field to see a chart.";
+    return;
+  }
+
+  const maxBars = getChartLimit();
+  const data = (maxBars === Infinity)
+    ? lastGroupResult.slice()
+    : lastGroupResult.slice(0, maxBars);
+
+  if (!data.length){
+    host.textContent = "No data to chart.";
+    return;
+  }
+
+  let maxVal = 0;
+  data.forEach(d => { if (d.value > maxVal) maxVal = d.value; });
+  if (!maxVal){
+    host.textContent = "No numeric values to chart yet.";
+    return;
+  }
+
+  const root = document.querySelector(".fa-root") || document.documentElement;
+  const cs = getComputedStyle(root);
+  const ink = (cs.getPropertyValue("--fa-ink") || cs.getPropertyValue("--text") || "#e5e7eb").trim();
+  const sub = (cs.getPropertyValue("--fa-sub") || cs.getPropertyValue("--muted") || "rgba(229,231,235,.75)").trim();
+  const grid = (cs.getPropertyValue("--fa-line") || "rgba(255,255,255,.14)").trim();
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const totalWidth = Math.max(600, data.length * 40);
+  const svg = document.createElementNS(svgNS,"svg");
+  svg.setAttribute("viewBox","0 0 " + totalWidth + " 240");
+  svg.setAttribute("width", String(totalWidth));
+
+  const leftPad = 52;
+  const bottomPad = 42;
+  const topPad = 12;
+  const width = totalWidth - leftPad - 10;
+  const height = 240 - topPad - bottomPad;
+  const barWidth = width / data.length * 0.7;
+
+  const clamp = (min, v, max) => Math.max(min, Math.min(max, v));
+  const slot = width / data.length;
+  const xFont   = clamp(7,  Math.round(slot * 0.22), 13);
+  const valFont = clamp(7,  Math.round(slot * 0.24), 13);
+  const yFont   = clamp(8,  Math.round(9 + (slot > 90 ? 2 : slot > 60 ? 1 : 0)), 12);
+
+  const approxCharW = xFont * 0.58;
+  const maxChars = clamp(4, Math.floor((slot * 0.90) / approxCharW), 18);
+
+  const axisX = leftPad;
+  const axisY = topPad + height;
+
+  const axisLine = (x1,y1,x2,y2) => {
+    const l = document.createElementNS(svgNS,"line");
+    l.setAttribute("x1", String(x1));
+    l.setAttribute("y1", String(y1));
+    l.setAttribute("x2", String(x2));
+    l.setAttribute("y2", String(y2));
+    l.setAttribute("stroke", grid);
+    l.setAttribute("stroke-width","1");
+    return l;
+  };
+
+  svg.appendChild(axisLine(axisX, topPad, axisX, axisY));
+  svg.appendChild(axisLine(axisX, axisY, leftPad + width, axisY));
+
+  const ticks = 4;
+  for(let t=0; t<=ticks; t++){
+    const frac = t / ticks;
+    const y = axisY - (frac * height);
+    const gl = axisLine(axisX, y, leftPad + width, y);
+    gl.setAttribute("stroke", "rgba(255,255,255,.08)");
+    svg.appendChild(gl);
+
+    const tickVal = maxVal * frac;
+    const tick = document.createElementNS(svgNS,"text");
+    tick.setAttribute("x", String(axisX - 6));
+    tick.setAttribute("y", String(y + 3));
+    tick.setAttribute("font-size", String(yFont));
+    tick.setAttribute("text-anchor","end");
+    tick.setAttribute("fill", ink);
+    tick.textContent = String(Math.round(tickVal));
+    svg.appendChild(tick);
+  }
+
+  data.forEach((d, idx) => {
+    const xCenter = leftPad + (width / data.length) * (idx + 0.5);
+    const barHeight = (d.value / maxVal) * height;
+    const x = xCenter - barWidth/2;
+    const y = topPad + (height - barHeight);
+
+    const rect = document.createElementNS(svgNS,"rect");
+    rect.setAttribute("x", String(x));
+    rect.setAttribute("y", String(y));
+    rect.setAttribute("width", String(barWidth));
+    rect.setAttribute("height", String(barHeight));
+    rect.setAttribute("fill","#2563eb");
+    rect.setAttribute("opacity","0.85");
+    svg.appendChild(rect);
+
+    const label = document.createElementNS(svgNS,"text");
+    label.setAttribute("x", String(xCenter));
+    label.setAttribute("y", String(240 - 20));
+    label.setAttribute("font-size", String(xFont));
+    label.setAttribute("text-anchor","middle");
+    label.setAttribute("fill", ink);
+    let txt = d.key;
+    if (txt.length > maxChars) txt = txt.slice(0, Math.max(1, maxChars - 1)) + "\u2026";
+    label.textContent = txt;
+    svg.appendChild(label);
+
+    const valText = document.createElementNS(svgNS,"text");
+    valText.setAttribute("x", String(xCenter));
+    valText.setAttribute("y", String(Math.max(topPad + 10, y - 4)));
+    valText.setAttribute("font-size", String(valFont));
+    valText.setAttribute("text-anchor","middle");
+    valText.setAttribute("fill", ink);
+    valText.textContent = String(d.value);
+    svg.appendChild(valText);
+  });
+
+  host.appendChild(svg);
+}
+
+
+    function refreshAll(){
+      if (!header.length) return;
+      detectTypes();
+      populateColumnSelects();
+      applyFilters();
+      applySort();
+      renderMeta();
+      renderPreview();
+      renderSummary();
+      renderGroup();
+      renderPivot();
+      renderChart();
+    }
+
+    function autoDetectDelimiter(){
+      if (!allLines || !allLines.length || headerLineIndex < 0) return null;
+
+      const candidates = [",",";","|","\t"];
+      const scores = { ",":0, ";":0, "|":0, "\t":0 };
+
+      const maxLines = Math.min(200, totalDataLines);
+      for (let i = 0; i < maxLines; i++){
+        const line = allLines[headerLineIndex + 1 + i] || "";
+        if (!line) continue;
+
+        let bestDelim = null;
+        let bestCount = 0;
+        for (let j = 0; j < candidates.length; j++){
+          const d = candidates[j];
+          const count = line.split(d).length - 1;
+          if (count > bestCount){
+            bestCount = count;
+            bestDelim = d;
+          }
+        }
+        if (bestDelim && bestCount > 0){
+          scores[bestDelim] = (scores[bestDelim] || 0) + 1;
+        }
+      }
+
+      let best = null;
+      let bestScore = 0;
+      for (let k = 0; k < candidates.length; k++){
+        const d = candidates[k];
+        const s = scores[d] || 0;
+        if (s > bestScore){
+          bestScore = s;
+          best = d;
+        }
+      }
+      return best;
+    }
+
+    function getDelimiterFromUI(){
+      const delimSel    = $("faDelim");
+      const delimCustom = $("faDelimCustom");
+      let val = delimSel.value;
+      if (val === "custom"){
+        return (delimCustom.value || ",");
+      }
+      if (val === "\\\\t") return "\t";
+      return val || ",";
+    }
+
+    // ─── OPTIMIZED: Streaming parse with time-budgeted chunks ────────
+    // Instead of loading the entire file then setTimeout-looping through
+    // rows, this version:
+    //   1. Reads the file in ~2 MB slices (avoids blocking on huge reads)
+    //   2. Processes rows in BATCH_SIZE chunks with a wall-clock budget
+    //   3. Yields via requestIdleCallback/rAF so Chrome stays responsive
+    //   4. Scales REFRESH_EVERY based on file size
+
+    function startStreamingParse(text, delim){
+      const normalized = String(text || "")
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n");
+      lastText = normalized;
+      currentDelimiter = delim || ",";
+      allLines = normalized.split("\n");
+      headerLineIndex = 0;
+      while (headerLineIndex < allLines.length &&
+             allLines[headerLineIndex].trim() === ""){
+        headerLineIndex++;
+      }
+      if (headerLineIndex >= allLines.length){
+        header = [];
+        rawRows = [];
+        filteredRows = [];
+        totalDataLines = 0;
+        processedLines = 0;
+        updateProgressLabel();
+        return;
+      }
+      header = splitLine(allLines[headerLineIndex]).map(h => h.trim());
+      rawRows = [];
+      filteredRows = [];
+      colTypes = {};
+      sortState = { col:null, dir:"asc" };
+      lastGroupResult = [];
+      totalDataLines = allLines.length - headerLineIndex - 1;
+      processedLines = 0;
+      streaming = true;
+
+      // ── Adaptive refresh interval: less frequent UI rebuilds for big files
+      if (totalDataLines > 500000){
+        REFRESH_EVERY = 50000;
+      } else if (totalDataLines > 100000){
+        REFRESH_EVERY = 20000;
+      } else if (totalDataLines > 20000){
+        REFRESH_EVERY = 10000;
+      } else {
+        REFRESH_EVERY = 2000;
+      }
+
+      updateProgressLabel();
+
+      // Kick off the async processing loop
+      const gen = ++parseGeneration;
+      processChunksAsync(gen, true);
+    }
+
+    // ── Async chunk processor with time-budget yielding ──────────────
+    async function processChunksAsync(gen, forceFirstRender){
+      while (streaming && gen === parseGeneration && processedLines < totalDataLines){
+        const t0 = performance.now();
+
+        // Process rows until we hit the time budget or batch limit
+        const batchEnd = Math.min(processedLines + BATCH_SIZE, totalDataLines);
+        for (let i = processedLines; i < batchEnd; i++){
+          const line = allLines[headerLineIndex + 1 + i];
+          if (!line) continue;
+          const cells = splitLine(line);
+          const obj = {};
+          for (let c = 0; c < header.length; c++){
+            obj[header[c]] = (cells[c] !== undefined ? cells[c] : "");
+          }
+          rawRows.push(obj);
+
+          // Mid-batch time check: if we've used our budget, yield now
+          if ((i & 0x3FF) === 0 && (performance.now() - t0) > TIME_BUDGET_MS){
+            processedLines = i + 1;
+            updateProgressLabel();
+            await yieldToMain();
+            break;
+          }
+        }
+        if (processedLines < batchEnd) processedLines = batchEnd;
+
+        // Auto-detect delimiter once
+        if (!delimiterAutodetected && processedLines >= INITIAL_RENDER){
+          delimiterAutodetected = true;
+          const bestDelim = autoDetectDelimiter();
+          if (bestDelim && bestDelim !== currentDelimiter){
+            const delimSel    = $("faDelim");
+            const delimCustom = $("faDelimCustom");
+            if (delimSel){
+              let matched = false;
+              for (let i = 0; i < delimSel.options.length; i++){
+                const opt = delimSel.options[i];
+                if (bestDelim === "," && opt.value === ","){ delimSel.value = ","; matched = true; break; }
+                if (bestDelim === ";" && opt.value === ";"){ delimSel.value = ";"; matched = true; break; }
+                if (bestDelim === "|" && opt.value === "|"){ delimSel.value = "|"; matched = true; break; }
+                if (bestDelim === "\t" && opt.value === "\\t"){ delimSel.value = "\\t"; matched = true; break; }
+              }
+              if (!matched){
+                delimSel.value = "custom";
+                if (delimCustom){ delimCustom.style.display = "block"; delimCustom.value = bestDelim; }
+              } else if (delimCustom && delimSel.value !== "custom"){
+                delimCustom.style.display = "none";
+              }
+            }
+            streaming = false;
+            currentDelimiter = bestDelim;
+            startStreamingParse(lastText, bestDelim);
+            return;
+          }
+        }
+
+        // Decide whether to refresh the UI
+        const haveInitial   = processedLines >= INITIAL_RENDER;
+        const initialPass   = haveInitial && (processedLines - BATCH_SIZE) < INITIAL_RENDER;
+        const intervalHit   = haveInitial && (processedLines % REFRESH_EVERY < BATCH_SIZE);
+        const finished      = processedLines >= totalDataLines;
+
+        if (initialPass || intervalHit || finished || forceFirstRender){
+          refreshAll();
+          forceFirstRender = false;
+        } else {
+          updateProgressLabel();
+        }
+
+        if (finished){
+          streaming = false;
+          return;
+        }
+
+        // ── KEY FIX: yield to browser so Chrome never shows "page unresponsive" ──
+        await yieldToMain();
+      }
+    }
+
+    // ─── OPTIMIZED: Chunked file reading ─────────────────────────────
+    // For files > 10 MB, reads in 2 MB slices via FileReader + Blob.slice
+    // so the browser doesn't lock up loading a 500 MB string at once.
+    const SLICE_SIZE = 2 * 1024 * 1024; // 2 MB per slice
+
+    async function readFileChunked(file){
+      const infoEl = $("faPreviewInfo");
+
+      // Small files (< 10 MB): use classic readAsText (fast, simple)
+      if (file.size < 10 * 1024 * 1024){
+        if (infoEl) infoEl.textContent = "Reading file…";
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (ev) => resolve(String(ev.target.result || ""));
+          reader.onerror = reject;
+          reader.readAsText(file);
+        });
+      }
+
+      // Large files: read in slices so the main thread stays alive
+      if (infoEl) infoEl.textContent = "Reading large file in chunks…";
+      const chunks = [];
+      let offset = 0;
+      const totalSize = file.size;
+
+      while (offset < totalSize){
+        const slice = file.slice(offset, offset + SLICE_SIZE);
+        const chunkText = await new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = (ev) => resolve(ev.target.result);
+          r.onerror = reject;
+          r.readAsText(slice);
+        });
+        chunks.push(chunkText);
+        offset += SLICE_SIZE;
+
+        // Update progress during read
+        const readPct = Math.round((offset / totalSize) * 100);
+        if (infoEl) infoEl.textContent = "Reading file… " + Math.min(readPct, 100) + "%";
+
+        // Yield so browser stays responsive during large file reads
+        await yieldToMain();
+      }
+
+      return chunks.join("");
+    }
+
+    // ─── Event wiring ────────────────────────────────────────────────
+    async function readAndParseFile(file){
+      if (!file) return;
+      delimiterAutodetected = false;
+      dropdownsInitialized = false;
+
+      try {
+        const text = await readFileChunked(file);
+        startStreamingParse(text, getDelimiterFromUI());
+      } catch(err) {
+        const infoEl = $("faPreviewInfo");
+        if (infoEl) infoEl.textContent = "Error reading file: " + err.message;
+      }
+    }
+
+    function bindUi(){
+      if (uiBound) return;
+      uiBound = true;
+
+      const delimSel    = $("faDelim");
+      const delimCustom = $("faDelimCustom");
+
+      if (delimSel && delimCustom){
+        delimSel.addEventListener("change", () => {
+          delimCustom.style.display = (delimSel.value === "custom" ? "block" : "none");
+          if (lastText){
+            startStreamingParse(lastText, getDelimiterFromUI());
+          }
+        });
+
+        delimCustom.addEventListener("change", () => {
+          if (delimSel.value === "custom" && lastText){
+            startStreamingParse(lastText, getDelimiterFromUI());
+          }
+        });
+      }
+
+      document.addEventListener("change", (e) => {
+        const t = e.target;
+        if (!t || t.id !== "faFile") return;
+        const file = t.files && t.files[0];
+        readAndParseFile(file);
+      });
+
+      const previewSel = $("faPreviewCount");
+      if (previewSel){
+        previewSel.addEventListener("change", () => { renderPreview(); });
+      }
+
+      const applyBtn = $("faBtnApplyFilter");
+      if (applyBtn){
+        applyBtn.addEventListener("click", () => { refreshAll(); });
+      }
+
+      const addFilterBtn = $("faAddFilter");
+      if (addFilterBtn){
+        addFilterBtn.addEventListener("click", function(){
+          const container = $("faFilterContainer");
+          if (!container) return;
+          const rows = container.querySelectorAll(".fa-filter-row");
+          const last = rows[rows.length - 1];
+          if (!last) return;
+
+          const clone = last.cloneNode(true);
+
+          const colSel   = clone.querySelector(".faFilterCol");
+          const opSel    = clone.querySelector(".faFilterOp");
+          const val1El   = clone.querySelector(".faFilterVal");
+          const val2El   = clone.querySelector(".faFilterVal2");
+          const logicSel = clone.querySelector(".faFilterLogic");
+
+          if (colSel) colSel.value = "";
+          if (opSel)  opSel.value  = "";
+          if (val1El) val1El.value = "";
+          if (val2El) val2El.value = "";
+          if (logicSel) logicSel.value = "AND";
+
+          if (val2El) val2El.style.display = "none";
+          if (opSel && val2El){
+            opSel.addEventListener("change", () => {
+              val2El.style.display = (opSel.value === "between" ? "block" : "none");
+            });
+          }
+
+          clone.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
+
+          container.appendChild(clone);
+        });
+      }
+
+      const filterContainer = $("faFilterContainer");
+      if (filterContainer){
+        filterContainer.addEventListener("change", (e) => {
+          const isOp = e.target && e.target.classList && e.target.classList.contains("faFilterOp");
+          if (!isOp) return;
+          const row = e.target.closest(".fa-filter-row");
+          if (!row) return;
+          const v2 = row.querySelector(".faFilterVal2");
+          if (!v2) return;
+          v2.style.display = (e.target.value === "between" ? "block" : "none");
+        });
+      }
+
+      const groupDim = $("faGroupDim");
+      const groupMeasure = $("faGroupMeasure");
+      const groupAgg = $("faGroupAgg");
+      if (groupDim) groupDim.addEventListener("change", () => { renderGroup(); renderChart(); });
+      if (groupMeasure) groupMeasure.addEventListener("change", () => { renderGroup(); renderChart(); });
+      if (groupAgg) groupAgg.addEventListener("change", () => { renderGroup(); renderChart(); });
+
+      const chartLimitSel = $("faChartLimit");
+      if (chartLimitSel){
+        chartLimitSel.addEventListener("change", () => { renderChart(); });
+      }
+
+      ["faPivotRow","faPivotCol","faPivotVal","faPivotAgg"].forEach(id => {
+        const el = $(id);
+        if (!el) return;
+        el.addEventListener("change", () => { renderPivot(); });
+      });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", bindUi);
+    } else {
+      bindUi();
+    }
+
+})();
+  </script>
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6997965e73d8cb1c357e66ee/1jhs26oms';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+</body>
+</html>
