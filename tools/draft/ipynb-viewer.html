@@ -26,24 +26,6 @@
 <style>
   .panel h1{display:flex; align-items:baseline; gap:.55rem; flex-wrap:wrap;}
 
-  /* ── Upload area ── */
-  .nb-upload-zone{
-    border:2px dashed rgba(255,255,255,.12);border-radius:14px;padding:36px 24px;
-    text-align:center;transition:all .25s;cursor:pointer;position:relative;
-  }
-  .nb-upload-zone:hover, .nb-upload-zone.drag-over{
-    border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.04);
-  }
-  .nb-upload-zone.drag-over{border-style:solid;}
-  .nb-upload-icon{
-    width:42px;height:42px;margin:0 auto 12px;opacity:.35;
-  }
-  .nb-upload-title{font-weight:700;font-size:.95rem;margin-bottom:4px;}
-  .nb-upload-hint{font-size:.78rem;color:rgba(255,255,255,.4);}
-  .nb-upload-input{
-    position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
-  }
-
   /* ── URL row ── */
   .nb-url-row{
     display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center;
@@ -104,7 +86,7 @@
 
   /* ── Print styles ── */
   @media print{
-    header,.rm-footer,.footer,.nb-upload-zone,.nb-url-row,.nb-toolbar,
+    header,.rm-footer,.footer,.rm-dropzone,.nb-url-row,.nb-toolbar,
     [class*="rm-lm"]{display:none!important;}
     .nb-render-wrap{border:none!important;margin:0!important;}
     .nb-render-inner{padding:0!important;}
@@ -135,12 +117,8 @@
 
     <div class="hr"></div>
 
-    <!-- Upload zone -->
-    <div class="nb-upload-zone" id="dropZone">
-      <input class="nb-upload-input" id="fileInput" type="file" accept=".ipynb,.json,application/x-ipynb+json" data-rm-dropzone="off" />
-      <div class="nb-upload-title">Drop a .ipynb file here or click to browse</div>
-      <div class="nb-upload-hint">Jupyter Notebook files (.ipynb) · Runs locally in your browser</div>
-    </div>
+    <!-- Upload zone (styled by rm-dropzone.js) -->
+    <input id="fileInput" type="file" accept=".ipynb,.json,application/x-ipynb+json" />
 
     <!-- URL input -->
     <div class="nb-url-row">
@@ -254,7 +232,6 @@
 <script>
 (function(){
   const $ = id => document.getElementById(id);
-  const dropZone   = $('dropZone');
   const fileInput   = $('fileInput');
   const urlInput    = $('urlInput');
   const fetchBtn    = $('fetchBtn');
@@ -267,19 +244,7 @@
   const printBtn    = $('printBtn');
   const clearBtn    = $('clearBtn');
 
-  /* ── Drag-and-drop ── */
-  ['dragenter','dragover'].forEach(ev=>{
-    dropZone.addEventListener(ev, e=>{e.preventDefault();e.stopPropagation();dropZone.classList.add('drag-over');});
-  });
-  ['dragleave','drop'].forEach(ev=>{
-    dropZone.addEventListener(ev, e=>{e.preventDefault();e.stopPropagation();dropZone.classList.remove('drag-over');});
-  });
-  dropZone.addEventListener('drop', e=>{
-    const f = e.dataTransfer.files && e.dataTransfer.files[0];
-    if(f) loadFile(f);
-  });
-
-  /* ── File input ── */
+  /* ── File input (change fires from both rm-dropzone drop and browse) ── */
   fileInput.addEventListener('change', e=>{
     const f = e.target.files && e.target.files[0];
     if(f) loadFile(f);
