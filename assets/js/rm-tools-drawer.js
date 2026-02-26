@@ -1,10 +1,10 @@
 /* ReportMedic — All Tools drawer (v2)
-   Injected on every tool page. Grouped by category, searchable, 47 tools.
+   Injected on every tool page. Grouped by category, searchable, 56 tools.
    Auto-marks the current page as active in the list. */
 (function(){
 
   /* ─────────────────────────────────────────
-     TOOL REGISTRY  (47 tools, matches index.html)
+     TOOL REGISTRY  (56 tools, matches index.html)
   ───────────────────────────────────────── */
   const tools = [
     // ── Compare
@@ -31,6 +31,12 @@
     { id:"data-profiler-column-stats-groupby-charts",name:"Data Profiler",                icon:"📊", cat:["Analyze"],             desc:"Profile any CSV/XLSX: column stats, groupby summaries, and distribution charts in one view." },
     { id:"phrase-occurrence-counter",                name:"Phrase Occurrence Counter",     icon:"🔢", cat:["Analyze"],             desc:"Count how often specific words or phrases appear in any text or data file." },
     { id:"query-csv-with-sql-online",                name:"SQL Query on CSV",             icon:"⌗",  cat:["Analyze"],             desc:"Run SQL SELECT queries directly on CSV/XLSX files in your browser — no database needed." },
+    { id:"python-code-runner",                       name:"Python Code Runner",           icon:"🐍", cat:["Analyze"],             desc:"Run Python code locally in your browser with a fast editor, optional stdin, and shareable links." },
+    { id:"ipynb-viewer",                             name:"Jupyter Notebook Viewer",      icon:"📓", cat:["Analyze","Export"],    desc:"Open and render Jupyter Notebook (.ipynb) files — view code cells, outputs, Markdown, and plots." },
+    { id:"disk-analyzer",                            name:"Disk Space Analyzer",          icon:"💾", cat:["Analyze"],             desc:"Analyze any local folder and see exactly what's using disk space — tree, treemap, and file type breakdown." },
+    { id:"eu-datasets",                              name:"EU Datasets",                  icon:"🇪🇺", cat:["Analyze"],             desc:"Browse 100 ready-to-use EU datasets across demographics, economy, health, housing, energy and more." },
+    { id:"india-datasets",                           name:"India Datasets",               icon:"🇮🇳", cat:["Analyze"],             desc:"Browse 100 ready-to-use India datasets across demographics, economy, health, housing, energy and more." },
+    { id:"usa-datasets",                             name:"USA Datasets",                 icon:"🇺🇸", cat:["Analyze"],             desc:"Browse 100 ready-to-use USA datasets across demographics, economy, health, housing, energy and more." },
 
     // ── Convert
     { id:"markdown-to-html",                         name:"Markdown → HTML",              icon:"⌁",  cat:["Convert"],             desc:"Convert Markdown into clean, preview-ready HTML." },
@@ -64,6 +70,7 @@
     // ── Export / Misc
     { id:"link-shortener-with-qr",                   name:"Link Shortener + QR",          icon:"🔗", cat:["Export"],              desc:"Shorten a URL (optional) and instantly generate a QR code for it." },
     { id:"qr-code-generator-and-scanner",            name:"QR Code Generator & Scanner",  icon:"▣",  cat:["Export"],              desc:"Generate QR codes for any text/URL, or scan QR codes from camera or image." },
+    { id:"upi-qr-generator",                        name:"UPI QR Generator + Scanner",   icon:"₹",  cat:["Export"],              desc:"Generate a UPI payment QR code from a UPI ID and optional amount, or decode a QR from an image." },
     { id:"strong-password-generator",                name:"Password Generator",            icon:"🔑", cat:["Export"],              desc:"Generate cryptographically strong random passwords with one click." },
     { id:"online-notepad-rich-text-editor",          name:"Online Notepad",               icon:"🗒", cat:["Export"],              desc:"Rich-text notes with find/replace, formatting, and local saving." },
 
@@ -71,6 +78,8 @@
     { id:"video-resize-reduce-size",                 name:"Video Resize / Compress",      icon:"🎬", cat:["Video"],               desc:"Reduce video file size and resize resolution — runs entirely in your browser." },
     { id:"split-video-into-clips",                   name:"Split Video into Clips",        icon:"✂",  cat:["Video"],               desc:"Split a video into multiple clips by time range or intervals, locally." },
     { id:"merge-videos-join-clips",                  name:"Merge Videos",                 icon:"⧉",  cat:["Video"],               desc:"Join multiple video clips into a single file — no upload, no server." },
+    { id:"gopro-video-compressor",                   name:"GoPro Video Compressor",       icon:"📷", cat:["Video"],               desc:"Compress, resize, rotate, trim and strip GPS metadata from GoPro Hero, Max & Fusion footage." },
+    { id:"dji-video-compressor",                     name:"DJI Video Compressor",         icon:"🛸", cat:["Video"],               desc:"Compress, resize, rotate, trim and strip GPS metadata from DJI Mavic, Mini, Air, Osmo and FPV footage." },
   ];
 
   const CAT_ORDER = ["Compare","Clean","Validate","Analyze","Convert","Export","Video"];
