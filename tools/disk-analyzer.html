@@ -184,15 +184,6 @@ th.sort-active .sort-icon{opacity:1; color:var(--brand);}
 .tab.active{background:rgba(255,255,255,.09); color:var(--text); font-weight:700;
   box-shadow:0 1px 4px rgba(0,0,0,.3);}
 
-/* ── Drop zone ── */
-.drop-zone{border:2px dashed var(--border-strong); border-radius:var(--radius);
-  padding:40px 30px; text-align:center; cursor:pointer; transition:all .15s; position:relative;}
-.drop-zone:hover,.drop-zone.drag-over{border-color:var(--brand); background:rgba(110,168,255,.04);}
-.drop-zone input[type=file]{position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;}
-.drop-zone-icon{font-size:40px; margin-bottom:10px;}
-.drop-zone-title{font-size:16px; font-weight:800; margin-bottom:6px;}
-.drop-zone-sub{font-size:13px; color:var(--muted);}
-
 /* ── Progress ── */
 .progress-bar{height:6px; background:var(--border); border-radius:3px; overflow:hidden; margin-top:8px;}
 .progress-fill{height:100%; background:linear-gradient(90deg, var(--brand), var(--brand2));
@@ -274,17 +265,8 @@ th.sort-active .sort-icon{opacity:1; color:var(--brand);}
       <span class="pill blue" id="scanStatus">Ready</span>
     </div>
 
-    <div class="drop-zone" id="dropZone">
-      <input type="file" id="folderInput" webkitdirectory multiple accept="*"/>
-      <div class="drop-zone-icon">📁</div>
-      <div class="drop-zone-title">Drop a folder here, or click to browse</div>
-      <div class="drop-zone-sub">Supports any folder size · All processing is local · No uploads ever</div>
-    </div>
-
-    <div style="margin-top:12px" class="row">
-      <button class="btn primary" id="pickBtn" type="button">📂 Choose Folder</button>
-      <span class="tiny muted">or drag &amp; drop above</span>
-    </div>
+    <!-- Upload zone (styled by rm-dropzone.js; folder-recursive drop attached in JS) -->
+    <input type="file" id="folderInput" webkitdirectory multiple accept="*"/>
   </div>
 
   <!-- ── SCANNING ── -->
@@ -767,7 +749,6 @@ function buildExtMap(flat) {
 // ═══════════════════════════════════════════════════════════════
 const folderInput = document.getElementById('folderInput');
 
-document.getElementById('pickBtn').addEventListener('click', () => folderInput.click());
 folderInput.addEventListener('change', async (e) => {
   const files = Array.from(e.target.files || []);
   if (!files.length) return;
@@ -775,21 +756,22 @@ folderInput.addEventListener('change', async (e) => {
   e.target.value = '';
 });
 
-const dz = document.getElementById('dropZone');
-dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
-dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
-dz.addEventListener('drop', async e => {
-  e.preventDefault(); dz.classList.remove('drag-over');
-  // Modern File System Access API via dataTransfer
-  const items = Array.from(e.dataTransfer.items||[]);
-  const entries = items.map(i => i.webkitGetAsEntry ? i.webkitGetAsEntry() : null).filter(Boolean);
-  if (entries.length) {
-    showScanning();
-    const files = [];
-    for (const entry of entries) await readEntry(entry, '', files);
-    await processScan(files);
-  }
-});
+/* Attach recursive folder-drop to the rm-dropzone wrapper (created by rm-dropzone.js) */
+(function attachFolderDrop() {
+  const dz = folderInput.closest('.rm-dropzone');
+  if (!dz) { requestAnimationFrame(attachFolderDrop); return; }
+  dz.addEventListener('drop', async e => {
+    e.preventDefault(); e.stopPropagation();
+    const items = Array.from(e.dataTransfer.items||[]);
+    const entries = items.map(i => i.webkitGetAsEntry ? i.webkitGetAsEntry() : null).filter(Boolean);
+    if (entries.length) {
+      showScanning();
+      const files = [];
+      for (const entry of entries) await readEntry(entry, '', files);
+      await processScan(files);
+    }
+  }, true);
+})();
 
 async function readEntry(entry, path, files) {
   if (scanCancelled) return;
