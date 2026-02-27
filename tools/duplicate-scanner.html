@@ -138,26 +138,22 @@ th.sort-active{color:var(--text) !important;}
   border-top-color:var(--brand); border-radius:50%; animation:spin .6s linear infinite; vertical-align:middle;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-/* ── Folder picker cards ── */
+/* ── Folder picker grid ── */
 .folder-pick-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
 @media(max-width:700px){.folder-pick-grid{grid-template-columns:1fr;}}
 
-.folder-pick{
-  background:var(--c-surface); border:2px dashed var(--c-border2); border-radius:var(--r2);
-  padding:24px 20px; text-align:center; cursor:pointer; transition:all .18s;
-  display:flex; flex-direction:column; align-items:center; gap:10px; position:relative;
-}
-.folder-pick:hover{border-color:var(--brand); background:rgba(110,168,255,.06);}
-.folder-pick.selected{border-color:var(--c-green); border-style:solid; background:rgba(34,197,94,.05);}
-.folder-pick .fp-icon{font-size:36px; line-height:1;}
-.folder-pick .fp-label{font-weight:800; font-size:14px;}
-.folder-pick .fp-hint{font-size:11.5px; color:var(--muted);}
-.folder-pick .fp-status{font-size:12px; font-weight:700; color:var(--c-green);}
-.folder-pick .fp-name{font-size:12px; color:var(--brand); font-weight:600;
-  max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.folder-label{font-weight:800; font-size:13px; margin-bottom:6px; display:flex; align-items:center; gap:8px;}
+.folder-label .fl-tag{font-size:10.5px; font-weight:500; padding:2px 8px; border-radius:999px;}
+.folder-selected-info{margin-top:8px; padding:8px 10px; border-radius:8px;
+  background:rgba(34,197,94,.06); border:1px solid rgba(34,197,94,.2);
+  font-size:12px; display:none; align-items:center; gap:6px;}
+.folder-selected-info .fsi-icon{color:var(--c-green); font-weight:800;}
+.folder-selected-info .fsi-name{font-weight:700; color:var(--brand);
+  max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.folder-selected-info .fsi-count{color:var(--muted); font-size:11px;}
 
 /* ── Comparison method selector ── */
-.method-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;}
+.method-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;}
 .method-opt{
   flex:1; min-width:160px; padding:12px 14px; border-radius:var(--r3);
   border:1px solid var(--border); background:var(--c-surface2);
@@ -188,7 +184,7 @@ th.sort-active{color:var(--text) !important;}
 .dup-entry.source{background:rgba(110,168,255,.04);}
 .dup-entry.target{background:rgba(239,68,68,.03);}
 
-/* ── Log table ── */
+/* ── Log table path cells ── */
 .log-path{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
   font-size:11px; word-break:break-all; white-space:normal; max-width:280px;}
 
@@ -228,14 +224,10 @@ th.sort-active{color:var(--text) !important;}
 .filter-row{display:flex; gap:10px; flex-wrap:wrap; align-items:end;}
 .filter-group{display:flex; flex-direction:column; gap:5px;}
 
-/* ── Checkbox in table ── */
-.dup-cb{width:16px; height:16px; accent-color:var(--brand); cursor:pointer;}
-
-/* ── API warning ── */
-.api-warning{background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.22);
-  border-radius:var(--r3); padding:12px 14px; font-size:12px; color:var(--c-yellow);
-  margin-top:10px; display:none;}
-.api-warning a{color:var(--brand); text-decoration:underline;}
+/* ── Learn More dialog override — scrollable body, no page scroll lock ── */
+.rm-lm-backdrop{overflow-y:auto;}
+.rm-lm-dialog{max-height:85vh; display:flex; flex-direction:column;}
+.rm-lm-body{overflow-y:auto; flex:1;}
 </style>
 </head>
 
@@ -272,21 +264,25 @@ th.sort-active{color:var(--text) !important;}
     </div>
 
     <div class="folder-pick-grid">
-      <!-- Source Folder -->
-      <div class="folder-pick" id="pickSource" onclick="pickFolder('source')">
-        <div class="fp-icon">📁</div>
-        <div class="fp-label">Source Folder (X)</div>
-        <div class="fp-hint">The original / reference folder</div>
-        <div class="fp-status" id="sourceStatus"></div>
-        <div class="fp-name" id="sourceName"></div>
+      <!-- Source Folder — exact same pattern as disk-analyzer folderInput -->
+      <div>
+        <div class="folder-label">📁 Source Folder (X) <span class="fl-tag pill blue">Original</span></div>
+        <input type="file" id="sourceInput" webkitdirectory multiple accept="*"/>
+        <div class="folder-selected-info" id="sourceInfo">
+          <span class="fsi-icon">✓</span>
+          <span class="fsi-name" id="sourceName"></span>
+          <span class="fsi-count" id="sourceCount"></span>
+        </div>
       </div>
       <!-- Target Folder -->
-      <div class="folder-pick" id="pickTarget" onclick="pickFolder('target')">
-        <div class="fp-icon">📂</div>
-        <div class="fp-label">Target Folder (Y)</div>
-        <div class="fp-hint">Duplicates here will be detected &amp; moved</div>
-        <div class="fp-status" id="targetStatus"></div>
-        <div class="fp-name" id="targetName"></div>
+      <div>
+        <div class="folder-label">📂 Target Folder (Y) <span class="fl-tag pill orange">Check for duplicates</span></div>
+        <input type="file" id="targetInput" webkitdirectory multiple accept="*"/>
+        <div class="folder-selected-info" id="targetInfo">
+          <span class="fsi-icon">✓</span>
+          <span class="fsi-name" id="targetName"></span>
+          <span class="fsi-count" id="targetCount"></span>
+        </div>
       </div>
     </div>
 
@@ -318,10 +314,6 @@ th.sort-active{color:var(--text) !important;}
       </button>
       <span class="tiny muted" id="readyHint">Select both folders to begin</span>
     </div>
-
-    <div class="api-warning" id="apiWarning">
-      ⚠️ Your browser does not support the File System Access API. Folder picking and duplicate moving won't work. Please use <a href="https://www.google.com/chrome/" target="_blank">Chrome</a> or <a href="https://www.microsoft.com/edge" target="_blank">Edge</a> for full functionality.
-    </div>
   </div>
 
   <!-- ── SCANNING ── -->
@@ -350,22 +342,19 @@ th.sort-active{color:var(--text) !important;}
       <!-- SIDE PANEL -->
       <div class="side-panel sticky-side">
 
-        <!-- Summary -->
         <div class="card">
           <div style="font-weight:800;font-size:13px;margin-bottom:10px">Scan Summary</div>
           <div id="scanSummary"></div>
         </div>
 
-        <!-- Extension Breakdown of dups -->
         <div class="card">
           <div style="font-weight:800;font-size:13px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
             Duplicate Types
-            <span class="count-badge" id="extCount" style="font-size:10px;background:rgba(255,255,255,.06);border-radius:999px;padding:0 6px;color:var(--muted);">0</span>
+            <span style="font-size:10px;background:rgba(255,255,255,.06);border-radius:999px;padding:0 6px;color:var(--muted);" id="extCount">0</span>
           </div>
           <div id="extBreakdown" style="max-height:320px;overflow-y:auto"></div>
         </div>
 
-        <!-- Actions -->
         <div class="card">
           <div style="font-weight:800;font-size:13px;margin-bottom:10px">Actions</div>
           <div style="display:flex;flex-direction:column;gap:8px">
@@ -380,7 +369,6 @@ th.sort-active{color:var(--text) !important;}
       <!-- MAIN PANEL -->
       <div class="main-panel">
 
-        <!-- TOOLBAR -->
         <div class="card inset" style="padding:14px">
           <div class="row" style="justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
             <div class="tab-bar" id="viewTabs">
@@ -393,7 +381,6 @@ th.sort-active{color:var(--text) !important;}
             </div>
           </div>
 
-          <!-- FILTER -->
           <div class="filter-row">
             <div class="filter-group" style="flex:1;min-width:200px">
               <label class="lbl">🔍 Search by filename or path</label>
@@ -417,27 +404,21 @@ th.sort-active{color:var(--text) !important;}
               </select>
             </div>
           </div>
-          <div style="margin-top:8px">
-            <span class="tiny muted" id="rowCountBadge"></span>
-          </div>
+          <div style="margin-top:8px"><span class="tiny muted" id="rowCountBadge"></span></div>
         </div>
 
         <!-- DUPLICATES VIEW -->
-        <div id="viewDuplicates">
-          <div id="dupGroupsContainer"></div>
-        </div>
+        <div id="viewDuplicates"><div id="dupGroupsContainer"></div></div>
 
         <!-- LOG VIEW -->
         <div id="viewLog" style="display:none">
           <div class="table-wrap table-scroll">
             <table class="table" id="logTable">
-              <thead>
-                <tr>
-                  <th>Original in Source (X)</th>
-                  <th>Found in Target (Y)</th>
-                  <th>New Path in Duplicate Folder</th>
-                </tr>
-              </thead>
+              <thead><tr>
+                <th>Original in Source (X)</th>
+                <th>Found in Target (Y)</th>
+                <th>New Path in Duplicate Folder</th>
+              </tr></thead>
               <tbody id="logBody"></tbody>
             </table>
           </div>
@@ -448,7 +429,7 @@ th.sort-active{color:var(--text) !important;}
           <div class="mc-title">⚠️ Confirm Move Operation</div>
           <div class="mc-desc" id="moveDesc"></div>
           <div style="margin-top:12px;display:flex;gap:10px">
-            <button class="btn sm success" onclick="executeMoveOperation()">✅ Yes, Move Duplicates</button>
+            <button class="btn sm success" id="moveGoBtn" onclick="executeMoveOperation()">✅ Yes, Move Duplicates</button>
             <button class="btn sm" onclick="document.getElementById('moveConfirm').style.display='none'">Cancel</button>
           </div>
           <div class="progress-bar" style="margin-top:10px;display:none" id="moveProgressWrap">
@@ -512,12 +493,12 @@ th.sort-active{color:var(--text) !important;}
       <ul>
         <li>Source: <code>X/photos/3.txt</code> matches Target: <code>Y/backup/f1/1.txt</code></li>
         <li>After move: <code>Y/_duplicates/backup/f1/1.txt</code></li>
-        <li>Log row: <code>X/photos/3.txt</code> | <code>Y/backup/f1/1.txt</code> | <code>Y/_duplicates/backup/f1/1.txt</code></li>
+        <li>Log row: <code>X/photos/3.txt</code> → <code>Y/backup/f1/1.txt</code> → <code>Y/_duplicates/backup/f1/1.txt</code></li>
       </ul>
       <h3>Privacy</h3>
       <ul>
         <li>100% local — no data is uploaded or sent anywhere, ever</li>
-        <li>Uses the File System Access API for direct folder operations</li>
+        <li>Works offline after the page loads</li>
         <li>File contents are only read for hashing — never stored or transmitted</li>
       </ul>
     </div>
@@ -525,14 +506,13 @@ th.sort-active{color:var(--text) !important;}
 </div>
 
 
+<!-- Learn More modal wiring — NO rmNoScroll so background stays scrollable -->
 <script>
-(function rmLmWireUp(){
-  const setOpen = (id, isOpen) => {
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
-    document.documentElement.classList.toggle('rmNoScroll', isOpen);
-    document.body.classList.toggle('rmNoScroll', isOpen);
+(function(){
+  const setOpen=(id,open)=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.setAttribute('aria-hidden',open?'false':'true');
   };
   document.querySelectorAll('[data-rm-lm-open]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();setOpen(a.getAttribute('data-rm-lm-open'),true);}));
   document.querySelectorAll('[data-rm-lm-close]').forEach(b=>b.addEventListener('click',()=>setOpen(b.getAttribute('data-rm-lm-close'),false)));
@@ -547,24 +527,18 @@ th.sort-active{color:var(--text) !important;}
 // ═══════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════
-let sourceDirHandle = null;
-let targetDirHandle = null;
-let sourceFiles = [];   // {path, name, size, lastModified, handle, hash}
+let sourceFilesRaw = null;   // raw Array<File> from input
+let targetFilesRaw = null;
+let sourceFiles = [];        // parsed [{name, relPath, size, ext, file, hash}]
 let targetFiles = [];
-let duplicates  = [];   // {sourceFile, targetFile, hash, size}
-let moveLog     = [];   // {sourcePath, targetPath, newPath}
+let duplicates  = [];        // [{sourceFile, targetFile, hash, size}]
+let moveLog     = [];
 let compMethod  = 'hash';
 let scanCancelled = false;
 let currentView = 'duplicates';
 let moveComplete = false;
-
-// ═══════════════════════════════════════════════════════════════
-// API CHECK
-// ═══════════════════════════════════════════════════════════════
-if (!window.showDirectoryPicker) {
-  document.getElementById('apiWarning').style.display = 'block';
-  document.getElementById('startBtn').title = 'File System Access API not available';
-}
+let sourceFolderName = '';
+let targetFolderName = '';
 
 // ═══════════════════════════════════════════════════════════════
 // HELPERS
@@ -580,405 +554,278 @@ function fmtSize(b){
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function getExt(name){const i=name.lastIndexOf('.');return i>0?name.slice(i+1).toLowerCase():'';}
 
-async function hashFile(fileHandle){
+async function hashFile(file){
   try{
-    const file = await fileHandle.getFile();
     const buf = await file.arrayBuffer();
     const hashBuf = await crypto.subtle.digest('SHA-256', buf);
     return Array.from(new Uint8Array(hashBuf)).map(b=>b.toString(16).padStart(2,'0')).join('');
   }catch(e){return 'err_'+Math.random().toString(36).slice(2);}
 }
 
-// ═══════════════════════════════════════════════════════════════
-// FOLDER PICKER
-// ═══════════════════════════════════════════════════════════════
-async function pickFolder(which){
-  if(!window.showDirectoryPicker){
-    alert('Your browser does not support the File System Access API.\nPlease use Chrome or Edge.');
-    return;
+function parseFileList(files){
+  const arr=[];
+  for(const f of files){
+    const relPath = f.webkitRelativePath || f.name;
+    const parts = relPath.split('/');
+    const pathInFolder = parts.slice(1).join('/');  // strip root folder name
+    if(!pathInFolder) continue;  // skip if empty (shouldn't happen)
+    arr.push({name:f.name, relPath:pathInFolder, size:f.size,
+      lastModified:f.lastModified, ext:getExt(f.name), file:f, hash:null});
   }
-  try{
-    const handle = await window.showDirectoryPicker({mode:'readwrite'});
-    if(which === 'source'){
-      sourceDirHandle = handle;
-      document.getElementById('pickSource').classList.add('selected');
-      document.getElementById('sourceStatus').textContent = '✓ Selected';
-      document.getElementById('sourceName').textContent = handle.name;
-    } else {
-      targetDirHandle = handle;
-      document.getElementById('pickTarget').classList.add('selected');
-      document.getElementById('targetStatus').textContent = '✓ Selected';
-      document.getElementById('targetName').textContent = handle.name;
-    }
-    updateStartBtn();
-  }catch(e){
-    if(e.name !== 'AbortError') console.error(e);
-  }
+  return arr;
 }
 
+// ═══════════════════════════════════════════════════════════════
+// FOLDER INPUT HANDLERS
+// ═══════════════════════════════════════════════════════════════
+document.getElementById('sourceInput').addEventListener('change', function(e){
+  const files = Array.from(e.target.files||[]);
+  if(!files.length) return;
+  sourceFilesRaw = files;
+  sourceFolderName = files[0].webkitRelativePath.split('/')[0] || 'Source';
+  document.getElementById('sourceInfo').style.display = 'flex';
+  document.getElementById('sourceName').textContent = sourceFolderName;
+  document.getElementById('sourceCount').textContent = '(' + files.length.toLocaleString() + ' files)';
+  updateStartBtn();
+});
+
+document.getElementById('targetInput').addEventListener('change', function(e){
+  const files = Array.from(e.target.files||[]);
+  if(!files.length) return;
+  targetFilesRaw = files;
+  targetFolderName = files[0].webkitRelativePath.split('/')[0] || 'Target';
+  document.getElementById('targetInfo').style.display = 'flex';
+  document.getElementById('targetName').textContent = targetFolderName;
+  document.getElementById('targetCount').textContent = '(' + files.length.toLocaleString() + ' files)';
+  updateStartBtn();
+});
+
 function updateStartBtn(){
-  const ready = sourceDirHandle && targetDirHandle;
+  const ready = !!(sourceFilesRaw && targetFilesRaw);
   document.getElementById('startBtn').disabled = !ready;
-  document.getElementById('readyHint').textContent = ready
-    ? 'Ready to scan' : 'Select both folders to begin';
+  document.getElementById('readyHint').textContent = ready ? 'Ready — click to scan' : 'Select both folders to begin';
   if(ready) document.getElementById('scanStatus').textContent = 'Ready';
 }
 
-function setMethod(m, el){
-  compMethod = m;
+function setMethod(m,el){
+  compMethod=m;
   document.querySelectorAll('.method-opt').forEach(e=>e.classList.remove('active'));
   el.classList.add('active');
-}
-
-// ═══════════════════════════════════════════════════════════════
-// RECURSIVE FILE READER
-// ═══════════════════════════════════════════════════════════════
-async function readDir(dirHandle, path, results, progressCb){
-  for await (const [name, handle] of dirHandle.entries()){
-    if(scanCancelled) return;
-    if(handle.kind === 'file'){
-      // Skip the _duplicates folder if it already exists
-      const file = await handle.getFile();
-      results.push({
-        name,
-        path: path ? path + '/' + name : name,
-        size: file.size,
-        lastModified: file.lastModified,
-        handle,
-        ext: getExt(name),
-        hash: null
-      });
-      if(progressCb) progressCb(results.length, name);
-    } else if(handle.kind === 'directory'){
-      // Skip _duplicates folder in target
-      if(name === '_duplicates') continue;
-      await readDir(handle, path ? path + '/' + name : name, results, progressCb);
-    }
-  }
 }
 
 // ═══════════════════════════════════════════════════════════════
 // SCAN
 // ═══════════════════════════════════════════════════════════════
 async function startScan(){
-  if(!sourceDirHandle || !targetDirHandle) return;
-  scanCancelled = false;
-  moveComplete = false;
-  duplicates = [];
-  moveLog = [];
-  sourceFiles = [];
-  targetFiles = [];
+  if(!sourceFilesRaw || !targetFilesRaw) return;
+  scanCancelled=false; moveComplete=false; duplicates=[]; moveLog=[];
 
-  // Show scanning UI
-  document.getElementById('pickCard').style.display = 'none';
-  document.getElementById('scanSection').style.display = '';
-  document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('pickCard').style.display='none';
+  document.getElementById('scanSection').style.display='';
+  document.getElementById('resultsSection').style.display='none';
 
-  const pill = document.getElementById('scanProgressPill');
-  const detail = document.getElementById('scanDetail');
-  const fill = document.getElementById('progressFill');
+  const pill=document.getElementById('scanProgressPill');
+  const detail=document.getElementById('scanDetail');
+  const fill=document.getElementById('progressFill');
+  fill.style.width='0%'; fill.style.background='';
 
-  // Phase 1: Read source folder
-  detail.textContent = 'Reading source folder…';
-  pill.textContent = '0 files';
-  fill.style.width = '5%';
-  await readDir(sourceDirHandle, '', sourceFiles, (n, name)=>{
-    pill.textContent = n + ' files';
-    if(n%50===0) detail.textContent = 'Source: ' + name;
-  });
-  if(scanCancelled) return resetUI();
-  fill.style.width = '20%';
+  // Phase 1 — parse source
+  detail.textContent='Parsing source folder…';
+  pill.textContent=sourceFilesRaw.length.toLocaleString()+' files';
+  await new Promise(r=>setTimeout(r,20));
+  sourceFiles=parseFileList(sourceFilesRaw);
+  fill.style.width='10%';
+  if(scanCancelled)return resetUI();
 
-  // Phase 2: Read target folder
-  detail.textContent = 'Reading target folder…';
-  await readDir(targetDirHandle, '', targetFiles, (n, name)=>{
-    pill.textContent = sourceFiles.length + ' + ' + n + ' files';
-    if(n%50===0) detail.textContent = 'Target: ' + name;
-  });
-  if(scanCancelled) return resetUI();
-  fill.style.width = '35%';
+  // Phase 2 — parse target (skip _duplicates)
+  detail.textContent='Parsing target folder…';
+  pill.textContent=(sourceFiles.length+targetFilesRaw.length).toLocaleString()+' total files';
+  await new Promise(r=>setTimeout(r,20));
+  targetFiles=parseFileList(targetFilesRaw).filter(f=>!f.relPath.startsWith('_duplicates/'));
+  fill.style.width='20%';
+  if(scanCancelled)return resetUI();
 
-  // Phase 3: Compare
-  detail.textContent = 'Comparing files (' + compMethod + ')…';
-  pill.textContent = 'Comparing…';
+  // Phase 3 — compare
+  detail.textContent='Comparing ('+compMethod+')…';
+  pill.textContent='Comparing…';
+  await new Promise(r=>setTimeout(r,20));
 
-  if(compMethod === 'hash'){
-    await compareByHash(fill, detail, pill);
-  } else if(compMethod === 'name-size'){
-    await compareByNameSize(fill, detail, pill);
-  } else {
-    await compareByName(fill, detail, pill);
+  try{
+    if(compMethod==='hash') await compareByHash(fill,detail,pill);
+    else if(compMethod==='name-size') await compareByNameSize(fill,detail,pill);
+    else await compareByName(fill,detail,pill);
+  }catch(err){
+    console.error('Scan error:',err);
+    detail.textContent='Error: '+err.message;
+    fill.style.width='100%'; fill.style.background='#ef4444';
+    await new Promise(r=>setTimeout(r,2000));
+    resetUI(); return;
   }
+  if(scanCancelled)return resetUI();
 
-  if(scanCancelled) return resetUI();
-
-  fill.style.width = '100%';
-  detail.textContent = 'Done! Found ' + duplicates.length + ' duplicate(s).';
-  await new Promise(r=>setTimeout(r,400));
-
-  // Show results
+  fill.style.width='100%';
+  detail.textContent='Done! Found '+duplicates.length+' duplicate(s).';
+  await new Promise(r=>setTimeout(r,350));
   showResults();
 }
 
-function cancelScan(){
-  scanCancelled = true;
-  resetUI();
-}
-
+function cancelScan(){scanCancelled=true;resetUI();}
 function resetUI(){
-  document.getElementById('scanSection').style.display = 'none';
-  document.getElementById('pickCard').style.display = '';
+  document.getElementById('scanSection').style.display='none';
+  document.getElementById('pickCard').style.display='';
+  document.getElementById('progressFill').style.width='0%';
+  document.getElementById('progressFill').style.background='';
 }
-
 function resetScan(){
-  sourceDirHandle = null;
-  targetDirHandle = null;
-  sourceFiles = [];
-  targetFiles = [];
-  duplicates = [];
-  moveLog = [];
-  moveComplete = false;
-  document.getElementById('resultsSection').style.display = 'none';
-  document.getElementById('scanSection').style.display = 'none';
-  document.getElementById('pickCard').style.display = '';
-  document.getElementById('pickSource').classList.remove('selected');
-  document.getElementById('pickTarget').classList.remove('selected');
-  document.getElementById('sourceStatus').textContent = '';
-  document.getElementById('sourceName').textContent = '';
-  document.getElementById('targetStatus').textContent = '';
-  document.getElementById('targetName').textContent = '';
-  document.getElementById('startBtn').disabled = true;
-  document.getElementById('readyHint').textContent = 'Select both folders to begin';
-  document.getElementById('scanStatus').textContent = 'Ready';
-  document.getElementById('moveConfirm').style.display = 'none';
+  sourceFilesRaw=null;targetFilesRaw=null;sourceFiles=[];targetFiles=[];
+  duplicates=[];moveLog=[];moveComplete=false;sourceFolderName='';targetFolderName='';
+  document.getElementById('resultsSection').style.display='none';
+  document.getElementById('scanSection').style.display='none';
+  document.getElementById('pickCard').style.display='';
+  document.getElementById('sourceInfo').style.display='none';
+  document.getElementById('targetInfo').style.display='none';
+  document.getElementById('sourceInput').value='';
+  document.getElementById('targetInput').value='';
+  document.getElementById('startBtn').disabled=true;
+  document.getElementById('readyHint').textContent='Select both folders to begin';
+  document.getElementById('scanStatus').textContent='Ready';
+  document.getElementById('moveConfirm').style.display='none';
 }
 
 // ═══════════════════════════════════════════════════════════════
 // COMPARISON ENGINES
 // ═══════════════════════════════════════════════════════════════
+async function compareByHash(fill,detail,pill){
+  const srcSizeMap=new Map();
+  for(const f of sourceFiles){if(!srcSizeMap.has(f.size))srcSizeMap.set(f.size,[]);srcSizeMap.get(f.size).push(f);}
+  const tgtCand=targetFiles.filter(f=>srcSizeMap.has(f.size));
+  const candSizes=new Set(tgtCand.map(f=>f.size));
+  const srcCand=sourceFiles.filter(f=>candSizes.has(f.size));
+  if(!tgtCand.length){fill.style.width='95%';return;}
+  const total=srcCand.length+tgtCand.length; let hashed=0;
 
-// -- HASH COMPARISON (SHA-256) --
-async function compareByHash(fill, detail, pill){
-  // Step 1: Build size map from source for quick pre-filter
-  const sourceSizeMap = new Map();
-  for(const f of sourceFiles){
-    const key = f.size;
-    if(!sourceSizeMap.has(key)) sourceSizeMap.set(key, []);
-    sourceSizeMap.get(key).push(f);
-  }
-
-  // Step 2: Find target files whose size matches any source file
-  const targetCandidates = targetFiles.filter(f => sourceSizeMap.has(f.size));
-  const sourceCandidateSizes = new Set(targetCandidates.map(f=>f.size));
-  const sourceCandidates = sourceFiles.filter(f => sourceCandidateSizes.has(f.size));
-
-  if(!targetCandidates.length){
-    fill.style.width = '95%';
-    return;
-  }
-
-  // Step 3: Hash source candidates
-  detail.textContent = 'Hashing source candidates (' + sourceCandidates.length + ' files)…';
-  let hashed = 0;
-  const totalToHash = sourceCandidates.length + targetCandidates.length;
-  for(const f of sourceCandidates){
-    if(scanCancelled) return;
-    f.hash = await hashFile(f.handle);
-    hashed++;
-    if(hashed%20===0){
-      fill.style.width = (35 + (hashed/totalToHash)*55) + '%';
-      pill.textContent = hashed + '/' + totalToHash + ' hashed';
-      detail.textContent = 'Hashing: ' + f.name;
+  detail.textContent='Hashing source files ('+srcCand.length+')…';
+  for(const f of srcCand){
+    if(scanCancelled)return;
+    f.hash=await hashFile(f.file); hashed++;
+    if(hashed%20===0||hashed===srcCand.length){
+      fill.style.width=(20+(hashed/total)*70)+'%';
+      pill.textContent=hashed+'/'+total+' hashed';
+      detail.textContent='Hashing: '+f.name;
       await new Promise(r=>setTimeout(r,0));
     }
   }
+  const srcHashMap=new Map();
+  for(const f of srcCand){if(!srcHashMap.has(f.hash))srcHashMap.set(f.hash,[]);srcHashMap.get(f.hash).push(f);}
 
-  // Step 4: Build source hash map
-  const sourceHashMap = new Map();
-  for(const f of sourceCandidates){
-    if(!sourceHashMap.has(f.hash)) sourceHashMap.set(f.hash, []);
-    sourceHashMap.get(f.hash).push(f);
-  }
-
-  // Step 5: Hash target candidates and find matches
-  detail.textContent = 'Hashing target candidates (' + targetCandidates.length + ' files)…';
-  for(const f of targetCandidates){
-    if(scanCancelled) return;
-    f.hash = await hashFile(f.handle);
-    hashed++;
-    if(sourceHashMap.has(f.hash)){
-      const srcMatch = sourceHashMap.get(f.hash)[0];
-      duplicates.push({sourceFile: srcMatch, targetFile: f, hash: f.hash, size: f.size});
+  detail.textContent='Hashing target files ('+tgtCand.length+')…';
+  for(const f of tgtCand){
+    if(scanCancelled)return;
+    f.hash=await hashFile(f.file); hashed++;
+    if(srcHashMap.has(f.hash)){
+      duplicates.push({sourceFile:srcHashMap.get(f.hash)[0],targetFile:f,hash:f.hash,size:f.size});
     }
-    if(hashed%20===0){
-      fill.style.width = (35 + (hashed/totalToHash)*55) + '%';
-      pill.textContent = hashed + '/' + totalToHash + ' hashed';
-      detail.textContent = 'Hashing: ' + f.name;
+    if(hashed%20===0||hashed===total){
+      fill.style.width=(20+(hashed/total)*70)+'%';
+      pill.textContent=hashed+'/'+total+' hashed';
+      detail.textContent='Hashing: '+f.name;
       await new Promise(r=>setTimeout(r,0));
     }
   }
 }
 
-// -- NAME + SIZE COMPARISON --
-async function compareByNameSize(fill, detail, pill){
-  const sourceMap = new Map();
-  for(const f of sourceFiles){
-    const key = f.name + '|' + f.size;
-    if(!sourceMap.has(key)) sourceMap.set(key, []);
-    sourceMap.get(key).push(f);
-  }
-  let checked = 0;
+async function compareByNameSize(fill,detail,pill){
+  const map=new Map();
+  for(const f of sourceFiles){const k=f.name+'|'+f.size;if(!map.has(k))map.set(k,[]);map.get(k).push(f);}
+  let c=0;
   for(const f of targetFiles){
-    if(scanCancelled) return;
-    const key = f.name + '|' + f.size;
-    if(sourceMap.has(key)){
-      const srcMatch = sourceMap.get(key)[0];
-      duplicates.push({sourceFile: srcMatch, targetFile: f, hash: key, size: f.size});
-    }
-    checked++;
-    if(checked%500===0){
-      fill.style.width = (35 + (checked/targetFiles.length)*60) + '%';
-      pill.textContent = checked + '/' + targetFiles.length + ' checked';
-      await new Promise(r=>setTimeout(r,0));
-    }
+    if(scanCancelled)return;
+    const k=f.name+'|'+f.size;
+    if(map.has(k))duplicates.push({sourceFile:map.get(k)[0],targetFile:f,hash:k,size:f.size});
+    c++;if(c%500===0){fill.style.width=(20+(c/targetFiles.length)*70)+'%';pill.textContent=c+'/'+targetFiles.length;await new Promise(r=>setTimeout(r,0));}
   }
 }
 
-// -- NAME ONLY COMPARISON --
-async function compareByName(fill, detail, pill){
-  const sourceMap = new Map();
-  for(const f of sourceFiles){
-    if(!sourceMap.has(f.name)) sourceMap.set(f.name, []);
-    sourceMap.get(f.name).push(f);
-  }
-  let checked = 0;
+async function compareByName(fill,detail,pill){
+  const map=new Map();
+  for(const f of sourceFiles){if(!map.has(f.name))map.set(f.name,[]);map.get(f.name).push(f);}
+  let c=0;
   for(const f of targetFiles){
-    if(scanCancelled) return;
-    if(sourceMap.has(f.name)){
-      const srcMatch = sourceMap.get(f.name)[0];
-      duplicates.push({sourceFile: srcMatch, targetFile: f, hash: f.name, size: f.size});
-    }
-    checked++;
-    if(checked%500===0){
-      fill.style.width = (35 + (checked/targetFiles.length)*60) + '%';
-      pill.textContent = checked + '/' + targetFiles.length + ' checked';
-      await new Promise(r=>setTimeout(r,0));
-    }
+    if(scanCancelled)return;
+    if(map.has(f.name))duplicates.push({sourceFile:map.get(f.name)[0],targetFile:f,hash:f.name,size:f.size});
+    c++;if(c%500===0){fill.style.width=(20+(c/targetFiles.length)*70)+'%';pill.textContent=c+'/'+targetFiles.length;await new Promise(r=>setTimeout(r,0));}
   }
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SHOW RESULTS
+// RESULTS
 // ═══════════════════════════════════════════════════════════════
 function showResults(){
-  document.getElementById('scanSection').style.display = 'none';
-  document.getElementById('pickCard').style.display = 'none';
-  document.getElementById('resultsSection').style.display = '';
-  document.getElementById('scanStatus').textContent = 'Done';
-
-  // Build move log entries
+  document.getElementById('scanSection').style.display='none';
+  document.getElementById('pickCard').style.display='none';
+  document.getElementById('resultsSection').style.display='';
+  document.getElementById('scanStatus').textContent='Done';
   buildMoveLog();
-
-  // Enable buttons
-  document.getElementById('exportLogBtn').disabled = duplicates.length === 0;
-  document.getElementById('moveBtn').disabled = duplicates.length === 0;
-
-  renderMetricCards();
-  renderSummary();
-  renderExtBreakdown();
-  populateExtFilter();
-  renderDuplicates();
-  renderLogTable();
+  document.getElementById('exportLogBtn').disabled=!duplicates.length;
+  document.getElementById('moveBtn').disabled=!duplicates.length;
+  renderMetricCards();renderSummary();renderExtBreakdown();populateExtFilter();renderDuplicates();renderLogTable();
 }
 
 function buildMoveLog(){
-  const tName = targetDirHandle.name;
-  moveLog = duplicates.map(d => ({
-    sourcePath: sourceDirHandle.name + '/' + d.sourceFile.path,
-    targetPath: tName + '/' + d.targetFile.path,
-    newPath: tName + '/_duplicates/' + d.targetFile.path
+  moveLog=duplicates.map(d=>({
+    sourcePath:sourceFolderName+'/'+d.sourceFile.relPath,
+    targetPath:targetFolderName+'/'+d.targetFile.relPath,
+    newPath:targetFolderName+'/_duplicates/'+d.targetFile.relPath
   }));
 }
 
-// ═══════════════════════════════════════════════════════════════
-// METRIC CARDS
-// ═══════════════════════════════════════════════════════════════
 function renderMetricCards(){
-  const totalDupSize = duplicates.reduce((s,d) => s + d.size, 0);
-  const dupPct = targetFiles.length > 0 ? ((duplicates.length / targetFiles.length)*100) : 0;
-
-  // Group by hash to count unique content matches
-  const uniqueHashes = new Set(duplicates.map(d=>d.hash));
-
-  const cards = [
-    {label:'Duplicates Found', value: duplicates.length.toLocaleString(), sub: 'files in target folder', color:'#ef4444', pct: Math.min(100,dupPct)},
-    {label:'Recoverable Space', value: fmtSize(totalDupSize), sub: 'total duplicate size', color:'#f59e0b', pct: Math.min(100, targetFiles.length?totalDupSize/targetFiles.reduce((s,f)=>s+f.size,0)*100:0)},
-    {label:'Source Files', value: sourceFiles.length.toLocaleString(), sub: sourceDirHandle.name, color:'#6ea8ff', pct:100},
-    {label:'Target Files', value: targetFiles.length.toLocaleString(), sub: targetDirHandle.name, color:'#22c55e', pct:100},
+  const totalDupSize=duplicates.reduce((s,d)=>s+d.size,0);
+  const dupPct=targetFiles.length>0?duplicates.length/targetFiles.length*100:0;
+  const totalTgtSize=targetFiles.reduce((s,f)=>s+f.size,0);
+  const cards=[
+    {label:'Duplicates Found',value:duplicates.length.toLocaleString(),sub:'files in target folder',color:'#ef4444',pct:Math.min(100,dupPct)},
+    {label:'Recoverable Space',value:fmtSize(totalDupSize),sub:'total duplicate size',color:'#f59e0b',pct:Math.min(100,totalTgtSize?totalDupSize/totalTgtSize*100:0)},
+    {label:'Source Files',value:sourceFiles.length.toLocaleString(),sub:sourceFolderName,color:'#6ea8ff',pct:100},
+    {label:'Target Files',value:targetFiles.length.toLocaleString(),sub:targetFolderName,color:'#22c55e',pct:100},
   ];
-  document.getElementById('metricCards').innerHTML = cards.map(c=>`
+  document.getElementById('metricCards').innerHTML=cards.map(c=>`
     <div class="metric-card">
       <div class="mc-label">${c.label}</div>
       <div class="mc-value" style="color:${c.color}">${c.value}</div>
-      <div class="mc-sub">${c.sub}</div>
+      <div class="mc-sub">${esc(c.sub)}</div>
       <div class="mc-bar"><div class="mc-bar-fill" style="width:${c.pct.toFixed(1)}%;background:${c.color}"></div></div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
-// ═══════════════════════════════════════════════════════════════
-// SUMMARY
-// ═══════════════════════════════════════════════════════════════
 function renderSummary(){
-  const totalSrcSize = sourceFiles.reduce((s,f)=>s+f.size,0);
-  const totalTgtSize = targetFiles.reduce((s,f)=>s+f.size,0);
-  const totalDupSize = duplicates.reduce((s,d)=>s+d.size,0);
-
-  const kvs = [
-    ['Source Folder', sourceDirHandle.name],
-    ['Source Files', sourceFiles.length.toLocaleString()],
-    ['Source Size', fmtSize(totalSrcSize)],
-    ['Target Folder', targetDirHandle.name],
-    ['Target Files', targetFiles.length.toLocaleString()],
-    ['Target Size', fmtSize(totalTgtSize)],
-    ['Method', compMethod === 'hash' ? 'SHA-256 Hash' : compMethod === 'name-size' ? 'Name + Size' : 'Name Only'],
-    ['Duplicates', duplicates.length.toLocaleString()],
-    ['Duplicate Size', fmtSize(totalDupSize)],
-    ['Duplicate %', targetFiles.length ? (duplicates.length/targetFiles.length*100).toFixed(1)+'%' : '0%'],
+  const kvs=[
+    ['Source Folder',sourceFolderName],['Source Files',sourceFiles.length.toLocaleString()],
+    ['Source Size',fmtSize(sourceFiles.reduce((s,f)=>s+f.size,0))],
+    ['Target Folder',targetFolderName],['Target Files',targetFiles.length.toLocaleString()],
+    ['Target Size',fmtSize(targetFiles.reduce((s,f)=>s+f.size,0))],
+    ['Method',compMethod==='hash'?'SHA-256 Hash':compMethod==='name-size'?'Name + Size':'Name Only'],
+    ['Duplicates',duplicates.length.toLocaleString()],
+    ['Duplicate Size',fmtSize(duplicates.reduce((s,d)=>s+d.size,0))],
+    ['Duplicate %',targetFiles.length?(duplicates.length/targetFiles.length*100).toFixed(1)+'%':'0%'],
   ];
-  document.getElementById('scanSummary').innerHTML = kvs.map(([k,v])=>
-    `<div class="rm-kv"><span class="k">${k}</span><span class="v">${esc(v)}</span></div>`
-  ).join('');
+  document.getElementById('scanSummary').innerHTML=kvs.map(([k,v])=>
+    `<div class="rm-kv"><span class="k">${k}</span><span class="v">${esc(v)}</span></div>`).join('');
 }
 
-// ═══════════════════════════════════════════════════════════════
-// EXTENSION BREAKDOWN
-// ═══════════════════════════════════════════════════════════════
 function renderExtBreakdown(){
-  const extMap = {};
-  for(const d of duplicates){
-    const ext = d.targetFile.ext || '(no ext)';
-    if(!extMap[ext]) extMap[ext] = {ext, count:0, size:0};
-    extMap[ext].count++;
-    extMap[ext].size += d.size;
-  }
-  const sorted = Object.values(extMap).sort((a,b)=>b.size-a.size);
-  const maxSize = sorted.length ? sorted[0].size : 1;
-
-  document.getElementById('extCount').textContent = sorted.length;
-
-  const CAT_COLORS = {
-    jpg:'#4f8ef7',jpeg:'#4f8ef7',png:'#4f8ef7',gif:'#4f8ef7',webp:'#4f8ef7',svg:'#4f8ef7',bmp:'#4f8ef7',
-    mp4:'#a855f7',mkv:'#a855f7',avi:'#a855f7',mov:'#a855f7',webm:'#a855f7',
-    mp3:'#22c55e',wav:'#22c55e',flac:'#22c55e',aac:'#22c55e',ogg:'#22c55e',
+  const extMap={};
+  for(const d of duplicates){const ext=d.targetFile.ext||'(no ext)';if(!extMap[ext])extMap[ext]={ext,count:0,size:0};extMap[ext].count++;extMap[ext].size+=d.size;}
+  const sorted=Object.values(extMap).sort((a,b)=>b.size-a.size);
+  const maxSize=sorted.length?sorted[0].size:1;
+  document.getElementById('extCount').textContent=sorted.length;
+  const CC={jpg:'#4f8ef7',jpeg:'#4f8ef7',png:'#4f8ef7',gif:'#4f8ef7',webp:'#4f8ef7',svg:'#4f8ef7',
+    mp4:'#a855f7',mkv:'#a855f7',avi:'#a855f7',mov:'#a855f7',mp3:'#22c55e',wav:'#22c55e',flac:'#22c55e',
     pdf:'#f59e0b',doc:'#f59e0b',docx:'#f59e0b',txt:'#f59e0b',md:'#f59e0b',csv:'#f59e0b',
     js:'#06b6d4',ts:'#06b6d4',py:'#06b6d4',html:'#06b6d4',css:'#06b6d4',json:'#06b6d4',
-    zip:'#f97316',rar:'#f97316','7z':'#f97316',tar:'#f97316',gz:'#f97316',
-  };
-
-  document.getElementById('extBreakdown').innerHTML = sorted.map(e=>{
-    const color = CAT_COLORS[e.ext] || '#64748b';
-    const pct = maxSize>0?(e.size/maxSize*100):0;
+    zip:'#f97316',rar:'#f97316','7z':'#f97316',tar:'#f97316',gz:'#f97316'};
+  document.getElementById('extBreakdown').innerHTML=sorted.map(e=>{
+    const color=CC[e.ext]||'#64748b';const pct=maxSize>0?e.size/maxSize*100:0;
     return `<div style="display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);padding:5px 6px;margin:1px 0;border-radius:6px;">
       <span style="font-size:12px;font-weight:700;min-width:56px;color:${color}">.${esc(e.ext)}</span>
       <span style="flex:1;height:6px;background:var(--border);border-radius:3px;min-width:40px;">
@@ -986,238 +833,165 @@ function renderExtBreakdown(){
       </span>
       <span style="font-size:11px;color:var(--muted);min-width:30px;text-align:right">${e.count}</span>
       <span style="font-size:11px;color:var(--muted);min-width:55px;text-align:right">${fmtSize(e.size)}</span>
-    </div>`;
-  }).join('') || '<div class="tiny muted" style="padding:10px">No duplicates found</div>';
+    </div>`;}).join('')||'<div class="tiny muted" style="padding:10px">No duplicates found</div>';
 }
 
 function populateExtFilter(){
-  const exts = new Set(duplicates.map(d=>d.targetFile.ext).filter(Boolean));
-  const sel = document.getElementById('fExt');
-  sel.innerHTML = '<option value="">All</option>' +
+  const exts=new Set(duplicates.map(d=>d.targetFile.ext).filter(Boolean));
+  document.getElementById('fExt').innerHTML='<option value="">All</option>'+
     [...exts].sort().map(e=>`<option value="${esc(e)}">.${esc(e)}</option>`).join('');
 }
 
 // ═══════════════════════════════════════════════════════════════
-// RENDER DUPLICATES VIEW
+// FILTER + RENDER
 // ═══════════════════════════════════════════════════════════════
 function getFilteredDups(){
-  const search = (document.getElementById('fSearch').value||'').toLowerCase().trim();
-  const minSize = parseInt(document.getElementById('fSizeMin').value)||0;
-  const ext = document.getElementById('fExt').value;
-
+  const s=(document.getElementById('fSearch').value||'').toLowerCase().trim();
+  const min=parseInt(document.getElementById('fSizeMin').value)||0;
+  const ext=document.getElementById('fExt').value;
   return duplicates.filter(d=>{
-    if(search && !d.targetFile.path.toLowerCase().includes(search) && !d.sourceFile.path.toLowerCase().includes(search)) return false;
-    if(minSize && d.size < minSize) return false;
-    if(ext && d.targetFile.ext !== ext) return false;
+    if(s&&!d.targetFile.relPath.toLowerCase().includes(s)&&!d.targetFile.name.toLowerCase().includes(s)&&!d.sourceFile.relPath.toLowerCase().includes(s))return false;
+    if(min&&d.size<min)return false;
+    if(ext&&d.targetFile.ext!==ext)return false;
     return true;
   });
 }
 
 function renderDuplicates(){
-  const filtered = getFilteredDups();
-  document.getElementById('rowCountBadge').textContent = filtered.length + ' of ' + duplicates.length + ' duplicates shown';
-
-  // Group by hash
-  const groups = new Map();
-  for(const d of filtered){
-    if(!groups.has(d.hash)) groups.set(d.hash, {sourceFile: d.sourceFile, targets:[], size: d.size, hash: d.hash});
-    groups.get(d.hash).targets.push(d.targetFile);
-  }
-
-  const container = document.getElementById('dupGroupsContainer');
+  const filtered=getFilteredDups();
+  document.getElementById('rowCountBadge').textContent=filtered.length+' of '+duplicates.length+' duplicates shown';
+  const groups=new Map();
+  for(const d of filtered){if(!groups.has(d.hash))groups.set(d.hash,{sourceFile:d.sourceFile,targets:[],size:d.size,hash:d.hash});groups.get(d.hash).targets.push(d.targetFile);}
+  const container=document.getElementById('dupGroupsContainer');
   if(!filtered.length){
-    container.innerHTML = `<div class="card" style="text-align:center;padding:40px">
+    container.innerHTML=`<div class="card" style="text-align:center;padding:40px">
       <div style="font-size:48px;margin-bottom:10px">✨</div>
       <div style="font-weight:800;font-size:16px">${duplicates.length?'No matches for current filter':'No Duplicates Found'}</div>
-      <div class="tiny muted" style="margin-top:6px">${duplicates.length?'Try adjusting your filters':'The target folder has no files that match the source folder'}</div>
-    </div>`;
-    return;
-  }
-
-  let html = '';
-  let idx = 0;
-  for(const [hash, group] of groups){
-    const shortHash = compMethod==='hash' ? hash.slice(0,12)+'…' : '';
-    html += `<div class="dup-group">
-      <div class="dup-group-head">
-        <span class="dg-info">📎 ${group.targets.length} duplicate${group.targets.length>1?'s':''} · ${fmtSize(group.size)}</span>
-        ${shortHash?`<span class="dg-hash">${esc(shortHash)}</span>`:''}
-      </div>
-      <div class="dup-entry source">
-        <span class="de-icon">📁</span>
-        <span class="de-path">${esc(sourceDirHandle.name + '/' + group.sourceFile.path)}</span>
-        <span class="de-badge"><span class="pill blue">Source</span></span>
-      </div>`;
+      <div class="tiny muted" style="margin-top:6px">${duplicates.length?'Try adjusting your filters':'The target folder has no files that match the source folder'}</div></div>`;return;}
+  let html='',idx=0;
+  for(const [hash,group] of groups){
+    const shortHash=compMethod==='hash'?hash.slice(0,12)+'…':'';
+    html+=`<div class="dup-group"><div class="dup-group-head">
+      <span class="dg-info">📎 ${group.targets.length} duplicate${group.targets.length>1?'s':''} · ${fmtSize(group.size)}</span>
+      ${shortHash?`<span class="dg-hash">${esc(shortHash)}</span>`:''}</div>
+      <div class="dup-entry source"><span class="de-icon">📁</span>
+        <span class="de-path">${esc(sourceFolderName+'/'+group.sourceFile.relPath)}</span>
+        <span class="de-badge"><span class="pill blue">Source</span></span></div>`;
     for(const tf of group.targets){
-      const logEntry = moveLog.find(l=>l.targetPath === targetDirHandle.name+'/'+tf.path);
-      const movedTag = (moveComplete && logEntry) ? `<span class="moved-badge">✓ Moved</span>` : '';
-      html += `<div class="dup-entry target">
-        <span class="de-icon">📄</span>
-        <span class="de-path">${esc(targetDirHandle.name + '/' + tf.path)}</span>
-        <span class="de-badge"><span class="pill red">Duplicate</span> ${movedTag}</span>
-      </div>`;
-    }
-    html += `</div>`;
-    idx++;
-    if(idx >= 200){ html += `<div class="tiny muted" style="padding:12px;text-align:center">Showing first 200 groups… Export CSV for full list.</div>`; break; }
+      const moved=moveComplete?'<span class="moved-badge">✓ Moved</span>':'';
+      html+=`<div class="dup-entry target"><span class="de-icon">📄</span>
+        <span class="de-path">${esc(targetFolderName+'/'+tf.relPath)}</span>
+        <span class="de-badge"><span class="pill red">Duplicate</span> ${moved}</span></div>`;}
+    html+=`</div>`;idx++;
+    if(idx>=200){html+=`<div class="tiny muted" style="padding:12px;text-align:center">Showing first 200 groups… Export CSV for full list.</div>`;break;}
   }
-  container.innerHTML = html;
+  container.innerHTML=html;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// RENDER LOG TABLE
-// ═══════════════════════════════════════════════════════════════
 function renderLogTable(){
-  const filtered = getFilteredDups();
-  const tName = targetDirHandle.name;
-  const body = document.getElementById('logBody');
-
-  if(!filtered.length){
-    body.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:30px" class="tiny muted">No duplicates to show</td></tr>`;
-    return;
-  }
-
-  let html = '';
-  let count = 0;
+  const filtered=getFilteredDups();const body=document.getElementById('logBody');
+  if(!filtered.length){body.innerHTML=`<tr><td colspan="3" style="text-align:center;padding:30px" class="tiny muted">No duplicates to show</td></tr>`;return;}
+  let html='',c=0;
   for(const d of filtered){
-    const srcPath = sourceDirHandle.name + '/' + d.sourceFile.path;
-    const tgtPath = tName + '/' + d.targetFile.path;
-    const newPath = tName + '/_duplicates/' + d.targetFile.path;
-    html += `<tr>
-      <td class="log-path">${esc(srcPath)}</td>
-      <td class="log-path">${esc(tgtPath)}</td>
-      <td class="log-path" style="color:var(--c-green)">${esc(newPath)}</td>
-    </tr>`;
-    count++;
-    if(count >= 500) break;
-  }
-  body.innerHTML = html;
+    html+=`<tr><td class="log-path">${esc(sourceFolderName+'/'+d.sourceFile.relPath)}</td>
+      <td class="log-path">${esc(targetFolderName+'/'+d.targetFile.relPath)}</td>
+      <td class="log-path" style="color:var(--c-green)">${esc(targetFolderName+'/_duplicates/'+d.targetFile.relPath)}</td></tr>`;
+    c++;if(c>=500)break;}
+  body.innerHTML=html;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// VIEW SWITCHING
-// ═══════════════════════════════════════════════════════════════
-function switchView(view, btn){
-  currentView = view;
+function switchView(view,btn){
+  currentView=view;
   document.querySelectorAll('#viewTabs .tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('viewDuplicates').style.display = view==='duplicates'?'':'none';
-  document.getElementById('viewLog').style.display = view==='log'?'':'none';
+  document.getElementById('viewDuplicates').style.display=view==='duplicates'?'':'none';
+  document.getElementById('viewLog').style.display=view==='log'?'':'none';
 }
 
-function applyFilter(){
-  renderDuplicates();
-  renderLogTable();
-}
+function applyFilter(){renderDuplicates();renderLogTable();}
 
 // ═══════════════════════════════════════════════════════════════
-// EXPORT LOG CSV
+// EXPORT CSV
 // ═══════════════════════════════════════════════════════════════
 function exportLog(){
-  if(!duplicates.length) return;
-  const tName = targetDirHandle.name;
-  const sName = sourceDirHandle.name;
-  const headers = ['Original in Source (X)','Found in Target (Y)','New Path in Duplicate Folder'];
-  const rows = [headers];
+  if(!duplicates.length)return;
+  const rows=[['Original in Source (X)','Found in Target (Y)','New Path in Duplicate Folder']];
   for(const d of duplicates){
-    rows.push([
-      sName + '/' + d.sourceFile.path,
-      tName + '/' + d.targetFile.path,
-      tName + '/_duplicates/' + d.targetFile.path
-    ]);
+    rows.push([sourceFolderName+'/'+d.sourceFile.relPath,targetFolderName+'/'+d.targetFile.relPath,targetFolderName+'/_duplicates/'+d.targetFile.relPath]);
   }
-  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  a.download = `duplicate-log-${tName}-${new Date().toISOString().slice(0,10)}.csv`;
-  document.body.appendChild(a); a.click(); a.remove();
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download=`duplicate-log-${targetFolderName}-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 }
 
 // ═══════════════════════════════════════════════════════════════
-// MOVE DUPLICATES
+// MOVE DUPLICATES (File System Access API — Chrome/Edge)
 // ═══════════════════════════════════════════════════════════════
 function confirmMove(){
-  if(!duplicates.length) return;
-  const totalSize = duplicates.reduce((s,d)=>s+d.size,0);
-  document.getElementById('moveDesc').innerHTML =
-    `This will move <strong>${duplicates.length}</strong> duplicate file(s) (${fmtSize(totalSize)}) ` +
-    `from <strong>${esc(targetDirHandle.name)}</strong> into ` +
-    `<strong>${esc(targetDirHandle.name)}/_duplicates/</strong>, preserving their folder structure.<br>` +
-    `<br>Original files in the source folder will <strong>not</strong> be affected.`;
-  document.getElementById('moveConfirm').style.display = '';
-  document.getElementById('moveDetail').textContent = '';
+  if(!duplicates.length)return;
+  const noAPI=!window.showDirectoryPicker;
+  const totalSize=duplicates.reduce((s,d)=>s+d.size,0);
+  if(noAPI){
+    document.getElementById('moveDesc').innerHTML=
+      `<strong>Move requires the File System Access API</strong> (Chrome or Edge).<br>`+
+      `You can still <strong>export the CSV log</strong> and use it to move files manually or with a script.`;
+    document.getElementById('moveGoBtn').style.display='none';
+  }else{
+    document.getElementById('moveDesc').innerHTML=
+      `This will move <strong>${duplicates.length}</strong> duplicate file(s) (${fmtSize(totalSize)}) `+
+      `inside the target folder into a <code>_duplicates</code> subfolder, preserving directory structure.<br><br>`+
+      `You will be asked to grant write access to the target folder (<strong>${esc(targetFolderName)}</strong>).<br>`+
+      `Original files in the source folder will <strong>not</strong> be affected.`;
+    document.getElementById('moveGoBtn').style.display='';
+  }
+  document.getElementById('moveConfirm').style.display='';
+  document.getElementById('moveDetail').textContent='';
 }
 
 async function executeMoveOperation(){
-  const progressWrap = document.getElementById('moveProgressWrap');
-  const progressFill = document.getElementById('moveProgressFill');
-  const detail = document.getElementById('moveDetail');
-  progressWrap.style.display = '';
-  progressFill.style.width = '0%';
-
+  const detail=document.getElementById('moveDetail');
+  const progressWrap=document.getElementById('moveProgressWrap');
+  const progressFill=document.getElementById('moveProgressFill');
   try{
-    // Create _duplicates directory
-    const dupRoot = await targetDirHandle.getDirectoryHandle('_duplicates', {create:true});
+    detail.textContent='Select the target folder ('+targetFolderName+') to grant write access…';
+    const dirHandle=await window.showDirectoryPicker({mode:'readwrite'});
+    if(dirHandle.name!==targetFolderName){
+      detail.innerHTML=`<span style="color:var(--c-red)">⚠️ Selected "${esc(dirHandle.name)}" doesn't match target "${esc(targetFolderName)}". Try again.</span>`;return;}
 
-    let moved = 0;
-    const total = duplicates.length;
+    progressWrap.style.display='';progressFill.style.width='0%';
+    const dupRoot=await dirHandle.getDirectoryHandle('_duplicates',{create:true});
+    let moved=0;const total=duplicates.length;
 
     for(const d of duplicates){
-      const targetPath = d.targetFile.path; // e.g. "sub/folder/file.txt"
-      const parts = targetPath.split('/');
-      const fileName = parts.pop();
-
-      // Create nested directory structure inside _duplicates
-      let currentDir = dupRoot;
-      for(const dirPart of parts){
-        currentDir = await currentDir.getDirectoryHandle(dirPart, {create:true});
-      }
-
-      // Read the source file content
-      const sourceFile = await d.targetFile.handle.getFile();
-      const content = await sourceFile.arrayBuffer();
-
-      // Write to new location
-      const newFileHandle = await currentDir.getFileHandle(fileName, {create:true});
-      const writable = await newFileHandle.createWritable();
-      await writable.write(content);
-      await writable.close();
-
-      // Delete the original from the target folder
-      // Navigate to the parent directory of the original file
+      const parts=d.targetFile.relPath.split('/');const fileName=parts.pop();
+      let currentDir=dupRoot;
+      for(const p of parts)currentDir=await currentDir.getDirectoryHandle(p,{create:true});
+      const content=await d.targetFile.file.arrayBuffer();
+      const newFH=await currentDir.getFileHandle(fileName,{create:true});
+      const w=await newFH.createWritable();await w.write(content);await w.close();
       try{
-        const origParts = d.targetFile.path.split('/');
-        const origName = origParts.pop();
-        let parentDir = targetDirHandle;
-        for(const p of origParts){
-          parentDir = await parentDir.getDirectoryHandle(p);
-        }
-        await parentDir.removeEntry(origName);
-      }catch(e){
-        console.warn('Could not remove original:', d.targetFile.path, e);
-      }
-
-      moved++;
-      progressFill.style.width = (moved/total*100).toFixed(1)+'%';
-      detail.textContent = `Moved ${moved}/${total}: ${fileName}`;
-      if(moved%10===0) await new Promise(r=>setTimeout(r,0));
+        const op=d.targetFile.relPath.split('/');const on=op.pop();let pd=dirHandle;
+        for(const p of op)pd=await pd.getDirectoryHandle(p);
+        await pd.removeEntry(on);
+      }catch(e){console.warn('Could not remove:',d.targetFile.relPath,e);}
+      moved++;progressFill.style.width=(moved/total*100).toFixed(1)+'%';
+      detail.textContent='Moved '+moved+'/'+total+': '+fileName;
+      if(moved%10===0)await new Promise(r=>setTimeout(r,0));
     }
-
-    moveComplete = true;
-    detail.innerHTML = `<span style="color:var(--c-green);font-weight:700">✅ Successfully moved ${moved} file(s) to ${esc(targetDirHandle.name)}/_duplicates/</span>`;
-    document.getElementById('moveBtn').disabled = true;
-    document.getElementById('moveBtn').textContent = '✅ Move Complete';
-
-    // Re-render to show moved badges
+    moveComplete=true;
+    detail.innerHTML=`<span style="color:var(--c-green);font-weight:700">✅ Moved ${moved} file(s) to ${esc(targetFolderName)}/_duplicates/</span>`;
+    document.getElementById('moveBtn').disabled=true;
+    document.getElementById('moveBtn').textContent='✅ Move Complete';
     renderDuplicates();
   }catch(e){
-    detail.innerHTML = `<span style="color:var(--c-red)">❌ Error: ${esc(e.message)}</span>`;
-    console.error('Move error:', e);
+    if(e.name==='AbortError')detail.textContent='Folder selection cancelled.';
+    else{detail.innerHTML=`<span style="color:var(--c-red)">❌ Error: ${esc(e.message)}</span>`;console.error(e);}
   }
 }
 </script>
-
 
 <!--Start of Tawk.to Script-->
 <script type="text/javascript">
