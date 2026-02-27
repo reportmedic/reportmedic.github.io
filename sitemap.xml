@@ -37,6 +37,14 @@
   <url><loc>https://reportmedic.org/tools/phrase-occurrence-counter.html</loc><lastmod>2026-02-24</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://reportmedic.org/tools/query-csv-with-sql-online.html</loc><lastmod>2026-02-24</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
 
+  <url><loc>https://reportmedic.org/tools/disk-analyzer.html</loc><lastmod>2026-02-26</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://reportmedic.org/tools/duplicate-scanner.html</loc><lastmod>2026-02-26</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://reportmedic.org/tools/employee-datasets.html</loc><lastmod>2026-02-26</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://reportmedic.org/tools/eu-datasets.html</loc><lastmod>2026-02-26</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://reportmedic.org/tools/india-datasets.html</loc><lastmod>2026-02-26</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://reportmedic.org/tools/usa-datasets.html</loc><lastmod>2026-02-26</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://reportmedic.org/tools/ipynb-viewer.html</loc><lastmod>2026-02-26</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://reportmedic.org/tools/python-code-runner.html</loc><lastmod>2026-02-26</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <!-- Tools: Convert -->
   <url><loc>https://reportmedic.org/tools/markdown-to-html.html</loc><lastmod>2026-02-24</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://reportmedic.org/tools/html-to-markdown.html</loc><lastmod>2026-02-24</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
@@ -72,9 +80,12 @@
   <url><loc>https://reportmedic.org/tools/strong-password-generator.html</loc><lastmod>2026-02-24</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://reportmedic.org/tools/online-notepad-rich-text-editor.html</loc><lastmod>2026-02-24</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
 
+  <url><loc>https://reportmedic.org/tools/upi-qr-generator.html</loc><lastmod>2026-02-26</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <!-- Tools: Video -->
   <url><loc>https://reportmedic.org/tools/video-resize-reduce-size.html</loc><lastmod>2026-02-24</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://reportmedic.org/tools/split-video-into-clips.html</loc><lastmod>2026-02-24</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://reportmedic.org/tools/merge-videos-join-clips.html</loc><lastmod>2026-02-24</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://reportmedic.org/tools/dji-video-compressor.html</loc><lastmod>2026-02-26</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://reportmedic.org/tools/gopro-video-compressor.html</loc><lastmod>2026-02-26</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
 
 </urlset>
