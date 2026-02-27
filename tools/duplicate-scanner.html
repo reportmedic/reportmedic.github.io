@@ -1,0 +1,1237 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Duplicate File Scanner — Cross-Folder Duplicate Finder — ReportMedic</title>
+  <meta name="description" content="Compare two folders, find duplicate files in the second folder based on the first, and move them into an organized duplicate directory. Runs locally in your browser." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+  <script defer src="/assets/js/rm-dropzone.js"></script>
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+<style>
+/* ── Panel h1 layout (same as compare tool) ── */
+.panel h1{display:flex; align-items:baseline; gap:.55rem; flex-wrap:wrap;}
+
+/* ── Site var aliases → tool internal vars ── */
+:root{
+  --c-bg: var(--bg);
+  --c-bg2: rgba(0,0,0,.18);
+  --c-surface: rgba(255,255,255,.06);
+  --c-surface2: rgba(255,255,255,.04);
+  --c-surface3: rgba(255,255,255,.09);
+  --c-border: var(--border);
+  --c-border2: var(--border-strong);
+  --c-text: var(--text);
+  --c-muted: var(--muted);
+  --c-muted2: rgba(238,246,255,.45);
+  --c-accent: var(--brand);
+  --c-accent2: #a78bfa;
+  --c-accent3: #06b6d4;
+  --c-green: #22c55e;
+  --c-red: #ef4444;
+  --c-yellow: #f59e0b;
+  --c-orange: #f97316;
+  --c-purple: #a855f7;
+  --c-pink: #ec4899;
+  --c-teal: #14b8a6;
+  --r: var(--radius, 16px);
+  --r2: 12px;
+  --r3: 8px;
+  --r4: 6px;
+  --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
+
+/* ── Override: site .row is display:grid — tool needs flex ── */
+.row{display:flex !important; grid-template-columns:none !important; align-items:center; gap:8px; flex-wrap:wrap;}
+
+/* ── Override: site .card has cursor/transform/min-height for homepage grid ── */
+.panel .card{cursor:default; min-height:0; transform:none !important; transition:border-color .12s;}
+.panel .card:hover{transform:none !important;}
+.card.inset{background:rgba(0,0,0,.15); border-color:var(--border);}
+
+/* ── Pill variants ── */
+.pill{padding:3px 10px; margin:0; font-size:11px; font-weight:500;}
+.pill.blue  {background:rgba(110,168,255,.12); border-color:rgba(110,168,255,.3);  color:var(--brand);}
+.pill.green {background:rgba(34,197,94,.10);   border-color:rgba(34,197,94,.28);   color:#22c55e;}
+.pill.red   {background:rgba(239,68,68,.10);   border-color:rgba(239,68,68,.28);   color:#ef4444;}
+.pill.yellow{background:rgba(245,158,11,.10);  border-color:rgba(245,158,11,.28);  color:#f59e0b;}
+.pill.orange{background:rgba(249,115,22,.10);  border-color:rgba(249,115,22,.28);  color:#f97316;}
+.pill.purple{background:rgba(168,85,247,.10);  border-color:rgba(168,85,247,.28);  color:#a855f7;}
+.pill.teal  {background:rgba(20,184,166,.10);  border-color:rgba(20,184,166,.28);  color:#14b8a6;}
+.pill.cyan  {background:rgba(6,182,212,.10);   border-color:rgba(6,182,212,.28);   color:#06b6d4;}
+.pill.gray  {background:rgba(255,255,255,.05); border-color:var(--border);         color:var(--muted);}
+
+/* ── Button extensions ── */
+.btn.sm    {padding:5px 10px; font-size:12px;}
+.btn.danger{background:rgba(239,68,68,.12); border-color:rgba(239,68,68,.28); color:#ef4444;}
+.btn.danger:hover{background:rgba(239,68,68,.22);}
+.btn.success{background:rgba(34,197,94,.12); border-color:rgba(34,197,94,.28); color:#22c55e;}
+.btn.success:hover{background:rgba(34,197,94,.22);}
+.btn.warning{background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.28); color:#f59e0b;}
+.btn.warning:hover{background:rgba(245,158,11,.22);}
+
+/* ── .input class ── */
+.input{background:rgba(255,255,255,.07); border:1px solid var(--border); border-radius:12px;
+  color:var(--text); padding:9px 10px; font-size:13.25px; font-family:inherit;
+  outline:none; transition:border-color .12s; width:100%;}
+.input:focus{border-color:rgba(96,165,250,.55); box-shadow:0 0 0 3px rgba(96,165,250,.16);}
+.input::placeholder{color:rgba(238,246,255,.35);}
+.input:disabled{opacity:.45; cursor:default;}
+select.input{cursor:pointer;}
+label.lbl{font-size:11.5px; opacity:.9; font-weight:600; white-space:nowrap;}
+
+/* ── Grid utilities ── */
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;}
+.grid4{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+@media(max-width:900px){.grid4{grid-template-columns:1fr 1fr;} .grid2{grid-template-columns:1fr;}}
+@media(max-width:560px){.grid3,.grid4{grid-template-columns:1fr;}}
+
+/* ── KV pairs ── */
+.rm-kv{display:flex; align-items:baseline; gap:8px; line-height:1.7;}
+.rm-kv .k{color:var(--muted); font-size:11.5px; min-width:130px;}
+.rm-kv .v{color:var(--text);  font-size:12px; font-weight:600;}
+
+/* ── Metric cards ── */
+.metric-card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+  padding:14px 16px; display:flex; flex-direction:column; gap:4px; box-shadow:0 4px 16px rgba(0,0,0,.25);}
+.metric-card .mc-label{font-size:11px; color:var(--muted); font-weight:700;
+  text-transform:uppercase; letter-spacing:.06em;}
+.metric-card .mc-value{font-size:22px; font-weight:800; letter-spacing:-.5px; line-height:1.1;}
+.metric-card .mc-sub{font-size:11.5px; color:var(--muted);}
+.metric-card .mc-bar{height:3px; border-radius:2px; margin-top:8px; background:var(--border);}
+.metric-card .mc-bar-fill{height:100%; border-radius:2px; transition:width .5s;}
+
+/* ── Table ── */
+.table-wrap{overflow:auto; border:1px solid var(--border); border-radius:var(--radius);}
+.table{width:100%; border-collapse:collapse; font-size:13px;}
+.table thead th{
+  background:rgba(255,255,255,.04); padding:9px 12px; text-align:left;
+  font-size:11.5px; font-weight:700; color:var(--muted); text-transform:uppercase;
+  letter-spacing:.05em; white-space:nowrap; border-bottom:1px solid var(--border-strong);
+  position:sticky; top:0; z-index:2; cursor:pointer; user-select:none;}
+.table thead th:hover{color:var(--text);}
+.table tbody tr{border-bottom:1px solid var(--border); transition:background .1s;}
+.table tbody tr:last-child{border-bottom:none;}
+.table tbody tr:hover{background:rgba(255,255,255,.04);}
+.table td{padding:7px 12px; vertical-align:middle; white-space:nowrap;}
+.table td.wrap{white-space:normal; word-break:break-all;}
+.table-scroll{max-height:580px; overflow-y:auto; border-radius:var(--radius);}
+.table-scroll::-webkit-scrollbar{width:6px;}
+.table-scroll::-webkit-scrollbar-track{background:transparent;}
+.table-scroll::-webkit-scrollbar-thumb{background:var(--border-strong); border-radius:3px;}
+th.sort-active{color:var(--text) !important;}
+.table thead th.sort-asc::after{content:' ▲'; font-size:9px; opacity:.7;}
+.table thead th.sort-desc::after{content:' ▼'; font-size:9px; opacity:.7;}
+
+/* ── Progress ── */
+.progress-bar{height:6px; background:var(--border); border-radius:3px; overflow:hidden; margin-top:8px;}
+.progress-fill{height:100%; background:linear-gradient(90deg, var(--brand), var(--brand2));
+  border-radius:3px; transition:width .2s; width:0%;}
+
+/* ── Spinner ── */
+.spinner{display:inline-block; width:16px; height:16px; border:2px solid var(--border-strong);
+  border-top-color:var(--brand); border-radius:50%; animation:spin .6s linear infinite; vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── Folder picker cards ── */
+.folder-pick-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+@media(max-width:700px){.folder-pick-grid{grid-template-columns:1fr;}}
+
+.folder-pick{
+  background:var(--c-surface); border:2px dashed var(--c-border2); border-radius:var(--r2);
+  padding:24px 20px; text-align:center; cursor:pointer; transition:all .18s;
+  display:flex; flex-direction:column; align-items:center; gap:10px; position:relative;
+}
+.folder-pick:hover{border-color:var(--brand); background:rgba(110,168,255,.06);}
+.folder-pick.selected{border-color:var(--c-green); border-style:solid; background:rgba(34,197,94,.05);}
+.folder-pick .fp-icon{font-size:36px; line-height:1;}
+.folder-pick .fp-label{font-weight:800; font-size:14px;}
+.folder-pick .fp-hint{font-size:11.5px; color:var(--muted);}
+.folder-pick .fp-status{font-size:12px; font-weight:700; color:var(--c-green);}
+.folder-pick .fp-name{font-size:12px; color:var(--brand); font-weight:600;
+  max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+/* ── Comparison method selector ── */
+.method-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;}
+.method-opt{
+  flex:1; min-width:160px; padding:12px 14px; border-radius:var(--r3);
+  border:1px solid var(--border); background:var(--c-surface2);
+  cursor:pointer; transition:all .14s; text-align:center;
+}
+.method-opt:hover{background:var(--c-surface3); border-color:var(--c-border2);}
+.method-opt.active{border-color:var(--brand); background:rgba(110,168,255,.08);
+  box-shadow:0 0 0 2px rgba(110,168,255,.18);}
+.method-opt .mo-icon{font-size:20px; margin-bottom:4px;}
+.method-opt .mo-name{font-size:13px; font-weight:700;}
+.method-opt .mo-desc{font-size:10.5px; color:var(--muted); margin-top:2px;}
+
+/* ── Dup group styling ── */
+.dup-group{margin-bottom:14px; border:1px solid var(--border); border-radius:var(--r2);
+  overflow:hidden; background:var(--c-surface2);}
+.dup-group-head{display:flex; align-items:center; gap:10px; padding:10px 14px;
+  background:rgba(255,255,255,.03); border-bottom:1px solid var(--border); flex-wrap:wrap;}
+.dup-group-head .dg-hash{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+  font-size:11px; color:var(--muted); background:rgba(0,0,0,.2); padding:2px 8px; border-radius:4px;}
+.dup-group-head .dg-info{font-size:12px; font-weight:700;}
+.dup-entry{display:flex; align-items:center; gap:10px; padding:7px 14px;
+  border-bottom:1px solid var(--border); font-size:12.5px;}
+.dup-entry:last-child{border-bottom:none;}
+.dup-entry .de-icon{font-size:14px; flex-shrink:0;}
+.dup-entry .de-path{flex:1; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+  font-size:11.5px; word-break:break-all; white-space:normal;}
+.dup-entry .de-badge{flex-shrink:0;}
+.dup-entry.source{background:rgba(110,168,255,.04);}
+.dup-entry.target{background:rgba(239,68,68,.03);}
+
+/* ── Log table ── */
+.log-path{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+  font-size:11px; word-break:break-all; white-space:normal; max-width:280px;}
+
+/* ── Section toggling ── */
+#scanSection{display:none;}
+#resultsSection{display:none;}
+
+/* ── Move confirmation ── */
+.move-confirm{background:rgba(245,158,11,.06); border:1px solid rgba(245,158,11,.25);
+  border-radius:var(--r2); padding:16px; margin-top:14px;}
+.move-confirm .mc-title{font-weight:800; font-size:14px; color:var(--c-yellow); margin-bottom:6px;}
+.move-confirm .mc-desc{font-size:12.5px; color:var(--muted); line-height:1.5;}
+
+/* ── Moved badge ── */
+.moved-badge{display:inline-flex; align-items:center; gap:4px; padding:2px 8px;
+  background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.25);
+  border-radius:999px; font-size:10px; color:var(--c-green); font-weight:600;}
+
+/* ── Results layout ── */
+.results-layout{display:flex; gap:16px; align-items:flex-start;}
+.side-panel{display:flex; flex-direction:column; gap:14px; width:280px; flex-shrink:0;}
+.main-panel{flex:1; min-width:0; display:flex; flex-direction:column; gap:14px;}
+.sticky-side{position:sticky; top:70px;}
+@media(max-width:960px){.results-layout{flex-direction:column;} .side-panel{width:100%; position:static;}}
+
+/* ── Tab bar ── */
+.tab-bar{display:flex; gap:2px; background:rgba(255,255,255,.04); border:1px solid var(--border);
+  border-radius:10px; padding:3px; width:fit-content;}
+.tab{padding:5px 14px; border-radius:8px; cursor:pointer; font-size:12.5px; font-weight:500;
+  color:var(--muted); transition:all .12s; white-space:nowrap; border:none;
+  background:transparent; font-family:inherit;}
+.tab:hover{color:var(--text);}
+.tab.active{background:rgba(255,255,255,.09); color:var(--text); font-weight:700;
+  box-shadow:0 1px 4px rgba(0,0,0,.3);}
+
+/* ── Filter ── */
+.filter-row{display:flex; gap:10px; flex-wrap:wrap; align-items:end;}
+.filter-group{display:flex; flex-direction:column; gap:5px;}
+
+/* ── Checkbox in table ── */
+.dup-cb{width:16px; height:16px; accent-color:var(--brand); cursor:pointer;}
+
+/* ── API warning ── */
+.api-warning{background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.22);
+  border-radius:var(--r3); padding:12px 14px; font-size:12px; color:var(--c-yellow);
+  margin-top:10px; display:none;}
+.api-warning a{color:var(--brand); text-decoration:underline;}
+</style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Duplicate File Scanner <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Compare two folders, find duplicate files in the second folder that already exist in the first, and move them into an organized duplicate directory — preserving folder structure. Everything runs locally in your browser — nothing is uploaded.</p>
+    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need help cleaning up duplicates? Get human help →</a></div>
+
+<div class="hr"></div>
+
+  <!-- ── PICK FOLDERS ── -->
+  <div class="card" id="pickCard">
+    <div class="row" style="justify-content:space-between;margin-bottom:14px">
+      <div>
+        <div style="font-weight:800;font-size:15px">Choose Two Folders to Compare</div>
+        <div class="tiny muted" style="margin-top:3px">Select a source folder (original) and a target folder (to check for duplicates)</div>
+      </div>
+      <span class="pill blue" id="scanStatus">Ready</span>
+    </div>
+
+    <div class="folder-pick-grid">
+      <!-- Source Folder -->
+      <div class="folder-pick" id="pickSource" onclick="pickFolder('source')">
+        <div class="fp-icon">📁</div>
+        <div class="fp-label">Source Folder (X)</div>
+        <div class="fp-hint">The original / reference folder</div>
+        <div class="fp-status" id="sourceStatus"></div>
+        <div class="fp-name" id="sourceName"></div>
+      </div>
+      <!-- Target Folder -->
+      <div class="folder-pick" id="pickTarget" onclick="pickFolder('target')">
+        <div class="fp-icon">📂</div>
+        <div class="fp-label">Target Folder (Y)</div>
+        <div class="fp-hint">Duplicates here will be detected &amp; moved</div>
+        <div class="fp-status" id="targetStatus"></div>
+        <div class="fp-name" id="targetName"></div>
+      </div>
+    </div>
+
+    <!-- Comparison method -->
+    <div style="margin-top:18px">
+      <label class="lbl">Comparison Method</label>
+      <div class="method-row">
+        <div class="method-opt active" data-method="hash" onclick="setMethod('hash',this)">
+          <div class="mo-icon">🔐</div>
+          <div class="mo-name">Content Hash (SHA-256)</div>
+          <div class="mo-desc">Byte-perfect match — most accurate, slower on large files</div>
+        </div>
+        <div class="method-opt" data-method="name-size" onclick="setMethod('name-size',this)">
+          <div class="mo-icon">⚡</div>
+          <div class="mo-name">Name + Size</div>
+          <div class="mo-desc">Matches by filename and byte size — fast, good for media</div>
+        </div>
+        <div class="method-opt" data-method="name" onclick="setMethod('name',this)">
+          <div class="mo-icon">🏷️</div>
+          <div class="mo-name">Name Only</div>
+          <div class="mo-desc">Matches by filename only — fastest, may have false positives</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <button class="btn primary" id="startBtn" onclick="startScan()" disabled>
+        🔍 Scan for Duplicates
+      </button>
+      <span class="tiny muted" id="readyHint">Select both folders to begin</span>
+    </div>
+
+    <div class="api-warning" id="apiWarning">
+      ⚠️ Your browser does not support the File System Access API. Folder picking and duplicate moving won't work. Please use <a href="https://www.google.com/chrome/" target="_blank">Chrome</a> or <a href="https://www.microsoft.com/edge" target="_blank">Edge</a> for full functionality.
+    </div>
+  </div>
+
+  <!-- ── SCANNING ── -->
+  <div class="card" id="scanSection">
+    <div class="row" style="gap:12px;margin-bottom:10px">
+      <span class="spinner"></span>
+      <span style="font-weight:700;font-size:14px">Scanning…</span>
+      <span class="pill yellow" id="scanProgressPill">0 files</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="tiny muted" style="margin-top:8px" id="scanDetail">Reading folder structure…</div>
+    <button class="btn sm danger" style="margin-top:10px" id="cancelBtn" onclick="cancelScan()">Cancel</button>
+  </div>
+
+  <!-- ══════════════════════════════════
+       RESULTS
+  ══════════════════════════════════ -->
+  <div id="resultsSection">
+
+    <!-- METRIC CARDS -->
+    <div class="grid4" id="metricCards" style="margin-bottom:14px"></div>
+
+    <!-- MAIN LAYOUT -->
+    <div class="results-layout">
+
+      <!-- SIDE PANEL -->
+      <div class="side-panel sticky-side">
+
+        <!-- Summary -->
+        <div class="card">
+          <div style="font-weight:800;font-size:13px;margin-bottom:10px">Scan Summary</div>
+          <div id="scanSummary"></div>
+        </div>
+
+        <!-- Extension Breakdown of dups -->
+        <div class="card">
+          <div style="font-weight:800;font-size:13px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+            Duplicate Types
+            <span class="count-badge" id="extCount" style="font-size:10px;background:rgba(255,255,255,.06);border-radius:999px;padding:0 6px;color:var(--muted);">0</span>
+          </div>
+          <div id="extBreakdown" style="max-height:320px;overflow-y:auto"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card">
+          <div style="font-weight:800;font-size:13px;margin-bottom:10px">Actions</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn sm" onclick="exportLog()" id="exportLogBtn" disabled>⬇ Export Log (CSV)</button>
+            <button class="btn sm warning" onclick="confirmMove()" id="moveBtn" disabled>📦 Move Duplicates</button>
+            <button class="btn sm" onclick="resetScan()">🔄 New Scan</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- MAIN PANEL -->
+      <div class="main-panel">
+
+        <!-- TOOLBAR -->
+        <div class="card inset" style="padding:14px">
+          <div class="row" style="justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+            <div class="tab-bar" id="viewTabs">
+              <button class="tab active" data-view="duplicates" onclick="switchView('duplicates',this)">📋 Duplicates</button>
+              <button class="tab" data-view="log" onclick="switchView('log',this)">📑 Move Log</button>
+            </div>
+            <div class="row" style="gap:6px">
+              <button class="btn sm" onclick="exportLog()">⬇ Export CSV</button>
+              <button class="btn sm" onclick="resetScan()">🔄 New Scan</button>
+            </div>
+          </div>
+
+          <!-- FILTER -->
+          <div class="filter-row">
+            <div class="filter-group" style="flex:1;min-width:200px">
+              <label class="lbl">🔍 Search by filename or path</label>
+              <input class="input" id="fSearch" placeholder="filename, extension, folder…" oninput="applyFilter()"/>
+            </div>
+            <div class="filter-group" style="min-width:140px">
+              <label class="lbl">Min size</label>
+              <select class="input" id="fSizeMin" onchange="applyFilter()">
+                <option value="0">Any size</option>
+                <option value="1024">≥ 1 KB</option>
+                <option value="102400">≥ 100 KB</option>
+                <option value="1048576">≥ 1 MB</option>
+                <option value="10485760">≥ 10 MB</option>
+                <option value="104857600">≥ 100 MB</option>
+              </select>
+            </div>
+            <div class="filter-group" style="min-width:130px">
+              <label class="lbl">Extension</label>
+              <select class="input" id="fExt" onchange="applyFilter()">
+                <option value="">All</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:8px">
+            <span class="tiny muted" id="rowCountBadge"></span>
+          </div>
+        </div>
+
+        <!-- DUPLICATES VIEW -->
+        <div id="viewDuplicates">
+          <div id="dupGroupsContainer"></div>
+        </div>
+
+        <!-- LOG VIEW -->
+        <div id="viewLog" style="display:none">
+          <div class="table-wrap table-scroll">
+            <table class="table" id="logTable">
+              <thead>
+                <tr>
+                  <th>Original in Source (X)</th>
+                  <th>Found in Target (Y)</th>
+                  <th>New Path in Duplicate Folder</th>
+                </tr>
+              </thead>
+              <tbody id="logBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- MOVE CONFIRMATION -->
+        <div class="move-confirm" id="moveConfirm" style="display:none">
+          <div class="mc-title">⚠️ Confirm Move Operation</div>
+          <div class="mc-desc" id="moveDesc"></div>
+          <div style="margin-top:12px;display:flex;gap:10px">
+            <button class="btn sm success" onclick="executeMoveOperation()">✅ Yes, Move Duplicates</button>
+            <button class="btn sm" onclick="document.getElementById('moveConfirm').style.display='none'">Cancel</button>
+          </div>
+          <div class="progress-bar" style="margin-top:10px;display:none" id="moveProgressWrap">
+            <div class="progress-fill" id="moveProgressFill"></div>
+          </div>
+          <div class="tiny muted" style="margin-top:6px" id="moveDetail"></div>
+        </div>
+
+      </div><!-- /main-panel -->
+    </div><!-- /results-layout -->
+  </div><!-- /resultsSection -->
+
+  <div class="footer">© 2026 ReportMedic</div>
+
+</div><!-- /panel -->
+
+</div>
+</div>
+
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
+<div aria-hidden="true" aria-label="Duplicate File Scanner details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Duplicate File Scanner</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Compare two folders and identify files in the target that already exist in the source</li>
+        <li>Choose from three comparison methods: SHA-256 content hash, name + size, or name only</li>
+        <li>Move detected duplicates into an organized <code>_duplicates</code> folder preserving directory structure</li>
+        <li>Generate a 3-column CSV log: source path, target path, and new duplicate path</li>
+        <li>Filter and search results by filename, extension, or minimum size</li>
+      </ul>
+      <h3>How it works</h3>
+      <ul>
+        <li>Select a source folder (X) — this is your reference / original</li>
+        <li>Select a target folder (Y) — duplicates in this folder will be found</li>
+        <li>Pick a comparison method and click "Scan for Duplicates"</li>
+        <li>Review the duplicate report — grouped by matching content</li>
+        <li>Optionally move duplicates in Y into <code>Y/_duplicates/</code> preserving their subfolder structure</li>
+        <li>Export a complete move log as CSV with all three path columns</li>
+      </ul>
+      <h3>Example</h3>
+      <ul>
+        <li>Source: <code>X/photos/3.txt</code> matches Target: <code>Y/backup/f1/1.txt</code></li>
+        <li>After move: <code>Y/_duplicates/backup/f1/1.txt</code></li>
+        <li>Log row: <code>X/photos/3.txt</code> | <code>Y/backup/f1/1.txt</code> | <code>Y/_duplicates/backup/f1/1.txt</code></li>
+      </ul>
+      <h3>Privacy</h3>
+      <ul>
+        <li>100% local — no data is uploaded or sent anywhere, ever</li>
+        <li>Uses the File System Access API for direct folder operations</li>
+        <li>File contents are only read for hashing — never stored or transmitted</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<script>
+(function rmLmWireUp(){
+  const setOpen = (id, isOpen) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    document.documentElement.classList.toggle('rmNoScroll', isOpen);
+    document.body.classList.toggle('rmNoScroll', isOpen);
+  };
+  document.querySelectorAll('[data-rm-lm-open]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();setOpen(a.getAttribute('data-rm-lm-open'),true);}));
+  document.querySelectorAll('[data-rm-lm-close]').forEach(b=>b.addEventListener('click',()=>setOpen(b.getAttribute('data-rm-lm-close'),false)));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(el=>setOpen(el.id,false));});
+  document.addEventListener('click',e=>{if(e.target.classList.contains('rm-lm-backdrop'))setOpen(e.target.id,false);});
+})();
+</script>
+
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let sourceDirHandle = null;
+let targetDirHandle = null;
+let sourceFiles = [];   // {path, name, size, lastModified, handle, hash}
+let targetFiles = [];
+let duplicates  = [];   // {sourceFile, targetFile, hash, size}
+let moveLog     = [];   // {sourcePath, targetPath, newPath}
+let compMethod  = 'hash';
+let scanCancelled = false;
+let currentView = 'duplicates';
+let moveComplete = false;
+
+// ═══════════════════════════════════════════════════════════════
+// API CHECK
+// ═══════════════════════════════════════════════════════════════
+if (!window.showDirectoryPicker) {
+  document.getElementById('apiWarning').style.display = 'block';
+  document.getElementById('startBtn').title = 'File System Access API not available';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════
+function fmtSize(b){
+  if(b==null||b<0)return'—';
+  if(b<1024)return b+'B';
+  if(b<1048576)return(b/1024).toFixed(1)+'KB';
+  if(b<1073741824)return(b/1048576).toFixed(1)+'MB';
+  if(b<1099511627776)return(b/1073741824).toFixed(2)+'GB';
+  return(b/1099511627776).toFixed(2)+'TB';
+}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function getExt(name){const i=name.lastIndexOf('.');return i>0?name.slice(i+1).toLowerCase():'';}
+
+async function hashFile(fileHandle){
+  try{
+    const file = await fileHandle.getFile();
+    const buf = await file.arrayBuffer();
+    const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(hashBuf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }catch(e){return 'err_'+Math.random().toString(36).slice(2);}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FOLDER PICKER
+// ═══════════════════════════════════════════════════════════════
+async function pickFolder(which){
+  if(!window.showDirectoryPicker){
+    alert('Your browser does not support the File System Access API.\nPlease use Chrome or Edge.');
+    return;
+  }
+  try{
+    const handle = await window.showDirectoryPicker({mode:'readwrite'});
+    if(which === 'source'){
+      sourceDirHandle = handle;
+      document.getElementById('pickSource').classList.add('selected');
+      document.getElementById('sourceStatus').textContent = '✓ Selected';
+      document.getElementById('sourceName').textContent = handle.name;
+    } else {
+      targetDirHandle = handle;
+      document.getElementById('pickTarget').classList.add('selected');
+      document.getElementById('targetStatus').textContent = '✓ Selected';
+      document.getElementById('targetName').textContent = handle.name;
+    }
+    updateStartBtn();
+  }catch(e){
+    if(e.name !== 'AbortError') console.error(e);
+  }
+}
+
+function updateStartBtn(){
+  const ready = sourceDirHandle && targetDirHandle;
+  document.getElementById('startBtn').disabled = !ready;
+  document.getElementById('readyHint').textContent = ready
+    ? 'Ready to scan' : 'Select both folders to begin';
+  if(ready) document.getElementById('scanStatus').textContent = 'Ready';
+}
+
+function setMethod(m, el){
+  compMethod = m;
+  document.querySelectorAll('.method-opt').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RECURSIVE FILE READER
+// ═══════════════════════════════════════════════════════════════
+async function readDir(dirHandle, path, results, progressCb){
+  for await (const [name, handle] of dirHandle.entries()){
+    if(scanCancelled) return;
+    if(handle.kind === 'file'){
+      // Skip the _duplicates folder if it already exists
+      const file = await handle.getFile();
+      results.push({
+        name,
+        path: path ? path + '/' + name : name,
+        size: file.size,
+        lastModified: file.lastModified,
+        handle,
+        ext: getExt(name),
+        hash: null
+      });
+      if(progressCb) progressCb(results.length, name);
+    } else if(handle.kind === 'directory'){
+      // Skip _duplicates folder in target
+      if(name === '_duplicates') continue;
+      await readDir(handle, path ? path + '/' + name : name, results, progressCb);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SCAN
+// ═══════════════════════════════════════════════════════════════
+async function startScan(){
+  if(!sourceDirHandle || !targetDirHandle) return;
+  scanCancelled = false;
+  moveComplete = false;
+  duplicates = [];
+  moveLog = [];
+  sourceFiles = [];
+  targetFiles = [];
+
+  // Show scanning UI
+  document.getElementById('pickCard').style.display = 'none';
+  document.getElementById('scanSection').style.display = '';
+  document.getElementById('resultsSection').style.display = 'none';
+
+  const pill = document.getElementById('scanProgressPill');
+  const detail = document.getElementById('scanDetail');
+  const fill = document.getElementById('progressFill');
+
+  // Phase 1: Read source folder
+  detail.textContent = 'Reading source folder…';
+  pill.textContent = '0 files';
+  fill.style.width = '5%';
+  await readDir(sourceDirHandle, '', sourceFiles, (n, name)=>{
+    pill.textContent = n + ' files';
+    if(n%50===0) detail.textContent = 'Source: ' + name;
+  });
+  if(scanCancelled) return resetUI();
+  fill.style.width = '20%';
+
+  // Phase 2: Read target folder
+  detail.textContent = 'Reading target folder…';
+  await readDir(targetDirHandle, '', targetFiles, (n, name)=>{
+    pill.textContent = sourceFiles.length + ' + ' + n + ' files';
+    if(n%50===0) detail.textContent = 'Target: ' + name;
+  });
+  if(scanCancelled) return resetUI();
+  fill.style.width = '35%';
+
+  // Phase 3: Compare
+  detail.textContent = 'Comparing files (' + compMethod + ')…';
+  pill.textContent = 'Comparing…';
+
+  if(compMethod === 'hash'){
+    await compareByHash(fill, detail, pill);
+  } else if(compMethod === 'name-size'){
+    await compareByNameSize(fill, detail, pill);
+  } else {
+    await compareByName(fill, detail, pill);
+  }
+
+  if(scanCancelled) return resetUI();
+
+  fill.style.width = '100%';
+  detail.textContent = 'Done! Found ' + duplicates.length + ' duplicate(s).';
+  await new Promise(r=>setTimeout(r,400));
+
+  // Show results
+  showResults();
+}
+
+function cancelScan(){
+  scanCancelled = true;
+  resetUI();
+}
+
+function resetUI(){
+  document.getElementById('scanSection').style.display = 'none';
+  document.getElementById('pickCard').style.display = '';
+}
+
+function resetScan(){
+  sourceDirHandle = null;
+  targetDirHandle = null;
+  sourceFiles = [];
+  targetFiles = [];
+  duplicates = [];
+  moveLog = [];
+  moveComplete = false;
+  document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('scanSection').style.display = 'none';
+  document.getElementById('pickCard').style.display = '';
+  document.getElementById('pickSource').classList.remove('selected');
+  document.getElementById('pickTarget').classList.remove('selected');
+  document.getElementById('sourceStatus').textContent = '';
+  document.getElementById('sourceName').textContent = '';
+  document.getElementById('targetStatus').textContent = '';
+  document.getElementById('targetName').textContent = '';
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('readyHint').textContent = 'Select both folders to begin';
+  document.getElementById('scanStatus').textContent = 'Ready';
+  document.getElementById('moveConfirm').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COMPARISON ENGINES
+// ═══════════════════════════════════════════════════════════════
+
+// -- HASH COMPARISON (SHA-256) --
+async function compareByHash(fill, detail, pill){
+  // Step 1: Build size map from source for quick pre-filter
+  const sourceSizeMap = new Map();
+  for(const f of sourceFiles){
+    const key = f.size;
+    if(!sourceSizeMap.has(key)) sourceSizeMap.set(key, []);
+    sourceSizeMap.get(key).push(f);
+  }
+
+  // Step 2: Find target files whose size matches any source file
+  const targetCandidates = targetFiles.filter(f => sourceSizeMap.has(f.size));
+  const sourceCandidateSizes = new Set(targetCandidates.map(f=>f.size));
+  const sourceCandidates = sourceFiles.filter(f => sourceCandidateSizes.has(f.size));
+
+  if(!targetCandidates.length){
+    fill.style.width = '95%';
+    return;
+  }
+
+  // Step 3: Hash source candidates
+  detail.textContent = 'Hashing source candidates (' + sourceCandidates.length + ' files)…';
+  let hashed = 0;
+  const totalToHash = sourceCandidates.length + targetCandidates.length;
+  for(const f of sourceCandidates){
+    if(scanCancelled) return;
+    f.hash = await hashFile(f.handle);
+    hashed++;
+    if(hashed%20===0){
+      fill.style.width = (35 + (hashed/totalToHash)*55) + '%';
+      pill.textContent = hashed + '/' + totalToHash + ' hashed';
+      detail.textContent = 'Hashing: ' + f.name;
+      await new Promise(r=>setTimeout(r,0));
+    }
+  }
+
+  // Step 4: Build source hash map
+  const sourceHashMap = new Map();
+  for(const f of sourceCandidates){
+    if(!sourceHashMap.has(f.hash)) sourceHashMap.set(f.hash, []);
+    sourceHashMap.get(f.hash).push(f);
+  }
+
+  // Step 5: Hash target candidates and find matches
+  detail.textContent = 'Hashing target candidates (' + targetCandidates.length + ' files)…';
+  for(const f of targetCandidates){
+    if(scanCancelled) return;
+    f.hash = await hashFile(f.handle);
+    hashed++;
+    if(sourceHashMap.has(f.hash)){
+      const srcMatch = sourceHashMap.get(f.hash)[0];
+      duplicates.push({sourceFile: srcMatch, targetFile: f, hash: f.hash, size: f.size});
+    }
+    if(hashed%20===0){
+      fill.style.width = (35 + (hashed/totalToHash)*55) + '%';
+      pill.textContent = hashed + '/' + totalToHash + ' hashed';
+      detail.textContent = 'Hashing: ' + f.name;
+      await new Promise(r=>setTimeout(r,0));
+    }
+  }
+}
+
+// -- NAME + SIZE COMPARISON --
+async function compareByNameSize(fill, detail, pill){
+  const sourceMap = new Map();
+  for(const f of sourceFiles){
+    const key = f.name + '|' + f.size;
+    if(!sourceMap.has(key)) sourceMap.set(key, []);
+    sourceMap.get(key).push(f);
+  }
+  let checked = 0;
+  for(const f of targetFiles){
+    if(scanCancelled) return;
+    const key = f.name + '|' + f.size;
+    if(sourceMap.has(key)){
+      const srcMatch = sourceMap.get(key)[0];
+      duplicates.push({sourceFile: srcMatch, targetFile: f, hash: key, size: f.size});
+    }
+    checked++;
+    if(checked%500===0){
+      fill.style.width = (35 + (checked/targetFiles.length)*60) + '%';
+      pill.textContent = checked + '/' + targetFiles.length + ' checked';
+      await new Promise(r=>setTimeout(r,0));
+    }
+  }
+}
+
+// -- NAME ONLY COMPARISON --
+async function compareByName(fill, detail, pill){
+  const sourceMap = new Map();
+  for(const f of sourceFiles){
+    if(!sourceMap.has(f.name)) sourceMap.set(f.name, []);
+    sourceMap.get(f.name).push(f);
+  }
+  let checked = 0;
+  for(const f of targetFiles){
+    if(scanCancelled) return;
+    if(sourceMap.has(f.name)){
+      const srcMatch = sourceMap.get(f.name)[0];
+      duplicates.push({sourceFile: srcMatch, targetFile: f, hash: f.name, size: f.size});
+    }
+    checked++;
+    if(checked%500===0){
+      fill.style.width = (35 + (checked/targetFiles.length)*60) + '%';
+      pill.textContent = checked + '/' + targetFiles.length + ' checked';
+      await new Promise(r=>setTimeout(r,0));
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SHOW RESULTS
+// ═══════════════════════════════════════════════════════════════
+function showResults(){
+  document.getElementById('scanSection').style.display = 'none';
+  document.getElementById('pickCard').style.display = 'none';
+  document.getElementById('resultsSection').style.display = '';
+  document.getElementById('scanStatus').textContent = 'Done';
+
+  // Build move log entries
+  buildMoveLog();
+
+  // Enable buttons
+  document.getElementById('exportLogBtn').disabled = duplicates.length === 0;
+  document.getElementById('moveBtn').disabled = duplicates.length === 0;
+
+  renderMetricCards();
+  renderSummary();
+  renderExtBreakdown();
+  populateExtFilter();
+  renderDuplicates();
+  renderLogTable();
+}
+
+function buildMoveLog(){
+  const tName = targetDirHandle.name;
+  moveLog = duplicates.map(d => ({
+    sourcePath: sourceDirHandle.name + '/' + d.sourceFile.path,
+    targetPath: tName + '/' + d.targetFile.path,
+    newPath: tName + '/_duplicates/' + d.targetFile.path
+  }));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// METRIC CARDS
+// ═══════════════════════════════════════════════════════════════
+function renderMetricCards(){
+  const totalDupSize = duplicates.reduce((s,d) => s + d.size, 0);
+  const dupPct = targetFiles.length > 0 ? ((duplicates.length / targetFiles.length)*100) : 0;
+
+  // Group by hash to count unique content matches
+  const uniqueHashes = new Set(duplicates.map(d=>d.hash));
+
+  const cards = [
+    {label:'Duplicates Found', value: duplicates.length.toLocaleString(), sub: 'files in target folder', color:'#ef4444', pct: Math.min(100,dupPct)},
+    {label:'Recoverable Space', value: fmtSize(totalDupSize), sub: 'total duplicate size', color:'#f59e0b', pct: Math.min(100, targetFiles.length?totalDupSize/targetFiles.reduce((s,f)=>s+f.size,0)*100:0)},
+    {label:'Source Files', value: sourceFiles.length.toLocaleString(), sub: sourceDirHandle.name, color:'#6ea8ff', pct:100},
+    {label:'Target Files', value: targetFiles.length.toLocaleString(), sub: targetDirHandle.name, color:'#22c55e', pct:100},
+  ];
+  document.getElementById('metricCards').innerHTML = cards.map(c=>`
+    <div class="metric-card">
+      <div class="mc-label">${c.label}</div>
+      <div class="mc-value" style="color:${c.color}">${c.value}</div>
+      <div class="mc-sub">${c.sub}</div>
+      <div class="mc-bar"><div class="mc-bar-fill" style="width:${c.pct.toFixed(1)}%;background:${c.color}"></div></div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SUMMARY
+// ═══════════════════════════════════════════════════════════════
+function renderSummary(){
+  const totalSrcSize = sourceFiles.reduce((s,f)=>s+f.size,0);
+  const totalTgtSize = targetFiles.reduce((s,f)=>s+f.size,0);
+  const totalDupSize = duplicates.reduce((s,d)=>s+d.size,0);
+
+  const kvs = [
+    ['Source Folder', sourceDirHandle.name],
+    ['Source Files', sourceFiles.length.toLocaleString()],
+    ['Source Size', fmtSize(totalSrcSize)],
+    ['Target Folder', targetDirHandle.name],
+    ['Target Files', targetFiles.length.toLocaleString()],
+    ['Target Size', fmtSize(totalTgtSize)],
+    ['Method', compMethod === 'hash' ? 'SHA-256 Hash' : compMethod === 'name-size' ? 'Name + Size' : 'Name Only'],
+    ['Duplicates', duplicates.length.toLocaleString()],
+    ['Duplicate Size', fmtSize(totalDupSize)],
+    ['Duplicate %', targetFiles.length ? (duplicates.length/targetFiles.length*100).toFixed(1)+'%' : '0%'],
+  ];
+  document.getElementById('scanSummary').innerHTML = kvs.map(([k,v])=>
+    `<div class="rm-kv"><span class="k">${k}</span><span class="v">${esc(v)}</span></div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXTENSION BREAKDOWN
+// ═══════════════════════════════════════════════════════════════
+function renderExtBreakdown(){
+  const extMap = {};
+  for(const d of duplicates){
+    const ext = d.targetFile.ext || '(no ext)';
+    if(!extMap[ext]) extMap[ext] = {ext, count:0, size:0};
+    extMap[ext].count++;
+    extMap[ext].size += d.size;
+  }
+  const sorted = Object.values(extMap).sort((a,b)=>b.size-a.size);
+  const maxSize = sorted.length ? sorted[0].size : 1;
+
+  document.getElementById('extCount').textContent = sorted.length;
+
+  const CAT_COLORS = {
+    jpg:'#4f8ef7',jpeg:'#4f8ef7',png:'#4f8ef7',gif:'#4f8ef7',webp:'#4f8ef7',svg:'#4f8ef7',bmp:'#4f8ef7',
+    mp4:'#a855f7',mkv:'#a855f7',avi:'#a855f7',mov:'#a855f7',webm:'#a855f7',
+    mp3:'#22c55e',wav:'#22c55e',flac:'#22c55e',aac:'#22c55e',ogg:'#22c55e',
+    pdf:'#f59e0b',doc:'#f59e0b',docx:'#f59e0b',txt:'#f59e0b',md:'#f59e0b',csv:'#f59e0b',
+    js:'#06b6d4',ts:'#06b6d4',py:'#06b6d4',html:'#06b6d4',css:'#06b6d4',json:'#06b6d4',
+    zip:'#f97316',rar:'#f97316','7z':'#f97316',tar:'#f97316',gz:'#f97316',
+  };
+
+  document.getElementById('extBreakdown').innerHTML = sorted.map(e=>{
+    const color = CAT_COLORS[e.ext] || '#64748b';
+    const pct = maxSize>0?(e.size/maxSize*100):0;
+    return `<div style="display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);padding:5px 6px;margin:1px 0;border-radius:6px;">
+      <span style="font-size:12px;font-weight:700;min-width:56px;color:${color}">.${esc(e.ext)}</span>
+      <span style="flex:1;height:6px;background:var(--border);border-radius:3px;min-width:40px;">
+        <span style="display:block;height:100%;border-radius:3px;width:${pct}%;background:${color};transition:width .4s;"></span>
+      </span>
+      <span style="font-size:11px;color:var(--muted);min-width:30px;text-align:right">${e.count}</span>
+      <span style="font-size:11px;color:var(--muted);min-width:55px;text-align:right">${fmtSize(e.size)}</span>
+    </div>`;
+  }).join('') || '<div class="tiny muted" style="padding:10px">No duplicates found</div>';
+}
+
+function populateExtFilter(){
+  const exts = new Set(duplicates.map(d=>d.targetFile.ext).filter(Boolean));
+  const sel = document.getElementById('fExt');
+  sel.innerHTML = '<option value="">All</option>' +
+    [...exts].sort().map(e=>`<option value="${esc(e)}">.${esc(e)}</option>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER DUPLICATES VIEW
+// ═══════════════════════════════════════════════════════════════
+function getFilteredDups(){
+  const search = (document.getElementById('fSearch').value||'').toLowerCase().trim();
+  const minSize = parseInt(document.getElementById('fSizeMin').value)||0;
+  const ext = document.getElementById('fExt').value;
+
+  return duplicates.filter(d=>{
+    if(search && !d.targetFile.path.toLowerCase().includes(search) && !d.sourceFile.path.toLowerCase().includes(search)) return false;
+    if(minSize && d.size < minSize) return false;
+    if(ext && d.targetFile.ext !== ext) return false;
+    return true;
+  });
+}
+
+function renderDuplicates(){
+  const filtered = getFilteredDups();
+  document.getElementById('rowCountBadge').textContent = filtered.length + ' of ' + duplicates.length + ' duplicates shown';
+
+  // Group by hash
+  const groups = new Map();
+  for(const d of filtered){
+    if(!groups.has(d.hash)) groups.set(d.hash, {sourceFile: d.sourceFile, targets:[], size: d.size, hash: d.hash});
+    groups.get(d.hash).targets.push(d.targetFile);
+  }
+
+  const container = document.getElementById('dupGroupsContainer');
+  if(!filtered.length){
+    container.innerHTML = `<div class="card" style="text-align:center;padding:40px">
+      <div style="font-size:48px;margin-bottom:10px">✨</div>
+      <div style="font-weight:800;font-size:16px">${duplicates.length?'No matches for current filter':'No Duplicates Found'}</div>
+      <div class="tiny muted" style="margin-top:6px">${duplicates.length?'Try adjusting your filters':'The target folder has no files that match the source folder'}</div>
+    </div>`;
+    return;
+  }
+
+  let html = '';
+  let idx = 0;
+  for(const [hash, group] of groups){
+    const shortHash = compMethod==='hash' ? hash.slice(0,12)+'…' : '';
+    html += `<div class="dup-group">
+      <div class="dup-group-head">
+        <span class="dg-info">📎 ${group.targets.length} duplicate${group.targets.length>1?'s':''} · ${fmtSize(group.size)}</span>
+        ${shortHash?`<span class="dg-hash">${esc(shortHash)}</span>`:''}
+      </div>
+      <div class="dup-entry source">
+        <span class="de-icon">📁</span>
+        <span class="de-path">${esc(sourceDirHandle.name + '/' + group.sourceFile.path)}</span>
+        <span class="de-badge"><span class="pill blue">Source</span></span>
+      </div>`;
+    for(const tf of group.targets){
+      const logEntry = moveLog.find(l=>l.targetPath === targetDirHandle.name+'/'+tf.path);
+      const movedTag = (moveComplete && logEntry) ? `<span class="moved-badge">✓ Moved</span>` : '';
+      html += `<div class="dup-entry target">
+        <span class="de-icon">📄</span>
+        <span class="de-path">${esc(targetDirHandle.name + '/' + tf.path)}</span>
+        <span class="de-badge"><span class="pill red">Duplicate</span> ${movedTag}</span>
+      </div>`;
+    }
+    html += `</div>`;
+    idx++;
+    if(idx >= 200){ html += `<div class="tiny muted" style="padding:12px;text-align:center">Showing first 200 groups… Export CSV for full list.</div>`; break; }
+  }
+  container.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER LOG TABLE
+// ═══════════════════════════════════════════════════════════════
+function renderLogTable(){
+  const filtered = getFilteredDups();
+  const tName = targetDirHandle.name;
+  const body = document.getElementById('logBody');
+
+  if(!filtered.length){
+    body.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:30px" class="tiny muted">No duplicates to show</td></tr>`;
+    return;
+  }
+
+  let html = '';
+  let count = 0;
+  for(const d of filtered){
+    const srcPath = sourceDirHandle.name + '/' + d.sourceFile.path;
+    const tgtPath = tName + '/' + d.targetFile.path;
+    const newPath = tName + '/_duplicates/' + d.targetFile.path;
+    html += `<tr>
+      <td class="log-path">${esc(srcPath)}</td>
+      <td class="log-path">${esc(tgtPath)}</td>
+      <td class="log-path" style="color:var(--c-green)">${esc(newPath)}</td>
+    </tr>`;
+    count++;
+    if(count >= 500) break;
+  }
+  body.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VIEW SWITCHING
+// ═══════════════════════════════════════════════════════════════
+function switchView(view, btn){
+  currentView = view;
+  document.querySelectorAll('#viewTabs .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('viewDuplicates').style.display = view==='duplicates'?'':'none';
+  document.getElementById('viewLog').style.display = view==='log'?'':'none';
+}
+
+function applyFilter(){
+  renderDuplicates();
+  renderLogTable();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXPORT LOG CSV
+// ═══════════════════════════════════════════════════════════════
+function exportLog(){
+  if(!duplicates.length) return;
+  const tName = targetDirHandle.name;
+  const sName = sourceDirHandle.name;
+  const headers = ['Original in Source (X)','Found in Target (Y)','New Path in Duplicate Folder'];
+  const rows = [headers];
+  for(const d of duplicates){
+    rows.push([
+      sName + '/' + d.sourceFile.path,
+      tName + '/' + d.targetFile.path,
+      tName + '/_duplicates/' + d.targetFile.path
+    ]);
+  }
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download = `duplicate-log-${tName}-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MOVE DUPLICATES
+// ═══════════════════════════════════════════════════════════════
+function confirmMove(){
+  if(!duplicates.length) return;
+  const totalSize = duplicates.reduce((s,d)=>s+d.size,0);
+  document.getElementById('moveDesc').innerHTML =
+    `This will move <strong>${duplicates.length}</strong> duplicate file(s) (${fmtSize(totalSize)}) ` +
+    `from <strong>${esc(targetDirHandle.name)}</strong> into ` +
+    `<strong>${esc(targetDirHandle.name)}/_duplicates/</strong>, preserving their folder structure.<br>` +
+    `<br>Original files in the source folder will <strong>not</strong> be affected.`;
+  document.getElementById('moveConfirm').style.display = '';
+  document.getElementById('moveDetail').textContent = '';
+}
+
+async function executeMoveOperation(){
+  const progressWrap = document.getElementById('moveProgressWrap');
+  const progressFill = document.getElementById('moveProgressFill');
+  const detail = document.getElementById('moveDetail');
+  progressWrap.style.display = '';
+  progressFill.style.width = '0%';
+
+  try{
+    // Create _duplicates directory
+    const dupRoot = await targetDirHandle.getDirectoryHandle('_duplicates', {create:true});
+
+    let moved = 0;
+    const total = duplicates.length;
+
+    for(const d of duplicates){
+      const targetPath = d.targetFile.path; // e.g. "sub/folder/file.txt"
+      const parts = targetPath.split('/');
+      const fileName = parts.pop();
+
+      // Create nested directory structure inside _duplicates
+      let currentDir = dupRoot;
+      for(const dirPart of parts){
+        currentDir = await currentDir.getDirectoryHandle(dirPart, {create:true});
+      }
+
+      // Read the source file content
+      const sourceFile = await d.targetFile.handle.getFile();
+      const content = await sourceFile.arrayBuffer();
+
+      // Write to new location
+      const newFileHandle = await currentDir.getFileHandle(fileName, {create:true});
+      const writable = await newFileHandle.createWritable();
+      await writable.write(content);
+      await writable.close();
+
+      // Delete the original from the target folder
+      // Navigate to the parent directory of the original file
+      try{
+        const origParts = d.targetFile.path.split('/');
+        const origName = origParts.pop();
+        let parentDir = targetDirHandle;
+        for(const p of origParts){
+          parentDir = await parentDir.getDirectoryHandle(p);
+        }
+        await parentDir.removeEntry(origName);
+      }catch(e){
+        console.warn('Could not remove original:', d.targetFile.path, e);
+      }
+
+      moved++;
+      progressFill.style.width = (moved/total*100).toFixed(1)+'%';
+      detail.textContent = `Moved ${moved}/${total}: ${fileName}`;
+      if(moved%10===0) await new Promise(r=>setTimeout(r,0));
+    }
+
+    moveComplete = true;
+    detail.innerHTML = `<span style="color:var(--c-green);font-weight:700">✅ Successfully moved ${moved} file(s) to ${esc(targetDirHandle.name)}/_duplicates/</span>`;
+    document.getElementById('moveBtn').disabled = true;
+    document.getElementById('moveBtn').textContent = '✅ Move Complete';
+
+    // Re-render to show moved badges
+    renderDuplicates();
+  }catch(e){
+    detail.innerHTML = `<span style="color:var(--c-red)">❌ Error: ${esc(e.message)}</span>`;
+    console.error('Move error:', e);
+  }
+}
+</script>
+
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6997965e73d8cb1c357e66ee/1jhs26oms';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+</body>
+</html>
