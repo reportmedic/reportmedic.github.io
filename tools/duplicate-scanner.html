@@ -621,7 +621,7 @@ async function startScan(){
   scanCancelled=false; moveComplete=false; duplicates=[]; moveLog=[];
 
   document.getElementById('pickCard').style.display='none';
-  document.getElementById('scanSection').style.display='';
+  document.getElementById('scanSection').style.display='block';
   document.getElementById('resultsSection').style.display='none';
 
   const pill=document.getElementById('scanProgressPill');
@@ -763,7 +763,7 @@ async function compareByName(fill,detail,pill){
 function showResults(){
   document.getElementById('scanSection').style.display='none';
   document.getElementById('pickCard').style.display='none';
-  document.getElementById('resultsSection').style.display='';
+  document.getElementById('resultsSection').style.display='block';
   document.getElementById('scanStatus').textContent='Done';
   buildMoveLog();
   document.getElementById('exportLogBtn').disabled=!duplicates.length;
