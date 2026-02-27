@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Employee Datasets — Global HR Sample Data — ReportMedic</title>
+<meta name="description" content="Download 8 realistic employee datasets spanning USA, India, EU, UK, Australia, LATAM, Africa and China. 40,000+ records each with 30 HR fields — ready for analysis, testing and demos." />
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png" />
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180" />
+<link rel="stylesheet" href="/assets/css/styles.css" />
+
+<script defer src="/assets/js/rm-dropzone.js"></script>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+<style>
+  .panel h1{display:flex; align-items:baseline; gap:.55rem; flex-wrap:wrap;}
+
+  /* ── Region Chips ── */
+  .cat-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+  .cat-chip{
+    padding:6px 14px;border-radius:20px;font-size:.78rem;font-weight:600;
+    cursor:pointer;border:1.5px solid rgba(255,255,255,.12);background:transparent;
+    color:rgba(255,255,255,.6);transition:all .2s;white-space:nowrap;
+  }
+  .cat-chip:hover{border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.85);}
+  .cat-chip.active{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.35);color:#fff;}
+
+  /* ── Controls bar ── */
+  .ds-controls{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;
+  }
+  .ds-controls > *{flex-shrink:0;}
+  .ds-controls-right{display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;}
+  .ds-search-wrap{
+    position:relative;flex:0 1 300px;min-width:180px;
+  }
+  .ds-search-wrap svg{
+    position:absolute;left:12px;top:50%;transform:translateY(-50%);
+    width:14px;height:14px;stroke:rgba(255,255,255,.3);fill:none;
+    stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;
+  }
+  .ds-search{
+    width:100%;padding:8px 36px 8px 32px !important;border-radius:9px;
+    border:1.5px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);
+    color:#fff;font-size:.82rem;outline:none;transition:border-color .2s;box-sizing:border-box;
+  }
+  .ds-search::placeholder{color:rgba(255,255,255,.3);font-size:.8rem;}
+  .ds-search:focus{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.06);}
+  .ds-search:focus + .ds-kbd{display:none;}
+  .ds-kbd{
+    position:absolute;right:10px;top:50%;transform:translateY(-50%);
+    font-size:.62rem;font-family:'SF Mono',Menlo,Consolas,monospace;
+    padding:2px 6px;border-radius:4px;
+    background:rgba(255,255,255,.07);color:rgba(255,255,255,.28);
+    border:1px solid rgba(255,255,255,.08);pointer-events:none;
+    line-height:1.3;
+  }
+
+  /* ── Stats pill ── */
+  .ds-stats{font-size:.72rem;color:rgba(255,255,255,.38);margin-left:auto;white-space:nowrap;}
+
+  /* ── Dataset Cards ── */
+  .ds-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+  @media(min-width:720px){.ds-grid{grid-template-columns:1fr 1fr;}}
+
+  .ds-card{
+    border:1.5px solid rgba(255,255,255,.08);border-radius:14px;padding:18px 20px;
+    background:rgba(255,255,255,.025);transition:all .25s;cursor:default;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .ds-card:hover{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.04);}
+
+  .ds-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .ds-card-title{font-weight:800;font-size:.92rem;line-height:1.3;color:#fff;}
+  .ds-card-cat{
+    font-size:.67rem;font-weight:600;padding:3px 9px;border-radius:8px;
+    background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);
+    white-space:nowrap;flex-shrink:0;
+  }
+  .ds-card-sub{font-size:.77rem;color:rgba(255,255,255,.4);line-height:1.35;}
+  .ds-card-file{font-size:.72rem;font-family:'SF Mono',Menlo,Consolas,monospace;color:rgba(255,255,255,.35);}
+
+  .ds-card-cols{
+    display:flex;flex-wrap:wrap;gap:5px;margin-top:2px;
+  }
+  .ds-col-tag{
+    font-size:.64rem;padding:2px 7px;border-radius:6px;
+    background:rgba(255,255,255,.05);color:rgba(255,255,255,.38);
+    font-family:'SF Mono',Menlo,Consolas,monospace;
+  }
+  .ds-col-more{
+    font-size:.64rem;padding:2px 7px;border-radius:6px;
+    background:none;color:rgba(255,255,255,.25);cursor:pointer;
+    border:1px dashed rgba(255,255,255,.12);
+  }
+  .ds-col-more:hover{border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.4);}
+
+  .ds-card-actions{display:flex;gap:8px;margin-top:4px;align-items:center;}
+  .ds-dl-btn{
+    display:inline-flex;align-items:center;gap:5px;
+    padding:6px 14px;border-radius:8px;font-size:.75rem;font-weight:700;
+    background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);
+    border:1.5px solid rgba(255,255,255,.1);cursor:pointer;
+    text-decoration:none;transition:all .2s;
+  }
+  .ds-dl-btn:hover{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.25);}
+  .ds-dl-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+  .ds-preview-btn{
+    padding:6px 14px;border-radius:8px;font-size:.75rem;font-weight:600;
+    background:none;color:rgba(255,255,255,.45);border:1.5px solid rgba(255,255,255,.08);
+    cursor:pointer;transition:all .2s;
+  }
+  .ds-preview-btn:hover{border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);}
+
+  .ds-col-count{font-size:.7rem;color:rgba(255,255,255,.3);margin-left:auto;}
+
+  /* ── Column preview panel ── */
+  .ds-col-panel{
+    margin-top:6px;padding:12px 14px;border-radius:10px;
+    background:rgba(0,0,0,.15);border:1px solid rgba(255,255,255,.06);
+    display:none;
+  }
+  .ds-col-panel.open{display:block;}
+  .ds-col-panel-title{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:8px;}
+  .ds-col-panel .ds-col-tag{margin-bottom:2px;}
+
+  /* ── Empty state ── */
+  .ds-empty{
+    text-align:center;padding:48px 20px;color:rgba(255,255,255,.3);
+    font-size:.88rem;
+  }
+  .ds-empty b{color:rgba(255,255,255,.5);}
+
+  /* ── View toggle ── */
+  .ds-view-toggle{display:flex;gap:0;border:1.5px solid rgba(255,255,255,.10);border-radius:9px;overflow:hidden;flex:0 0 auto;}
+  .ds-view-btn{
+    padding:7px 11px;font-size:.7rem;font-weight:600;cursor:pointer;
+    background:transparent;color:rgba(255,255,255,.35);border:none;transition:all .2s;
+  }
+  .ds-view-btn.active{background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);}
+  .ds-view-btn:hover:not(.active){color:rgba(255,255,255,.55);}
+
+  .ds-grid.list-view{grid-template-columns:1fr !important;}
+
+  /* ── Sort dropdown ── */
+  .ds-sort{
+    padding:7px 10px;border-radius:9px;font-size:.78rem;
+    border:1.5px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);
+    color:rgba(255,255,255,.55);cursor:pointer;outline:none;transition:border-color .2s;
+    width:fit-content;max-width:160px;
+  }
+  .ds-sort:focus{border-color:rgba(255,255,255,.25);}
+  .ds-sort option{background:#1a1a2e;color:#fff;}
+
+  /* ── Records badge ── */
+  .ds-rec-badge{
+    font-size:.66rem;font-weight:600;padding:3px 8px;border-radius:6px;
+    background:rgba(46,204,113,.08);color:rgba(46,204,113,.6);
+    border:1px solid rgba(46,204,113,.12);white-space:nowrap;
+  }
+
+  /* ── Territories tag ── */
+  .ds-terr-badge{
+    font-size:.66rem;font-weight:600;padding:3px 8px;border-radius:6px;
+    background:rgba(52,152,219,.08);color:rgba(52,152,219,.6);
+    border:1px solid rgba(52,152,219,.12);white-space:nowrap;
+  }
+
+  /* ── Download All bar ── */
+  .ds-dl-all-bar{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:14px 18px;border-radius:12px;margin-bottom:18px;
+    border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);
+  }
+  .ds-dl-all-bar .label{font-size:.82rem;font-weight:700;color:rgba(255,255,255,.7);}
+  .ds-dl-all-bar .meta{font-size:.72rem;color:rgba(255,255,255,.35);margin-left:auto;}
+
+  /* ── Learn-more modal: 80% height, scrollable body ── */
+  .rm-lm-dialog{max-height:80vh !important;display:flex !important;flex-direction:column !important;overflow:hidden !important;}
+  .rm-lm-body{overflow-y:auto !important;flex:1 !important;}
+</style>
+
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Employee Datasets <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">8 realistic employee datasets covering every major world region — USA, India, EU, UK, Australia, LATAM, Africa and China. 40,000+ records each with 30 HR fields including demographics, employment details, salary, performance and company data. Ready for analysis, testing and demos.</p>
+    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need help picking the right dataset? Get human help →</a></div>
+
+    <div class="hr"></div>
+
+    <!-- Controls row -->
+    <div class="ds-controls">
+      <div class="ds-search-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="ds-search" id="dsSearch" type="text" placeholder="Search datasets, columns, regions…" autocomplete="off" />
+        <span class="ds-kbd">/</span>
+      </div>
+      <div class="ds-controls-right">
+        <select class="ds-sort" id="dsSort">
+          <option value="cat">Sort: region</option>
+          <option value="name">Sort: A → Z</option>
+          <option value="records">Sort: records</option>
+        </select>
+        <div class="ds-view-toggle">
+          <button class="ds-view-btn active" data-view="grid" type="button">Grid</button>
+          <button class="ds-view-btn" data-view="list" type="button">List</button>
+        </div>
+      </div>
+      <div class="ds-stats" id="dsStats"></div>
+    </div>
+
+    <!-- Region chips -->
+    <div class="cat-bar" id="catBar">
+      <button class="cat-chip active" data-cat="all" type="button">All</button>
+    </div>
+
+    <!-- Download-all bar -->
+    <div class="ds-dl-all-bar">
+      <div class="label">⤓ Download all 8 datasets</div>
+      <button class="ds-dl-btn" id="dlAllBtn" type="button">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download All (CSV)
+      </button>
+      <div class="meta" id="dlAllMeta">8 files · 30 columns each</div>
+    </div>
+
+    <!-- Dataset grid -->
+    <div class="ds-grid" id="dsGrid" style="margin-top:12px;"></div>
+
+  </div>
+
+<div class="footer">© 2026 ReportMedic</div>
+
+</div>
+
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
+<!-- Learn More Modal -->
+<div aria-hidden="true" aria-label="Employee Datasets details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Employee Datasets</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Realistic HR data for building dashboards, reports and analytics demos</li>
+        <li>Testing ETL pipelines, data-quality checks and BI tool configurations</li>
+        <li>Training and onboarding — practice analysis without touching production data</li>
+        <li>Cross-region comparison exercises with consistent schemas</li>
+      </ul>
+
+      <h3>What's included</h3>
+      <ul>
+        <li><b>8 datasets</b> — USA, India, EU (27 countries), UK (43 regions), Australia (8 states/territories), LATAM (20 countries), Africa (54 countries), China (34 provinces)</li>
+        <li><b>40,000+ records each</b> — evenly distributed across every country/state/territory within each region</li>
+        <li><b>30 columns per file</b> — employee ID, name, DOB, gender, emails, phone, address, hire date, status, type, department, title, manager, location type, salary, performance, plus 10 company-level fields</li>
+        <li>Region-appropriate names, phone formats, postal codes, salary ranges and company naming conventions</li>
+      </ul>
+
+      <h3>Schema overview</h3>
+      <ul>
+        <li><b>Identity:</b> employee_id, full_name, preferred_name, date_of_birth, gender_identity</li>
+        <li><b>Contact:</b> work_email, personal_email, phone_number</li>
+        <li><b>Location:</b> home_address_city, home_address_state, home_address_zip</li>
+        <li><b>Employment:</b> hire_date, employment_status, employment_type, department, job_title, manager_employee_id, work_location_type</li>
+        <li><b>Compensation:</b> salary_base_annual, performance_rating_latest</li>
+        <li><b>Company:</b> company_id, company_legal_name, company_trade_name, company_hq_state, company_industry_naics_code, company_primary_operating_state, company_operating_states_list, company_operating_states_count, company_state_focus_flag, company_state_focus_notes</li>
+      </ul>
+
+      <h3>How to use</h3>
+      <ul>
+        <li>Browse by region chips or type a keyword in the search bar</li>
+        <li>Click <b>Columns</b> on any card to inspect the full 30-column schema</li>
+        <li>Hit <b>Download CSV</b> to grab an individual file, or use <b>Download All</b> to fetch every file</li>
+      </ul>
+
+      <h3>Privacy</h3>
+      <ul>
+        <li>100% synthetic data — no real individuals</li>
+        <li>No tracking, no sign-ups — just data</li>
+        <li>Files are served directly from GitHub</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ════════════════════════════════════════════════════
+   Learn More modal wiring (same as compare template)
+   ════════════════════════════════════════════════════ */
+(function rmLmWireUp(){
+  const openers = document.querySelectorAll('[data-rm-lm-open]');
+  const closers = document.querySelectorAll('[data-rm-lm-close]');
+  const setOpen = (id, isOpen) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+  };
+  openers.forEach(a=>{
+    a.addEventListener('click', (e)=>{
+      e.preventDefault();
+      setOpen(a.dataset.rmLmOpen, true);
+    });
+  });
+  closers.forEach(b=>{
+    b.addEventListener('click', ()=> setOpen(b.dataset.rmLmClose, false));
+  });
+  document.querySelectorAll('.rm-lm-backdrop').forEach(bg=>{
+    bg.addEventListener('click', (e)=>{
+      if(e.target===bg) setOpen(bg.id, false);
+    });
+  });
+  document.addEventListener('keydown', (e)=>{
+    if(e.key==='Escape'){
+      document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(d=> setOpen(d.id, false));
+    }
+  });
+})();
+
+
+/* ════════════════════════════════════════════════════
+   Employee Dataset Catalog — 8 global datasets
+   ════════════════════════════════════════════════════ */
+const BASE = "https://reportmedic.github.io/assets/datasets/";
+
+const COLS = [
+  "employee_id","full_name","preferred_name","date_of_birth","gender_identity",
+  "work_email","personal_email","phone_number","home_address_city","home_address_state",
+  "home_address_zip","hire_date","employment_status","employment_type","department",
+  "job_title","manager_employee_id","work_location_type","salary_base_annual",
+  "performance_rating_latest","company_id","company_legal_name","company_trade_name",
+  "company_hq_state","company_industry_naics_code","company_primary_operating_state",
+  "company_operating_states_list","company_operating_states_count",
+  "company_state_focus_flag","company_state_focus_notes"
+];
+
+const DATASETS = [
+  {
+    cat:"Americas",
+    sub:"USA — 50 States + DC & Territories",
+    file:"employees_usa.csv",
+    records:"52,000",
+    territories:"52 states/territories",
+    desc:"All 50 US states, DC and Puerto Rico. ~1,000 employees per state. Salary range $19K–$217K. Companies use LLC/Inc/Holdings suffixes.",
+    cols: COLS
+  },
+  {
+    cat:"Americas",
+    sub:"LATAM — 20 Countries",
+    file:"employees_latam.csv",
+    records:"40,000",
+    territories:"20 countries",
+    desc:"Mexico, Brazil, Argentina, Colombia, Chile, Peru and 14 more. 2,000 per country. Culturally relevant Spanish/Portuguese names. Salary range $8K–$125K. SA/SAS/Ltda company suffixes.",
+    cols: COLS
+  },
+  {
+    cat:"Asia",
+    sub:"India — 36 States & Union Territories",
+    file:"employees_india.csv",
+    records:"40,000+",
+    territories:"36 states/UTs",
+    desc:"All 28 states and 8 union territories. Region-appropriate Indian names across diverse linguistic backgrounds. INR-equivalent salary ranges. Pvt Ltd/Ltd company suffixes.",
+    cols: COLS
+  },
+  {
+    cat:"Asia",
+    sub:"China — 34 Provincial Divisions",
+    file:"employees_china.csv",
+    records:"40,018",
+    territories:"34 provinces/SARs",
+    desc:"All 23 provinces, 4 municipalities, 5 autonomous regions, plus Hong Kong, Macau and Taiwan. ~1,177 per province. Chinese names. Salary range ¥30K–¥280K. Co Ltd/Tech Co suffixes.",
+    cols: COLS
+  },
+  {
+    cat:"Europe",
+    sub:"EU — 27 Member States",
+    file:"employees_eu.csv",
+    records:"40,014",
+    territories:"27 countries",
+    desc:"All 27 EU member states from Austria to Sweden. ~1,482 per country. Multilingual European names. Salary range €22K–€195K. GmbH/SA/BV/SRL/SpA company suffixes.",
+    cols: COLS
+  },
+  {
+    cat:"Europe",
+    sub:"UK — 43 Counties & Regions",
+    file:"employees_uk.csv",
+    records:"40,033",
+    territories:"43 regions",
+    desc:"England (counties + Greater London), Scotland, Wales and Northern Ireland regions. ~931 per region. UK postcodes, +44 phone format. Salary range £21K–£185K. Ltd/PLC/LLP suffixes.",
+    cols: COLS
+  },
+  {
+    cat:"Oceania",
+    sub:"Australia — 6 States + 2 Territories",
+    file:"employees_australia.csv",
+    records:"40,000",
+    territories:"8 states/territories",
+    desc:"NSW, VIC, QLD, SA, WA, TAS, ACT and NT. 5,000 per territory. Australian names with multicultural mix. Salary range A$38K–A$210K. Pty Ltd/Group suffixes.",
+    cols: COLS
+  },
+  {
+    cat:"Africa",
+    sub:"Africa — 54 Countries",
+    file:"employees_africa.csv",
+    records:"40,014",
+    territories:"54 countries",
+    desc:"Every African nation from Algeria to Zimbabwe. ~741 per country. Culturally diverse names spanning West, East, Southern, North and Central Africa. Salary range $5K–$95K.",
+    cols: COLS
+  }
+];
+
+/* ════════════════════════════════════
+   Init: build region chips + render
+   ════════════════════════════════════ */
+const cats = [...new Set(DATASETS.map(d=>d.cat))];
+const catBar = document.getElementById('catBar');
+cats.forEach(c=>{
+  const b = document.createElement('button');
+  b.className = 'cat-chip';
+  b.type = 'button';
+  b.dataset.cat = c;
+  b.textContent = c;
+  catBar.appendChild(b);
+});
+
+let activeCat = 'all';
+let searchTerm = '';
+let sortBy = 'cat';
+let viewMode = 'grid';
+
+/* ── Filtering ── */
+function filtered(){
+  let list = DATASETS;
+  if(activeCat !== 'all') list = list.filter(d=>d.cat===activeCat);
+  if(searchTerm){
+    const q = searchTerm.toLowerCase();
+    list = list.filter(d=>{
+      return d.cat.toLowerCase().includes(q) ||
+             d.sub.toLowerCase().includes(q) ||
+             d.file.toLowerCase().includes(q) ||
+             d.desc.toLowerCase().includes(q) ||
+             d.cols.some(c=>c.toLowerCase().includes(q));
+    });
+  }
+  // sort
+  if(sortBy==='name') list = [...list].sort((a,b)=>a.sub.localeCompare(b.sub));
+  else if(sortBy==='records') list = [...list].sort((a,b)=>{
+    const ra = parseInt(a.records.replace(/,/g,'')) || 0;
+    const rb = parseInt(b.records.replace(/,/g,'')) || 0;
+    return rb - ra;
+  });
+  return list;
+}
+
+/* ── Render ── */
+const grid = document.getElementById('dsGrid');
+const stats = document.getElementById('dsStats');
+
+function escHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+function render(){
+  const list = filtered();
+  const totalRecs = DATASETS.reduce((s,d)=>{
+    return s + (parseInt(d.records.replace(/[,+]/g,'')) || 0);
+  }, 0);
+  stats.textContent = `Showing ${list.length} of ${DATASETS.length} datasets · ~${totalRecs.toLocaleString()}+ total records · ${COLS.length} columns each`;
+
+  if(viewMode==='list') grid.classList.add('list-view');
+  else grid.classList.remove('list-view');
+
+  if(!list.length){
+    grid.innerHTML = '<div class="ds-empty">No datasets match your search.<br>Try a different keyword or clear the filter.</div>';
+    return;
+  }
+
+  grid.innerHTML = list.map((d,i)=>{
+    const previewCols = d.cols.slice(0,5);
+    const remaining = d.cols.length - previewCols.length;
+    const dlUrl = BASE + d.file;
+    const uid = 'cp_' + i;
+    return `
+    <div class="ds-card">
+      <div class="ds-card-head">
+        <div class="ds-card-title">${escHtml(d.sub)}</div>
+        <div class="ds-card-cat">${escHtml(d.cat)}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <div class="ds-card-file">${escHtml(d.file)}</div>
+        <span class="ds-rec-badge">${escHtml(d.records)} rows</span>
+        <span class="ds-terr-badge">${escHtml(d.territories)}</span>
+      </div>
+      <div class="ds-card-sub">${escHtml(d.desc)}</div>
+      <div class="ds-card-cols">
+        ${previewCols.map(c=>`<span class="ds-col-tag">${escHtml(c)}</span>`).join('')}
+        ${remaining > 0 ? `<span class="ds-col-more" data-panel="${uid}">+${remaining} more</span>` : ''}
+      </div>
+      <div class="ds-col-panel" id="${uid}">
+        <div class="ds-col-panel-title">All ${d.cols.length} columns</div>
+        <div class="ds-card-cols">${d.cols.map(c=>`<span class="ds-col-tag">${escHtml(c)}</span>`).join('')}</div>
+      </div>
+      <div class="ds-card-actions">
+        <a class="ds-dl-btn" href="${dlUrl}" download>
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download CSV
+        </a>
+        <button class="ds-preview-btn" data-panel="${uid}" type="button">Columns</button>
+        <span class="ds-col-count">${d.cols.length} cols</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // wire up "show more" / "Columns" toggles
+  grid.querySelectorAll('[data-panel]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const panel = document.getElementById(btn.dataset.panel);
+      if(panel) panel.classList.toggle('open');
+    });
+  });
+}
+
+/* ── Event listeners ── */
+catBar.addEventListener('click', e=>{
+  const chip = e.target.closest('.cat-chip');
+  if(!chip) return;
+  catBar.querySelectorAll('.cat-chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  activeCat = chip.dataset.cat;
+  render();
+});
+
+document.getElementById('dsSearch').addEventListener('input', e=>{
+  searchTerm = e.target.value.trim();
+  render();
+});
+
+document.getElementById('dsSort').addEventListener('change', e=>{
+  sortBy = e.target.value;
+  render();
+});
+
+document.querySelectorAll('.ds-view-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.ds-view-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    viewMode = btn.dataset.view;
+    render();
+  });
+});
+
+// keyboard shortcut: focus search with /
+document.addEventListener('keydown', e=>{
+  if(e.key==='/' && document.activeElement.tagName!=='INPUT'){
+    e.preventDefault();
+    document.getElementById('dsSearch').focus();
+  }
+});
+
+// Download All — sequential fetch & trigger
+document.getElementById('dlAllBtn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('dlAllBtn');
+  const meta = document.getElementById('dlAllMeta');
+  btn.disabled = true;
+  btn.textContent = 'Downloading…';
+  let count = 0;
+  for(const d of DATASETS){
+    const url = BASE + d.file;
+    try {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = d.file;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      count++;
+      meta.textContent = `Downloaded ${count} of ${DATASETS.length}…`;
+      await new Promise(r=>setTimeout(r, 600));
+    } catch(e){ /* skip failed */ }
+  }
+  meta.textContent = `${count} files downloaded`;
+  btn.disabled = false;
+  btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download All (CSV)`;
+  setTimeout(()=>{ meta.textContent = `8 files · ${COLS.length} columns each`; }, 4000);
+});
+
+render();
+</script>
+
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6997965e73d8cb1c357e66ee/1jhs26oms';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+</body>
+</html>
