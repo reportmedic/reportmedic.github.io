@@ -3,18 +3,21 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<meta name="description" content="Explore 5 years of UPSC Prelims GS Paper 1 questions (2021–2025) with interactive trend analytics, subject-wise filtering, difficulty heatmaps, and pattern insights. 500 questions — free, offline, private."/>
-<title>UPSC PYQ Explorer — 500 Questions · 2021–2025 Trend Analytics — ReportMedic</title>
+<meta name="description" content="Explore 12 years of UPSC Prelims questions with interactive trend analytics, subject-wise filtering, and pattern insights. Free, offline, private — no signup needed."/>
+<title>UPSC PYQ Explorer — Trend Analytics &amp; Pattern Finder — ReportMedic</title>
 <link rel="icon" href="/favicon.ico" sizes="any"/>
 <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
 <link rel="stylesheet" href="/assets/css/styles.css"/>
 <script defer src="/assets/js/rm-tools-drawer.js"></script>
 <style>
+/* ── Google Font ── */
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 
+/* ── Animated Background Orbs ── */
 .bg-orbs{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
 .bg-orbs .orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.18;animation:orbFloat 20s ease-in-out infinite;}
 .bg-orbs .orb:nth-child(1){width:600px;height:600px;background:#6ea8ff;top:-10%;left:-5%;animation-delay:0s;}
@@ -22,26 +25,30 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 .bg-orbs .orb:nth-child(3){width:400px;height:400px;background:#a78bfa;bottom:-5%;left:30%;animation-delay:-14s;animation-duration:22s;}
 @keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(30px,-40px) scale(1.05);}66%{transform:translate(-20px,30px) scale(.95);}}
 
-.pyq-hero{padding:36px 0 16px;text-align:center;position:relative;}
-.pyq-hero h1{font-size:clamp(26px,5vw,42px);font-weight:900;letter-spacing:-.5px;line-height:1.1;margin-bottom:10px;}
+/* ── Hero ── */
+.pyq-hero{padding:40px 0 20px;text-align:center;position:relative;}
+.pyq-hero h1{font-size:clamp(28px,5vw,44px);font-weight:900;letter-spacing:-.5px;line-height:1.1;margin-bottom:12px;}
 .pyq-hero h1 .accent{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.pyq-hero .tagline{color:var(--muted);font-size:14.5px;max-width:660px;margin:0 auto 20px;line-height:1.6;}
+.pyq-hero .tagline{color:var(--muted);font-size:15px;max-width:640px;margin:0 auto 24px;line-height:1.6;}
 
-.stat-orbs{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:24px;}
-.stat-orb{width:100px;height:100px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);backdrop-filter:blur(10px);transition:transform .2s,border-color .2s;}
+/* ── Stat Orbs ── */
+.stat-orbs{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:28px;}
+.stat-orb{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);backdrop-filter:blur(10px);transition:transform .2s,border-color .2s;}
 .stat-orb:hover{transform:scale(1.08);border-color:rgba(124,247,212,.4);}
-.stat-orb .val{font-size:22px;font-weight:900;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.stat-orb .lbl{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;text-align:center;line-height:1.2;}
+.stat-orb .val{font-size:26px;font-weight:900;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-orb .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;text-align:center;line-height:1.2;}
 
-.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+/* ── Controls Bar ── */
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px;}
 .search-box{flex:1;min-width:200px;position:relative;}
-.search-box input{width:100%;padding:11px 14px 11px 38px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);font-size:13.5px;outline:none;font-family:inherit;backdrop-filter:blur(6px);transition:border-color .15s,box-shadow .15s;}
+.search-box input{width:100%;padding:12px 14px 12px 40px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);font-size:14px;outline:none;font-family:inherit;backdrop-filter:blur(6px);transition:border-color .15s,box-shadow .15s;}
 .search-box input:focus{border-color:rgba(124,247,212,.5);box-shadow:0 0 0 3px rgba(124,247,212,.1);}
-.search-box svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
-.filter-btn{padding:8px 14px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;backdrop-filter:blur(6px);white-space:nowrap;}
+.search-box svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+.filter-btn{padding:10px 16px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;backdrop-filter:blur(6px);}
 .filter-btn:hover,.filter-btn.active{color:var(--text);border-color:rgba(124,247,212,.5);background:rgba(124,247,212,.08);}
 .filter-btn.active{color:#061021;background:linear-gradient(135deg,rgba(110,168,255,.9),rgba(124,247,212,.9));border:none;}
 
+/* ── Year Selector ── */
 .year-strip{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;}
 .year-strip::-webkit-scrollbar{height:4px;}
 .year-strip::-webkit-scrollbar-track{background:transparent;}
@@ -50,28 +57,28 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 .yr-chip:hover{border-color:rgba(110,168,255,.4);color:var(--text);}
 .yr-chip.active{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;border:none;}
 
-.diff-strip{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
-.diff-chip{padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;transition:all .12s;font-family:inherit;}
-.diff-chip:hover{border-color:rgba(255,255,255,.25);color:var(--text);}
-.diff-chip.active{border:none;}
-.diff-chip.active[data-diff="easy"]{background:rgba(16,185,129,.2);color:#34d399;}
-.diff-chip.active[data-diff="medium"]{background:rgba(245,158,11,.2);color:#fbbf24;}
-.diff-chip.active[data-diff="hard"]{background:rgba(239,68,68,.2);color:#f87171;}
-.diff-chip.active[data-diff="All"]{background:linear-gradient(135deg,rgba(110,168,255,.9),rgba(124,247,212,.9));color:#061021;}
-
-.chart-panel{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:18px;backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+/* ── Trend Chart Panel ── */
+.chart-panel{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:22px;backdrop-filter:blur(6px);position:relative;overflow:hidden;}
 .chart-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
-.chart-panel h2{font-size:15px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.chart-panel h2{font-size:16px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
 .chart-panel h2 .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);}
-.chart-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
-.chart-tab{padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:11.5px;font-weight:600;cursor:pointer;transition:all .12s;font-family:inherit;}
+.chart-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.chart-tab{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .12s;font-family:inherit;}
 .chart-tab:hover{color:var(--text);border-color:rgba(255,255,255,.2);}
 .chart-tab.active{background:rgba(110,168,255,.15);color:#6ea8ff;border-color:rgba(110,168,255,.3);}
-.chart-wrap{position:relative;height:260px;margin-bottom:6px;}
+.chart-wrap{position:relative;height:280px;margin-bottom:8px;}
 .chart-wrap canvas{width:100%!important;height:100%!important;}
 
-.q-grid{display:flex;flex-direction:column;gap:10px;}
-.q-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:16px;padding:16px;backdrop-filter:blur(6px);transition:border-color .15s,transform .15s;cursor:pointer;position:relative;overflow:hidden;}
+/* ── Subject Heatmap ── */
+.heatmap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;margin-top:10px;}
+.heat-cell{padding:10px 6px;border-radius:12px;text-align:center;border:1px solid rgba(255,255,255,.06);transition:transform .12s,border-color .12s;cursor:default;}
+.heat-cell:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.2);}
+.heat-cell .hv{font-size:18px;font-weight:900;}
+.heat-cell .hl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+
+/* ── Question Cards ── */
+.q-grid{display:flex;flex-direction:column;gap:12px;}
+.q-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:18px;padding:18px;backdrop-filter:blur(6px);transition:border-color .15s,transform .15s;cursor:pointer;position:relative;overflow:hidden;}
 .q-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px;}
 .q-card[data-sub="Polity"]::before{background:#6ea8ff;}
 .q-card[data-sub="History"]::before{background:#f59e0b;}
@@ -80,74 +87,87 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 .q-card[data-sub="Environment"]::before{background:#14b8a6;}
 .q-card[data-sub="Science"]::before{background:#f472b6;}
 .q-card[data-sub="Current Affairs"]::before{background:#fb923c;}
-.q-card[data-sub="IR"]::before{background:#38bdf8;}
-.q-card[data-sub="Art & Culture"]::before{background:#e879f9;}
 .q-card:hover{border-color:rgba(255,255,255,.22);transform:translateY(-1px);}
 .q-card.expanded{border-color:rgba(124,247,212,.3);}
-.q-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
-.q-year-badge{padding:3px 9px;border-radius:999px;font-size:10.5px;font-weight:700;background:rgba(110,168,255,.12);color:#6ea8ff;border:1px solid rgba(110,168,255,.2);}
-.q-sub-badge{padding:3px 9px;border-radius:999px;font-size:10.5px;font-weight:600;border:1px solid rgba(255,255,255,.1);color:var(--muted);}
-.q-num{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
-.q-diff{margin-left:auto;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;}
+.q-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.q-year-badge{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(110,168,255,.12);color:#6ea8ff;border:1px solid rgba(110,168,255,.2);}
+.q-sub-badge{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,.1);color:var(--muted);}
+.q-diff{margin-left:auto;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
 .q-diff.easy{background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.2);}
 .q-diff.medium{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.2);}
 .q-diff.hard{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2);}
-.q-text{font-size:14px;line-height:1.65;font-weight:500;}
-.q-options{margin-top:10px;display:flex;flex-direction:column;gap:7px;}
-.q-opt{padding:10px 13px;border-radius:11px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);font-size:13px;cursor:pointer;transition:all .12s;display:flex;align-items:flex-start;gap:9px;line-height:1.5;}
+.q-text{font-size:14.5px;line-height:1.65;font-weight:500;}
+.q-options{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
+.q-opt{padding:11px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);font-size:13.5px;cursor:pointer;transition:all .12s;display:flex;align-items:flex-start;gap:10px;}
 .q-opt:hover{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.06);}
-.q-opt .ol{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;transition:all .15s;}
+.q-opt .ol{width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .15s;}
 .q-opt.correct{border-color:rgba(16,185,129,.5);background:rgba(16,185,129,.08);}
 .q-opt.correct .ol{border-color:#10b981;background:#10b981;color:#061021;}
 .q-opt.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.06);}
 .q-opt.wrong .ol{border-color:#ef4444;background:#ef4444;color:#fff;}
-.q-explain{margin-top:10px;padding:12px;border-radius:12px;background:rgba(124,247,212,.04);border:1px solid rgba(124,247,212,.12);font-size:12.5px;line-height:1.6;color:var(--muted);display:none;}
+.q-explain{margin-top:12px;padding:14px;border-radius:14px;background:rgba(124,247,212,.04);border:1px solid rgba(124,247,212,.12);font-size:13px;line-height:1.6;color:var(--muted);display:none;}
 .q-explain.show{display:block;animation:fadeSlideIn .3s ease;}
 @keyframes fadeSlideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-.pagination{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:18px;flex-wrap:wrap;}
-.pg-btn{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .12s;font-family:inherit;}
+/* ── Pagination ── */
+.pagination{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:20px;flex-wrap:wrap;}
+.pg-btn{padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .12s;font-family:inherit;}
 .pg-btn:hover{border-color:rgba(124,247,212,.4);color:var(--text);}
 .pg-btn.active{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;border:none;}
 .pg-btn:disabled{opacity:.3;cursor:not-allowed;}
-.pg-info{font-size:11px;color:var(--muted);}
+.pg-info{font-size:12px;color:var(--muted);}
 
-.empty-state{text-align:center;padding:50px 20px;color:var(--muted);}
-.empty-state .big{font-size:42px;margin-bottom:10px;}
-.empty-state p{font-size:13px;}
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-state .big{font-size:48px;margin-bottom:12px;}
+.empty-state p{font-size:14px;}
 
+/* ── Responsive ── */
 @media(max-width:640px){
-  .stat-orbs{gap:8px;}.stat-orb{width:80px;height:80px;}.stat-orb .val{font-size:18px;}
-  .chart-wrap{height:200px;}
+  .stat-orbs{gap:10px;}
+  .stat-orb{width:90px;height:90px;}
+  .stat-orb .val{font-size:20px;}
+  .chart-wrap{height:220px;}
+  .heatmap-grid{grid-template-columns:repeat(auto-fill,minmax(65px,1fr));}
 }
+
+/* ── Entrance animations ── */
 .anim-up{opacity:0;transform:translateY(20px);animation:animUp .6s ease forwards;}
 @keyframes animUp{to{opacity:1;transform:translateY(0);}}
-.delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}
+.delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}.delay-4{animation-delay:.4s}
 </style>
 </head>
 <body class="tools-page">
 <div class="bg-orbs"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+
 <header>
 <div class="nav">
-  <a class="logo" href="/" style="text-decoration:none"><div class="mark"></div><div>ReportMedic</div></a>
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
   <div class="spacer"></div>
   <button class="btn" id="openDrawerBtn">All Tools ↗</button>
   <a class="btn" href="/">Home</a>
   <a class="btn primary" href="/tools/upsc-prelims-daily-practice.html">Daily Practice →</a>
 </div>
 </header>
+
 <div class="wrap">
+  <!-- ── HERO ── -->
   <section class="pyq-hero anim-up">
     <h1>UPSC PYQ <span class="accent">Explorer</span></h1>
-    <p class="tagline">500 Prelims GS-1 questions from 2021–2025 with trend analytics, subject heatmaps, difficulty tracking, and instant explanations. All in your browser — completely free.</p>
+    <p class="tagline">12 years of Prelims questions, searchable and analyzed. Spot patterns, track subject trends, and practice smarter — all in your browser, completely free.</p>
     <div class="stat-orbs">
       <div class="stat-orb"><span class="val" id="statTotal">0</span><span class="lbl">Total PYQs</span></div>
-      <div class="stat-orb"><span class="val">5</span><span class="lbl">Years</span></div>
-      <div class="stat-orb"><span class="val" id="statSubs">0</span><span class="lbl">Subjects</span></div>
+      <div class="stat-orb"><span class="val">13</span><span class="lbl">Years Covered</span></div>
+      <div class="stat-orb"><span class="val">7</span><span class="lbl">Subjects</span></div>
       <div class="stat-orb"><span class="val" id="statAttempted">0</span><span class="lbl">Attempted</span></div>
       <div class="stat-orb"><span class="val" id="statAccuracy">—</span><span class="lbl">Accuracy</span></div>
     </div>
   </section>
+
+  <!-- ── TREND CHART ── -->
   <section class="chart-panel anim-up delay-1">
     <h2><span class="dot"></span> Subject Trend Analysis</h2>
     <div class="chart-tabs" id="chartTabs">
@@ -158,34 +178,54 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
     <div class="chart-wrap" id="chartTrend"><canvas id="trendCanvas"></canvas></div>
     <div id="chartHeatmap" style="display:none"></div>
     <div class="chart-wrap" id="chartDifficulty" style="display:none"><canvas id="diffCanvas"></canvas></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;" id="trendLegend"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;" id="trendLegend"></div>
   </section>
+
+  <!-- ── CONTROLS ── -->
   <section class="anim-up delay-2">
     <div class="controls">
       <div class="search-box">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" id="qSearch" placeholder="Search questions… e.g. Fundamental Rights, GDP, biodiversity, Lokpal"/>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="qSearch" placeholder="Search questions… e.g., Fundamental Rights, GDP, biodiversity"/>
       </div>
     </div>
-    <div class="controls" id="subjectFilters"><button class="filter-btn active" data-sub="All">All Subjects</button></div>
-    <div class="year-strip" id="yearStrip"><button class="yr-chip active" data-yr="All">All Years</button></div>
-    <div class="diff-strip" id="diffStrip"><button class="diff-chip active" data-diff="All">All Difficulty</button><button class="diff-chip" data-diff="easy">Easy</button><button class="diff-chip" data-diff="medium">Medium</button><button class="diff-chip" data-diff="hard">Hard</button></div>
+    <div class="controls" id="subjectFilters">
+      <button class="filter-btn active" data-sub="All">All Subjects</button>
+    </div>
+    <div class="year-strip" id="yearStrip">
+      <button class="yr-chip active" data-yr="All">All Years</button>
+    </div>
   </section>
+
+  <!-- ── QUESTIONS ── -->
   <section class="anim-up delay-3">
     <div class="q-grid" id="qGrid"></div>
     <div class="pagination" id="pagination"></div>
-    <div class="empty-state" id="emptyState" style="display:none"><div class="big">🔍</div><p>No questions match your filters. Try broadening your search.</p></div>
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="big">🔍</div>
+      <p>No questions match your filters. Try broadening your search.</p>
+    </div>
   </section>
 </div>
+
+<!-- ── FOOTER ── -->
 <footer class="rm-footer">
 <div class="rm-footer-inner">
-  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">UPSC PYQ Explorer — 500 Questions · 2021–2025 Trend Analytics</div></div>
-  <div class="rm-footer-links"><a href="/">Home</a><a href="/tools/upsc-prelims-daily-practice.html">Daily Practice</a><a href="/docs/privacy.html">Privacy</a><a href="/docs/terms.html">Terms</a></div>
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">UPSC PYQ Explorer — Trend Analytics & Pattern Finder</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/tools/upsc-prelims-daily-practice.html">Daily Practice</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
   <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. © ReportMedic.</div>
 </div>
 </footer>
-<script>
 
+<script>
+/* ════════════════════════════════════════════════════════════════
+   UPSC PYQ DATABASE — Scalable: just add objects to this array
+   ════════════════════════════════════════════════════════════════ */
 const DB = [
   // ════════════════════════════════════════════════════════════════
   // UPSC PRELIMS 2025 — GS Paper 1 (Conducted 25 May 2025)
@@ -442,20 +482,24 @@ const DB = [
   {y:2024,sub:"Current Affairs",diff:"medium",q:"'100 Million Farmers' correctly described as:",opts:["Net-zero food/water systems platform","Organic animal husbandry network","Blockchain fertilizer platform","FPO facilitation platform"],ans:0,exp:"100 Million Farmers is a WEF platform accelerating transition to net-zero, nature-positive food and water systems while building farmer resilience."},
 ];
 
-
-
+/* ════════════════════════════════════════
+   DERIVED DATA
+   ════════════════════════════════════════ */
 const SUBJECTS = [...new Set(DB.map(q=>q.sub))].sort();
-const YEARS = [...new Set(DB.map(q=>q.y))].sort((a,b)=>a-b);
-const SUB_COLORS = {Polity:'#6ea8ff',History:'#f59e0b',Geography:'#10b981',Economy:'#8b5cf6',Environment:'#14b8a6',Science:'#f472b6',"Current Affairs":'#fb923c',IR:'#38bdf8',"Art & Culture":'#e879f9'};
-const PER_PAGE = 10;
-let state = {sub:'All',year:'All',diff:'All',search:'',page:0,attempts:{},correct:{}};
+const YEARS    = [...new Set(DB.map(q=>q.y))].sort((a,b)=>a-b);
+const SUB_COLORS = {Polity:'#6ea8ff',History:'#f59e0b',Geography:'#10b981',Economy:'#8b5cf6',Environment:'#14b8a6',Science:'#f472b6',"Current Affairs":'#fb923c'};
+const PER_PAGE = 8;
 
+let state = {sub:'All', year:'All', search:'', page:0, attempts:{}, correct:{}};
+
+/* ── Stat counter animation ── */
 function animateCount(el,target){let cur=0;const step=Math.max(1,Math.ceil(target/30));const iv=setInterval(()=>{cur+=step;if(cur>=target){cur=target;clearInterval(iv);}el.textContent=cur;},25);}
 animateCount(document.getElementById('statTotal'),DB.length);
-document.getElementById('statSubs').textContent=SUBJECTS.length;
 
-// Build filters
-(function(){
+/* ════════════════════════════════════════
+   BUILD FILTERS
+   ════════════════════════════════════════ */
+(function buildFilters(){
   const sf=document.getElementById('subjectFilters');
   SUBJECTS.forEach(s=>{const b=document.createElement('button');b.className='filter-btn';b.dataset.sub=s;b.textContent=s;sf.appendChild(b);});
   sf.addEventListener('click',e=>{if(!e.target.classList.contains('filter-btn'))return;sf.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');state.sub=e.target.dataset.sub;state.page=0;render();});
@@ -464,149 +508,238 @@ document.getElementById('statSubs').textContent=SUBJECTS.length;
   YEARS.forEach(y=>{const b=document.createElement('button');b.className='yr-chip';b.dataset.yr=y;b.textContent=y;ys.appendChild(b);});
   ys.addEventListener('click',e=>{if(!e.target.classList.contains('yr-chip'))return;ys.querySelectorAll('.yr-chip').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');state.year=e.target.dataset.yr;state.page=0;render();});
 
-  document.getElementById('diffStrip').addEventListener('click',e=>{if(!e.target.classList.contains('diff-chip'))return;document.querySelectorAll('.diff-chip').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');state.diff=e.target.dataset.diff;state.page=0;render();});
-
   document.getElementById('qSearch').addEventListener('input',e=>{state.search=e.target.value.toLowerCase();state.page=0;render();});
 })();
 
+/* ════════════════════════════════════════
+   RENDER QUESTIONS
+   ════════════════════════════════════════ */
 function getFiltered(){
   return DB.filter(q=>{
-    if(state.sub!=='All'&&q.sub!==state.sub)return false;
-    if(state.year!=='All'&&q.y!==+state.year)return false;
-    if(state.diff!=='All'&&q.diff!==state.diff)return false;
-    if(state.search&&!(q.q+' '+q.sub+' '+q.opts.join(' ')+' '+q.exp).toLowerCase().includes(state.search))return false;
+    if(state.sub!=='All' && q.sub!==state.sub) return false;
+    if(state.year!=='All' && q.y!==+state.year) return false;
+    if(state.search && !(q.q+' '+q.sub+' '+q.opts.join(' ')).toLowerCase().includes(state.search)) return false;
     return true;
   });
 }
 
 function render(){
-  const filtered=getFiltered();const grid=document.getElementById('qGrid');const empty=document.getElementById('emptyState');
-  const totalPages=Math.ceil(filtered.length/PER_PAGE);const page=Math.min(state.page,Math.max(0,totalPages-1));
-  const slice=filtered.slice(page*PER_PAGE,(page+1)*PER_PAGE);
+  const filtered = getFiltered();
+  const grid = document.getElementById('qGrid');
+  const empty = document.getElementById('emptyState');
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const page = Math.min(state.page, totalPages-1);
+  const slice = filtered.slice(page*PER_PAGE, (page+1)*PER_PAGE);
+
   if(!filtered.length){grid.innerHTML='';empty.style.display='block';document.getElementById('pagination').innerHTML='';return;}
   empty.style.display='none';
-  grid.innerHTML=slice.map((q,i)=>{
-    const idx=DB.indexOf(q);const attempted=state.attempts[idx]!==undefined;
-    return `<div class="q-card ${attempted?'expanded':''}" data-sub="${q.sub}" data-idx="${idx}">
-      <div class="q-top"><span class="q-year-badge">${q.y}</span><span class="q-sub-badge">${q.sub}</span><span class="q-num">Q${page*PER_PAGE+i+1}/${filtered.length}</span><span class="q-diff ${q.diff}">${q.diff.charAt(0).toUpperCase()+q.diff.slice(1)}</span></div>
+
+  grid.innerHTML = slice.map((q,i)=>{
+    const idx = DB.indexOf(q);
+    const attempted = state.attempts[idx] !== undefined;
+    const wasCorrect = state.correct[idx];
+    return `
+    <div class="q-card ${attempted?'expanded':''}" data-sub="${q.sub}" data-idx="${idx}">
+      <div class="q-top">
+        <span class="q-year-badge">${q.y}</span>
+        <span class="q-sub-badge">${q.sub}</span>
+        <span class="q-diff ${q.diff}">${q.diff.charAt(0).toUpperCase()+q.diff.slice(1)}</span>
+      </div>
       <div class="q-text">${q.q}</div>
-      <div class="q-options">${q.opts.map((o,oi)=>{
-        let cls='';if(attempted){cls=oi===q.ans?'correct':(state.attempts[idx]===oi?'wrong':'');}
-        return `<div class="q-opt ${cls}" data-oi="${oi}" data-idx="${idx}"><span class="ol">${'ABCD'[oi]}</span><span>${o}</span></div>`;
-      }).join('')}</div>
-      <div class="q-explain ${attempted?'show':''}">${attempted?'<strong>'+(state.correct[idx]?'✓ Correct!':'✗ Incorrect.')+'</strong> '+q.exp:''}</div>
+      <div class="q-options">
+        ${q.opts.map((o,oi)=>{
+          let cls='';
+          if(attempted){cls = oi===q.ans?'correct': (state.attempts[idx]===oi?'wrong':'');}
+          return `<div class="q-opt ${cls}" data-oi="${oi}" data-idx="${idx}"><span class="ol">${'ABCD'[oi]}</span><span>${o}</span></div>`;
+        }).join('')}
+      </div>
+      <div class="q-explain ${attempted?'show':''}">${attempted?'<strong>Explanation:</strong> '+q.exp:''}</div>
     </div>`;
   }).join('');
+
   // Pagination
-  const pg=document.getElementById('pagination');
-  if(totalPages<=1){pg.innerHTML=`<span class="pg-info">${filtered.length} questions</span>`;return;}
-  let html=`<button class="pg-btn" onclick="changePage(${page-1})" ${page===0?'disabled':''}>←</button>`;
-  const maxShow=7;let start=Math.max(0,page-3),end=Math.min(totalPages,start+maxShow);
-  if(end-start<maxShow)start=Math.max(0,end-maxShow);
-  if(start>0)html+=`<button class="pg-btn" onclick="changePage(0)">1</button><span class="pg-info">…</span>`;
-  for(let i=start;i<end;i++)html+=`<button class="pg-btn ${i===page?'active':''}" onclick="changePage(${i})">${i+1}</button>`;
-  if(end<totalPages)html+=`<span class="pg-info">…</span><button class="pg-btn" onclick="changePage(${totalPages-1})">${totalPages}</button>`;
-  html+=`<button class="pg-btn" onclick="changePage(${page+1})" ${page>=totalPages-1?'disabled':''}>→</button>`;
-  html+=`<span class="pg-info">${filtered.length} Qs</span>`;
+  const pg = document.getElementById('pagination');
+  if(totalPages<=1){pg.innerHTML='';return;}
+  let html=`<button class="pg-btn" onclick="changePage(${page-1})" ${page===0?'disabled':''}>← Prev</button>`;
+  for(let i=0;i<totalPages;i++){
+    if(totalPages>7 && i>1 && i<totalPages-2 && Math.abs(i-page)>1){if(i===2||i===totalPages-3)html+=`<span class="pg-info">…</span>`;continue;}
+    html+=`<button class="pg-btn ${i===page?'active':''}" onclick="changePage(${i})">${i+1}</button>`;
+  }
+  html+=`<button class="pg-btn" onclick="changePage(${page+1})" ${page>=totalPages-1?'disabled':''}>Next →</button>`;
+  html+=`<span class="pg-info">${filtered.length} questions</span>`;
   pg.innerHTML=html;
+
   updateStats();
 }
+
 window.changePage=function(p){state.page=Math.max(0,p);render();window.scrollTo({top:document.querySelector('.q-grid').offsetTop-80,behavior:'smooth'});};
 
+/* ── Answer click ── */
 document.addEventListener('click',function(e){
-  const opt=e.target.closest('.q-opt');if(!opt)return;
-  const idx=+opt.dataset.idx;if(state.attempts[idx]!==undefined)return;
-  const oi=+opt.dataset.oi;state.attempts[idx]=oi;state.correct[idx]=(oi===DB[idx].ans);render();
+  const opt = e.target.closest('.q-opt');
+  if(!opt) return;
+  const idx = +opt.dataset.idx;
+  if(state.attempts[idx]!==undefined) return;
+  const oi = +opt.dataset.oi;
+  state.attempts[idx] = oi;
+  state.correct[idx] = (oi === DB[idx].ans);
+  render();
 });
 
 function updateStats(){
-  const t=Object.keys(state.attempts).length;const c=Object.values(state.correct).filter(Boolean).length;
-  document.getElementById('statAttempted').textContent=t;
-  document.getElementById('statAccuracy').textContent=t?Math.round(c/t*100)+'%':'—';
+  const total = Object.keys(state.attempts).length;
+  const correct = Object.values(state.correct).filter(Boolean).length;
+  document.getElementById('statAttempted').textContent = total;
+  document.getElementById('statAccuracy').textContent = total ? Math.round(correct/total*100)+'%' : '—';
 }
 
-// ══ CHARTS ══
+/* ════════════════════════════════════════
+   CHARTS — Canvas-based (no dependencies)
+   ════════════════════════════════════════ */
 function drawTrendChart(){
-  const canvas=document.getElementById('trendCanvas');const ctx=canvas.getContext('2d');
-  const dpr=window.devicePixelRatio||1;const rect=canvas.parentElement.getBoundingClientRect();
-  canvas.width=rect.width*dpr;canvas.height=rect.height*dpr;
-  canvas.style.width=rect.width+'px';canvas.style.height=rect.height+'px';
-  ctx.scale(dpr,dpr);const W=rect.width,H=rect.height,pad={t:20,r:20,b:36,l:42};
-  const plotW=W-pad.l-pad.r,plotH=H-pad.t-pad.b;
-  const data={};SUBJECTS.forEach(s=>{data[s]={};YEARS.forEach(y=>data[s][y]=0);});
+  const canvas = document.getElementById('trendCanvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio||1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width*dpr; canvas.height = rect.height*dpr;
+  canvas.style.width = rect.width+'px'; canvas.style.height = rect.height+'px';
+  ctx.scale(dpr,dpr);
+  const W=rect.width, H=rect.height, pad={t:20,r:20,b:40,l:44};
+  const plotW=W-pad.l-pad.r, plotH=H-pad.t-pad.b;
+
+  // Data: count per subject per year
+  const data={};
+  SUBJECTS.forEach(s=>{data[s]={};YEARS.forEach(y=>data[s][y]=0);});
   DB.forEach(q=>{if(data[q.sub])data[q.sub][q.y]=(data[q.sub][q.y]||0)+1;});
-  const maxV=Math.max(...SUBJECTS.map(s=>Math.max(...YEARS.map(y=>data[s][y]||0))),1);
+  const maxV = Math.max(...SUBJECTS.map(s=>Math.max(...YEARS.map(y=>data[s][y]||0))),1);
+
+  // Grid
   ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
   for(let i=0;i<=5;i++){const y2=pad.t+plotH-plotH*(i/5);ctx.beginPath();ctx.moveTo(pad.l,y2);ctx.lineTo(W-pad.r,y2);ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='10px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-6,y2+4);}
-  ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';ctx.font='10px DM Sans';
-  YEARS.forEach((y,i)=>{ctx.fillText(y,pad.l+plotW*(i/(YEARS.length-1)),H-pad.b+16);});
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='11px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-8,y2+4);}
+
+  // X labels
+  ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';ctx.font='11px DM Sans';
+  YEARS.forEach((y,i)=>{const x=pad.l+plotW*(i/(YEARS.length-1));ctx.fillText("'"+String(y).slice(2),x,H-pad.b+18);});
+
+  // Lines
   SUBJECTS.forEach(sub=>{
-    const color=SUB_COLORS[sub]||'#fff';ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();
-    YEARS.forEach((y,i)=>{const x=pad.l+plotW*(i/(YEARS.length-1));const v=data[sub][y]||0;const yPos=pad.t+plotH-plotH*(v/maxV);i===0?ctx.moveTo(x,yPos):ctx.lineTo(x,yPos);});
+    const color = SUB_COLORS[sub]||'#fff';
+    ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.beginPath();
+    YEARS.forEach((y,i)=>{
+      const x=pad.l+plotW*(i/(YEARS.length-1));
+      const v=data[sub][y]||0;
+      const yPos=pad.t+plotH-plotH*(v/maxV);
+      i===0?ctx.moveTo(x,yPos):ctx.lineTo(x,yPos);
+    });
     ctx.stroke();
-    YEARS.forEach((y,i)=>{const x=pad.l+plotW*(i/(YEARS.length-1));const v=data[sub][y]||0;const yPos=pad.t+plotH-plotH*(v/maxV);ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,yPos,3,0,Math.PI*2);ctx.fill();});
+    // Dots
+    YEARS.forEach((y,i)=>{
+      const x=pad.l+plotW*(i/(YEARS.length-1));
+      const v=data[sub][y]||0;
+      const yPos=pad.t+plotH-plotH*(v/maxV);
+      ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,yPos,3.5,0,Math.PI*2);ctx.fill();
+    });
   });
-  document.getElementById('trendLegend').innerHTML=SUBJECTS.map(s=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:50%;background:${SUB_COLORS[s]}"></span>${s}</span>`).join('');
+
+  // Legend
+  const leg=document.getElementById('trendLegend');
+  leg.innerHTML=SUBJECTS.map(s=>`<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="width:10px;height:10px;border-radius:50%;background:${SUB_COLORS[s]}"></span>${s}</span>`).join('');
 }
 
 function drawHeatmap(){
   const wrap=document.getElementById('chartHeatmap');
-  const data={};SUBJECTS.forEach(s=>{data[s]={};YEARS.forEach(y=>data[s][y]=0);});
+  const data={};
+  SUBJECTS.forEach(s=>{data[s]={};YEARS.forEach(y=>data[s][y]=0);});
   DB.forEach(q=>{if(data[q.sub])data[q.sub][q.y]++;});
   const maxV=Math.max(...Object.values(data).flatMap(o=>Object.values(o)),1);
-  let html='<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:4px;font-size:11px;"><thead><tr><th style="text-align:left;color:var(--muted);padding:5px;font-weight:600;">Subject</th>';
-  YEARS.forEach(y=>html+=`<th style="color:var(--muted);font-weight:600;padding:5px;">${y}</th>`);
-  html+='<th style="color:var(--muted);font-weight:600;padding:5px;">Total</th></tr></thead><tbody>';
+
+  let html='<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:4px;font-size:12px;"><thead><tr><th style="text-align:left;color:var(--muted);padding:6px;font-weight:600;">Subject</th>';
+  YEARS.forEach(y=>html+=`<th style="color:var(--muted);font-weight:600;padding:6px;">'${String(y).slice(2)}</th>`);
+  html+='</tr></thead><tbody>';
   SUBJECTS.forEach(s=>{
-    const total=YEARS.reduce((a,y)=>a+(data[s][y]||0),0);
-    html+=`<tr><td style="padding:5px;font-weight:700;white-space:nowrap;font-size:11px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${SUB_COLORS[s]};margin-right:5px;"></span>${s}</td>`;
-    YEARS.forEach(y=>{const v=data[s][y]||0;const intensity=v/maxV;
-      const c=SUB_COLORS[s]||'110,168,255';const rgb=c.startsWith('#')?parseInt(c.slice(1,3),16)+','+parseInt(c.slice(3,5),16)+','+parseInt(c.slice(5,7),16):'110,168,255';
-      html+=`<td style="text-align:center;padding:7px;border-radius:6px;background:rgba(${rgb},${(.08+intensity*.45).toFixed(2)});font-weight:700;color:${intensity>.2?'#fff':'var(--muted)'];font-size:12px;">${v||'·'}</td>`;
+    html+=`<tr><td style="padding:6px;font-weight:700;white-space:nowrap;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${SUB_COLORS[s]};margin-right:6px;"></span>${s}</td>`;
+    YEARS.forEach(y=>{
+      const v=data[s][y]||0;
+      const intensity=v/maxV;
+      const bg=`rgba(${s==='Polity'?'110,168,255':s==='History'?'245,158,11':s==='Geography'?'16,185,129':s==='Economy'?'139,92,246':s==='Environment'?'20,184,166':s==='Science'?'244,114,182':'251,146,60'},${.1+intensity*.6})`;
+      html+=`<td style="text-align:center;padding:8px;border-radius:8px;background:${bg};font-weight:700;color:${intensity>.3?'#fff':'var(--muted)'}">${v||'·'}</td>`;
     });
-    html+=`<td style="text-align:center;padding:7px;font-weight:900;font-size:13px;">${total}</td></tr>`;
+    html+='</tr>';
   });
-  html+='</tbody></table></div>';wrap.innerHTML=html;
+  html+='</tbody></table></div>';
+  wrap.innerHTML=html;
 }
 
 function drawDifficultyChart(){
-  const canvas=document.getElementById('diffCanvas');const ctx=canvas.getContext('2d');
-  const dpr=window.devicePixelRatio||1;const rect=canvas.parentElement.getBoundingClientRect();
+  const canvas=document.getElementById('diffCanvas');
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.parentElement.getBoundingClientRect();
   canvas.width=rect.width*dpr;canvas.height=rect.height*dpr;
   canvas.style.width=rect.width+'px';canvas.style.height=rect.height+'px';
-  ctx.scale(dpr,dpr);const W=rect.width,H=rect.height,pad={t:20,r:20,b:36,l:42};
+  ctx.scale(dpr,dpr);
+  const W=rect.width,H=rect.height,pad={t:20,r:20,b:40,l:44};
   const plotW=W-pad.l-pad.r,plotH=H-pad.t-pad.b;
+
   const data={};YEARS.forEach(y=>data[y]={easy:0,medium:0,hard:0});
   DB.forEach(q=>{if(data[q.y])data[q.y][q.diff]++;});
   const maxV=Math.max(...YEARS.map(y=>(data[y].easy||0)+(data[y].medium||0)+(data[y].hard||0)),1);
   const diffColors={easy:'#34d399',medium:'#fbbf24',hard:'#f87171'};
-  const barW=Math.min(32,plotW/YEARS.length*.55);
+  const barW=Math.min(28,plotW/YEARS.length*.6);
+
+  // Grid
   ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
   for(let i=0;i<=5;i++){const y2=pad.t+plotH-plotH*(i/5);ctx.beginPath();ctx.moveTo(pad.l,y2);ctx.lineTo(W-pad.r,y2);ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='10px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-6,y2+4);}
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='11px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-8,y2+4);}
+
   YEARS.forEach((y,i)=>{
-    const x=pad.l+plotW*(i/(YEARS.length-1));let cumY=pad.t+plotH;
-    ['easy','medium','hard'].forEach(d=>{const v=data[y][d]||0;const h=plotH*(v/maxV);
-      ctx.fillStyle=diffColors[d];ctx.beginPath();
-      ctx.roundRect(x-barW/2,cumY-h,barW,h,[3]);ctx.fill();cumY-=h;});
-    ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';ctx.font='10px DM Sans';ctx.fillText(y,x,H-pad.b+16);
+    const x=pad.l+plotW*(i/(YEARS.length-1));
+    let cumY=pad.t+plotH;
+    ['easy','medium','hard'].forEach(d=>{
+      const v=data[y][d]||0;
+      const h=plotH*(v/maxV);
+      ctx.fillStyle=diffColors[d];
+      const r=4;
+      ctx.beginPath();
+      ctx.moveTo(x-barW/2+r,cumY);ctx.lineTo(x-barW/2+r,cumY-h);ctx.quadraticCurveTo(x-barW/2,cumY-h,x-barW/2,cumY-h+r);
+      ctx.lineTo(x-barW/2,cumY);ctx.lineTo(x+barW/2,cumY);ctx.lineTo(x+barW/2,cumY-h+r);ctx.quadraticCurveTo(x+barW/2,cumY-h,x+barW/2-r,cumY-h);
+      ctx.closePath();ctx.fill();
+      cumY-=h;
+    });
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';ctx.font='11px DM Sans';
+    ctx.fillText("'"+String(y).slice(2),x,H-pad.b+18);
   });
-  document.getElementById('trendLegend').innerHTML=['easy','medium','hard'].map(d=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:3px;background:${diffColors[d]}"></span>${d.charAt(0).toUpperCase()+d.slice(1)}</span>`).join('');
+
+  const leg=document.getElementById('trendLegend');
+  leg.innerHTML=['easy','medium','hard'].map(d=>`<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="width:10px;height:10px;border-radius:4px;background:${diffColors[d]}"></span>${d.charAt(0).toUpperCase()+d.slice(1)}</span>`).join('');
 }
 
+/* Chart tab switching */
 document.getElementById('chartTabs').addEventListener('click',function(e){
   if(!e.target.classList.contains('chart-tab'))return;
-  this.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));e.target.classList.add('active');
+  this.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));
+  e.target.classList.add('active');
   const v=e.target.dataset.view;
   document.getElementById('chartTrend').style.display=v==='trend'?'':'none';
   document.getElementById('chartHeatmap').style.display=v==='heatmap'?'':'none';
   document.getElementById('chartDifficulty').style.display=v==='difficulty'?'':'none';
-  if(v==='trend')drawTrendChart();if(v==='heatmap')drawHeatmap();if(v==='difficulty')drawDifficultyChart();
+  if(v==='trend')drawTrendChart();
+  if(v==='heatmap')drawHeatmap();
+  if(v==='difficulty')drawDifficultyChart();
 });
 
-drawTrendChart();render();
-window.addEventListener('resize',()=>{const a=document.querySelector('.chart-tab.active');if(a){if(a.dataset.view==='trend')drawTrendChart();if(a.dataset.view==='difficulty')drawDifficultyChart();}});
+/* ── Init ── */
+drawTrendChart();
+render();
+window.addEventListener('resize',()=>{
+  const active=document.querySelector('.chart-tab.active');
+  if(active){
+    if(active.dataset.view==='trend')drawTrendChart();
+    if(active.dataset.view==='difficulty')drawDifficultyChart();
+  }
+});
 </script>
 </body>
 </html>
