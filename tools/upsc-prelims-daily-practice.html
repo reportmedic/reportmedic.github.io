@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="Free UPSC Prelims MCQ practice with daily challenges, subject drills, and performance analytics. Track accuracy, streaks, and weak spots — all offline, no signup."/>
+<title>UPSC Prelims Daily Practice — Free MCQ Engine with Analytics — ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+/* ── Animated Background ── */
+.bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(100px);opacity:.15;animation:meshDrift 18s ease-in-out infinite alternate;}
+.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);top:-15%;right:-10%;animation-delay:0s;}
+.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#a78bfa,#6ea8ff);bottom:-10%;left:-5%;animation-delay:-6s;animation-duration:22s;}
+.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#7cf7d4,#f59e0b);top:50%;left:40%;animation-delay:-12s;animation-duration:26s;}
+@keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg) scale(1);}100%{transform:translate(40px,-30px) rotate(15deg) scale(1.1);}}
+
+/* ── Tabs Nav ── */
+.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:16px;margin-bottom:22px;overflow-x:auto;}
+.tab-btn{flex:1;min-width:fit-content;padding:11px 18px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(110,168,255,.2),rgba(124,247,212,.15));color:var(--text);box-shadow:0 2px 12px rgba(110,168,255,.15);}
+
+/* ── Views ── */
+.view{display:none;animation:viewFade .35s ease;}
+.view.active{display:block;}
+@keyframes viewFade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── Daily Challenge Hero ── */
+.daily-hero{text-align:center;padding:30px 0 20px;}
+.daily-hero h1{font-size:clamp(26px,4.5vw,40px);font-weight:900;letter-spacing:-.5px;line-height:1.1;}
+.daily-hero h1 .grad{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:8px;}
+
+/* ── Streak Banner ── */
+.streak-bar{display:flex;align-items:center;justify-content:center;gap:16px;margin:16px 0 24px;flex-wrap:wrap;}
+.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);backdrop-filter:blur(8px);font-size:13px;font-weight:600;}
+.streak-pill .fire{font-size:20px;}
+.streak-pill .sval{font-size:18px;font-weight:900;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-pill .sval.green{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-dots{display:flex;gap:4px;}
+.streak-dots .dot{width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s;}
+.streak-dots .dot.done{background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(124,247,212,.15));border-color:rgba(16,185,129,.3);color:#34d399;}
+.streak-dots .dot.today{border-color:rgba(110,168,255,.5);box-shadow:0 0 12px rgba(110,168,255,.2);}
+
+/* ── Quiz Container ── */
+.quiz-panel{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:22px;padding:24px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
+.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.35),rgba(110,168,255,.35),transparent);}
+.quiz-progress{display:flex;gap:4px;margin-bottom:18px;}
+.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.08);transition:background .3s;}
+.quiz-progress .pip.done{background:linear-gradient(90deg,#10b981,#7cf7d4);}
+.quiz-progress .pip.wrong{background:#ef4444;}
+.quiz-progress .pip.current{background:rgba(110,168,255,.4);animation:pipPulse 1.5s ease infinite;}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+
+.quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.12);color:#6ea8ff;border:1px solid rgba(110,168,255,.2);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.1);color:var(--muted);}
+.quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.quiz-meta .timer svg{color:rgba(110,168,255,.6);}
+
+.quiz-question{font-size:16px;line-height:1.7;font-weight:600;margin-bottom:18px;}
+
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.06);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;transition:all .2s;}
+.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.08);}
+.qo.selected .letter{border-color:#6ea8ff;background:#6ea8ff;color:#061021;}
+.qo.correct{border-color:rgba(16,185,129,.5);background:rgba(16,185,129,.08);}
+.qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.06);}
+.qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
+.qo.disabled{pointer-events:none;opacity:.7;}
+.qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
+
+.quiz-explain{margin-top:14px;padding:16px;border-radius:16px;background:rgba(124,247,212,.04);border:1px solid rgba(124,247,212,.12);font-size:13.5px;line-height:1.65;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s ease;}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.qa-btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;}
+.qa-btn.primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(110,168,255,.3);}
+.qa-btn.ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.25);}
+
+/* ── Results Card ── */
+.result-card{text-align:center;padding:40px 20px;max-width:500px;margin:0 auto;}
+.result-card .big-score{font-size:72px;font-weight:900;line-height:1;margin-bottom:6px;}
+.result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
+.result-mini .rm{padding:14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--border);}
+.result-mini .rm .rv{font-size:20px;font-weight:900;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* ── Subject Practice Grid ── */
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:18px;border-radius:18px;border:1px solid var(--border);background:rgba(255,255,255,.04);cursor:pointer;transition:all .15s;position:relative;overflow:hidden;}
+.subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.subj-card:hover{border-color:rgba(255,255,255,.22);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.2);}
+.subj-card .sc-icon{font-size:28px;margin-bottom:8px;}
+.subj-card .sc-name{font-size:15px;font-weight:800;margin-bottom:4px;}
+.subj-card .sc-count{font-size:12px;color:var(--muted);}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.08);margin-top:10px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .4s ease;}
+.subj-card[data-sub="Polity"]::before,.subj-card[data-sub="Polity"] .sc-fill{background:#6ea8ff;}
+.subj-card[data-sub="History"]::before,.subj-card[data-sub="History"] .sc-fill{background:#f59e0b;}
+.subj-card[data-sub="Geography"]::before,.subj-card[data-sub="Geography"] .sc-fill{background:#10b981;}
+.subj-card[data-sub="Economy"]::before,.subj-card[data-sub="Economy"] .sc-fill{background:#8b5cf6;}
+.subj-card[data-sub="Environment"]::before,.subj-card[data-sub="Environment"] .sc-fill{background:#14b8a6;}
+.subj-card[data-sub="Science"]::before,.subj-card[data-sub="Science"] .sc-fill{background:#f472b6;}
+.subj-card[data-sub="Current Affairs"]::before,.subj-card[data-sub="Current Affairs"] .sc-fill{background:#fb923c;}
+
+/* ── Analytics Dashboard ── */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
+.an-card{padding:18px;border-radius:18px;border:1px solid var(--border);background:rgba(255,255,255,.04);backdrop-filter:blur(6px);}
+.an-card.full{grid-column:1/-1;}
+.an-card h3{font-size:14px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.an-card h3 .icon{width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.an-card canvas{width:100%!important;}
+
+/* ── Subject accuracy bars ── */
+.sub-bars{display:flex;flex-direction:column;gap:10px;}
+.sb-row{display:flex;align-items:center;gap:10px;}
+.sb-label{width:100px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:22px;border-radius:8px;background:rgba(255,255,255,.06);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .5s ease;min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:40px;text-align:right;color:var(--muted);}
+
+/* ── Ring Chart ── */
+.ring-wrap{display:flex;align-items:center;justify-content:center;position:relative;}
+.ring-center{position:absolute;text-align:center;}
+.ring-center .rv{font-size:28px;font-weight:900;}
+.ring-center .rl{font-size:11px;color:var(--muted);}
+
+/* ── Responsive ── */
+@media(max-width:640px){
+  .quiz-panel{padding:16px;}
+  .streak-bar{gap:10px;}
+  .subj-grid{grid-template-columns:1fr 1fr;}
+}
+
+/* ── Anim ── */
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .5s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-mesh"><div class="strand"></div><div class="strand"></div><div class="strand"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <button class="btn" id="openDrawerBtn">All Tools ↗</button>
+  <a class="btn" href="/">Home</a>
+  <a class="btn primary" href="/tools/upsc-pyq-explorer.html">← PYQ Explorer</a>
+</div>
+</header>
+
+<div class="wrap">
+  <!-- Tab Nav -->
+  <nav class="tab-nav anim-up">
+    <button class="tab-btn active" data-tab="daily">🔥 Daily Challenge</button>
+    <button class="tab-btn" data-tab="practice">📚 Subject Practice</button>
+    <button class="tab-btn" data-tab="analytics">📊 Performance Analytics</button>
+  </nav>
+
+  <!-- ═══ VIEW: DAILY CHALLENGE ═══ -->
+  <div class="view active" id="viewDaily">
+    <div class="daily-hero anim-up d1">
+      <h1>Daily <span class="grad">Challenge</span></h1>
+      <p class="sub">10 fresh questions every day — build your streak.</p>
+    </div>
+    <div class="streak-bar anim-up d2">
+      <div class="streak-pill"><span class="fire">🔥</span><span>Streak</span><span class="sval" id="streakVal">0</span></div>
+      <div class="streak-pill"><span>✓</span><span>Today</span><span class="sval green" id="todayScore">—</span></div>
+      <div class="streak-dots" id="streakDots"></div>
+    </div>
+    <div id="quizArea" class="anim-up d3"></div>
+  </div>
+
+  <!-- ═══ VIEW: SUBJECT PRACTICE ═══ -->
+  <div class="view" id="viewPractice">
+    <div class="daily-hero">
+      <h1>Subject <span class="grad">Drill</span></h1>
+      <p class="sub">Focus on your weak areas. Pick a subject and practice as many questions as you want.</p>
+    </div>
+    <div class="subj-grid" id="subjGrid"></div>
+    <div id="practiceQuizArea" style="margin-top:20px;"></div>
+  </div>
+
+  <!-- ═══ VIEW: ANALYTICS ═══ -->
+  <div class="view" id="viewAnalytics">
+    <div class="daily-hero">
+      <h1>Performance <span class="grad">Analytics</span></h1>
+      <p class="sub">Your diagnostic report — accuracy, trends, and weak spots. All data stays in your browser.</p>
+    </div>
+    <div class="analytics-grid" id="analyticsGrid">
+      <div class="an-card">
+        <h3><span class="icon" style="background:rgba(16,185,129,.12);color:#34d399;">◎</span>Overall Accuracy</h3>
+        <div class="ring-wrap"><canvas id="ringCanvas" width="180" height="180"></canvas><div class="ring-center"><div class="rv" id="ringVal">—</div><div class="rl">accuracy</div></div></div>
+      </div>
+      <div class="an-card">
+        <h3><span class="icon" style="background:rgba(110,168,255,.12);color:#6ea8ff;">⚡</span>Quick Stats</h3>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;" id="quickStats"></div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(139,92,246,.12);color:#8b5cf6;">▦</span>Subject-wise Accuracy</h3>
+        <div class="sub-bars" id="subBars"></div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(245,158,11,.12);color:#f59e0b;">📈</span>Accuracy Trend (Last 7 Sessions)</h3>
+        <canvas id="trendCanvas" height="200"></canvas>
+      </div>
+      <div class="an-card full" id="weakCard">
+        <h3><span class="icon" style="background:rgba(239,68,68,.12);color:#f87171;">⚠</span>Weak Areas — Focus Here</h3>
+        <div id="weakAreas"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">UPSC Prelims Daily Practice — Free MCQ Engine with Analytics</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/tools/upsc-pyq-explorer.html">PYQ Explorer</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. © ReportMedic.</div>
+</div>
+</footer>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   MCQ DATABASE — Scalable: add more objects to grow the bank
+   ════════════════════════════════════════════════════════════════ */
+const BANK=[
+// ── Polity (12) ──
+{sub:"Polity",q:"Which article of the Constitution abolishes untouchability?",opts:["Article 15","Article 16","Article 17","Article 18"],ans:2,exp:"Article 17 abolishes 'Untouchability' and forbids its practice in any form. Enforcement of any disability arising out of untouchability is a punishable offence."},
+{sub:"Polity",q:"The concept of 'Basic Structure' of the Constitution was established in which case?",opts:["Golak Nath case","Kesavananda Bharati case","Minerva Mills case","Maneka Gandhi case"],ans:1,exp:"In Kesavananda Bharati v. State of Kerala (1973), the Supreme Court held that Parliament can amend any part of the Constitution but cannot alter its basic structure."},
+{sub:"Polity",q:"Which body conducts elections to local bodies in India?",opts:["Election Commission of India","State Election Commission","District Magistrate","Governor"],ans:1,exp:"The State Election Commission (Article 243K) conducts elections to Panchayats and Municipalities. The Election Commission of India handles Parliament and State Legislature elections."},
+{sub:"Polity",q:"The 'Anti-Defection Law' was added to the Constitution by which amendment?",opts:["42nd Amendment","44th Amendment","52nd Amendment","61st Amendment"],ans:2,exp:"The 52nd Amendment Act (1985) added the Tenth Schedule to the Constitution, which contains provisions relating to disqualification on grounds of defection."},
+{sub:"Polity",q:"Which article gives the President of India the power to grant pardons?",opts:["Article 72","Article 74","Article 76","Article 78"],ans:0,exp:"Article 72 empowers the President to grant pardons, reprieves, respites or remissions of punishment, or to suspend, remit or commute the sentence of any person."},
+{sub:"Polity",q:"The Inter-State Council is constituted under which article?",opts:["Article 256","Article 263","Article 280","Article 312"],ans:1,exp:"Article 263 empowers the President to establish an Inter-State Council to investigate and discuss subjects of common interest between the Centre and States."},
+{sub:"Polity",q:"Who is the custodian of the Consolidated Fund of India?",opts:["President","Prime Minister","Parliament","Finance Minister"],ans:2,exp:"Parliament is the custodian. No money can be withdrawn from the Consolidated Fund without the authorization of Parliament (Article 266)."},
+{sub:"Polity",q:"The 'Right to Education' was made a Fundamental Right through which amendment?",opts:["84th Amendment","86th Amendment","91st Amendment","93rd Amendment"],ans:1,exp:"The 86th Amendment (2002) added Article 21A, making free and compulsory education for children aged 6–14 a fundamental right."},
+{sub:"Polity",q:"Which constitutional body examines the accounts of the Union and State governments?",opts:["Finance Commission","Public Accounts Committee","CAG","NITI Aayog"],ans:2,exp:"The Comptroller and Auditor General (CAG) under Article 148 audits all expenditure from the Consolidated Funds of the Union and States."},
+{sub:"Polity",q:"The maximum strength of the Lok Sabha as fixed by the Constitution is:",opts:["545","550","552","555"],ans:2,exp:"Article 81 fixes the maximum strength of Lok Sabha at 552 — up to 530 from States, 20 from Union Territories, and 2 nominated Anglo-Indians (now removed by the 104th Amendment)."},
+{sub:"Polity",q:"Which schedule of the Constitution contains provisions for administration of tribal areas?",opts:["Third Schedule","Fifth Schedule","Sixth Schedule","Ninth Schedule"],ans:2,exp:"The Sixth Schedule contains provisions for the administration of tribal areas in Assam, Meghalaya, Tripura, and Mizoram through Autonomous District Councils."},
+{sub:"Polity",q:"The concept of 'Fundamental Duties' was borrowed from which country's constitution?",opts:["USA","USSR","France","Japan"],ans:1,exp:"Fundamental Duties (Part IVA, Article 51A) were added by the 42nd Amendment (1976) on the recommendation of the Swaran Singh Committee, inspired by the Constitution of the USSR."},
+
+// ── History (10) ──
+{sub:"History",q:"The 'Rowlatt Act' of 1919 was opposed because it:",opts:["Imposed heavy taxes","Allowed detention without trial","Banned Indian newspapers","Ended self-governance"],ans:1,exp:"The Rowlatt Act authorized the government to imprison any person suspected of terrorism without trial for up to two years, severely curtailing civil liberties."},
+{sub:"History",q:"Who was the founder of the 'Servants of India Society'?",opts:["B.G. Tilak","Gopal Krishna Gokhale","M.G. Ranade","Dadabhai Naoroji"],ans:1,exp:"Gopal Krishna Gokhale founded the Servants of India Society in 1905 at Pune. Its aim was to train national missionaries for the service of India."},
+{sub:"History",q:"The 'Poona Pact' of 1932 was between Mahatma Gandhi and:",opts:["Lord Irwin","B.R. Ambedkar","Muhammad Ali Jinnah","Jawaharlal Nehru"],ans:1,exp:"The Poona Pact (1932) was an agreement between Gandhi and Dr. B.R. Ambedkar on the electoral system for the Depressed Classes (Scheduled Castes) after Gandhi's fast against separate electorates."},
+{sub:"History",q:"The 'Vernacular Press Act' of 1878 was enacted during the tenure of which Viceroy?",opts:["Lord Lytton","Lord Ripon","Lord Curzon","Lord Dufferin"],ans:0,exp:"The Vernacular Press Act was enacted by Lord Lytton in 1878 to curtail the freedom of the Indian-language press. It was repealed by Lord Ripon in 1882."},
+{sub:"History",q:"The first session of the Indian National Congress in 1885 was presided over by:",opts:["A.O. Hume","W.C. Bonnerjee","Dadabhai Naoroji","Surendranath Banerjee"],ans:1,exp:"Womesh Chunder Bonnerjee presided over the first session of the INC held in Bombay (now Mumbai) in December 1885 with 72 delegates."},
+{sub:"History",q:"The 'Ilbert Bill' controversy (1883) was related to:",opts:["Land revenue reform","Judicial powers of Indian judges","Press freedom","Military recruitment"],ans:1,exp:"The Ilbert Bill sought to allow Indian judges to try European offenders. It faced fierce opposition from the European community, highlighting racial discrimination in the colonial judiciary."},
+{sub:"History",q:"Who led the 'Bardoli Satyagraha' of 1928?",opts:["Mahatma Gandhi","Sardar Vallabhbhai Patel","Jawaharlal Nehru","Subhas Chandra Bose"],ans:1,exp:"Sardar Vallabhbhai Patel led the Bardoli Satyagraha in 1928 against the unjust enhancement of land revenue in Gujarat. Its success earned him the title 'Sardar.'"},
+{sub:"History",q:"The 'Swadeshi Movement' was a response to:",opts:["Rowlatt Act","Partition of Bengal 1905","Jallianwala Bagh massacre","Simon Commission"],ans:1,exp:"The Swadeshi Movement (1905–1908) was launched in response to Lord Curzon's partition of Bengal, promoting Indian goods and boycotting British products."},
+{sub:"History",q:"The 'August Offer' of 1940 was made by which Viceroy?",opts:["Lord Linlithgow","Lord Wavell","Lord Mountbatten","Lord Irwin"],ans:0,exp:"The August Offer was made by Viceroy Lord Linlithgow in 1940, promising dominion status and an expanded Viceroy's Executive Council in exchange for Indian support in World War II."},
+{sub:"History",q:"The 'Indian Independence Act' was passed by the British Parliament on:",opts:["15 August 1947","18 July 1947","3 June 1947","26 January 1950"],ans:1,exp:"The Indian Independence Act received royal assent on 18 July 1947, partitioning British India into two independent dominions — India and Pakistan — effective 15 August 1947."},
+
+// ── Geography (8) ──
+{sub:"Geography",q:"Which soil type is most suitable for cotton cultivation in India?",opts:["Alluvial soil","Black soil (Regur)","Laterite soil","Red soil"],ans:1,exp:"Black soil (Regur) is ideal for cotton cultivation due to its high moisture-retaining capacity and richness in lime, iron, and magnesium. It is predominantly found in the Deccan Plateau."},
+{sub:"Geography",q:"The 'Western Disturbances' that bring winter rainfall to northern India originate from:",opts:["Bay of Bengal","Arabian Sea","Mediterranean Sea","Indian Ocean"],ans:2,exp:"Western Disturbances are extra-tropical storms originating over the Mediterranean Sea that travel eastward and bring winter rainfall to northern India, especially Punjab, Haryana, and J&K."},
+{sub:"Geography",q:"Which Indian state has the longest coastline?",opts:["Tamil Nadu","Gujarat","Maharashtra","Andhra Pradesh"],ans:1,exp:"Gujarat has the longest coastline among Indian states at approximately 1,600 km, followed by Andhra Pradesh. If Union Territories are included, the Andaman and Nicobar Islands lead."},
+{sub:"Geography",q:"The '18th parallel' roughly divides which two regions of India?",opts:["North and South India","Deccan Plateau and Coastal Plains","Peninsular and Extra-Peninsular India","Indo-Gangetic Plain and Thar Desert"],ans:0,exp:"While there's no single official divide, the 18th parallel roughly corresponds to the division between peninsular South India and the broader North Indian plains."},
+{sub:"Geography",q:"Which type of forest covers the maximum area in India?",opts:["Tropical Evergreen","Tropical Deciduous","Montane","Mangrove"],ans:1,exp:"Tropical Deciduous forests (both moist and dry) cover the largest area in India, found across the central Indian highlands, Western Ghats foothills, and parts of the Deccan."},
+{sub:"Geography",q:"The 'Chilika Lake' in Odisha is which type of lake?",opts:["Freshwater lake","Saltwater lagoon","Glacial lake","Crater lake"],ans:1,exp:"Chilika Lake is Asia's largest brackish water lagoon, spread across Puri, Khurda, and Ganjam districts of Odisha. It is a designated Ramsar Wetland."},
+{sub:"Geography",q:"The 'Sundarbans' delta is formed by which river system?",opts:["Ganga-Brahmaputra","Mahanadi","Godavari","Krishna"],ans:0,exp:"The Sundarbans is the world's largest mangrove forest, formed by the delta of the Ganga-Brahmaputra river system across India and Bangladesh."},
+{sub:"Geography",q:"'Cherrapunji' receives heavy rainfall primarily due to:",opts:["Western Disturbances","Orographic effect on Bay of Bengal monsoon","Convection currents","Cyclonic activity"],ans:1,exp:"Cherrapunji (Sohra) receives extremely heavy rainfall due to the orographic effect — moisture-laden winds from the Bay of Bengal are forced to rise over the Khasi Hills, causing intense precipitation."},
+
+// ── Economy (8) ──
+{sub:"Economy",q:"Which committee recommended the introduction of GST in India?",opts:["Kelkar Committee","Chelliah Committee","Vijay Kelkar Task Force","All of the above contributed"],ans:3,exp:"The idea evolved over time: the Chelliah Committee (1991), Kelkar Task Force (2004), and the Empowered Committee of State Finance Ministers all contributed to the GST framework."},
+{sub:"Economy",q:"'MUDRA' loans are provided for:",opts:["Housing development","Micro enterprise funding","Agricultural subsidies","Education loans"],ans:1,exp:"MUDRA (Micro Units Development & Refinance Agency) loans are provided to micro and small enterprises under the Pradhan Mantri MUDRA Yojana for loans up to ₹10 lakh."},
+{sub:"Economy",q:"The 'NITI Aayog' replaced which body?",opts:["Finance Commission","Planning Commission","National Development Council","Reserve Bank"],ans:1,exp:"NITI Aayog (National Institution for Transforming India) was established on 1 January 2015, replacing the Planning Commission which had been set up in 1950."},
+{sub:"Economy",q:"What is 'Open Market Operations (OMO)' by the RBI?",opts:["Lending to commercial banks","Buying/selling government securities","Setting exchange rates","Printing currency"],ans:1,exp:"OMO refers to the buying and selling of government securities in the open market by the RBI to regulate money supply and liquidity conditions in the economy."},
+{sub:"Economy",q:"The 'Human Development Index (HDI)' is published by:",opts:["World Bank","IMF","UNDP","WHO"],ans:2,exp:"The HDI is published by the United Nations Development Programme (UNDP) as part of its annual Human Development Report, measuring health, education, and standard of living."},
+{sub:"Economy",q:"Which of the following is a direct tax?",opts:["GST","Customs duty","Income tax","Excise duty"],ans:2,exp:"Income tax is a direct tax levied on the income of individuals and entities. GST, customs duty, and excise duty are all indirect taxes levied on goods and services."},
+{sub:"Economy",q:"'Purchasing Power Parity (PPP)' is used to:",opts:["Compare living standards across countries","Measure inflation within a country","Calculate foreign exchange reserves","Determine interest rates"],ans:0,exp:"PPP is a method used to compare economic productivity and living standards across countries by adjusting for price level differences using a 'basket of goods' approach."},
+{sub:"Economy",q:"The 'Insolvency and Bankruptcy Code (IBC)' was enacted in which year?",opts:["2014","2016","2018","2020"],ans:1,exp:"The IBC was enacted in 2016 to consolidate insolvency resolution processes for corporates, partnerships, and individuals, replacing a fragmented framework of multiple laws."},
+
+// ── Environment (8) ──
+{sub:"Environment",q:"Which of the following is NOT a greenhouse gas?",opts:["Methane","Nitrous oxide","Nitrogen","Ozone"],ans:2,exp:"Nitrogen (N₂) makes up ~78% of the atmosphere but is NOT a greenhouse gas. Methane (CH₄), nitrous oxide (N₂O), and ozone (O₃) are all greenhouse gases."},
+{sub:"Environment",q:"The 'National Action Plan on Climate Change (NAPCC)' includes how many national missions?",opts:["6","8","10","12"],ans:1,exp:"The NAPCC (2008) originally comprised 8 national missions including Solar, Energy Efficiency, Sustainable Habitat, Water, Sustaining Himalayan Ecosystem, Green India, Sustainable Agriculture, and Strategic Knowledge for Climate Change."},
+{sub:"Environment",q:"Which protocol deals with the phase-out of ozone-depleting substances?",opts:["Kyoto Protocol","Montreal Protocol","Cartagena Protocol","Nagoya Protocol"],ans:1,exp:"The Montreal Protocol (1987) is an international agreement to phase out the production and consumption of ozone-depleting substances like CFCs and HCFCs."},
+{sub:"Environment",q:"'Biodiversity Hotspots' must have at least what percentage of their original habitat lost?",opts:["50%","60%","70%","80%"],ans:2,exp:"To qualify as a biodiversity hotspot, a region must have lost at least 70% of its original natural vegetation and must contain at least 1,500 species of vascular plants as endemics."},
+{sub:"Environment",q:"The 'CITES' convention regulates trade in:",opts:["Carbon credits","Endangered species","Hazardous waste","Genetic resources"],ans:1,exp:"CITES (Convention on International Trade in Endangered Species) regulates international trade in specimens of wild animals and plants to ensure it doesn't threaten their survival."},
+{sub:"Environment",q:"India's first National Park was:",opts:["Kaziranga","Jim Corbett","Kanha","Gir"],ans:1,exp:"Jim Corbett National Park in Uttarakhand, established in 1936 as Hailey National Park, was India's first national park. It was renamed in honor of the hunter-naturalist Jim Corbett."},
+{sub:"Environment",q:"The 'Coral Triangle' is located in which ocean?",opts:["Atlantic Ocean","Indian Ocean","Pacific Ocean","Arctic Ocean"],ans:2,exp:"The Coral Triangle spans parts of Indonesia, Malaysia, the Philippines, Papua New Guinea, Timor-Leste, and the Solomon Islands in the western Pacific Ocean. It contains 76% of all known coral species."},
+{sub:"Environment",q:"Which Indian state has the highest percentage of forest cover relative to its geographical area?",opts:["Arunachal Pradesh","Mizoram","Meghalaya","Manipur"],ans:1,exp:"Mizoram has the highest forest cover as a percentage of its total geographical area (approximately 84.5%), according to the India State of Forest Report."},
+
+// ── Science (7) ──
+{sub:"Science",q:"Which Indian satellite was the first to be placed in orbit?",opts:["INSAT-1A","Aryabhata","Rohini","Bhaskara"],ans:1,exp:"Aryabhata, named after the ancient Indian mathematician, was India's first satellite, launched by the Soviet Union on 19 April 1975 from Kapustin Yar."},
+{sub:"Science",q:"'Graphene' is an allotrope of which element?",opts:["Silicon","Iron","Carbon","Titanium"],ans:2,exp:"Graphene is a single layer of carbon atoms arranged in a two-dimensional hexagonal lattice. It is the thinnest, strongest material known and an excellent conductor."},
+{sub:"Science",q:"Which of the following is used in fiber optic cables for communication?",opts:["Copper","Silicon","Glass/Silica","Aluminum"],ans:2,exp:"Fiber optic cables use thin strands of glass (silica) to transmit data as pulses of light. They offer much higher bandwidth and lower signal loss than copper cables."},
+{sub:"Science",q:"The 'Doppler Effect' is related to:",opts:["Reflection of light","Change in frequency due to relative motion","Bending of waves around obstacles","Splitting of white light"],ans:1,exp:"The Doppler Effect describes the change in frequency or wavelength of a wave in relation to an observer who is moving relative to the wave source."},
+{sub:"Science",q:"Which technology is used in 5G networks for higher data speeds?",opts:["Infrared waves","Millimeter waves","Gamma rays","Radio waves only"],ans:1,exp:"5G networks use millimeter waves (mmWave) in the 24-100 GHz range along with sub-6 GHz bands to deliver significantly higher data speeds and lower latency than 4G."},
+{sub:"Science",q:"'mRNA vaccines' work by:",opts:["Injecting weakened virus","Instructing cells to produce a protein that triggers immunity","Using bacterial DNA","Providing pre-made antibodies"],ans:1,exp:"mRNA vaccines deliver messenger RNA that instructs cells to produce a specific viral protein (like the spike protein), which then triggers an immune response without using any live virus."},
+{sub:"Science",q:"Which planet in our solar system has the most moons?",opts:["Jupiter","Saturn","Uranus","Neptune"],ans:1,exp:"Saturn currently holds the record with over 140 confirmed moons, surpassing Jupiter's count. New moons continue to be discovered."},
+
+// ── Current Affairs (7) ──
+{sub:"Current Affairs",q:"The 'Digital Personal Data Protection Act' was passed by India in which year?",opts:["2021","2022","2023","2024"],ans:2,exp:"The Digital Personal Data Protection Act, 2023 was passed by the Indian Parliament in August 2023, establishing a framework for processing digital personal data."},
+{sub:"Current Affairs",q:"Which country held the presidency of the G20 in 2023?",opts:["Indonesia","India","Brazil","South Africa"],ans:1,exp:"India held the G20 presidency from December 2022 to November 2023, with the theme 'One Earth, One Family, One Future.' The leaders' summit was held in New Delhi in September 2023."},
+{sub:"Current Affairs",q:"The 'Aditya-L1' mission launched by ISRO is designed to study:",opts:["The Moon","Mars","The Sun","Asteroids"],ans:2,exp:"Aditya-L1, launched in September 2023, is India's first space-based solar observatory. It is positioned at the L1 Lagrange point to continuously observe the Sun."},
+{sub:"Current Affairs",q:"Which international organization did Finland join in 2023?",opts:["EU","NATO","BRICS","ASEAN"],ans:1,exp:"Finland officially joined NATO on 4 April 2023, becoming the 31st member of the alliance, ending decades of military non-alignment following Russia's invasion of Ukraine."},
+{sub:"Current Affairs",q:"The 'UPI' digital payments system was developed by:",opts:["RBI","NPCI","SBI","SEBI"],ans:1,exp:"The Unified Payments Interface (UPI) was developed by the National Payments Corporation of India (NPCI). It enables instant real-time payment transfers between bank accounts via mobile."},
+{sub:"Current Affairs",q:"India's semiconductor manufacturing push includes the establishment of a fab plant with which company in Gujarat?",opts:["Intel","TSMC","Micron","Samsung"],ans:2,exp:"Micron Technology announced a semiconductor assembly and test facility in Sanand, Gujarat in 2023 with significant government support under India's semiconductor mission."},
+{sub:"Current Affairs",q:"The 'Women's Reservation Bill' (Nari Shakti Vandan Adhiniyam) reserves what percentage of seats for women in Lok Sabha and State Assemblies?",opts:["25%","30%","33%","40%"],ans:2,exp:"The 128th Constitutional Amendment (Nari Shakti Vandan Adhiniyam), passed in September 2023, reserves one-third (33%) of seats in Lok Sabha and State Legislative Assemblies for women."},
+];
+
+const SUBJECTS=[...new Set(BANK.map(q=>q.sub))].sort();
+const SUB_COLORS={Polity:'#6ea8ff',History:'#f59e0b',Geography:'#10b981',Economy:'#8b5cf6',Environment:'#14b8a6',Science:'#f472b6',"Current Affairs":'#fb923c'};
+const SUB_ICONS={Polity:'⚖️',History:'🏛️',Geography:'🌍',Economy:'💰',Environment:'🌿',Science:'🔬',"Current Affairs":'📰'};
+const DAILY_COUNT=10;
+
+/* ════════════════════════
+   LOCAL STATE
+   ════════════════════════ */
+function loadState(){try{return JSON.parse(localStorage.getItem('rm_upsc_practice'))||{};}catch(e){return {};}}
+function saveState(s){try{localStorage.setItem('rm_upsc_practice',JSON.stringify(s));}catch(e){}}
+let S=loadState();
+if(!S.history) S.history=[];
+if(!S.streak) S.streak=0;
+if(!S.lastDate) S.lastDate='';
+if(!S.subStats) S.subStats={};
+
+function todayKey(){return new Date().toISOString().slice(0,10);}
+function getTodaySession(){return S.history.find(h=>h.date===todayKey()&&h.mode==='daily');}
+
+/* ════════════════════════
+   TAB SWITCHING
+   ════════════════════════ */
+document.querySelector('.tab-nav').addEventListener('click',function(e){
+  if(!e.target.classList.contains('tab-btn'))return;
+  this.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view'+e.target.dataset.tab.charAt(0).toUpperCase()+e.target.dataset.tab.slice(1)).classList.add('active');
+  if(e.target.dataset.tab==='analytics')renderAnalytics();
+});
+
+/* ════════════════════════
+   DAILY CHALLENGE
+   ════════════════════════ */
+function seedRandom(seed){let s=seed;return function(){s=(s*16807)%2147483647;return(s-1)/2147483646;};}
+function getDailyQuestions(){
+  const d=todayKey();const seed=d.split('-').join('')*1;const rng=seedRandom(seed);
+  const shuffled=[...BANK].sort(()=>rng()-.5);
+  return shuffled.slice(0,DAILY_COUNT);
+}
+
+function renderDailyQuiz(){
+  const existing=getTodaySession();
+  if(existing&&existing.completed){renderDailyResult(existing);return;}
+
+  const questions=getDailyQuestions();
+  const session=existing||{date:todayKey(),mode:'daily',answers:[],qIndices:questions.map(q=>BANK.indexOf(q)),completed:false,correct:0,total:DAILY_COUNT,startTime:Date.now()};
+  if(!existing){S.history.push(session);saveState(S);}
+
+  const area=document.getElementById('quizArea');
+  const ci=session.answers.length;
+  if(ci>=DAILY_COUNT){session.completed=true;saveState(S);renderDailyResult(session);return;}
+
+  const q=questions[ci];
+  area.innerHTML=`
+    <div class="quiz-panel">
+      <div class="quiz-progress">${Array.from({length:DAILY_COUNT},(_, i)=>{
+        let cls='pip';
+        if(i<ci) cls+= session.answers[i].correct?' done':' wrong';
+        else if(i===ci) cls+=' current';
+        return `<div class="${cls}"></div>`;
+      }).join('')}</div>
+      <div class="quiz-meta">
+        <span class="qnum">Q${ci+1}/${DAILY_COUNT}</span>
+        <span class="qsub">${q.sub}</span>
+        <span class="timer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span id="timerVal">0:00</span></span>
+      </div>
+      <div class="quiz-question">${q.q}</div>
+      <div class="quiz-opts">${q.opts.map((o,i)=>`<div class="qo" data-oi="${i}"><span class="letter">${'ABCD'[i]}</span><span>${o}</span></div>`).join('')}</div>
+      <div class="quiz-explain" id="qExplain"></div>
+      <div class="quiz-actions" id="qActions" style="display:none;">
+        <button class="qa-btn primary" id="nextBtn">${ci+1>=DAILY_COUNT?'See Results →':'Next Question →'}</button>
+      </div>
+    </div>`;
+
+  // Timer
+  let sec=0;const timerEl=document.getElementById('timerVal');
+  const iv=setInterval(()=>{sec++;const m=Math.floor(sec/60);const s=sec%60;timerEl.textContent=m+':'+(s<10?'0':'')+s;},1000);
+
+  // Answer handler
+  let answered=false;
+  area.querySelectorAll('.qo').forEach(el=>{
+    el.addEventListener('click',function(){
+      if(answered)return;answered=true;clearInterval(iv);
+      const oi=+this.dataset.oi;
+      const isCorrect=oi===q.ans;
+      session.answers.push({qi:ci,chosen:oi,correct:isCorrect,time:sec});
+      if(isCorrect)session.correct++;
+      // Update sub stats
+      if(!S.subStats[q.sub])S.subStats[q.sub]={total:0,correct:0};
+      S.subStats[q.sub].total++;
+      if(isCorrect)S.subStats[q.sub].correct++;
+      saveState(S);
+
+      // Visual feedback
+      area.querySelectorAll('.qo').forEach(o=>{
+        o.classList.add('disabled');
+        if(+o.dataset.oi===q.ans)o.classList.add('correct');
+        else if(+o.dataset.oi===oi&&!isCorrect)o.classList.add('wrong');
+      });
+      const exp=document.getElementById('qExplain');
+      exp.innerHTML=`<strong>${isCorrect?'✓ Correct!':'✗ Incorrect.'}</strong> ${q.exp}`;
+      exp.classList.add('show');
+      document.getElementById('qActions').style.display='flex';
+    });
+  });
+
+  document.addEventListener('click',function handler(e){
+    if(e.target.id==='nextBtn'){document.removeEventListener('click',handler);renderDailyQuiz();}
+  });
+
+  updateStreakUI();
+}
+
+function renderDailyResult(session){
+  const pct=Math.round(session.correct/session.total*100);
+  const cls=pct>=70?'great':pct>=40?'ok':'poor';
+  const totalTime=session.answers.reduce((a,b)=>a+b.time,0);
+  const avgTime=session.answers.length?Math.round(totalTime/session.answers.length):0;
+
+  // Update streak
+  if(S.lastDate!==todayKey()){
+    const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
+    const yd=yesterday.toISOString().slice(0,10);
+    S.streak=(S.lastDate===yd)?S.streak+1:1;
+    S.lastDate=todayKey();
+    saveState(S);
+  }
+
+  document.getElementById('quizArea').innerHTML=`
+    <div class="quiz-panel">
+      <div class="result-card">
+        <div class="big-score ${cls}">${pct}%</div>
+        <div class="rlabel">${session.correct}/${session.total} correct — ${pct>=70?'Excellent!':pct>=40?'Good effort!':'Keep practicing!'}</div>
+        <div class="result-mini">
+          <div class="rm"><div class="rv" style="color:#34d399">${session.correct}</div><div class="rl">Correct</div></div>
+          <div class="rm"><div class="rv" style="color:#f87171">${session.total-session.correct}</div><div class="rl">Wrong</div></div>
+          <div class="rm"><div class="rv">${avgTime}s</div><div class="rl">Avg Time</div></div>
+        </div>
+        <div class="quiz-actions" style="justify-content:center;margin-top:20px;">
+          <button class="qa-btn primary" onclick="document.querySelector('[data-tab=analytics]').click()">View Analytics →</button>
+          <button class="qa-btn ghost" onclick="document.querySelector('[data-tab=practice]').click()">Practice Subjects</button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('todayScore').textContent=pct+'%';
+  updateStreakUI();
+}
+
+function updateStreakUI(){
+  document.getElementById('streakVal').textContent=S.streak||0;
+  const dots=document.getElementById('streakDots');
+  const today=new Date();
+  let html='';
+  for(let i=6;i>=0;i--){
+    const d=new Date(today);d.setDate(d.getDate()-i);
+    const key=d.toISOString().slice(0,10);
+    const sess=S.history.find(h=>h.date===key&&h.mode==='daily'&&h.completed);
+    const isToday=i===0;
+    html+=`<div class="dot ${sess?'done':''} ${isToday?'today':''}" title="${key}">${sess?'✓':d.toLocaleDateString('en',{weekday:'narrow'})}</div>`;
+  }
+  dots.innerHTML=html;
+}
+
+/* ════════════════════════
+   SUBJECT PRACTICE
+   ════════════════════════ */
+function renderSubjectGrid(){
+  const grid=document.getElementById('subjGrid');
+  grid.innerHTML=SUBJECTS.map(sub=>{
+    const total=BANK.filter(q=>q.sub===sub).length;
+    const stats=S.subStats[sub]||{total:0,correct:0};
+    const pct=stats.total?Math.round(stats.correct/stats.total*100):0;
+    return `<div class="subj-card" data-sub="${sub}" onclick="startSubjectPractice('${sub}')">
+      <div class="sc-icon">${SUB_ICONS[sub]||'📖'}</div>
+      <div class="sc-name">${sub}</div>
+      <div class="sc-count">${total} questions · ${stats.total} attempted</div>
+      <div class="sc-bar"><div class="sc-fill" style="width:${pct}%;background:${SUB_COLORS[sub]}">${pct>15?pct+'%':''}</div></div>
+    </div>`;
+  }).join('');
+}
+
+window.startSubjectPractice=function(sub){
+  const questions=BANK.filter(q=>q.sub===sub).sort(()=>Math.random()-.5);
+  const area=document.getElementById('practiceQuizArea');
+  let ci=0;
+
+  function renderQ(){
+    if(ci>=questions.length){area.innerHTML=`<div class="quiz-panel"><div class="result-card"><div class="big-score great">Done!</div><div class="rlabel">You've completed all ${sub} questions. New questions will be added regularly.</div><div class="quiz-actions" style="justify-content:center;margin-top:16px;"><button class="qa-btn ghost" onclick="document.getElementById('practiceQuizArea').innerHTML='';renderSubjectGrid();">← Back to Subjects</button></div></div></div>`;return;}
+    const q=questions[ci];
+    area.innerHTML=`
+      <div class="quiz-panel">
+        <div class="quiz-meta"><span class="qnum">Q${ci+1}/${questions.length}</span><span class="qsub">${q.sub}</span></div>
+        <div class="quiz-question">${q.q}</div>
+        <div class="quiz-opts">${q.opts.map((o,i)=>`<div class="qo" data-oi="${i}"><span class="letter">${'ABCD'[i]}</span><span>${o}</span></div>`).join('')}</div>
+        <div class="quiz-explain" id="pExplain"></div>
+        <div class="quiz-actions" id="pActions" style="display:none;"><button class="qa-btn primary" id="pNext">${ci+1>=questions.length?'Finish':'Next →'}</button><button class="qa-btn ghost" onclick="document.getElementById('practiceQuizArea').innerHTML='';renderSubjectGrid();">← Stop</button></div>
+      </div>`;
+    let done=false;
+    area.querySelectorAll('.qo').forEach(el=>{
+      el.addEventListener('click',function(){
+        if(done)return;done=true;
+        const oi=+this.dataset.oi;const isCorrect=oi===q.ans;
+        if(!S.subStats[q.sub])S.subStats[q.sub]={total:0,correct:0};
+        S.subStats[q.sub].total++;if(isCorrect)S.subStats[q.sub].correct++;saveState(S);
+        area.querySelectorAll('.qo').forEach(o=>{o.classList.add('disabled');if(+o.dataset.oi===q.ans)o.classList.add('correct');else if(+o.dataset.oi===oi&&!isCorrect)o.classList.add('wrong');});
+        const exp=document.getElementById('pExplain');exp.innerHTML=`<strong>${isCorrect?'✓ Correct!':'✗ Incorrect.'}</strong> ${q.exp}`;exp.classList.add('show');
+        document.getElementById('pActions').style.display='flex';
+      });
+    });
+    document.getElementById('pNext')?.addEventListener('click',()=>{ci++;renderQ();});
+  }
+  renderQ();
+};
+
+/* ════════════════════════
+   ANALYTICS
+   ════════════════════════ */
+function renderAnalytics(){
+  // Overall accuracy ring
+  const totalA=Object.values(S.subStats).reduce((a,s)=>a+s.total,0);
+  const totalC=Object.values(S.subStats).reduce((a,s)=>a+s.correct,0);
+  const pct=totalA?Math.round(totalC/totalA*100):0;
+  document.getElementById('ringVal').textContent=totalA?pct+'%':'—';
+  drawRing(pct);
+
+  // Quick stats
+  const sessions=S.history.filter(h=>h.completed);
+  document.getElementById('quickStats').innerHTML=`
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);"><span style="color:var(--muted)">Total Questions Answered</span><span style="font-weight:800;">${totalA}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);"><span style="color:var(--muted)">Daily Challenges Completed</span><span style="font-weight:800;">${sessions.length}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);"><span style="color:var(--muted)">Current Streak</span><span style="font-weight:800;">🔥 ${S.streak||0} days</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;"><span style="color:var(--muted)">Correct / Wrong</span><span style="font-weight:800;"><span style="color:#34d399">${totalC}</span> / <span style="color:#f87171">${totalA-totalC}</span></span></div>`;
+
+  // Subject bars
+  const bars=document.getElementById('subBars');
+  bars.innerHTML=SUBJECTS.map(sub=>{
+    const st=S.subStats[sub]||{total:0,correct:0};
+    const p=st.total?Math.round(st.correct/st.total*100):0;
+    return `<div class="sb-row"><span class="sb-label">${sub}</span><div class="sb-track"><div class="sb-fill" style="width:${Math.max(p,2)}%;background:${SUB_COLORS[sub]}">${p>20?p+'%':''}</div></div><span class="sb-val">${st.total?p+'%':'—'}</span></div>`;
+  }).join('');
+
+  // Trend chart
+  drawTrendChart();
+
+  // Weak areas
+  const weak=SUBJECTS.filter(s=>{const st=S.subStats[s];return st&&st.total>=2&&(st.correct/st.total)<0.5;}).sort((a,b)=>{
+    const pa=S.subStats[a].correct/S.subStats[a].total;
+    const pb=S.subStats[b].correct/S.subStats[b].total;
+    return pa-pb;
+  });
+  const weakEl=document.getElementById('weakAreas');
+  if(!totalA){weakEl.innerHTML='<p style="color:var(--muted);font-size:13px;">Complete some questions first and your weak areas will appear here.</p>';}
+  else if(!weak.length){weakEl.innerHTML='<p style="color:#34d399;font-size:13px;">🎯 Great job! No weak areas detected. Keep practicing to maintain your edge.</p>';}
+  else{weakEl.innerHTML=weak.map(s=>{const st=S.subStats[s];const p=Math.round(st.correct/st.total*100);return `<div style="display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:8px;border-radius:12px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.12);cursor:pointer;" onclick="document.querySelector('[data-tab=practice]').click();setTimeout(()=>startSubjectPractice('${s}'),100)"><span style="font-size:20px;">${SUB_ICONS[s]}</span><div><div style="font-weight:700;">${s}</div><div style="font-size:12px;color:var(--muted);">${p}% accuracy (${st.total} attempted) — click to practice</div></div></div>`;}).join('');}
+}
+
+function drawRing(pct){
+  const c=document.getElementById('ringCanvas');const ctx=c.getContext('2d');
+  const dpr=window.devicePixelRatio||1;c.width=180*dpr;c.height=180*dpr;c.style.width='180px';c.style.height='180px';ctx.scale(dpr,dpr);
+  const cx=90,cy=90,r=70,lw=12;
+  // Background ring
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=lw;ctx.stroke();
+  // Progress ring
+  if(pct>0){
+    const grad=ctx.createLinearGradient(0,0,180,180);
+    grad.addColorStop(0,'#6ea8ff');grad.addColorStop(1,'#7cf7d4');
+    ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+(Math.PI*2*pct/100));ctx.strokeStyle=grad;ctx.lineWidth=lw;ctx.lineCap='round';ctx.stroke();
+  }
+}
+
+function drawTrendChart(){
+  const canvas=document.getElementById('trendCanvas');const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;const rect=canvas.parentElement.getBoundingClientRect();
+  canvas.width=rect.width*dpr;canvas.height=200*dpr;canvas.style.width=rect.width+'px';canvas.style.height='200px';ctx.scale(dpr,dpr);
+  const W=rect.width,H=200,pad={t:20,r:20,b:30,l:36};
+  const plotW=W-pad.l-pad.r,plotH=H-pad.t-pad.b;
+
+  const sessions=S.history.filter(h=>h.completed).slice(-7);
+  if(sessions.length<2){ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='13px DM Sans';ctx.textAlign='center';ctx.fillText('Complete at least 2 daily challenges to see your trend',W/2,H/2);return;}
+
+  const pts=sessions.map(s=>Math.round(s.correct/s.total*100));
+  const maxV=100;
+
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=pad.t+plotH-plotH*(i/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.25)';ctx.font='11px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/4)+'%',pad.l-6,y+4);}
+
+  // Area fill
+  const grad=ctx.createLinearGradient(0,pad.t,0,H-pad.b);
+  grad.addColorStop(0,'rgba(110,168,255,.2)');grad.addColorStop(1,'rgba(110,168,255,0)');
+  ctx.beginPath();
+  pts.forEach((v,i)=>{const x=pad.l+plotW*(i/(pts.length-1));const y=pad.t+plotH-plotH*(v/maxV);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  ctx.lineTo(pad.l+plotW,H-pad.b);ctx.lineTo(pad.l,H-pad.b);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  pts.forEach((v,i)=>{const x=pad.l+plotW*(i/(pts.length-1));const y=pad.t+plotH-plotH*(v/maxV);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  const lineGrad=ctx.createLinearGradient(pad.l,0,W-pad.r,0);
+  lineGrad.addColorStop(0,'#6ea8ff');lineGrad.addColorStop(1,'#7cf7d4');
+  ctx.strokeStyle=lineGrad;ctx.lineWidth=3;ctx.lineJoin='round';ctx.lineCap='round';ctx.stroke();
+
+  // Dots + labels
+  pts.forEach((v,i)=>{
+    const x=pad.l+plotW*(i/(pts.length-1));const y=pad.t+plotH-plotH*(v/maxV);
+    ctx.fillStyle='#0b1220';ctx.beginPath();ctx.arc(x,y,6,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#6ea8ff';ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='10px DM Sans';ctx.textAlign='center';
+    ctx.fillText(sessions[i].date.slice(5),x,H-pad.b+16);
+  });
+}
+
+/* ════════════════════════
+   INIT
+   ════════════════════════ */
+renderDailyQuiz();
+renderSubjectGrid();
+updateStreakUI();
+</script>
+</body>
+</html>

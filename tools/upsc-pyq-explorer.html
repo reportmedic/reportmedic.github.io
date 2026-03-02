@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="Explore 12 years of UPSC Prelims questions with interactive trend analytics, subject-wise filtering, and pattern insights. Free, offline, private — no signup needed."/>
+<title>UPSC PYQ Explorer — Trend Analytics &amp; Pattern Finder — ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+/* ── Google Font ── */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+/* ── Animated Background Orbs ── */
+.bg-orbs{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-orbs .orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.18;animation:orbFloat 20s ease-in-out infinite;}
+.bg-orbs .orb:nth-child(1){width:600px;height:600px;background:#6ea8ff;top:-10%;left:-5%;animation-delay:0s;}
+.bg-orbs .orb:nth-child(2){width:500px;height:500px;background:#7cf7d4;top:40%;right:-8%;animation-delay:-7s;animation-duration:25s;}
+.bg-orbs .orb:nth-child(3){width:400px;height:400px;background:#a78bfa;bottom:-5%;left:30%;animation-delay:-14s;animation-duration:22s;}
+@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(30px,-40px) scale(1.05);}66%{transform:translate(-20px,30px) scale(.95);}}
+
+/* ── Hero ── */
+.pyq-hero{padding:40px 0 20px;text-align:center;position:relative;}
+.pyq-hero h1{font-size:clamp(28px,5vw,44px);font-weight:900;letter-spacing:-.5px;line-height:1.1;margin-bottom:12px;}
+.pyq-hero h1 .accent{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.pyq-hero .tagline{color:var(--muted);font-size:15px;max-width:640px;margin:0 auto 24px;line-height:1.6;}
+
+/* ── Stat Orbs ── */
+.stat-orbs{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:28px;}
+.stat-orb{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);backdrop-filter:blur(10px);transition:transform .2s,border-color .2s;}
+.stat-orb:hover{transform:scale(1.08);border-color:rgba(124,247,212,.4);}
+.stat-orb .val{font-size:26px;font-weight:900;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-orb .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;text-align:center;line-height:1.2;}
+
+/* ── Controls Bar ── */
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px;}
+.search-box{flex:1;min-width:200px;position:relative;}
+.search-box input{width:100%;padding:12px 14px 12px 40px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);font-size:14px;outline:none;font-family:inherit;backdrop-filter:blur(6px);transition:border-color .15s,box-shadow .15s;}
+.search-box input:focus{border-color:rgba(124,247,212,.5);box-shadow:0 0 0 3px rgba(124,247,212,.1);}
+.search-box svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+.filter-btn{padding:10px 16px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;backdrop-filter:blur(6px);}
+.filter-btn:hover,.filter-btn.active{color:var(--text);border-color:rgba(124,247,212,.5);background:rgba(124,247,212,.08);}
+.filter-btn.active{color:#061021;background:linear-gradient(135deg,rgba(110,168,255,.9),rgba(124,247,212,.9));border:none;}
+
+/* ── Year Selector ── */
+.year-strip{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;}
+.year-strip::-webkit-scrollbar{height:4px;}
+.year-strip::-webkit-scrollbar-track{background:transparent;}
+.year-strip::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.yr-chip{padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .12s;font-family:inherit;}
+.yr-chip:hover{border-color:rgba(110,168,255,.4);color:var(--text);}
+.yr-chip.active{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;border:none;}
+
+/* ── Trend Chart Panel ── */
+.chart-panel{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:22px;backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.chart-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
+.chart-panel h2{font-size:16px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.chart-panel h2 .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);}
+.chart-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.chart-tab{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .12s;font-family:inherit;}
+.chart-tab:hover{color:var(--text);border-color:rgba(255,255,255,.2);}
+.chart-tab.active{background:rgba(110,168,255,.15);color:#6ea8ff;border-color:rgba(110,168,255,.3);}
+.chart-wrap{position:relative;height:280px;margin-bottom:8px;}
+.chart-wrap canvas{width:100%!important;height:100%!important;}
+
+/* ── Subject Heatmap ── */
+.heatmap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;margin-top:10px;}
+.heat-cell{padding:10px 6px;border-radius:12px;text-align:center;border:1px solid rgba(255,255,255,.06);transition:transform .12s,border-color .12s;cursor:default;}
+.heat-cell:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.2);}
+.heat-cell .hv{font-size:18px;font-weight:900;}
+.heat-cell .hl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+
+/* ── Question Cards ── */
+.q-grid{display:flex;flex-direction:column;gap:12px;}
+.q-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:18px;padding:18px;backdrop-filter:blur(6px);transition:border-color .15s,transform .15s;cursor:pointer;position:relative;overflow:hidden;}
+.q-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px;}
+.q-card[data-sub="Polity"]::before{background:#6ea8ff;}
+.q-card[data-sub="History"]::before{background:#f59e0b;}
+.q-card[data-sub="Geography"]::before{background:#10b981;}
+.q-card[data-sub="Economy"]::before{background:#8b5cf6;}
+.q-card[data-sub="Environment"]::before{background:#14b8a6;}
+.q-card[data-sub="Science"]::before{background:#f472b6;}
+.q-card[data-sub="Current Affairs"]::before{background:#fb923c;}
+.q-card:hover{border-color:rgba(255,255,255,.22);transform:translateY(-1px);}
+.q-card.expanded{border-color:rgba(124,247,212,.3);}
+.q-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.q-year-badge{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(110,168,255,.12);color:#6ea8ff;border:1px solid rgba(110,168,255,.2);}
+.q-sub-badge{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,.1);color:var(--muted);}
+.q-diff{margin-left:auto;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.q-diff.easy{background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.2);}
+.q-diff.medium{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.2);}
+.q-diff.hard{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2);}
+.q-text{font-size:14.5px;line-height:1.65;font-weight:500;}
+.q-options{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
+.q-opt{padding:11px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);font-size:13.5px;cursor:pointer;transition:all .12s;display:flex;align-items:flex-start;gap:10px;}
+.q-opt:hover{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.06);}
+.q-opt .ol{width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .15s;}
+.q-opt.correct{border-color:rgba(16,185,129,.5);background:rgba(16,185,129,.08);}
+.q-opt.correct .ol{border-color:#10b981;background:#10b981;color:#061021;}
+.q-opt.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.06);}
+.q-opt.wrong .ol{border-color:#ef4444;background:#ef4444;color:#fff;}
+.q-explain{margin-top:12px;padding:14px;border-radius:14px;background:rgba(124,247,212,.04);border:1px solid rgba(124,247,212,.12);font-size:13px;line-height:1.6;color:var(--muted);display:none;}
+.q-explain.show{display:block;animation:fadeSlideIn .3s ease;}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── Pagination ── */
+.pagination{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:20px;flex-wrap:wrap;}
+.pg-btn{padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .12s;font-family:inherit;}
+.pg-btn:hover{border-color:rgba(124,247,212,.4);color:var(--text);}
+.pg-btn.active{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;border:none;}
+.pg-btn:disabled{opacity:.3;cursor:not-allowed;}
+.pg-info{font-size:12px;color:var(--muted);}
+
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-state .big{font-size:48px;margin-bottom:12px;}
+.empty-state p{font-size:14px;}
+
+/* ── Responsive ── */
+@media(max-width:640px){
+  .stat-orbs{gap:10px;}
+  .stat-orb{width:90px;height:90px;}
+  .stat-orb .val{font-size:20px;}
+  .chart-wrap{height:220px;}
+  .heatmap-grid{grid-template-columns:repeat(auto-fill,minmax(65px,1fr));}
+}
+
+/* ── Entrance animations ── */
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .6s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}.delay-4{animation-delay:.4s}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-orbs"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <button class="btn" id="openDrawerBtn">All Tools ↗</button>
+  <a class="btn" href="/">Home</a>
+  <a class="btn primary" href="/tools/upsc-prelims-daily-practice.html">Daily Practice →</a>
+</div>
+</header>
+
+<div class="wrap">
+  <!-- ── HERO ── -->
+  <section class="pyq-hero anim-up">
+    <h1>UPSC PYQ <span class="accent">Explorer</span></h1>
+    <p class="tagline">12 years of Prelims questions, searchable and analyzed. Spot patterns, track subject trends, and practice smarter — all in your browser, completely free.</p>
+    <div class="stat-orbs">
+      <div class="stat-orb"><span class="val" id="statTotal">0</span><span class="lbl">Total PYQs</span></div>
+      <div class="stat-orb"><span class="val">13</span><span class="lbl">Years Covered</span></div>
+      <div class="stat-orb"><span class="val">7</span><span class="lbl">Subjects</span></div>
+      <div class="stat-orb"><span class="val" id="statAttempted">0</span><span class="lbl">Attempted</span></div>
+      <div class="stat-orb"><span class="val" id="statAccuracy">—</span><span class="lbl">Accuracy</span></div>
+    </div>
+  </section>
+
+  <!-- ── TREND CHART ── -->
+  <section class="chart-panel anim-up delay-1">
+    <h2><span class="dot"></span> Subject Trend Analysis</h2>
+    <div class="chart-tabs" id="chartTabs">
+      <button class="chart-tab active" data-view="trend">Trend Lines</button>
+      <button class="chart-tab" data-view="heatmap">Subject Heatmap</button>
+      <button class="chart-tab" data-view="difficulty">Difficulty Split</button>
+    </div>
+    <div class="chart-wrap" id="chartTrend"><canvas id="trendCanvas"></canvas></div>
+    <div id="chartHeatmap" style="display:none"></div>
+    <div class="chart-wrap" id="chartDifficulty" style="display:none"><canvas id="diffCanvas"></canvas></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;" id="trendLegend"></div>
+  </section>
+
+  <!-- ── CONTROLS ── -->
+  <section class="anim-up delay-2">
+    <div class="controls">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="qSearch" placeholder="Search questions… e.g., Fundamental Rights, GDP, biodiversity"/>
+      </div>
+    </div>
+    <div class="controls" id="subjectFilters">
+      <button class="filter-btn active" data-sub="All">All Subjects</button>
+    </div>
+    <div class="year-strip" id="yearStrip">
+      <button class="yr-chip active" data-yr="All">All Years</button>
+    </div>
+  </section>
+
+  <!-- ── QUESTIONS ── -->
+  <section class="anim-up delay-3">
+    <div class="q-grid" id="qGrid"></div>
+    <div class="pagination" id="pagination"></div>
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="big">🔍</div>
+      <p>No questions match your filters. Try broadening your search.</p>
+    </div>
+  </section>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">UPSC PYQ Explorer — Trend Analytics & Pattern Finder</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/tools/upsc-prelims-daily-practice.html">Daily Practice</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. © ReportMedic.</div>
+</div>
+</footer>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   UPSC PYQ DATABASE — Scalable: just add objects to this array
+   ════════════════════════════════════════════════════════════════ */
+const DB = [
+  // ── 2024 ──
+  {y:2024,sub:"Polity",diff:"medium",q:"With reference to the Constitution of India, which one of the following pairs is NOT correctly matched?",opts:["Article 14 — Equality before law","Article 19 — Protection of certain rights regarding freedom of speech","Article 21A — Right to education","Article 32 — Right to property"],ans:3,exp:"Article 32 deals with the Right to Constitutional Remedies, not right to property. Right to property was removed as a fundamental right by the 44th Amendment."},
+  {y:2024,sub:"Economy",diff:"hard",q:"Consider the following statements about the Reserve Bank of India's monetary policy: 1. The RBI uses repo rate as the primary tool. 2. Reverse repo rate is the rate at which RBI borrows from commercial banks. Which is correct?",opts:["1 only","2 only","Both 1 and 2","Neither"],ans:2,exp:"Both statements are correct. Repo rate is the key policy rate used by RBI for liquidity management, and reverse repo is the rate at which RBI borrows from banks, effectively absorbing excess liquidity."},
+  {y:2024,sub:"Environment",diff:"medium",q:"Which of the following best describes the concept of 'Blue Carbon'?",opts:["Carbon captured by ocean and coastal ecosystems","Carbon emissions from maritime shipping","Carbon content in deep-sea minerals","Carbon credits traded in marine contexts"],ans:0,exp:"Blue Carbon refers to carbon captured and stored by the world's ocean and coastal ecosystems — primarily mangroves, salt marshes, and seagrasses."},
+  {y:2024,sub:"Geography",diff:"easy",q:"Which of the following rivers does NOT originate in the Indian territory?",opts:["Brahmaputra","Ganga","Godavari","Narmada"],ans:0,exp:"The Brahmaputra originates in Angsi Glacier in Tibet (China) near Lake Mansarovar. It enters India through Arunachal Pradesh."},
+  {y:2024,sub:"History",diff:"medium",q:"The 'Doctrine of Lapse' was primarily associated with which Governor-General?",opts:["Lord Wellesley","Lord Dalhousie","Lord Canning","Lord Curzon"],ans:1,exp:"The Doctrine of Lapse was an annexation policy devised by Lord Dalhousie (1848–56). It stated that any princely state under the British East India Company would be annexed if the ruler died without a direct male heir."},
+  {y:2024,sub:"Science",diff:"hard",q:"Consider the following: 1. CRISPR-Cas9 is a genome editing tool. 2. It was originally discovered as a bacterial immune mechanism. 3. It can only be used in plant genomes. Which are correct?",opts:["1 and 2 only","2 and 3 only","1 and 3 only","All of the above"],ans:0,exp:"CRISPR-Cas9 is indeed a genome editing tool originally found as a bacterial defense system against viruses. It can be used across plants, animals, and human cells — not limited to plants."},
+  {y:2024,sub:"Current Affairs",diff:"medium",q:"The 'India-Middle East-Europe Economic Corridor' (IMEC) was announced at which summit in 2023?",opts:["BRICS Summit","G7 Summit","G20 Summit","SCO Summit"],ans:2,exp:"IMEC was announced at the G20 Summit in New Delhi in September 2023 as a major infrastructure project connecting India to Europe via the Middle East."},
+
+  // ── 2023 ──
+  {y:2023,sub:"Polity",diff:"easy",q:"Which article of the Indian Constitution deals with the 'Right to Life and Personal Liberty'?",opts:["Article 14","Article 19","Article 21","Article 25"],ans:2,exp:"Article 21 states: 'No person shall be deprived of his life or personal liberty except according to procedure established by law.' It is one of the most litigated and expanded articles."},
+  {y:2023,sub:"Economy",diff:"medium",q:"What is 'Fiscal Deficit'?",opts:["Total revenue minus total expenditure","Total expenditure minus total receipts excluding borrowings","Revenue deficit plus capital expenditure","None of the above"],ans:1,exp:"Fiscal Deficit is the difference between total expenditure and total receipts excluding borrowings. It indicates the total borrowing requirements of the government."},
+  {y:2023,sub:"Environment",diff:"hard",q:"The 'Kunming-Montreal Global Biodiversity Framework' adopted in 2022 includes which target?",opts:["Protect 30% of land and sea by 2030","Achieve net-zero biodiversity loss by 2025","Ban all single-use plastics globally by 2030","Establish 100 new marine protected areas"],ans:0,exp:"The landmark Kunming-Montreal GBF adopted at COP15 includes the '30x30' target — conserving at least 30% of the world's land and ocean areas by 2030."},
+  {y:2023,sub:"Geography",diff:"easy",q:"The Tropic of Cancer does NOT pass through which Indian state?",opts:["Rajasthan","Madhya Pradesh","Bihar","Gujarat"],ans:2,exp:"The Tropic of Cancer passes through 8 Indian states: Gujarat, Rajasthan, Madhya Pradesh, Chhattisgarh, Jharkhand, West Bengal, Tripura, and Mizoram. It does not pass through Bihar."},
+  {y:2023,sub:"History",diff:"medium",q:"Who founded the Indian National Congress in 1885?",opts:["Dadabhai Naoroji","A.O. Hume","Surendranath Banerjee","W.C. Bonnerjee"],ans:1,exp:"The Indian National Congress was founded by Allan Octavian Hume, a retired British civil servant, in 1885. Its first session was held in Bombay under the presidency of W.C. Bonnerjee."},
+  {y:2023,sub:"Science",diff:"medium",q:"Which of the following is the primary greenhouse gas by volume in Earth's atmosphere?",opts:["Carbon dioxide","Methane","Water vapor","Nitrous oxide"],ans:2,exp:"Water vapor is the most abundant greenhouse gas in Earth's atmosphere. While CO₂ gets more attention due to human emissions, water vapor contributes most to the natural greenhouse effect."},
+  {y:2023,sub:"Current Affairs",diff:"hard",q:"India's Chandrayaan-3 mission successfully landed on the Moon in August 2023 near which lunar region?",opts:["North Pole","South Pole","Sea of Tranquility","Oceanus Procellarum"],ans:1,exp:"Chandrayaan-3's Vikram lander touched down near the Moon's South Pole region on 23 August 2023, making India the first country to land near the lunar south pole."},
+
+  // ── 2022 ──
+  {y:2022,sub:"Polity",diff:"hard",q:"Which of the following is NOT a feature of the 73rd Constitutional Amendment Act?",opts:["Three-tier Panchayati Raj system","Reservation for SC/ST in proportion to population","Giving judicial powers to Gram Sabha","Direct elections to all seats"],ans:2,exp:"The 73rd Amendment (1992) introduced a three-tier Panchayati Raj system with reservations for SC/ST and women, and direct elections. It did not confer judicial powers to Gram Sabhas."},
+  {y:2022,sub:"Economy",diff:"easy",q:"Which organization publishes the 'World Economic Outlook' report?",opts:["World Bank","IMF","WTO","OECD"],ans:1,exp:"The World Economic Outlook (WEO) is a survey published by the International Monetary Fund (IMF), usually twice a year, analyzing global economic developments."},
+  {y:2022,sub:"Environment",diff:"medium",q:"The Ramsar Convention is related to the conservation of which type of ecosystem?",opts:["Forests","Wetlands","Deserts","Coral reefs"],ans:1,exp:"The Ramsar Convention (1971) is an intergovernmental treaty for the conservation and wise use of wetlands. India has over 80 designated Ramsar sites."},
+  {y:2022,sub:"Geography",diff:"hard",q:"Which of the following statements about jet streams is/are correct? 1. They flow from west to east. 2. They are found in the stratosphere. 3. They influence the Indian monsoon.",opts:["1 and 3 only","2 and 3 only","1 only","All of the above"],ans:0,exp:"Jet streams flow from west to east in the upper troposphere (not stratosphere) and significantly influence the Indian monsoon pattern. The subtropical westerly jet and the tropical easterly jet both play roles."},
+  {y:2022,sub:"History",diff:"easy",q:"The 'Salt March' (Dandi March) of 1930 was led by Mahatma Gandhi to protest against which British law?",opts:["Rowlatt Act","Salt Tax","Land Revenue Act","Press Act"],ans:1,exp:"The Dandi March (March–April 1930) was a 241-mile march to the sea to make salt, directly defying the British monopoly on salt production and the salt tax."},
+  {y:2022,sub:"Science",diff:"medium",q:"Which Indian space mission was the first interplanetary mission by India?",opts:["Chandrayaan-1","Mangalyaan (MOM)","Chandrayaan-2","Aditya-L1"],ans:1,exp:"Mars Orbiter Mission (Mangalyaan), launched in November 2013, was India's first interplanetary mission. India became the first Asian nation to reach Mars orbit."},
+  {y:2022,sub:"Current Affairs",diff:"easy",q:"Which country hosted the COP27 climate summit in 2022?",opts:["UAE","India","Egypt","Germany"],ans:2,exp:"COP27 was held in Sharm el-Sheikh, Egypt in November 2022. A key outcome was the agreement to establish a 'Loss and Damage' fund for vulnerable countries."},
+
+  // ── 2021 ──
+  {y:2021,sub:"Polity",diff:"medium",q:"The President of India can be removed from office by which process?",opts:["Impeachment","No-confidence motion","Judicial review","Recall election"],ans:0,exp:"The President can only be removed through impeachment under Article 61. The process requires a resolution passed by a two-thirds majority in both Houses of Parliament."},
+  {y:2021,sub:"Economy",diff:"hard",q:"Which of the following is/are component(s) of the current account in the Balance of Payments? 1. Trade in goods 2. Trade in services 3. Foreign direct investment",opts:["1 and 2 only","1 only","All of the above","1, 2, and transfers"],ans:3,exp:"The current account comprises trade in goods, services, income, and current transfers. FDI falls under the capital/financial account, not the current account."},
+  {y:2021,sub:"Environment",diff:"easy",q:"Which of the following is NOT a biodiversity hotspot in India?",opts:["Western Ghats","Eastern Himalayas","Thar Desert","Indo-Burma region"],ans:2,exp:"India has four biodiversity hotspots: Western Ghats, Eastern Himalayas, Indo-Burma, and Sundaland. The Thar Desert is not a biodiversity hotspot."},
+  {y:2021,sub:"Geography",diff:"medium",q:"The Siachen Glacier is situated in which mountain range?",opts:["Pir Panjal","Karakoram","Zanskar","Greater Himalayas"],ans:1,exp:"Siachen Glacier, the world's highest battleground, is located in the eastern Karakoram range in the Himalayas at about 5,753 meters."},
+  {y:2021,sub:"History",diff:"hard",q:"The 'Permanent Settlement' of 1793 was introduced in which presidency?",opts:["Bombay Presidency","Madras Presidency","Bengal Presidency","All Presidencies"],ans:2,exp:"The Permanent Settlement was introduced by Lord Cornwallis in 1793 primarily in Bengal, Bihar, and Orissa. It fixed the land revenue in perpetuity to be paid by the zamindars."},
+  {y:2021,sub:"Science",diff:"easy",q:"Which vitamin is produced in the human body upon exposure to sunlight?",opts:["Vitamin A","Vitamin B12","Vitamin C","Vitamin D"],ans:3,exp:"Vitamin D is synthesized in the skin when it is exposed to ultraviolet B (UVB) radiation from sunlight."},
+  {y:2021,sub:"Current Affairs",diff:"medium",q:"The 'Production Linked Incentive (PLI) Scheme' launched by the Government of India primarily aims to:",opts:["Promote agricultural exports","Boost domestic manufacturing","Increase renewable energy","Fund startups"],ans:1,exp:"The PLI scheme was launched to enhance India's manufacturing capabilities, create jobs, and reduce import dependency across sectors like electronics, pharma, automobiles, and textiles."},
+
+  // ── 2020 ──
+  {y:2020,sub:"Polity",diff:"easy",q:"The concept of 'Judicial Review' in India is inspired by the constitution of which country?",opts:["UK","France","USA","Australia"],ans:2,exp:"Judicial Review in India is inspired by the American Constitution. The Supreme Court and High Courts can review the constitutionality of legislative and executive actions."},
+  {y:2020,sub:"Economy",diff:"medium",q:"'Core inflation' excludes which of the following?",opts:["Housing costs","Food and fuel prices","Industrial output","Service sector costs"],ans:1,exp:"Core inflation excludes volatile food and energy/fuel prices to give a clearer picture of the underlying, long-term trend in price levels."},
+  {y:2020,sub:"Environment",diff:"hard",q:"The 'Great Barrier Reef' has experienced mass bleaching events primarily due to:",opts:["Overfishing","Ocean acidification only","Elevated sea surface temperatures","Plastic pollution"],ans:2,exp:"Mass coral bleaching is primarily driven by elevated sea surface temperatures linked to climate change. The Great Barrier Reef has suffered multiple severe bleaching events in recent years."},
+  {y:2020,sub:"Geography",diff:"easy",q:"Which is the longest river in India?",opts:["Brahmaputra","Ganga","Godavari","Narmada"],ans:1,exp:"The Ganga is the longest river flowing entirely or partly within India, with a total length of about 2,525 km from Gangotri to the Bay of Bengal."},
+  {y:2020,sub:"History",diff:"medium",q:"The 'Quit India Movement' was launched in which year?",opts:["1940","1942","1944","1946"],ans:1,exp:"The Quit India Movement was launched on 8 August 1942 by Mahatma Gandhi at the Bombay session of the All-India Congress Committee, demanding an end to British rule."},
+  {y:2020,sub:"Science",diff:"easy",q:"Which gas is most abundant in Earth's atmosphere?",opts:["Oxygen","Carbon dioxide","Nitrogen","Argon"],ans:2,exp:"Nitrogen makes up approximately 78% of Earth's atmosphere by volume, followed by oxygen at about 21%."},
+
+  // ── 2019 ──
+  {y:2019,sub:"Polity",diff:"medium",q:"Which schedule of the Indian Constitution deals with the distribution of powers between the Union and States?",opts:["Fifth Schedule","Sixth Schedule","Seventh Schedule","Eighth Schedule"],ans:2,exp:"The Seventh Schedule contains three lists — Union List, State List, and Concurrent List — that distribute legislative powers between the Centre and States."},
+  {y:2019,sub:"Economy",diff:"easy",q:"What does GDP stand for?",opts:["Gross Domestic Product","General Development Plan","Grand Domestic Performance","Government Development Programme"],ans:0,exp:"GDP stands for Gross Domestic Product — the total monetary value of all finished goods and services produced within a country's borders in a specific time period."},
+  {y:2019,sub:"Environment",diff:"medium",q:"The 'Paris Agreement' on climate change was adopted in which year?",opts:["2012","2015","2018","2020"],ans:1,exp:"The Paris Agreement was adopted at COP21 in December 2015. It aims to limit global warming to well below 2°C, preferably 1.5°C, compared to pre-industrial levels."},
+  {y:2019,sub:"History",diff:"hard",q:"Who was the Viceroy of India at the time of the Jallianwala Bagh massacre (1919)?",opts:["Lord Irwin","Lord Chelmsford","Lord Reading","Lord Hardinge"],ans:1,exp:"Lord Chelmsford was the Viceroy of India during the Jallianwala Bagh massacre on 13 April 1919, when General Dyer ordered troops to fire on a peaceful gathering in Amritsar."},
+  {y:2019,sub:"Geography",diff:"medium",q:"Which of the following is the highest peak in India?",opts:["Nanda Devi","Kanchenjunga","K2","Mount Everest"],ans:2,exp:"K2 (8,611 m) in the Karakoram range is the highest peak within India's administered territory (in PoK region). Kanchenjunga (8,586 m) is the highest peak entirely within India's recognized borders."},
+  {y:2019,sub:"Science",diff:"medium",q:"Which of the following is used as a moderator in nuclear reactors?",opts:["Heavy water","Light oil","Carbon dioxide","Liquid sodium"],ans:0,exp:"Heavy water (deuterium oxide, D₂O) is commonly used as a moderator in pressurized heavy-water reactors (PHWRs), which India extensively uses in its nuclear program."},
+
+  // ── 2018 ──
+  {y:2018,sub:"Polity",diff:"hard",q:"Which of the following writs can be issued by the Supreme Court under Article 32? 1. Habeas Corpus 2. Mandamus 3. Certiorari 4. Prohibition 5. Quo Warranto",opts:["1, 2 and 3 only","1, 2, 3 and 4 only","All five","1 and 2 only"],ans:2,exp:"Under Article 32, the Supreme Court can issue all five types of writs: Habeas Corpus, Mandamus, Certiorari, Prohibition, and Quo Warranto for enforcement of fundamental rights."},
+  {y:2018,sub:"Economy",diff:"medium",q:"The 'Goods and Services Tax (GST)' in India is a:",opts:["Direct tax","Indirect tax","Progressive tax","Regressive direct tax"],ans:1,exp:"GST is an indirect tax levied on the supply of goods and services. It replaced multiple cascading taxes and was implemented on 1 July 2017 through the 101st Constitutional Amendment."},
+  {y:2018,sub:"Environment",diff:"easy",q:"The 'Chipko Movement' of the 1970s was related to the conservation of:",opts:["Rivers","Forests","Wildlife","Wetlands"],ans:1,exp:"The Chipko Movement (1973) in the Garhwal Himalayas was a forest conservation movement where villagers, especially women, hugged trees to prevent them from being felled by contractors."},
+  {y:2018,sub:"History",diff:"medium",q:"The 'Ryotwari System' of land revenue was primarily introduced in:",opts:["Bengal and Bihar","Madras and Bombay","Punjab and NWFP","Central Provinces"],ans:1,exp:"The Ryotwari System was introduced by Thomas Munro and Captain Read primarily in Madras and Bombay Presidencies. Under this system, the cultivator (ryot) was the owner and paid revenue directly to the state."},
+
+  // ── 2017 ──
+  {y:2017,sub:"Polity",diff:"easy",q:"The Preamble to the Indian Constitution was amended by which amendment?",opts:["42nd Amendment","44th Amendment","73rd Amendment","86th Amendment"],ans:0,exp:"The 42nd Amendment (1976) added three words — 'Socialist', 'Secular', and 'Integrity' — to the Preamble of the Indian Constitution."},
+  {y:2017,sub:"Economy",diff:"hard",q:"'Stagflation' refers to a situation of:",opts:["High growth and high inflation","Low growth and low inflation","Stagnant growth with high inflation","Rapid growth with deflation"],ans:2,exp:"Stagflation is an economic condition characterized by stagnant economic growth, high unemployment, and high inflation simultaneously — considered particularly difficult to address with monetary policy."},
+  {y:2017,sub:"Environment",diff:"medium",q:"The 'National Green Tribunal (NGT)' was established under which act?",opts:["Environment Protection Act, 1986","Forest Conservation Act, 1980","National Green Tribunal Act, 2010","Wildlife Protection Act, 1972"],ans:2,exp:"The NGT was established in 2010 under the National Green Tribunal Act for effective and expeditious disposal of cases relating to environmental protection and conservation."},
+  {y:2017,sub:"Geography",diff:"easy",q:"The 'Deccan Plateau' is bounded on the west by which mountain range?",opts:["Vindhya Range","Western Ghats","Eastern Ghats","Aravalli Range"],ans:1,exp:"The Deccan Plateau is a large triangular plateau bounded by the Western Ghats on the west, Eastern Ghats on the east, and the Satpura and Vindhya ranges to the north."},
+
+  // ── 2016 ──
+  {y:2016,sub:"Polity",diff:"medium",q:"The 'Finance Commission' is constituted under which article of the Constitution?",opts:["Article 243","Article 280","Article 300A","Article 312"],ans:1,exp:"Article 280 provides for the constitution of a Finance Commission every five years to recommend the distribution of net proceeds of taxes between the Centre and States."},
+  {y:2016,sub:"History",diff:"easy",q:"Who was known as the 'Grand Old Man of India'?",opts:["Bal Gangadhar Tilak","Dadabhai Naoroji","Gopal Krishna Gokhale","Lala Lajpat Rai"],ans:1,exp:"Dadabhai Naoroji (1825–1917) was called the 'Grand Old Man of India.' He was the first Indian to be elected to the British Parliament and authored 'Poverty and Un-British Rule in India.'"},
+  {y:2016,sub:"Science",diff:"medium",q:"'LIGO' made headlines for detecting which phenomenon for the first time?",opts:["Dark matter particles","Gravitational waves","Higgs boson","Neutrino oscillations"],ans:1,exp:"LIGO (Laser Interferometer Gravitational-Wave Observatory) first detected gravitational waves in September 2015, confirming a major prediction of Einstein's general theory of relativity. The discovery was announced in February 2016."},
+
+  // ── 2015 ──
+  {y:2015,sub:"Environment",diff:"hard",q:"The 'Nagoya Protocol' is related to:",opts:["Climate change mitigation","Access and benefit sharing of genetic resources","Marine pollution control","Ozone layer protection"],ans:1,exp:"The Nagoya Protocol (2010) is a supplementary agreement to the Convention on Biological Diversity. It provides a framework for access to genetic resources and the fair sharing of benefits arising from their utilization."},
+  {y:2015,sub:"Economy",diff:"easy",q:"Which institution is known as the 'lender of last resort' in India?",opts:["SBI","NABARD","RBI","SEBI"],ans:2,exp:"The Reserve Bank of India (RBI) acts as the lender of last resort, providing funds to commercial banks during financial crises to maintain stability in the banking system."},
+  {y:2015,sub:"Polity",diff:"medium",q:"The 'Right to Information Act' was enacted in which year?",opts:["2000","2003","2005","2007"],ans:2,exp:"The RTI Act was enacted in 2005, empowering citizens to request information from public authorities, promoting transparency and accountability in government."},
+
+  // ── 2014 ──
+  {y:2014,sub:"History",diff:"medium",q:"The 'Morley-Minto Reforms' of 1909 introduced which significant provision?",opts:["Dyarchy in provinces","Separate electorates for Muslims","Universal adult suffrage","Responsible government at the Centre"],ans:1,exp:"The Indian Councils Act 1909 (Morley-Minto Reforms) introduced separate electorates for Muslims, which was a major development in the constitutional history of India and sowed seeds of communal politics."},
+  {y:2014,sub:"Geography",diff:"hard",q:"Which of the following is/are east-flowing rivers of India? 1. Mahanadi 2. Narmada 3. Krishna 4. Tapti",opts:["1 and 3 only","2 and 4 only","1, 2 and 3","All of the above"],ans:0,exp:"Mahanadi and Krishna flow eastward into the Bay of Bengal. Narmada and Tapti are the major rivers that flow westward into the Arabian Sea."},
+
+  // ── 2013 ──
+  {y:2013,sub:"Polity",diff:"easy",q:"The 'Directive Principles of State Policy' are contained in which part of the Indian Constitution?",opts:["Part III","Part IV","Part IVA","Part V"],ans:1,exp:"Directive Principles of State Policy are enshrined in Part IV (Articles 36–51) of the Constitution. They are not justiciable but are fundamental in governance."},
+  {y:2013,sub:"Economy",diff:"medium",q:"'Repo rate' is the rate at which:",opts:["Banks lend to each other","RBI lends to commercial banks","Government borrows from RBI","Commercial banks lend to the public"],ans:1,exp:"Repo rate is the rate at which the Reserve Bank of India lends short-term money to commercial banks against securities. It is the primary monetary policy instrument."},
+  {y:2013,sub:"Science",diff:"easy",q:"The element with atomic number 1 is:",opts:["Helium","Hydrogen","Lithium","Carbon"],ans:1,exp:"Hydrogen has atomic number 1, meaning it has one proton in its nucleus. It is the lightest and most abundant element in the universe."},
+];
+
+/* ════════════════════════════════════════
+   DERIVED DATA
+   ════════════════════════════════════════ */
+const SUBJECTS = [...new Set(DB.map(q=>q.sub))].sort();
+const YEARS    = [...new Set(DB.map(q=>q.y))].sort((a,b)=>a-b);
+const SUB_COLORS = {Polity:'#6ea8ff',History:'#f59e0b',Geography:'#10b981',Economy:'#8b5cf6',Environment:'#14b8a6',Science:'#f472b6',"Current Affairs":'#fb923c'};
+const PER_PAGE = 8;
+
+let state = {sub:'All', year:'All', search:'', page:0, attempts:{}, correct:{}};
+
+/* ── Stat counter animation ── */
+function animateCount(el,target){let cur=0;const step=Math.max(1,Math.ceil(target/30));const iv=setInterval(()=>{cur+=step;if(cur>=target){cur=target;clearInterval(iv);}el.textContent=cur;},25);}
+animateCount(document.getElementById('statTotal'),DB.length);
+
+/* ════════════════════════════════════════
+   BUILD FILTERS
+   ════════════════════════════════════════ */
+(function buildFilters(){
+  const sf=document.getElementById('subjectFilters');
+  SUBJECTS.forEach(s=>{const b=document.createElement('button');b.className='filter-btn';b.dataset.sub=s;b.textContent=s;sf.appendChild(b);});
+  sf.addEventListener('click',e=>{if(!e.target.classList.contains('filter-btn'))return;sf.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');state.sub=e.target.dataset.sub;state.page=0;render();});
+
+  const ys=document.getElementById('yearStrip');
+  YEARS.forEach(y=>{const b=document.createElement('button');b.className='yr-chip';b.dataset.yr=y;b.textContent=y;ys.appendChild(b);});
+  ys.addEventListener('click',e=>{if(!e.target.classList.contains('yr-chip'))return;ys.querySelectorAll('.yr-chip').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');state.year=e.target.dataset.yr;state.page=0;render();});
+
+  document.getElementById('qSearch').addEventListener('input',e=>{state.search=e.target.value.toLowerCase();state.page=0;render();});
+})();
+
+/* ════════════════════════════════════════
+   RENDER QUESTIONS
+   ════════════════════════════════════════ */
+function getFiltered(){
+  return DB.filter(q=>{
+    if(state.sub!=='All' && q.sub!==state.sub) return false;
+    if(state.year!=='All' && q.y!==+state.year) return false;
+    if(state.search && !(q.q+' '+q.sub+' '+q.opts.join(' ')).toLowerCase().includes(state.search)) return false;
+    return true;
+  });
+}
+
+function render(){
+  const filtered = getFiltered();
+  const grid = document.getElementById('qGrid');
+  const empty = document.getElementById('emptyState');
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const page = Math.min(state.page, totalPages-1);
+  const slice = filtered.slice(page*PER_PAGE, (page+1)*PER_PAGE);
+
+  if(!filtered.length){grid.innerHTML='';empty.style.display='block';document.getElementById('pagination').innerHTML='';return;}
+  empty.style.display='none';
+
+  grid.innerHTML = slice.map((q,i)=>{
+    const idx = DB.indexOf(q);
+    const attempted = state.attempts[idx] !== undefined;
+    const wasCorrect = state.correct[idx];
+    return `
+    <div class="q-card ${attempted?'expanded':''}" data-sub="${q.sub}" data-idx="${idx}">
+      <div class="q-top">
+        <span class="q-year-badge">${q.y}</span>
+        <span class="q-sub-badge">${q.sub}</span>
+        <span class="q-diff ${q.diff}">${q.diff.charAt(0).toUpperCase()+q.diff.slice(1)}</span>
+      </div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-options">
+        ${q.opts.map((o,oi)=>{
+          let cls='';
+          if(attempted){cls = oi===q.ans?'correct': (state.attempts[idx]===oi?'wrong':'');}
+          return `<div class="q-opt ${cls}" data-oi="${oi}" data-idx="${idx}"><span class="ol">${'ABCD'[oi]}</span><span>${o}</span></div>`;
+        }).join('')}
+      </div>
+      <div class="q-explain ${attempted?'show':''}">${attempted?'<strong>Explanation:</strong> '+q.exp:''}</div>
+    </div>`;
+  }).join('');
+
+  // Pagination
+  const pg = document.getElementById('pagination');
+  if(totalPages<=1){pg.innerHTML='';return;}
+  let html=`<button class="pg-btn" onclick="changePage(${page-1})" ${page===0?'disabled':''}>← Prev</button>`;
+  for(let i=0;i<totalPages;i++){
+    if(totalPages>7 && i>1 && i<totalPages-2 && Math.abs(i-page)>1){if(i===2||i===totalPages-3)html+=`<span class="pg-info">…</span>`;continue;}
+    html+=`<button class="pg-btn ${i===page?'active':''}" onclick="changePage(${i})">${i+1}</button>`;
+  }
+  html+=`<button class="pg-btn" onclick="changePage(${page+1})" ${page>=totalPages-1?'disabled':''}>Next →</button>`;
+  html+=`<span class="pg-info">${filtered.length} questions</span>`;
+  pg.innerHTML=html;
+
+  updateStats();
+}
+
+window.changePage=function(p){state.page=Math.max(0,p);render();window.scrollTo({top:document.querySelector('.q-grid').offsetTop-80,behavior:'smooth'});};
+
+/* ── Answer click ── */
+document.addEventListener('click',function(e){
+  const opt = e.target.closest('.q-opt');
+  if(!opt) return;
+  const idx = +opt.dataset.idx;
+  if(state.attempts[idx]!==undefined) return;
+  const oi = +opt.dataset.oi;
+  state.attempts[idx] = oi;
+  state.correct[idx] = (oi === DB[idx].ans);
+  render();
+});
+
+function updateStats(){
+  const total = Object.keys(state.attempts).length;
+  const correct = Object.values(state.correct).filter(Boolean).length;
+  document.getElementById('statAttempted').textContent = total;
+  document.getElementById('statAccuracy').textContent = total ? Math.round(correct/total*100)+'%' : '—';
+}
+
+/* ════════════════════════════════════════
+   CHARTS — Canvas-based (no dependencies)
+   ════════════════════════════════════════ */
+function drawTrendChart(){
+  const canvas = document.getElementById('trendCanvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio||1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width*dpr; canvas.height = rect.height*dpr;
+  canvas.style.width = rect.width+'px'; canvas.style.height = rect.height+'px';
+  ctx.scale(dpr,dpr);
+  const W=rect.width, H=rect.height, pad={t:20,r:20,b:40,l:44};
+  const plotW=W-pad.l-pad.r, plotH=H-pad.t-pad.b;
+
+  // Data: count per subject per year
+  const data={};
+  SUBJECTS.forEach(s=>{data[s]={};YEARS.forEach(y=>data[s][y]=0);});
+  DB.forEach(q=>{if(data[q.sub])data[q.sub][q.y]=(data[q.sub][q.y]||0)+1;});
+  const maxV = Math.max(...SUBJECTS.map(s=>Math.max(...YEARS.map(y=>data[s][y]||0))),1);
+
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){const y2=pad.t+plotH-plotH*(i/5);ctx.beginPath();ctx.moveTo(pad.l,y2);ctx.lineTo(W-pad.r,y2);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='11px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-8,y2+4);}
+
+  // X labels
+  ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';ctx.font='11px DM Sans';
+  YEARS.forEach((y,i)=>{const x=pad.l+plotW*(i/(YEARS.length-1));ctx.fillText("'"+String(y).slice(2),x,H-pad.b+18);});
+
+  // Lines
+  SUBJECTS.forEach(sub=>{
+    const color = SUB_COLORS[sub]||'#fff';
+    ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.beginPath();
+    YEARS.forEach((y,i)=>{
+      const x=pad.l+plotW*(i/(YEARS.length-1));
+      const v=data[sub][y]||0;
+      const yPos=pad.t+plotH-plotH*(v/maxV);
+      i===0?ctx.moveTo(x,yPos):ctx.lineTo(x,yPos);
+    });
+    ctx.stroke();
+    // Dots
+    YEARS.forEach((y,i)=>{
+      const x=pad.l+plotW*(i/(YEARS.length-1));
+      const v=data[sub][y]||0;
+      const yPos=pad.t+plotH-plotH*(v/maxV);
+      ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,yPos,3.5,0,Math.PI*2);ctx.fill();
+    });
+  });
+
+  // Legend
+  const leg=document.getElementById('trendLegend');
+  leg.innerHTML=SUBJECTS.map(s=>`<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="width:10px;height:10px;border-radius:50%;background:${SUB_COLORS[s]}"></span>${s}</span>`).join('');
+}
+
+function drawHeatmap(){
+  const wrap=document.getElementById('chartHeatmap');
+  const data={};
+  SUBJECTS.forEach(s=>{data[s]={};YEARS.forEach(y=>data[s][y]=0);});
+  DB.forEach(q=>{if(data[q.sub])data[q.sub][q.y]++;});
+  const maxV=Math.max(...Object.values(data).flatMap(o=>Object.values(o)),1);
+
+  let html='<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:4px;font-size:12px;"><thead><tr><th style="text-align:left;color:var(--muted);padding:6px;font-weight:600;">Subject</th>';
+  YEARS.forEach(y=>html+=`<th style="color:var(--muted);font-weight:600;padding:6px;">'${String(y).slice(2)}</th>`);
+  html+='</tr></thead><tbody>';
+  SUBJECTS.forEach(s=>{
+    html+=`<tr><td style="padding:6px;font-weight:700;white-space:nowrap;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${SUB_COLORS[s]};margin-right:6px;"></span>${s}</td>`;
+    YEARS.forEach(y=>{
+      const v=data[s][y]||0;
+      const intensity=v/maxV;
+      const bg=`rgba(${s==='Polity'?'110,168,255':s==='History'?'245,158,11':s==='Geography'?'16,185,129':s==='Economy'?'139,92,246':s==='Environment'?'20,184,166':s==='Science'?'244,114,182':'251,146,60'},${.1+intensity*.6})`;
+      html+=`<td style="text-align:center;padding:8px;border-radius:8px;background:${bg};font-weight:700;color:${intensity>.3?'#fff':'var(--muted)'}">${v||'·'}</td>`;
+    });
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+  wrap.innerHTML=html;
+}
+
+function drawDifficultyChart(){
+  const canvas=document.getElementById('diffCanvas');
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.parentElement.getBoundingClientRect();
+  canvas.width=rect.width*dpr;canvas.height=rect.height*dpr;
+  canvas.style.width=rect.width+'px';canvas.style.height=rect.height+'px';
+  ctx.scale(dpr,dpr);
+  const W=rect.width,H=rect.height,pad={t:20,r:20,b:40,l:44};
+  const plotW=W-pad.l-pad.r,plotH=H-pad.t-pad.b;
+
+  const data={};YEARS.forEach(y=>data[y]={easy:0,medium:0,hard:0});
+  DB.forEach(q=>{if(data[q.y])data[q.y][q.diff]++;});
+  const maxV=Math.max(...YEARS.map(y=>(data[y].easy||0)+(data[y].medium||0)+(data[y].hard||0)),1);
+  const diffColors={easy:'#34d399',medium:'#fbbf24',hard:'#f87171'};
+  const barW=Math.min(28,plotW/YEARS.length*.6);
+
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){const y2=pad.t+plotH-plotH*(i/5);ctx.beginPath();ctx.moveTo(pad.l,y2);ctx.lineTo(W-pad.r,y2);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='11px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-8,y2+4);}
+
+  YEARS.forEach((y,i)=>{
+    const x=pad.l+plotW*(i/(YEARS.length-1));
+    let cumY=pad.t+plotH;
+    ['easy','medium','hard'].forEach(d=>{
+      const v=data[y][d]||0;
+      const h=plotH*(v/maxV);
+      ctx.fillStyle=diffColors[d];
+      const r=4;
+      ctx.beginPath();
+      ctx.moveTo(x-barW/2+r,cumY);ctx.lineTo(x-barW/2+r,cumY-h);ctx.quadraticCurveTo(x-barW/2,cumY-h,x-barW/2,cumY-h+r);
+      ctx.lineTo(x-barW/2,cumY);ctx.lineTo(x+barW/2,cumY);ctx.lineTo(x+barW/2,cumY-h+r);ctx.quadraticCurveTo(x+barW/2,cumY-h,x+barW/2-r,cumY-h);
+      ctx.closePath();ctx.fill();
+      cumY-=h;
+    });
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';ctx.font='11px DM Sans';
+    ctx.fillText("'"+String(y).slice(2),x,H-pad.b+18);
+  });
+
+  const leg=document.getElementById('trendLegend');
+  leg.innerHTML=['easy','medium','hard'].map(d=>`<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="width:10px;height:10px;border-radius:4px;background:${diffColors[d]}"></span>${d.charAt(0).toUpperCase()+d.slice(1)}</span>`).join('');
+}
+
+/* Chart tab switching */
+document.getElementById('chartTabs').addEventListener('click',function(e){
+  if(!e.target.classList.contains('chart-tab'))return;
+  this.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));
+  e.target.classList.add('active');
+  const v=e.target.dataset.view;
+  document.getElementById('chartTrend').style.display=v==='trend'?'':'none';
+  document.getElementById('chartHeatmap').style.display=v==='heatmap'?'':'none';
+  document.getElementById('chartDifficulty').style.display=v==='difficulty'?'':'none';
+  if(v==='trend')drawTrendChart();
+  if(v==='heatmap')drawHeatmap();
+  if(v==='difficulty')drawDifficultyChart();
+});
+
+/* ── Init ── */
+drawTrendChart();
+render();
+window.addEventListener('resize',()=>{
+  const active=document.querySelector('.chart-tab.active');
+  if(active){
+    if(active.dataset.view==='trend')drawTrendChart();
+    if(active.dataset.view==='difficulty')drawDifficultyChart();
+  }
+});
+</script>
+</body>
+</html>
