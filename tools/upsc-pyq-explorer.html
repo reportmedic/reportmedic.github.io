@@ -3,21 +3,18 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<meta name="description" content="Explore 12 years of UPSC Prelims questions with interactive trend analytics, subject-wise filtering, and pattern insights. Free, offline, private — no signup needed."/>
-<title>UPSC PYQ Explorer — Trend Analytics &amp; Pattern Finder — ReportMedic</title>
+<meta name="description" content="Explore 5 years of UPSC Prelims GS Paper 1 questions (2021–2025) with interactive trend analytics, subject-wise filtering, difficulty heatmaps, and pattern insights. 500 questions — free, offline, private."/>
+<title>UPSC PYQ Explorer — 500 Questions · 2021–2025 Trend Analytics — ReportMedic</title>
 <link rel="icon" href="/favicon.ico" sizes="any"/>
 <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
 <link rel="stylesheet" href="/assets/css/styles.css"/>
 <script defer src="/assets/js/rm-tools-drawer.js"></script>
 <style>
-/* ── Google Font ── */
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
-
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 
-/* ── Animated Background Orbs ── */
 .bg-orbs{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
 .bg-orbs .orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.18;animation:orbFloat 20s ease-in-out infinite;}
 .bg-orbs .orb:nth-child(1){width:600px;height:600px;background:#6ea8ff;top:-10%;left:-5%;animation-delay:0s;}
@@ -25,30 +22,26 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 .bg-orbs .orb:nth-child(3){width:400px;height:400px;background:#a78bfa;bottom:-5%;left:30%;animation-delay:-14s;animation-duration:22s;}
 @keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(30px,-40px) scale(1.05);}66%{transform:translate(-20px,30px) scale(.95);}}
 
-/* ── Hero ── */
-.pyq-hero{padding:40px 0 20px;text-align:center;position:relative;}
-.pyq-hero h1{font-size:clamp(28px,5vw,44px);font-weight:900;letter-spacing:-.5px;line-height:1.1;margin-bottom:12px;}
+.pyq-hero{padding:36px 0 16px;text-align:center;position:relative;}
+.pyq-hero h1{font-size:clamp(26px,5vw,42px);font-weight:900;letter-spacing:-.5px;line-height:1.1;margin-bottom:10px;}
 .pyq-hero h1 .accent{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.pyq-hero .tagline{color:var(--muted);font-size:15px;max-width:640px;margin:0 auto 24px;line-height:1.6;}
+.pyq-hero .tagline{color:var(--muted);font-size:14.5px;max-width:660px;margin:0 auto 20px;line-height:1.6;}
 
-/* ── Stat Orbs ── */
-.stat-orbs{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:28px;}
-.stat-orb{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);backdrop-filter:blur(10px);transition:transform .2s,border-color .2s;}
+.stat-orbs{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:24px;}
+.stat-orb{width:100px;height:100px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);backdrop-filter:blur(10px);transition:transform .2s,border-color .2s;}
 .stat-orb:hover{transform:scale(1.08);border-color:rgba(124,247,212,.4);}
-.stat-orb .val{font-size:26px;font-weight:900;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.stat-orb .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;text-align:center;line-height:1.2;}
+.stat-orb .val{font-size:22px;font-weight:900;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-orb .lbl{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;text-align:center;line-height:1.2;}
 
-/* ── Controls Bar ── */
-.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px;}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
 .search-box{flex:1;min-width:200px;position:relative;}
-.search-box input{width:100%;padding:12px 14px 12px 40px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);font-size:14px;outline:none;font-family:inherit;backdrop-filter:blur(6px);transition:border-color .15s,box-shadow .15s;}
+.search-box input{width:100%;padding:11px 14px 11px 38px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);font-size:13.5px;outline:none;font-family:inherit;backdrop-filter:blur(6px);transition:border-color .15s,box-shadow .15s;}
 .search-box input:focus{border-color:rgba(124,247,212,.5);box-shadow:0 0 0 3px rgba(124,247,212,.1);}
-.search-box svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
-.filter-btn{padding:10px 16px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;backdrop-filter:blur(6px);}
+.search-box svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+.filter-btn{padding:8px 14px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;backdrop-filter:blur(6px);white-space:nowrap;}
 .filter-btn:hover,.filter-btn.active{color:var(--text);border-color:rgba(124,247,212,.5);background:rgba(124,247,212,.08);}
 .filter-btn.active{color:#061021;background:linear-gradient(135deg,rgba(110,168,255,.9),rgba(124,247,212,.9));border:none;}
 
-/* ── Year Selector ── */
 .year-strip{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;}
 .year-strip::-webkit-scrollbar{height:4px;}
 .year-strip::-webkit-scrollbar-track{background:transparent;}
@@ -57,28 +50,28 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 .yr-chip:hover{border-color:rgba(110,168,255,.4);color:var(--text);}
 .yr-chip.active{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;border:none;}
 
-/* ── Trend Chart Panel ── */
-.chart-panel{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:22px;backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.diff-strip{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.diff-chip{padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;transition:all .12s;font-family:inherit;}
+.diff-chip:hover{border-color:rgba(255,255,255,.25);color:var(--text);}
+.diff-chip.active{border:none;}
+.diff-chip.active[data-diff="easy"]{background:rgba(16,185,129,.2);color:#34d399;}
+.diff-chip.active[data-diff="medium"]{background:rgba(245,158,11,.2);color:#fbbf24;}
+.diff-chip.active[data-diff="hard"]{background:rgba(239,68,68,.2);color:#f87171;}
+.diff-chip.active[data-diff="All"]{background:linear-gradient(135deg,rgba(110,168,255,.9),rgba(124,247,212,.9));color:#061021;}
+
+.chart-panel{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:18px;backdrop-filter:blur(6px);position:relative;overflow:hidden;}
 .chart-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
-.chart-panel h2{font-size:16px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.chart-panel h2{font-size:15px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
 .chart-panel h2 .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);}
-.chart-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
-.chart-tab{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .12s;font-family:inherit;}
+.chart-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.chart-tab{padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:11.5px;font-weight:600;cursor:pointer;transition:all .12s;font-family:inherit;}
 .chart-tab:hover{color:var(--text);border-color:rgba(255,255,255,.2);}
 .chart-tab.active{background:rgba(110,168,255,.15);color:#6ea8ff;border-color:rgba(110,168,255,.3);}
-.chart-wrap{position:relative;height:280px;margin-bottom:8px;}
+.chart-wrap{position:relative;height:260px;margin-bottom:6px;}
 .chart-wrap canvas{width:100%!important;height:100%!important;}
 
-/* ── Subject Heatmap ── */
-.heatmap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;margin-top:10px;}
-.heat-cell{padding:10px 6px;border-radius:12px;text-align:center;border:1px solid rgba(255,255,255,.06);transition:transform .12s,border-color .12s;cursor:default;}
-.heat-cell:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.2);}
-.heat-cell .hv{font-size:18px;font-weight:900;}
-.heat-cell .hl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
-
-/* ── Question Cards ── */
-.q-grid{display:flex;flex-direction:column;gap:12px;}
-.q-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:18px;padding:18px;backdrop-filter:blur(6px);transition:border-color .15s,transform .15s;cursor:pointer;position:relative;overflow:hidden;}
+.q-grid{display:flex;flex-direction:column;gap:10px;}
+.q-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:16px;padding:16px;backdrop-filter:blur(6px);transition:border-color .15s,transform .15s;cursor:pointer;position:relative;overflow:hidden;}
 .q-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px;}
 .q-card[data-sub="Polity"]::before{background:#6ea8ff;}
 .q-card[data-sub="History"]::before{background:#f59e0b;}
@@ -87,87 +80,74 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 .q-card[data-sub="Environment"]::before{background:#14b8a6;}
 .q-card[data-sub="Science"]::before{background:#f472b6;}
 .q-card[data-sub="Current Affairs"]::before{background:#fb923c;}
+.q-card[data-sub="IR"]::before{background:#38bdf8;}
+.q-card[data-sub="Art & Culture"]::before{background:#e879f9;}
 .q-card:hover{border-color:rgba(255,255,255,.22);transform:translateY(-1px);}
 .q-card.expanded{border-color:rgba(124,247,212,.3);}
-.q-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.q-year-badge{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(110,168,255,.12);color:#6ea8ff;border:1px solid rgba(110,168,255,.2);}
-.q-sub-badge{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,.1);color:var(--muted);}
-.q-diff{margin-left:auto;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.q-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.q-year-badge{padding:3px 9px;border-radius:999px;font-size:10.5px;font-weight:700;background:rgba(110,168,255,.12);color:#6ea8ff;border:1px solid rgba(110,168,255,.2);}
+.q-sub-badge{padding:3px 9px;border-radius:999px;font-size:10.5px;font-weight:600;border:1px solid rgba(255,255,255,.1);color:var(--muted);}
+.q-num{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+.q-diff{margin-left:auto;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;}
 .q-diff.easy{background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.2);}
 .q-diff.medium{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.2);}
 .q-diff.hard{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2);}
-.q-text{font-size:14.5px;line-height:1.65;font-weight:500;}
-.q-options{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
-.q-opt{padding:11px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);font-size:13.5px;cursor:pointer;transition:all .12s;display:flex;align-items:flex-start;gap:10px;}
+.q-text{font-size:14px;line-height:1.65;font-weight:500;}
+.q-options{margin-top:10px;display:flex;flex-direction:column;gap:7px;}
+.q-opt{padding:10px 13px;border-radius:11px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);font-size:13px;cursor:pointer;transition:all .12s;display:flex;align-items:flex-start;gap:9px;line-height:1.5;}
 .q-opt:hover{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.06);}
-.q-opt .ol{width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .15s;}
+.q-opt .ol{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;transition:all .15s;}
 .q-opt.correct{border-color:rgba(16,185,129,.5);background:rgba(16,185,129,.08);}
 .q-opt.correct .ol{border-color:#10b981;background:#10b981;color:#061021;}
 .q-opt.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.06);}
 .q-opt.wrong .ol{border-color:#ef4444;background:#ef4444;color:#fff;}
-.q-explain{margin-top:12px;padding:14px;border-radius:14px;background:rgba(124,247,212,.04);border:1px solid rgba(124,247,212,.12);font-size:13px;line-height:1.6;color:var(--muted);display:none;}
+.q-explain{margin-top:10px;padding:12px;border-radius:12px;background:rgba(124,247,212,.04);border:1px solid rgba(124,247,212,.12);font-size:12.5px;line-height:1.6;color:var(--muted);display:none;}
 .q-explain.show{display:block;animation:fadeSlideIn .3s ease;}
 @keyframes fadeSlideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-/* ── Pagination ── */
-.pagination{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:20px;flex-wrap:wrap;}
-.pg-btn{padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .12s;font-family:inherit;}
+.pagination{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:18px;flex-wrap:wrap;}
+.pg-btn{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .12s;font-family:inherit;}
 .pg-btn:hover{border-color:rgba(124,247,212,.4);color:var(--text);}
 .pg-btn.active{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;border:none;}
 .pg-btn:disabled{opacity:.3;cursor:not-allowed;}
-.pg-info{font-size:12px;color:var(--muted);}
+.pg-info{font-size:11px;color:var(--muted);}
 
-/* ── Empty state ── */
-.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
-.empty-state .big{font-size:48px;margin-bottom:12px;}
-.empty-state p{font-size:14px;}
+.empty-state{text-align:center;padding:50px 20px;color:var(--muted);}
+.empty-state .big{font-size:42px;margin-bottom:10px;}
+.empty-state p{font-size:13px;}
 
-/* ── Responsive ── */
 @media(max-width:640px){
-  .stat-orbs{gap:10px;}
-  .stat-orb{width:90px;height:90px;}
-  .stat-orb .val{font-size:20px;}
-  .chart-wrap{height:220px;}
-  .heatmap-grid{grid-template-columns:repeat(auto-fill,minmax(65px,1fr));}
+  .stat-orbs{gap:8px;}.stat-orb{width:80px;height:80px;}.stat-orb .val{font-size:18px;}
+  .chart-wrap{height:200px;}
 }
-
-/* ── Entrance animations ── */
 .anim-up{opacity:0;transform:translateY(20px);animation:animUp .6s ease forwards;}
 @keyframes animUp{to{opacity:1;transform:translateY(0);}}
-.delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}.delay-4{animation-delay:.4s}
+.delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}
 </style>
 </head>
 <body class="tools-page">
 <div class="bg-orbs"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
-
 <header>
 <div class="nav">
-  <a class="logo" href="/" style="text-decoration:none">
-    <div class="mark"></div>
-    <div>ReportMedic</div>
-  </a>
+  <a class="logo" href="/" style="text-decoration:none"><div class="mark"></div><div>ReportMedic</div></a>
   <div class="spacer"></div>
   <button class="btn" id="openDrawerBtn">All Tools ↗</button>
   <a class="btn" href="/">Home</a>
   <a class="btn primary" href="/tools/upsc-prelims-daily-practice.html">Daily Practice →</a>
 </div>
 </header>
-
 <div class="wrap">
-  <!-- ── HERO ── -->
   <section class="pyq-hero anim-up">
     <h1>UPSC PYQ <span class="accent">Explorer</span></h1>
-    <p class="tagline">12 years of Prelims questions, searchable and analyzed. Spot patterns, track subject trends, and practice smarter — all in your browser, completely free.</p>
+    <p class="tagline">500 Prelims GS-1 questions from 2021–2025 with trend analytics, subject heatmaps, difficulty tracking, and instant explanations. All in your browser — completely free.</p>
     <div class="stat-orbs">
       <div class="stat-orb"><span class="val" id="statTotal">0</span><span class="lbl">Total PYQs</span></div>
-      <div class="stat-orb"><span class="val">13</span><span class="lbl">Years Covered</span></div>
-      <div class="stat-orb"><span class="val">7</span><span class="lbl">Subjects</span></div>
+      <div class="stat-orb"><span class="val">5</span><span class="lbl">Years</span></div>
+      <div class="stat-orb"><span class="val" id="statSubs">0</span><span class="lbl">Subjects</span></div>
       <div class="stat-orb"><span class="val" id="statAttempted">0</span><span class="lbl">Attempted</span></div>
       <div class="stat-orb"><span class="val" id="statAccuracy">—</span><span class="lbl">Accuracy</span></div>
     </div>
   </section>
-
-  <!-- ── TREND CHART ── -->
   <section class="chart-panel anim-up delay-1">
     <h2><span class="dot"></span> Subject Trend Analysis</h2>
     <div class="chart-tabs" id="chartTabs">
@@ -178,157 +158,49 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
     <div class="chart-wrap" id="chartTrend"><canvas id="trendCanvas"></canvas></div>
     <div id="chartHeatmap" style="display:none"></div>
     <div class="chart-wrap" id="chartDifficulty" style="display:none"><canvas id="diffCanvas"></canvas></div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;" id="trendLegend"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;" id="trendLegend"></div>
   </section>
-
-  <!-- ── CONTROLS ── -->
   <section class="anim-up delay-2">
     <div class="controls">
       <div class="search-box">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" id="qSearch" placeholder="Search questions… e.g., Fundamental Rights, GDP, biodiversity"/>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="qSearch" placeholder="Search questions… e.g. Fundamental Rights, GDP, biodiversity, Lokpal"/>
       </div>
     </div>
-    <div class="controls" id="subjectFilters">
-      <button class="filter-btn active" data-sub="All">All Subjects</button>
-    </div>
-    <div class="year-strip" id="yearStrip">
-      <button class="yr-chip active" data-yr="All">All Years</button>
-    </div>
+    <div class="controls" id="subjectFilters"><button class="filter-btn active" data-sub="All">All Subjects</button></div>
+    <div class="year-strip" id="yearStrip"><button class="yr-chip active" data-yr="All">All Years</button></div>
+    <div class="diff-strip" id="diffStrip"><button class="diff-chip active" data-diff="All">All Difficulty</button><button class="diff-chip" data-diff="easy">Easy</button><button class="diff-chip" data-diff="medium">Medium</button><button class="diff-chip" data-diff="hard">Hard</button></div>
   </section>
-
-  <!-- ── QUESTIONS ── -->
   <section class="anim-up delay-3">
     <div class="q-grid" id="qGrid"></div>
     <div class="pagination" id="pagination"></div>
-    <div class="empty-state" id="emptyState" style="display:none">
-      <div class="big">🔍</div>
-      <p>No questions match your filters. Try broadening your search.</p>
-    </div>
+    <div class="empty-state" id="emptyState" style="display:none"><div class="big">🔍</div><p>No questions match your filters. Try broadening your search.</p></div>
   </section>
 </div>
-
-<!-- ── FOOTER ── -->
 <footer class="rm-footer">
 <div class="rm-footer-inner">
-  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">UPSC PYQ Explorer — Trend Analytics & Pattern Finder</div></div>
-  <div class="rm-footer-links">
-    <a href="/">Home</a>
-    <a href="/tools/upsc-prelims-daily-practice.html">Daily Practice</a>
-    <a href="/docs/privacy.html">Privacy</a>
-    <a href="/docs/terms.html">Terms</a>
-  </div>
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">UPSC PYQ Explorer — 500 Questions · 2021–2025 Trend Analytics</div></div>
+  <div class="rm-footer-links"><a href="/">Home</a><a href="/tools/upsc-prelims-daily-practice.html">Daily Practice</a><a href="/docs/privacy.html">Privacy</a><a href="/docs/terms.html">Terms</a></div>
   <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. © ReportMedic.</div>
 </div>
 </footer>
-
 <script>
-/* ════════════════════════════════════════════════════════════════
-   UPSC PYQ DATABASE — Scalable: just add objects to this array
-   ════════════════════════════════════════════════════════════════ */
-const DB = [
-  // ── 2024 ──
-  {y:2024,sub:"Polity",diff:"medium",q:"With reference to the Constitution of India, which one of the following pairs is NOT correctly matched?",opts:["Article 14 — Equality before law","Article 19 — Protection of certain rights regarding freedom of speech","Article 21A — Right to education","Article 32 — Right to property"],ans:3,exp:"Article 32 deals with the Right to Constitutional Remedies, not right to property. Right to property was removed as a fundamental right by the 44th Amendment."},
-  {y:2024,sub:"Economy",diff:"hard",q:"Consider the following statements about the Reserve Bank of India's monetary policy: 1. The RBI uses repo rate as the primary tool. 2. Reverse repo rate is the rate at which RBI borrows from commercial banks. Which is correct?",opts:["1 only","2 only","Both 1 and 2","Neither"],ans:2,exp:"Both statements are correct. Repo rate is the key policy rate used by RBI for liquidity management, and reverse repo is the rate at which RBI borrows from banks, effectively absorbing excess liquidity."},
-  {y:2024,sub:"Environment",diff:"medium",q:"Which of the following best describes the concept of 'Blue Carbon'?",opts:["Carbon captured by ocean and coastal ecosystems","Carbon emissions from maritime shipping","Carbon content in deep-sea minerals","Carbon credits traded in marine contexts"],ans:0,exp:"Blue Carbon refers to carbon captured and stored by the world's ocean and coastal ecosystems — primarily mangroves, salt marshes, and seagrasses."},
-  {y:2024,sub:"Geography",diff:"easy",q:"Which of the following rivers does NOT originate in the Indian territory?",opts:["Brahmaputra","Ganga","Godavari","Narmada"],ans:0,exp:"The Brahmaputra originates in Angsi Glacier in Tibet (China) near Lake Mansarovar. It enters India through Arunachal Pradesh."},
-  {y:2024,sub:"History",diff:"medium",q:"The 'Doctrine of Lapse' was primarily associated with which Governor-General?",opts:["Lord Wellesley","Lord Dalhousie","Lord Canning","Lord Curzon"],ans:1,exp:"The Doctrine of Lapse was an annexation policy devised by Lord Dalhousie (1848–56). It stated that any princely state under the British East India Company would be annexed if the ruler died without a direct male heir."},
-  {y:2024,sub:"Science",diff:"hard",q:"Consider the following: 1. CRISPR-Cas9 is a genome editing tool. 2. It was originally discovered as a bacterial immune mechanism. 3. It can only be used in plant genomes. Which are correct?",opts:["1 and 2 only","2 and 3 only","1 and 3 only","All of the above"],ans:0,exp:"CRISPR-Cas9 is indeed a genome editing tool originally found as a bacterial defense system against viruses. It can be used across plants, animals, and human cells — not limited to plants."},
-  {y:2024,sub:"Current Affairs",diff:"medium",q:"The 'India-Middle East-Europe Economic Corridor' (IMEC) was announced at which summit in 2023?",opts:["BRICS Summit","G7 Summit","G20 Summit","SCO Summit"],ans:2,exp:"IMEC was announced at the G20 Summit in New Delhi in September 2023 as a major infrastructure project connecting India to Europe via the Middle East."},
 
-  // ── 2023 ──
-  {y:2023,sub:"Polity",diff:"easy",q:"Which article of the Indian Constitution deals with the 'Right to Life and Personal Liberty'?",opts:["Article 14","Article 19","Article 21","Article 25"],ans:2,exp:"Article 21 states: 'No person shall be deprived of his life or personal liberty except according to procedure established by law.' It is one of the most litigated and expanded articles."},
-  {y:2023,sub:"Economy",diff:"medium",q:"What is 'Fiscal Deficit'?",opts:["Total revenue minus total expenditure","Total expenditure minus total receipts excluding borrowings","Revenue deficit plus capital expenditure","None of the above"],ans:1,exp:"Fiscal Deficit is the difference between total expenditure and total receipts excluding borrowings. It indicates the total borrowing requirements of the government."},
-  {y:2023,sub:"Environment",diff:"hard",q:"The 'Kunming-Montreal Global Biodiversity Framework' adopted in 2022 includes which target?",opts:["Protect 30% of land and sea by 2030","Achieve net-zero biodiversity loss by 2025","Ban all single-use plastics globally by 2030","Establish 100 new marine protected areas"],ans:0,exp:"The landmark Kunming-Montreal GBF adopted at COP15 includes the '30x30' target — conserving at least 30% of the world's land and ocean areas by 2030."},
-  {y:2023,sub:"Geography",diff:"easy",q:"The Tropic of Cancer does NOT pass through which Indian state?",opts:["Rajasthan","Madhya Pradesh","Bihar","Gujarat"],ans:2,exp:"The Tropic of Cancer passes through 8 Indian states: Gujarat, Rajasthan, Madhya Pradesh, Chhattisgarh, Jharkhand, West Bengal, Tripura, and Mizoram. It does not pass through Bihar."},
-  {y:2023,sub:"History",diff:"medium",q:"Who founded the Indian National Congress in 1885?",opts:["Dadabhai Naoroji","A.O. Hume","Surendranath Banerjee","W.C. Bonnerjee"],ans:1,exp:"The Indian National Congress was founded by Allan Octavian Hume, a retired British civil servant, in 1885. Its first session was held in Bombay under the presidency of W.C. Bonnerjee."},
-  {y:2023,sub:"Science",diff:"medium",q:"Which of the following is the primary greenhouse gas by volume in Earth's atmosphere?",opts:["Carbon dioxide","Methane","Water vapor","Nitrous oxide"],ans:2,exp:"Water vapor is the most abundant greenhouse gas in Earth's atmosphere. While CO₂ gets more attention due to human emissions, water vapor contributes most to the natural greenhouse effect."},
-  {y:2023,sub:"Current Affairs",diff:"hard",q:"India's Chandrayaan-3 mission successfully landed on the Moon in August 2023 near which lunar region?",opts:["North Pole","South Pole","Sea of Tranquility","Oceanus Procellarum"],ans:1,exp:"Chandrayaan-3's Vikram lander touched down near the Moon's South Pole region on 23 August 2023, making India the first country to land near the lunar south pole."},
+const DB = [{"y": 2025, "sub": "Polity", "diff": "easy", "q": "Consider the following statements about Lokpal:<br>I. The power of Lokpal applies to public servants of India, but not to the Indian public servants posted outside India.<br>II. The Chairperson or a Member shall not be a Member of Parliament or a Legislature, and only the CJI has to be its Chairperson.<br>III. The Chairperson or a Member shall not be less than forty-five years of age.<br>IV. Lokpal cannot inquire into allegations against a sitting Prime Minister.", "opts": ["III only", "II and III", "I and IV", "None of the above statements is correct"], "ans": 0, "exp": "Only Statement III is correct. Lokpal's jurisdiction includes Indian public servants posted abroad. The Chairperson need not be only the CJI. Lokpal can inquire against a sitting PM with safeguards. The minimum age requirement of 45 years is correct."}, {"y": 2025, "sub": "Science", "diff": "easy", "q": "Consider the following statements:<br>I. No virus can survive in ocean waters.<br>II. No virus can infect bacteria.<br>III. No virus can change the cellular transcriptional activity in host cells.", "opts": ["Only one", "Only two", "All the three", "None"], "ans": 3, "exp": "All statements are false. Marine viruses are abundant in oceans. Bacteriophages specifically infect bacteria. Viruses routinely alter host cell transcription and gene expression."}, {"y": 2025, "sub": "Environment", "diff": "medium", "q": "With reference to the planet Earth, consider the following:<br>I. Rain forests produce more oxygen than that produced by oceans.<br>II. Marine phytoplankton and photosynthetic bacteria produce about 50% of world's oxygen.<br>III. Well-oxygenated surface water contains several folds higher oxygen than atmospheric air.", "opts": ["I and II", "II only", "I and III", "None of the above"], "ans": 1, "exp": "Only Statement II is correct. Oceans (phytoplankton) produce more oxygen than rainforests, making Statement I wrong. Atmospheric air has far more oxygen than surface water, making Statement III wrong."}, {"y": 2025, "sub": "Geography", "diff": "easy", "q": "Consider the following statements:<br>I. Without the atmosphere, temperature would be well below freezing point everywhere on the Earth's surface.<br>II. Heat absorbed and trapped by the atmosphere maintains our planet's average temperature.<br>III. Atmosphere's gases, like carbon dioxide, are particularly good at absorbing and trapping radiation.", "opts": ["I and III only", "I and II only", "I, II and III", "II and III only"], "ans": 2, "exp": "All three statements are correct. Without the greenhouse effect, Earth would freeze. The atmosphere traps heat to maintain habitable temperatures, and gases like CO₂ are especially effective at trapping infrared radiation."}, {"y": 2025, "sub": "Science", "diff": "hard", "q": "In the context of electric vehicle batteries, consider: I. Cobalt, II. Graphite, III. Lithium, IV. Nickel. How many usually make up battery cathodes?", "opts": ["Only one", "Only two", "Only three", "All the four"], "ans": 2, "exp": "Cobalt, Lithium, and Nickel are used in cathodes (LCO, NMC, NCA chemistries). Graphite is used in the anode, not the cathode. Three of the four make up cathodes."}, {"y": 2025, "sub": "History", "diff": "medium", "q": "Consider the following about the Non-Cooperation Movement:<br>1. The Congress declared 'Swaraj' by all legitimate and peaceful means as its objective.<br>2. It was to be implemented in stages with civil disobedience for the next stage only if Swaraj didn't come within a year.", "opts": ["1 only", "2 only", "Both 1 and 2", "Neither 1 nor 2"], "ans": 2, "exp": "Both statements are correct. At the Nagpur Session (1920), Congress adopted Swaraj as its goal. The movement was designed as a phased programme, with civil disobedience and tax non-payment planned for later stages."}, {"y": 2025, "sub": "Science", "diff": "hard", "q": "With reference to India's defence, consider the pairs:<br>I. Dornier-228 : Maritime patrol aircraft<br>II. IL-76 : Supersonic combat aircraft<br>III. C-17 Globemaster III : Military transport aircraft", "opts": ["Only one", "Only two", "All the three", "None"], "ans": 1, "exp": "Pairs I and III are correct. Dornier-228 is used for maritime patrol. C-17 Globemaster III is a strategic transport aircraft. IL-76 is a heavy transport aircraft, NOT a supersonic combat aircraft."}, {"y": 2025, "sub": "Economy", "diff": "easy", "q": "Consider the following:<br>I. RBI mandates all listed companies to submit a Business Responsibility and Sustainability Report (BRSR).<br>II. A company submitting BRSR makes disclosures that are largely non-financial in nature.", "opts": ["I only", "II only", "Both I and II", "Neither I nor II"], "ans": 1, "exp": "Statement II is correct — BRSR disclosures focus on ESG (non-financial) areas. Statement I is wrong — it is SEBI, not RBI, that mandates BRSR for the top 1,000 listed companies by market cap."}, {"y": 2025, "sub": "Art & Culture", "diff": "easy", "q": "The famous female figurine known as 'Dancing Girl', found at Mohenjo-daro, is made of", "opts": ["Carnelian", "Clay", "Bronze", "Gold"], "ans": 2, "exp": "The 'Dancing Girl' of Mohenjo-daro is made of bronze, created using the lost-wax (cire perdue) casting method. It is one of the most celebrated artifacts of the Indus Valley Civilization."}, {"y": 2025, "sub": "Science", "diff": "easy", "q": "What is the common characteristic of CL-20, HMX and LLM-105?", "opts": ["Alternatives to hydro-fluorocarbon refrigerants", "Explosives in military weapons", "High-energy fuels for cruise missiles", "Fuels for rocket propulsion"], "ans": 1, "exp": "CL-20, HMX, and LLM-105 are all high-energy explosive compounds used in military weapons and munitions."}, {"y": 2025, "sub": "Economy", "diff": "hard", "q": "Statement I: Of Brazil and USA, the former produces more ethanol than the latter.<br>Statement II: Unlike the USA where corn is the feedstock, sugarcane is the principal feedstock in Brazil.", "opts": ["Both correct, II explains I", "Both correct, II doesn't explain I", "I correct, II not correct", "I not correct, II correct"], "ans": 3, "exp": "Statement I is incorrect — the United States is the world's largest ethanol producer, not Brazil. Statement II is correct — USA uses corn and Brazil uses sugarcane as primary feedstock."}, {"y": 2025, "sub": "IR", "diff": "hard", "q": "Consider the following countries: I. Austria, II. Bulgaria, III. Croatia, IV. Serbia, V. Sweden, VI. North Macedonia. How many are NATO members?", "opts": ["Only three", "Only four", "Only five", "All the six"], "ans": 1, "exp": "Four are NATO members: Bulgaria (2004), Croatia (2009), North Macedonia (2020), and Sweden (2024). Austria maintains neutrality and Serbia is not a NATO member."}, {"y": 2025, "sub": "Polity", "diff": "easy", "q": "With reference to India, consider:<br>I. The Inter-State Council<br>II. The National Security Council<br>III. Zonal Councils<br>How many were established as per the Constitution?", "opts": ["Only one", "Only two", "All the three", "None"], "ans": 0, "exp": "Only the Inter-State Council (Article 263) is established by the Constitution. The National Security Council was formed by executive order in 1998. Zonal Councils were established under the States Reorganisation Act, 1956."}, {"y": 2025, "sub": "Current Affairs", "diff": "hard", "q": "Who amongst the following are members of the Jury to select the 'Gandhi Peace Prize' recipient?<br>I. President of India<br>II. Prime Minister<br>III. Chief Justice of India<br>IV. Leader of Opposition in Lok Sabha", "opts": ["II and IV only", "I, II and III", "II, III and IV", "I and III only"], "ans": 2, "exp": "The PM (Chairperson), CJI (or a nominated SC Judge), and Leader of Opposition in Lok Sabha are Jury members. The President is NOT a member of the Jury."}, {"y": 2025, "sub": "Economy", "diff": "easy", "q": "Consider the following:<br>I. Capital receipts create a liability or reduce assets of the Government.<br>II. Borrowings and disinvestment are capital receipts.<br>III. Interest received on loans creates a liability.", "opts": ["I and II only", "II and III only", "I and III only", "I, II and III"], "ans": 0, "exp": "Statements I and II are correct. Capital receipts create liabilities (borrowings) or reduce assets (disinvestment). Statement III is wrong — interest received is a revenue receipt, not capital."}, {"y": 2025, "sub": "Economy", "diff": "medium", "q": "Consider the following:<br>I. India accounts for a very large portion of all equity option contracts traded globally.<br>II. India's stock market has grown rapidly, even overtaking Hong Kong's at some point.<br>III. There is no regulatory body to warn small investors about options trading risks.", "opts": ["I and II only", "II and III only", "I and III only", "I, II and III"], "ans": 0, "exp": "Statements I and II are correct. India leads globally in equity options volume, and India's stock market briefly overtook Hong Kong's in 2024. Statement III is wrong — SEBI actively regulates and warns investors."}, {"y": 2025, "sub": "Polity", "diff": "easy", "q": "Consider the following about Ordinances:<br>I. An Ordinance can amend any Central Act.<br>II. An Ordinance can abridge a Fundamental Right.<br>III. An Ordinance can come into effect from a back date.", "opts": ["I and II only", "II and III only", "I and III only", "I, II and III"], "ans": 2, "exp": "Statements I and III are correct. Ordinances have the same force as law and can amend Acts and be retrospective. Statement II is wrong — Ordinances cannot abridge Fundamental Rights per Article 13(2)."}, {"y": 2025, "sub": "Geography", "diff": "hard", "q": "Consider the following pairs:<br>I. Arunachal Pradesh: Capital named after a fort, two National Parks<br>II. Nagaland: Came into existence via Constitutional Amendment Act<br>III. Tripura: Initially Part 'C' State, then UT, then full-fledged State", "opts": ["Only one", "Only two", "All the three", "None"], "ans": 2, "exp": "All three are correct. Itanagar is named after Ita Fort, with Namdapha and Mouling National Parks. Nagaland attained statehood via the State of Nagaland Act 1962. Tripura was Part C → UT (1956) → State (1972)."}, {"y": 2025, "sub": "History", "diff": "easy", "q": "Fa-hien (Faxian), the Chinese pilgrim, travelled to India during the reign of", "opts": ["Samudragupta", "Chandragupta II", "Kumaragupta I", "Skandagupta"], "ans": 1, "exp": "Fa-hien (Faxian) visited India during the reign of Chandragupta II (Vikramaditya) of the Gupta dynasty in the early 5th century CE, seeking Buddhist texts."}, {"y": 2025, "sub": "History", "diff": "easy", "q": "Which of the following were parts of the Non-Cooperation Programme?<br>I. Boycott of law-courts and foreign cloth<br>II. Observance of strict non-violence<br>III. Retention of titles and honours without using them<br>IV. Establishment of Panchayats for settling disputes", "opts": ["Only one", "Only two", "Only three", "All the four"], "ans": 2, "exp": "I, II, and IV are correct. The programme required boycott of courts/foreign cloth, strict non-violence, and setting up Panchayats. Statement III is wrong — titles were to be surrendered, not retained."}, {"y": 2025, "sub": "Geography", "diff": "easy", "q": "Which of the following are evidences of continental drift?<br>I. Belt of ancient rocks from Brazil matches Western Africa<br>II. Gold deposits of Ghana derived from Brazil plateau<br>III. Gondwana sediments from India have counterparts in six Southern Hemisphere landmasses", "opts": ["I and III only", "I and II only", "I, II and III", "II and III only"], "ans": 2, "exp": "All three are correct. The matching rock belts, shared gold deposits, and matching Gondwana sediments across continents all provide evidence for Wegener's continental drift theory."}, {"y": 2025, "sub": "Polity", "diff": "medium", "q": "Consider the following:<br>I. The Governor is not answerable to any court for exercise of official powers.<br>II. No criminal proceedings against the Governor during term of office.<br>III. State Legislature members are not liable for anything said within the House.", "opts": ["I and II only", "II and III only", "I and III only", "I, II and III"], "ans": 3, "exp": "All three are correct. Article 361(1) protects the Governor from court proceedings for official actions. Article 361(2) bars criminal proceedings during tenure. Article 194(2) provides parliamentary privilege to legislators."}, {"y": 2025, "sub": "History", "diff": "easy", "q": "Subsequent to which event did Gandhiji include the upliftment of 'Harijans' in his political and social programme?", "opts": ["The Poona Pact", "The Gandhi–Irwin Agreement", "Arrest of Congress leadership during Quit India", "Government of India Act, 1935"], "ans": 0, "exp": "After the Poona Pact (1932) with Dr. B.R. Ambedkar, Gandhi intensified efforts against untouchability, forming the Harijan Sevak Sangh and launching the 'Harijan' journal."}, {"y": 2025, "sub": "Economy", "diff": "medium", "q": "Statement I: As regards investment returns, bondholders are at relatively lower risk than stockholders.<br>Statement II: Bondholders are lenders; stockholders are owners.<br>Statement III: For repayment, bondholders are prioritized over stockholders.", "opts": ["Both II and III are correct and both explain I", "Both I and II correct, I explains II", "Only one of II and III is correct", "Neither II nor III is correct"], "ans": 0, "exp": "All three statements are correct. Bondholders face lower risk because they are creditors (not owners) with fixed returns and are repaid before stockholders in liquidation. Both Statements II and III explain why bondholders are lower risk."}, {"y": 2025, "sub": "Geography", "diff": "hard", "q": "Consider the following water bodies: I. Lake Tanganyika, II. Lake Tonlé Sap, III. Patos Lagoon. Through how many does the equator pass?", "opts": ["Only one", "Only two", "All the three", "None"], "ans": 3, "exp": "None. Lake Tanganyika is south of the Equator in East Africa. Lake Tonlé Sap is in Cambodia, north of the Equator. Patos Lagoon is in southern Brazil, far south of the Equator."}, {"y": 2025, "sub": "Environment", "diff": "hard", "q": "Statement I: Article 6 of the Paris Agreement is frequently discussed in global climate discussions.<br>Statement II: Article 6 sets out principles of carbon markets.<br>Statement III: Article 6 promotes inter-country non-market strategies to reach climate targets.", "opts": ["Both II and III correct, both explain I", "Both II and III correct, only one explains I", "Only one of II and III correct", "Neither II nor III correct"], "ans": 0, "exp": "Both II and III are correct and both explain why Article 6 is so discussed. It covers both market mechanisms (carbon trading) and non-market approaches (technology transfer, capacity building)."}, {"y": 2025, "sub": "IR", "diff": "medium", "q": "Consider the following about BIMSTEC:<br>I. It has seven member States till January 2025.<br>II. It came into existence with the Dhaka Declaration, 1999.<br>III. Bangladesh, India, Sri Lanka, Thailand and Nepal are founding members.<br>IV. The tourism subsector is led by India.", "opts": ["I and II", "II and III", "I and IV", "I only"], "ans": 3, "exp": "Only Statement I is correct — BIMSTEC has 7 members. It was established by the Bangkok Declaration 1997, not Dhaka. Founding members included Myanmar, not Nepal. Nepal leads tourism, not India."}, {"y": 2025, "sub": "Science", "diff": "hard", "q": "Consider: I. Ethanol, II. Nitroglycerine, III. Urea. Coal gasification technology can produce how many of them?", "opts": ["Only one", "Only two", "All the three", "None"], "ans": 1, "exp": "Two — Ethanol and Urea. Coal gasification produces syngas, which can be converted to ethanol and used to make ammonia for urea production. Nitroglycerine requires glycerol from fats/oils, not coal gasification."}, {"y": 2025, "sub": "Geography", "diff": "medium", "q": "Statement I: Scientific studies suggest a shift in Earth's rotation and axis.<br>Statement II: Solar flares bombard Earth's outermost atmosphere with energy.<br>Statement III: As Earth's polar ice melts, water tends to move towards the equator.", "opts": ["Both II and III correct, both explain I", "Both II and III correct, only one explains I", "Only one of II and III correct, explains I", "Neither II nor III correct"], "ans": 1, "exp": "Both II and III are correct, but only Statement III explains the shift in Earth's rotation — melting polar ice redistributes mass toward the equator, altering Earth's spin. Solar flares don't affect rotation."}, {"y": 2025, "sub": "Geography", "diff": "medium", "q": "Consider the following pairs:<br>I. Botswana : Diamond<br>II. Chile : Lithium<br>III. Indonesia : Nickel", "opts": ["Only one", "Only two", "All the three", "None"], "ans": 2, "exp": "All three are correctly matched. Botswana is a top global diamond producer. Chile has vast lithium reserves in the Atacama. Indonesia is the world's largest nickel producer."}, {"y": 2025, "sub": "IR", "diff": "hard", "q": "Consider the statements about the Kho Kho World Cup:<br>I. The event was held in Delhi, India.<br>II. Indian men beat Nepal 78–40 in the final.<br>III. Indian women beat Nepal 54–36 in the final.", "opts": ["I only", "II and III only", "I and III only", "I, II and III"], "ans": 0, "exp": "Only Statement I is correct. The inaugural Kho Kho World Cup was held in New Delhi in January 2025. The men's final score was 54-36 (not 78-40), and the women's final score was 78-40 (not 54-36) — the scores are swapped in the statements."}, {"y": 2025, "sub": "IR", "diff": "hard", "q": "Regarding the AI Action Summit held in Paris in February 2025:<br>I. Co-chaired with India, it builds on the Bletchley Park Summit (2023) and Seoul Summit (2024).<br>II. Along with other countries, US and UK signed the declaration on inclusive and sustainable AI.", "opts": ["I only", "II only", "Both I and II", "Neither I nor II"], "ans": 0, "exp": "Only Statement I is correct. India co-chaired the Paris AI Action Summit. However, the US and UK did NOT sign the joint declaration on inclusive and sustainable AI due to concerns about overregulation."}, {"y": 2025, "sub": "Environment", "diff": "hard", "q": "Statement I: At COP28, India refrained from signing the 'Declaration on Climate and Health'.<br>Statement II: The COP28 Declaration is a binding declaration.<br>Statement III: If India's health sector is decarbonized, the resilience of its healthcare may be compromised.", "opts": ["Both II and III correct, both explain I", "Both II and III correct, only one explains I", "Only one of II and III correct, explains I", "Neither II nor III correct"], "ans": 2, "exp": "Statement II is incorrect — the declaration is non-binding, voluntary. Statement III is correct — India's concern about compromised healthcare resilience explains why it didn't sign."}, {"y": 2025, "sub": "Economy", "diff": "medium", "q": "Consider the following:<br>I. India has joined the Minerals Security Partnership.<br>II. India is resource-rich in all 30 critical minerals it has identified.<br>III. Parliament in 2023 amended the MMDR Act for Central Government to auction critical mineral leases.", "opts": ["I and II only", "II and III only", "I and III only", "I, II and III"], "ans": 2, "exp": "Statements I and III are correct. India joined the MSP in 2023 and amended the MMDR Act for critical minerals. Statement II is wrong — India is import-dependent for several critical minerals like cobalt and nickel."}, {"y": 2025, "sub": "History", "diff": "easy", "q": "Consider the following about Raja Ram Mohan Roy:<br>I. He possessed great love and respect for traditional philosophical systems of the East.<br>II. He desired his countrymen to accept rational and scientific approach and human dignity and equality.", "opts": ["I only", "II only", "Both I and II", "Neither I nor II"], "ans": 2, "exp": "Both statements are correct. Raja Ram Mohan Roy respected traditional Eastern philosophies like Vedanta while also advocating rationalism, scientific thinking, and social equality for all."}, {"y": 2025, "sub": "History", "diff": "easy", "q": "Who was the founder of the 'Self-Respect Movement'?", "opts": ["'Periyar' E.V. Ramaswamy Naicker", "Dr. B.R. Ambedkar", "Bhaskarrao Jadhav", "Dinkarrao Javalkar"], "ans": 0, "exp": "Periyar E.V. Ramaswamy Naicker founded the Self-Respect Movement in 1925 to fight caste oppression and promote rationalism and equality, especially for non-Brahmin communities in Tamil Nadu."}, {"y": 2025, "sub": "Environment", "diff": "hard", "q": "Regarding Peacock tarantula (Gooty tarantula):<br>I. It is an omnivorous crustacean.<br>II. Its natural habitat in India is limited to some forest areas.<br>III. In its natural habitat, it is an arboreal species.", "opts": ["I only", "I and III", "II only", "II and III"], "ans": 3, "exp": "Statements II and III are correct. The Gooty tarantula is found only in restricted forest areas of the Eastern Ghats and is arboreal (tree-dwelling). Statement I is wrong — it is a spider (arachnid), not a crustacean."}, {"y": 2025, "sub": "History", "diff": "hard", "q": "With reference to ancient India (600–322 BC):<br>I. Asmaka : Godavari<br>II. Kamboja : Vipas<br>III. Avanti : Mahanadi<br>IV. Kosala : Sarayu<br>How many pairs are correct?", "opts": ["Only one", "Only two", "Only three", "All the four"], "ans": 1, "exp": "Pairs I (Asmaka on Godavari) and IV (Kosala on Sarayu) are correct. Kamboja was in the far north-west, not near Vipas/Beas. Avanti was on Kshipra river, not Mahanadi."}, {"y": 2025, "sub": "Environment", "diff": "medium", "q": "Which launched the 'Nature Solutions Finance Hub for Asia and the Pacific'?", "opts": ["Asian Development Bank (ADB)", "Asian Infrastructure Investment Bank (AIIB)", "New Development Bank (NDB)", "IBRD"], "ans": 0, "exp": "The Asian Development Bank (ADB) launched the Nature Solutions Finance Hub for Asia and the Pacific to fund nature-based solutions for climate and environmental challenges."}, {"y": 2025, "sub": "Polity", "diff": "medium", "q": "Consider the following:<br>I. If a Member becomes subject to Tenth Schedule disqualification, the President's decision with the Council of Ministers shall be final.<br>II. There is no mention of 'political party' in the Constitution of India.", "opts": ["I only", "II only", "Both I and II", "Neither I nor II"], "ans": 3, "exp": "Both are incorrect. Disqualification under the Tenth Schedule is decided by the Speaker/Chairman, not the President. The term 'political party' IS explicitly mentioned in the Tenth Schedule of the Constitution."}, {"y": 2025, "sub": "Environment", "diff": "easy", "q": "Artificial rainfall to reduce air pollution uses:", "opts": ["Silver iodide and potassium iodide", "Silver nitrate and potassium iodide", "Silver iodide and potassium nitrate", "Silver nitrate and potassium chloride"], "ans": 0, "exp": "Cloud seeding for artificial rainfall uses silver iodide and potassium iodide. Their crystalline structures help form ice nuclei in clouds, inducing precipitation."}, {"y": 2025, "sub": "Polity", "diff": "medium", "q": "Statement I: State Governments have no power for making rules for minor minerals extraction concessions.<br>Statement II: The Central Government has power to notify minor minerals under relevant law.", "opts": ["Both correct, II explains I", "Both correct, II doesn't explain I", "I correct, II not correct", "I not correct, II correct"], "ans": 3, "exp": "Statement I is incorrect — States DO have authority over minor minerals under the MMDR Act. Statement II is correct — the Central Government notifies which minerals are classified as 'minor minerals'."}, {"y": 2025, "sub": "Polity", "diff": "hard", "q": "Consider the following about the Speaker of Lok Sabha:<br>I. On dissolution, the Speaker doesn't vacate office until immediately before the first meeting of new House.<br>II. A Member elected as Speaker must resign from their political party immediately.<br>III. The Speaker may be removed by a resolution passed by majority of all members, with 14 days' notice.", "opts": ["I and II only", "II and III only", "I and III only", "I, II and III"], "ans": 2, "exp": "Statements I and III are correct (Article 94). Statement II is wrong — there is no constitutional requirement for the Speaker to resign from their party; it is only a convention."}, {"y": 2025, "sub": "History", "diff": "easy", "q": "Who provided legal defence to people arrested after the Chauri Chaura incident?", "opts": ["C.R. Das", "Madan Mohan Malaviya and Krishna Kant", "Dr. Saifuddin Kitchlew and Khwaja Hasan Nizami", "M.A. Jinnah"], "ans": 1, "exp": "Madan Mohan Malaviya and his son Krishna Kant provided legal defence to the Chauri Chaura accused. Their efforts led to significant sentence reductions, saving many from execution."}, {"y": 2025, "sub": "Polity", "diff": "easy", "q": "Consider the following pairs:<br>I. Separation of Judiciary from Executive : DPSP<br>II. Preserving rich heritage of composite culture : Fundamental Duties<br>III. Prohibition of child employment below 14 in factories : Fundamental Rights", "opts": ["Only one", "Only two", "All the three", "None"], "ans": 2, "exp": "All three are correctly matched. Article 50 (DPSP) mandates separation of judiciary. Article 51A(f) (Fundamental Duty) covers heritage preservation. Article 24 (Fundamental Right) prohibits child labor below 14."}, {"y": 2025, "sub": "Economy", "diff": "hard", "q": "Which statements about the 15th Finance Commission are correct?<br>I. Recommended ₹4,800 crores for incentivizing educational outcomes.<br>II. 45% of net proceeds of Union taxes to be shared with States.<br>III. ₹45,000 crores for agricultural reform incentives.<br>IV. Reintroduced tax effort criteria.", "opts": ["I, II and III", "I, II and IV", "I, III and IV", "II, III and IV"], "ans": 2, "exp": "I, III, and IV are correct. Statement II is wrong — the Commission recommended 41% (not 45%) of Union taxes for States. The education grants, agriculture incentives, and tax effort criterion are all correct."}, {"y": 2025, "sub": "Geography", "diff": "hard", "q": "Consider the pairs:<br>I. Mallorca : Italy<br>II. Normandy : Spain<br>III. Sardinia : France<br>How many are correctly matched?", "opts": ["Only one", "Only two", "All the three", "None"], "ans": 3, "exp": "None are correctly matched. Mallorca belongs to Spain (not Italy). Normandy is in France (not Spain). Sardinia belongs to Italy (not France)."}, {"y": 2024, "sub": "Polity", "diff": "medium", "q": "How many Delimitation Commissions have been constituted by the Government of India till December 2023?", "opts": ["One", "Two", "Three", "Four"], "ans": 3, "exp": "Four Delimitation Commissions have been set up: in 1952 (under the Delimitation Commission Act, 1952), 1963, 1973, and 2002 (Delimitation Act, 2002)."}, {"y": 2024, "sub": "Polity", "diff": "medium", "q": "The Constitution (71st Amendment) Act, 1992 amends the Eighth Schedule to include which languages?", "opts": ["Bodo, Dogri, Maithili and Santhali", "Konkani, Manipuri and Nepali", "Konkani, Manipuri, Nepali and Bodo", "Santhali, Maithili and Dogri"], "ans": 1, "exp": "The 71st Amendment (1992) added Konkani, Manipuri, and Nepali to the Eighth Schedule. Bodo, Dogri, Maithili, and Santhali were added later by the 92nd Amendment (2003)."}, {"y": 2024, "sub": "Polity", "diff": "hard", "q": "Under which Article of the Constitution has the Supreme Court placed the Right to Privacy?", "opts": ["Article 15", "Article 19", "Article 21", "Article 29"], "ans": 2, "exp": "In the landmark Puttaswamy case (2017), the Supreme Court declared the Right to Privacy as a fundamental right under Article 21 (Right to Life and Personal Liberty)."}, {"y": 2024, "sub": "Polity", "diff": "medium", "q": "Who was the Provisional President of the Constituent Assembly before Dr. Rajendra Prasad took over?", "opts": ["C. Rajagopalachari", "Dr. B.R. Ambedkar", "Dr. Sachchidananda Sinha", "Pandit Jawaharlal Nehru"], "ans": 2, "exp": "Dr. Sachchidananda Sinha was the Provisional President (temporary chairman) of the Constituent Assembly when it first met on 9 December 1946. Dr. Rajendra Prasad was elected as the permanent President on 11 December 1946."}, {"y": 2024, "sub": "History", "diff": "hard", "q": "Sanghabhuti, an Indian Buddhist monk who travelled to China at the end of the fourth century AD, was the author of a commentary on:", "opts": ["Sarvastivada Vinaya", "Saddharma Pundarika Sutra", "Lalitavistara", "Dhyanasutra"], "ans": 0, "exp": "Sanghabhuti was a 4th century Indian Buddhist monk who traveled to China and translated the Sarvastivada Vinaya into Chinese. He was known for his knowledge of Buddhist monastic rules."}, {"y": 2024, "sub": "Polity", "diff": "medium", "q": "With reference to the Nari Shakti Vandan Adhiniyam, consider the following:<br>1. Provisions come into effect from the 18th Lok Sabha.<br>2. It is in force for 15 years after becoming an Act.<br>3. There are provisions for reservation of seats for SC women within the SC quota.", "opts": ["1 and 2 only", "2 only", "1 and 3 only", "1, 2 and 3"], "ans": 2, "exp": "Statements 1 and 3 are correct. The Act provides 33% reservation for women, includes reservation for SC women within SC quota, and takes effect after the next delimitation following the first Census after the Act. It is for 15 years, but Statement 2 as worded is considered misleading about the exact trigger."}, {"y": 2024, "sub": "Economy", "diff": "medium", "q": "Consider the following:<br>1. The Union Finance Minister lays the Annual Financial Statement before both Houses.<br>2. No demand for a grant can be made except on the recommendation of the President.", "opts": ["1 only", "2 only", "Both 1 and 2", "Neither"], "ans": 1, "exp": "Statement 2 is correct (Article 113). Statement 1 is incorrect — it is the President who causes the Annual Financial Statement to be laid before both Houses (Article 112), not the Finance Minister on behalf of the PM."}, {"y": 2024, "sub": "Polity", "diff": "easy", "q": "With reference to Scheduled Tribes:<br>1. It is the Governor who recognizes and declares any community as a Scheduled Tribe.<br>2. A community declared as ST in a State need not be so in another State.", "opts": ["1 only", "2 only", "Both", "Neither"], "ans": 1, "exp": "Statement 2 is correct — the list of STs varies state by state. Statement 1 is wrong — it is the President, not the Governor, who specifies Scheduled Tribes under Article 342, subject to Parliament's law."}, {"y": 2024, "sub": "History", "diff": "medium", "q": "The Government of India Act, 1935:<br>1. Provided for an All India Federation based on British Indian Provinces and Princely States.<br>2. Defence and Foreign Affairs were kept under the federal legislature.", "opts": ["1 only", "2 only", "Both", "Neither"], "ans": 0, "exp": "Statement 1 is correct — the 1935 Act envisaged an All India Federation. Statement 2 is incorrect — Defence, Foreign Affairs, and Ecclesiastical Affairs were 'reserved subjects' under the Governor-General, not the federal legislature."}, {"y": 2024, "sub": "Science", "diff": "medium", "q": "Giant stars have hotter and denser cores than dwarf stars. Consider:<br>Statement I: Giant stars have shorter lives than dwarf stars.<br>Statement II: Compared to dwarf stars, giant stars have greater rate of nuclear reactions.", "opts": ["Both correct, II explains I", "Both correct, II doesn't explain I", "I correct, II incorrect", "I incorrect, II correct"], "ans": 0, "exp": "Both statements are correct, and II explains I. Giant stars burn nuclear fuel at a much greater rate, which is why they have shorter lifespans despite having more fuel — some live only millions of years versus trillions for dwarfs."}, {"y": 2024, "sub": "Science", "diff": "easy", "q": "Which one of the following is synthesised in the human body that dilates blood vessels and increases blood flow?", "opts": ["Adrenaline", "Acetylcholine", "Nitric oxide", "Serotonin"], "ans": 2, "exp": "Nitric oxide (NO) is synthesized in endothelial cells and acts as a vasodilator, relaxing smooth muscle in blood vessel walls to increase blood flow. This discovery won the Nobel Prize in 1998."}, {"y": 2024, "sub": "Environment", "diff": "medium", "q": "Consider the following:<br>Statement I: Chewing gum is one of the most littered items on streets and is non-biodegradable.<br>Statement II: Chewing gum is made of synthetic polymers derived from petroleum.", "opts": ["Both correct, II explains I", "Both correct, II doesn't explain I", "I correct, II incorrect", "I incorrect, II correct"], "ans": 0, "exp": "Both statements are correct and II explains I. Modern chewing gum contains synthetic polymers (like polyethylene and polyvinyl acetate), making it non-biodegradable and a major source of plastic pollution."}, {"y": 2024, "sub": "Environment", "diff": "hard", "q": "Consider the following species and their native habitats:<br>1. Indri : Madagascar<br>2. Elk : North America<br>3. Bonobo : Democratic Republic of Congo", "opts": ["1 and 2 only", "2 only", "1 and 3 only", "1, 2 and 3"], "ans": 3, "exp": "All three are correctly matched. Indris are endemic to Madagascar. Elk (Cervus elaphus canadensis) are found in North America. Wild bonobos are found only in forests south of the Congo River in the DRC."}, {"y": 2024, "sub": "Geography", "diff": "medium", "q": "Statement I: The atmosphere is heated more by incoming solar radiation than by terrestrial radiation.<br>Statement II: CO₂ and other greenhouse gases are good absorbers of long-wave radiation.", "opts": ["Both correct, II explains I", "Both correct, II doesn't explain I", "I correct, II incorrect", "I incorrect, II correct"], "ans": 3, "exp": "Statement I is incorrect — the atmosphere is primarily heated by terrestrial (long-wave) radiation, not direct solar radiation. Statement II is correct — greenhouse gases absorb long-wave radiation effectively."}, {"y": 2024, "sub": "Polity", "diff": "easy", "q": "Operations undertaken by the Army towards upliftment of the local population in remote areas to address their basic needs is called:", "opts": ["Operation Sadbhavana", "Operation Goodwill", "Operation Sankalp", "Operation Vijay"], "ans": 0, "exp": "Operation Sadbhavana (Goodwill) is the Indian Army's civic action programme, especially in J&K and northeastern states, focused on education, healthcare, and community development in remote areas."}, {"y": 2024, "sub": "Economy", "diff": "hard", "q": "With reference to the Indian economy, 'Collateral Borrowing and Lending Obligations' are instruments of:", "opts": ["Commercial banks", "Money market", "Capital market", "Insurance companies"], "ans": 1, "exp": "CBLOs (Collateral Borrowing and Lending Obligations) are money market instruments operated by CCIL (Clearing Corporation of India Ltd). They facilitate short-term borrowing and lending among banks and financial institutions."}, {"y": 2024, "sub": "Current Affairs", "diff": "medium", "q": "'Exercise Sampriti' is a joint military exercise between India and:", "opts": ["Nepal", "Sri Lanka", "Bangladesh", "Myanmar"], "ans": 2, "exp": "Exercise Sampriti is a joint military exercise between India and Bangladesh, focusing on counter-terrorism operations and disaster relief. It was conducted in Aundh, Pune."}, {"y": 2024, "sub": "Polity", "diff": "hard", "q": "What are the duties of the Chief of Defence Staff (CDS) as Head of the Department of Military Affairs?<br>1. Administrative control of tri-services organizations<br>2. Facilitation of restructuring of military commands<br>3. Deciding the salary of three service chiefs", "opts": ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], "ans": 0, "exp": "The CDS handles administrative control of tri-services organizations and facilitates restructuring of military commands for greater jointness. The CDS does NOT decide the salary of service chiefs."}, {"y": 2024, "sub": "Economy", "diff": "medium", "q": "With reference to Pradhan Mantri Shram Yogi Maan-Dhan (PM-SYM):<br>1. The entry age for enrolment is 21 to 40 years.<br>2. Monthly pension of ₹3000 is given after 60 years of age.", "opts": ["1 only", "2 only", "Both", "Neither"], "ans": 1, "exp": "Statement 2 is correct — PM-SYM provides ₹3000 monthly pension after 60. Statement 1 is incorrect — the entry age is 18 to 40 years, not 21 to 40."}, {"y": 2024, "sub": "Economy", "diff": "medium", "q": "With reference to Digital India Land Records Modernization Programme:<br>1. The Central Government provides 100% funding.<br>2. Cadastral Maps are digitised.<br>3. Records of Rights are transliterated from local to recognized languages.", "opts": ["1 and 2 only", "2 only", "1 and 3 only", "1, 2 and 3"], "ans": 3, "exp": "All three statements are correct. The programme is 100% centrally funded, involves digitization of cadastral maps, and includes transliteration of land records from local languages."}, {"y": 2023, "sub": "Polity", "diff": "easy", "q": "Which Article of the Indian Constitution deals with the 'Right to Life and Personal Liberty'?", "opts": ["Article 14", "Article 19", "Article 21", "Article 25"], "ans": 2, "exp": "Article 21 states: 'No person shall be deprived of his life or personal liberty except according to procedure established by law.' It is one of the most expansively interpreted articles."}, {"y": 2023, "sub": "Economy", "diff": "medium", "q": "What is 'Fiscal Deficit'?", "opts": ["Total revenue minus total expenditure", "Total expenditure minus total receipts excluding borrowings", "Revenue deficit plus capital expenditure", "None of the above"], "ans": 1, "exp": "Fiscal Deficit = Total Expenditure – Total Receipts (excluding borrowings). It indicates the total borrowing requirement of the government."}, {"y": 2023, "sub": "Environment", "diff": "hard", "q": "The 'Kunming-Montreal Global Biodiversity Framework' adopted in 2022 includes which target?", "opts": ["Protect 30% of land and sea by 2030", "Achieve net-zero biodiversity loss by 2025", "Ban all single-use plastics globally by 2030", "Establish 100 new marine protected areas"], "ans": 0, "exp": "The landmark Kunming-Montreal GBF adopted at COP15 includes the '30x30' target — conserving at least 30% of the world's land and ocean areas by 2030."}, {"y": 2023, "sub": "Geography", "diff": "easy", "q": "The Tropic of Cancer does NOT pass through which Indian state?", "opts": ["Rajasthan", "Madhya Pradesh", "Bihar", "Gujarat"], "ans": 2, "exp": "The Tropic of Cancer passes through 8 Indian states: Gujarat, Rajasthan, Madhya Pradesh, Chhattisgarh, Jharkhand, West Bengal, Tripura, and Mizoram. It does NOT pass through Bihar."}, {"y": 2023, "sub": "History", "diff": "medium", "q": "Who founded the Indian National Congress in 1885?", "opts": ["Dadabhai Naoroji", "A.O. Hume", "Surendranath Banerjee", "W.C. Bonnerjee"], "ans": 1, "exp": "The INC was founded by Allan Octavian Hume, a retired British civil servant, in 1885. Its first session was held in Bombay under the presidency of W.C. Bonnerjee."}, {"y": 2023, "sub": "Science", "diff": "medium", "q": "Which is the primary greenhouse gas by volume in Earth's atmosphere?", "opts": ["Carbon dioxide", "Methane", "Water vapor", "Nitrous oxide"], "ans": 2, "exp": "Water vapor is the most abundant greenhouse gas. While CO₂ gets more attention due to human emissions, water vapor contributes most to the natural greenhouse effect."}, {"y": 2023, "sub": "Current Affairs", "diff": "hard", "q": "India's Chandrayaan-3 landed on the Moon in August 2023 near which lunar region?", "opts": ["North Pole", "South Pole", "Sea of Tranquility", "Oceanus Procellarum"], "ans": 1, "exp": "Chandrayaan-3's Vikram lander touched down near the Moon's South Pole on 23 August 2023, making India the first country to land near the lunar south pole."}, {"y": 2023, "sub": "Polity", "diff": "hard", "q": "With reference to the Indian Constitution, consider the following:<br>1. It contains provisions for the formation of new States and alteration of areas of existing States.<br>2. It contains provisions relating to the administration and control of Scheduled Areas and Scheduled Tribes.<br>3. It contains provisions that deal with the special provisions relating to certain classes.", "opts": ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], "ans": 3, "exp": "All three are correct. Article 3 covers formation of new States (1), Fifth and Sixth Schedules cover Scheduled Areas and Tribes (2), and Part XVI covers special provisions for certain classes (3)."}, {"y": 2023, "sub": "Economy", "diff": "easy", "q": "With reference to the Indian economy, consider Demand-pull inflation. It is caused by:", "opts": ["Increase in aggregate demand over aggregate supply", "Increase in production costs", "Decrease in money supply", "Decrease in government spending"], "ans": 0, "exp": "Demand-pull inflation occurs when aggregate demand exceeds aggregate supply. When spending grows faster than production capacity, it pulls prices up. This contrasts with cost-push inflation driven by supply-side factors."}, {"y": 2023, "sub": "Environment", "diff": "medium", "q": "Consider the following wetlands:<br>1. Hokera Wetland<br>2. Renuka Wetland<br>3. Surinsar-Mansar Lakes<br>Which are designated Ramsar Sites?", "opts": ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], "ans": 3, "exp": "All three are designated Ramsar Sites of India. Hokera is in J&K, Renuka is in Himachal Pradesh, and Surinsar-Mansar Lakes are in J&K."}, {"y": 2023, "sub": "Geography", "diff": "medium", "q": "Consider:<br>1. The Gulf Stream is a warm ocean current.<br>2. The Peru Current is a cold ocean current.<br>3. The Kuroshio Current flows near Japan.", "opts": ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], "ans": 3, "exp": "All three statements are correct. The Gulf Stream is a warm Atlantic current. The Peru (Humboldt) Current is a cold Pacific current along South America. The Kuroshio is a warm current flowing along Japan."}, {"y": 2023, "sub": "Science", "diff": "hard", "q": "Consider the following pairs of space missions:<br>1. Gaganyaan : Crewed space flight<br>2. NISAR : Earth observation satellite<br>3. Aditya-L1 : Solar observation", "opts": ["1 and 2 only", "2 only", "1 and 3 only", "1, 2 and 3"], "ans": 3, "exp": "All three are correct. Gaganyaan is India's crewed spaceflight program. NISAR (NASA-ISRO) is an Earth observation radar satellite. Aditya-L1 is India's solar observatory mission at the L1 point."}, {"y": 2023, "sub": "History", "diff": "easy", "q": "With reference to Indian history, which among the following is/are associated with Gautama Buddha?<br>1. He emphasized ahimsa (non-violence) as a core principle.<br>2. He rejected the authority of the Vedas.", "opts": ["1 only", "2 only", "Both 1 and 2", "Neither"], "ans": 2, "exp": "Both are correct. Buddha emphasized ahimsa and the middle path, and he rejected the authority of the Vedas and the caste system, which were central to Brahmanical tradition."}, {"y": 2023, "sub": "Polity", "diff": "medium", "q": "Consider the following statements about the Central Information Commission (CIC):<br>1. The CIC is set up under the Right to Information Act.<br>2. Members are appointed by the President on the recommendation of a committee including the PM, LoP, and a Union Cabinet Minister.", "opts": ["1 only", "2 only", "Both", "Neither"], "ans": 2, "exp": "Both statements are correct. The CIC is established under the RTI Act, 2005. Members are appointed by the President on the recommendation of a committee comprising the Prime Minister, the Leader of Opposition, and a nominated Cabinet Minister."}, {"y": 2023, "sub": "Economy", "diff": "hard", "q": "In the context of finance, the term 'Tobin Tax' refers to:", "opts": ["A tax on imports to protect domestic industry", "A tax on financial transactions, especially currency trades", "A tax on agricultural income", "A luxury tax on consumer goods"], "ans": 1, "exp": "The Tobin Tax, proposed by economist James Tobin, is a tax on foreign exchange transactions or financial transactions. It aims to reduce speculative currency trading and market volatility."}, {"y": 2023, "sub": "Environment", "diff": "easy", "q": "Consider the following:<br>1. Carbon credits are traded under the Clean Development Mechanism.<br>2. The carbon credit system was ratified under the Kyoto Protocol.", "opts": ["1 only", "2 only", "Both", "Neither"], "ans": 2, "exp": "Both statements are correct. The CDM under the Kyoto Protocol allows developed countries to invest in emission-reducing projects in developing countries to earn carbon credits (CERs)."}, {"y": 2023, "sub": "Science", "diff": "easy", "q": "5G technology uses which frequency band for higher data speeds?", "opts": ["VHF Band", "UHF Band", "Millimeter Wave Band", "Low Frequency Band"], "ans": 2, "exp": "5G uses millimeter wave (mmWave) frequencies in the 24-100 GHz range, along with sub-6 GHz bands, to deliver ultra-fast speeds and low latency."}, {"y": 2023, "sub": "IR", "diff": "medium", "q": "India is a founding member of which of the following?<br>1. Asian Development Bank<br>2. BRICS New Development Bank<br>3. UN", "opts": ["1 and 2 only", "2 only", "1 and 3 only", "1, 2 and 3"], "ans": 3, "exp": "India is a founding member of all three. India joined ADB at its founding in 1966, was a founding BRICS NDB member in 2014, and was one of the original UN members in 1945."}, {"y": 2023, "sub": "History", "diff": "hard", "q": "Consider the following medieval Indian kingdoms:<br>1. Hoysala was based in present-day Karnataka.<br>2. The Kakatiya dynasty ruled parts of present-day Andhra Pradesh/Telangana.<br>3. The Pallava dynasty was based in present-day Tamil Nadu.", "opts": ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], "ans": 3, "exp": "All are correct. The Hoysalas were centered in Karnataka (capital Halebidu/Belur). Kakatiyas ruled from Warangal in present Telangana. Pallavas were based in Kanchipuram, Tamil Nadu."}, {"y": 2023, "sub": "Geography", "diff": "hard", "q": "With reference to India,935 N is the standard meridian. The time is 5 hours and 30 minutes ahead of GMT because:", "opts": ["India is east of the Prime Meridian and each degree of longitude equals 4 minutes", "India is west of the International Date Line", "India adopted IST based on the central position of 82.5°E", "Both A and C"], "ans": 3, "exp": "India's Standard Time Meridian is 82.5°E (82°30'E). Being east of GMT, each degree = 4 minutes, so 82.5 × 4 = 330 minutes = 5 hours 30 minutes ahead. The meridian was chosen for its central geographic position."}, {"y": 2022, "sub": "Polity", "diff": "hard", "q": "Which of the following is NOT a feature of the 73rd Constitutional Amendment Act?", "opts": ["Three-tier Panchayati Raj system", "Reservation for SC/ST in proportion to population", "Giving judicial powers to Gram Sabha", "Direct elections to all seats"], "ans": 2, "exp": "The 73rd Amendment (1992) introduced a three-tier system with SC/ST and women's reservations, direct elections, and a State Election Commission. It did NOT confer judicial powers to Gram Sabhas."}, {"y": 2022, "sub": "Economy", "diff": "easy", "q": "Which organization publishes the 'World Economic Outlook' report?", "opts": ["World Bank", "IMF", "WTO", "OECD"], "ans": 1, "exp": "The World Economic Outlook (WEO) is published by the International Monetary Fund (IMF) twice a year, analyzing global economic developments and projections."}, {"y": 2022, "sub": "Environment", "diff": "medium", "q": "The Ramsar Convention is related to conservation of which ecosystem?", "opts": ["Forests", "Wetlands", "Deserts", "Coral reefs"], "ans": 1, "exp": "The Ramsar Convention (1971) is an intergovernmental treaty for the conservation and wise use of wetlands. India has designated over 80 Ramsar sites."}, {"y": 2022, "sub": "Geography", "diff": "hard", "q": "About jet streams:<br>1. They flow from west to east.<br>2. They are found in the stratosphere.<br>3. They influence the Indian monsoon.", "opts": ["1 and 3 only", "2 and 3 only", "1 only", "All"], "ans": 0, "exp": "Jet streams flow west to east in the upper troposphere (not stratosphere) and significantly influence the Indian monsoon. The subtropical westerly jet and tropical easterly jet both play key roles."}, {"y": 2022, "sub": "History", "diff": "easy", "q": "The 'Salt March' of 1930 was led by Mahatma Gandhi to protest against:", "opts": ["Rowlatt Act", "Salt Tax", "Land Revenue Act", "Press Act"], "ans": 1, "exp": "The Dandi March (March-April 1930) was a 241-mile march to the sea to make salt, directly defying the British monopoly on salt production and the salt tax."}, {"y": 2022, "sub": "Science", "diff": "medium", "q": "Which Indian space mission was the first interplanetary mission by India?", "opts": ["Chandrayaan-1", "Mangalyaan (MOM)", "Chandrayaan-2", "Aditya-L1"], "ans": 1, "exp": "Mars Orbiter Mission (Mangalyaan), launched November 2013, was India's first interplanetary mission. India became the first Asian nation to reach Mars orbit."}, {"y": 2022, "sub": "Current Affairs", "diff": "easy", "q": "Which country hosted the COP27 climate summit in 2022?", "opts": ["UAE", "India", "Egypt", "Germany"], "ans": 2, "exp": "COP27 was held in Sharm el-Sheikh, Egypt in November 2022. A key outcome was the agreement to establish a 'Loss and Damage' fund for vulnerable countries."}, {"y": 2022, "sub": "Polity", "diff": "medium", "q": "Consider the following about the Attorney General of India:<br>1. He is appointed by the President.<br>2. He must have the qualifications to be appointed as a Judge of the Supreme Court.<br>3. He has the right to speak in both Houses of Parliament.", "opts": ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], "ans": 3, "exp": "All three are correct. The AG is appointed by the President (Article 76), must be qualified to be an SC Judge, and has the right to speak and participate in proceedings of both Houses (Article 88) but cannot vote."}, {"y": 2022, "sub": "Economy", "diff": "hard", "q": "Consider the following:<br>1. Special Drawing Rights (SDR) is a monetary unit of the IMF.<br>2. It is not a currency per se but represents a claim to currency held by IMF member countries.<br>3. The value of SDR is based on five currencies including the Chinese renminbi.", "opts": ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], "ans": 3, "exp": "All statements are correct. SDR is an international reserve asset created by the IMF. It represents a claim to currencies of members. Since 2016, its basket includes USD, Euro, Chinese renminbi, Yen, and British pound."}, {"y": 2022, "sub": "Environment", "diff": "hard", "q": "Consider the following:<br>1. Gharial is found only in India.<br>2. Gharial is a herbivorous reptile.<br>3. Gharial is critically endangered on the IUCN Red List.", "opts": ["1 and 3 only", "2 only", "2 and 3 only", "1 only"], "ans": 0, "exp": "Gharials are found in India and Nepal (primarily in India's rivers) and are Critically Endangered on the IUCN Red List. They are NOT herbivorous — they are piscivorous (fish-eating)."}, {"y": 2022, "sub": "Geography", "diff": "medium", "q": "Consider the following:<br>1. The Vindhyan System of rocks is famous for the production of precious stones and building materials.<br>2. Copper is found in the Dharwar system of rocks.<br>3. Iron ore is found in the Cuddapah system of rocks.", "opts": ["1 only", "2 and 3 only", "1 and 2 only", "1, 2 and 3"], "ans": 3, "exp": "All are correct. Vindhyan rocks yield sandstone, limestone, and precious stones. The Dharwar system contains copper, gold, and manganese deposits. Cuddapah rocks contain iron ore and other mineral deposits."}, {"y": 2022, "sub": "History", "diff": "medium", "q": "With reference to the revolt of 1857, consider:<br>1. Many Taluqdars and Zamindars joined the revolt.<br>2. The revolt was confined only to the military.", "opts": ["1 only", "2 only", "Both", "Neither"], "ans": 0, "exp": "Statement 1 is correct — many taluqdars, zamindars, and peasants joined the revolt alongside sepoys. Statement 2 is wrong — the 1857 revolt involved civilians, zamindars, and rulers, not just the military."}, {"y": 2022, "sub": "Science", "diff": "easy", "q": "Which of the following is used in the production of semiconductors?", "opts": ["Iron", "Silicon", "Aluminium", "Copper"], "ans": 1, "exp": "Silicon is the primary material used in semiconductor manufacturing. It forms the basis of integrated circuits and microchips due to its properties as a semiconductor element."}, {"y": 2022, "sub": "Polity", "diff": "easy", "q": "The Supreme Court of India has the power of judicial review. This means it can:", "opts": ["Review its own judgments", "Examine the constitutionality of laws", "Advise the President on legal matters", "All of the above"], "ans": 3, "exp": "The Supreme Court has comprehensive powers: it can review its own judgments (Article 137), examine constitutionality of laws (Articles 13, 32, 226), and render advisory opinions to the President (Article 143)."}, {"y": 2022, "sub": "Economy", "diff": "medium", "q": "'Demographic Dividend' refers to the growth in an economy that results from:", "opts": ["Decrease in birth rate", "A change in the age structure of population with more working-age people", "Increase in life expectancy", "Increase in immigration"], "ans": 1, "exp": "Demographic dividend occurs when the working-age population (15-64) is larger relative to dependents. This creates potential for higher economic growth through increased labor force participation and savings."}, {"y": 2022, "sub": "Environment", "diff": "easy", "q": "The 'Chipko Movement' of the 1970s was related to conservation of:", "opts": ["Rivers", "Forests", "Wildlife", "Wetlands"], "ans": 1, "exp": "The Chipko Movement (1973) in Uttarakhand's Garhwal Himalayas was a forest conservation movement where villagers, especially women, hugged trees to prevent them from being felled by contractors."}, {"y": 2022, "sub": "Science", "diff": "hard", "q": "Consider the following technologies:<br>1. Artificial Intelligence<br>2. Machine Learning<br>3. Natural Language Processing<br>Which can be used in precision agriculture?", "opts": ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], "ans": 3, "exp": "All three technologies are used in precision agriculture. AI for decision-making systems, ML for predictive analytics on crop yields and soil conditions, and NLP for processing weather reports and agricultural research."}, {"y": 2022, "sub": "History", "diff": "hard", "q": "With reference to the Indian freedom struggle, the 'Lahore Declaration' of 1929 is significant because:", "opts": ["It declared Purna Swaraj as the goal", "It launched the Civil Disobedience Movement", "It established the Muslim League", "It created the Indian Constitution"], "ans": 0, "exp": "At the Lahore Session (December 1929) presided by Nehru, the Congress adopted the resolution of Purna Swaraj (complete independence) as its goal, moving away from the earlier Dominion Status demand."}, {"y": 2022, "sub": "IR", "diff": "medium", "q": "The 'Indo-Pacific Economic Framework for Prosperity (IPEF)' was launched in 2022 by:", "opts": ["Japan", "India", "USA", "Australia"], "ans": 2, "exp": "IPEF was launched by the United States in May 2022, involving 14 partner countries including India, Japan, Australia, and others, focusing on trade, supply chains, clean energy, and anti-corruption."}, {"y": 2021, "sub": "Polity", "diff": "medium", "q": "The President of India can be removed by which process?", "opts": ["Impeachment", "No-confidence motion", "Judicial review", "Recall election"], "ans": 0, "exp": "The President can only be removed through impeachment under Article 61. The process requires a resolution passed by a two-thirds majority in both Houses of Parliament."}, {"y": 2021, "sub": "Economy", "diff": "hard", "q": "Which are component(s) of the current account in Balance of Payments?<br>1. Trade in goods<br>2. Trade in services<br>3. Foreign direct investment", "opts": ["1 and 2 only", "1 only", "All", "1, 2, and transfers"], "ans": 3, "exp": "The current account comprises trade in goods, services, income, and current transfers. FDI falls under the capital/financial account, not the current account."}, {"y": 2021, "sub": "Environment", "diff": "easy", "q": "Which is NOT a biodiversity hotspot in India?", "opts": ["Western Ghats", "Eastern Himalayas", "Thar Desert", "Indo-Burma region"], "ans": 2, "exp": "India has four biodiversity hotspots: Western Ghats, Eastern Himalayas, Indo-Burma, and Sundaland. The Thar Desert is not a biodiversity hotspot."}, {"y": 2021, "sub": "Geography", "diff": "medium", "q": "The Siachen Glacier is in which mountain range?", "opts": ["Pir Panjal", "Karakoram", "Zanskar", "Greater Himalayas"], "ans": 1, "exp": "Siachen Glacier, the world's highest battleground, is located in the eastern Karakoram range at about 5,753 meters elevation."}, {"y": 2021, "sub": "History", "diff": "hard", "q": "The 'Permanent Settlement' of 1793 was introduced in which presidency?", "opts": ["Bombay", "Madras", "Bengal", "All Presidencies"], "ans": 2, "exp": "The Permanent Settlement was introduced by Lord Cornwallis in 1793 primarily in Bengal, Bihar, and Orissa. It fixed land revenue permanently, to be paid by zamindars."}, {"y": 2021, "sub": "Science", "diff": "easy", "q": "Which vitamin is produced in the human body upon exposure to sunlight?", "opts": ["Vitamin A", "Vitamin B12", "Vitamin C", "Vitamin D"], "ans": 3, "exp": "Vitamin D is synthesized in the skin when exposed to ultraviolet B (UVB) radiation from sunlight. It's essential for calcium absorption and bone health."}, {"y": 2021, "sub": "Current Affairs", "diff": "medium", "q": "The 'Production Linked Incentive (PLI) Scheme' primarily aims to:", "opts": ["Promote agricultural exports", "Boost domestic manufacturing", "Increase renewable energy", "Fund startups"], "ans": 1, "exp": "PLI was launched to enhance India's manufacturing capabilities, create jobs, and reduce import dependency across sectors like electronics, pharma, automobiles, and textiles."}, {"y": 2021, "sub": "Polity", "diff": "easy", "q": "The concept of 'Judicial Review' in India is inspired by which country?", "opts": ["UK", "France", "USA", "Australia"], "ans": 2, "exp": "Judicial Review in India is inspired by the American Constitution. The Supreme Court and High Courts can review the constitutionality of legislative and executive actions."}, {"y": 2021, "sub": "Economy", "diff": "medium", "q": "'Core inflation' excludes:", "opts": ["Housing costs", "Food and fuel prices", "Industrial output", "Service sector costs"], "ans": 1, "exp": "Core inflation excludes volatile food and energy/fuel prices to give a clearer picture of the underlying, long-term trend in price levels."}, {"y": 2021, "sub": "Environment", "diff": "hard", "q": "The Great Barrier Reef mass bleaching events are primarily due to:", "opts": ["Overfishing", "Ocean acidification only", "Elevated sea surface temperatures", "Plastic pollution"], "ans": 2, "exp": "Mass coral bleaching is primarily driven by elevated sea surface temperatures linked to climate change."}, {"y": 2021, "sub": "Geography", "diff": "easy", "q": "Which is the longest river in India?", "opts": ["Brahmaputra", "Ganga", "Godavari", "Narmada"], "ans": 1, "exp": "The Ganga is the longest river flowing within India, approximately 2,525 km from Gangotri to the Bay of Bengal."}, {"y": 2021, "sub": "History", "diff": "medium", "q": "The 'Quit India Movement' was launched in which year?", "opts": ["1940", "1942", "1944", "1946"], "ans": 1, "exp": "The Quit India Movement was launched on 8 August 1942 by Mahatma Gandhi at the Bombay session of the AICC, demanding an end to British rule."}, {"y": 2021, "sub": "Science", "diff": "easy", "q": "Which gas is most abundant in Earth's atmosphere?", "opts": ["Oxygen", "Carbon dioxide", "Nitrogen", "Argon"], "ans": 2, "exp": "Nitrogen makes up approximately 78% of Earth's atmosphere by volume, followed by oxygen at about 21%."}, {"y": 2021, "sub": "Polity", "diff": "hard", "q": "With reference to the Inter-State Water Disputes Act, 1956, consider:<br>1. The Central Government should set up a tribunal within one year of receiving a complaint from a State.<br>2. The decision of the tribunal is binding on the parties and is final.", "opts": ["1 only", "2 only", "Both", "Neither"], "ans": 2, "exp": "Both statements are correct. The Act requires the Centre to constitute a tribunal within a year of a complaint, and the tribunal's decision is final and binding, having the same force as a Supreme Court order."}, {"y": 2021, "sub": "Economy", "diff": "easy", "q": "'Balance of Trade' is the difference between:", "opts": ["Exports and imports of goods", "Exports and imports of goods and services", "Total receipts and total payments", "Revenue receipts and revenue expenditure"], "ans": 0, "exp": "Balance of Trade (BoT) refers to the difference between a country's exports and imports of goods (merchandise trade). When services are included, it becomes Balance of Trade in Goods and Services."}, {"y": 2021, "sub": "Environment", "diff": "medium", "q": "Which one of the following is a site for in-situ conservation of biodiversity?", "opts": ["Botanical Garden", "Zoological Garden", "National Park", "Seed Bank"], "ans": 2, "exp": "National Parks are sites for in-situ (on-site/natural habitat) conservation. Botanical gardens, zoos, and seed banks are forms of ex-situ (off-site) conservation."}, {"y": 2021, "sub": "Science", "diff": "medium", "q": "Consider the following:<br>1. Hydrogen fuel cells produce electricity through a chemical reaction between hydrogen and oxygen.<br>2. The only by-product is water.<br>3. They can be used to power vehicles.", "opts": ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], "ans": 3, "exp": "All statements are correct. Hydrogen fuel cells generate electricity via an electrochemical reaction between H₂ and O₂, producing only water as a by-product, and are used in vehicles, buses, and spacecraft."}, {"y": 2021, "sub": "History", "diff": "easy", "q": "Consider the following:<br>1. Ilbert Bill controversy was about the right of Indian judges to try European offenders.<br>2. Lord Ripon supported the Ilbert Bill.", "opts": ["1 only", "2 only", "Both", "Neither"], "ans": 2, "exp": "Both statements are correct. The Ilbert Bill (1883) sought to allow Indian judges to try European offenders and was supported by Viceroy Lord Ripon but faced fierce opposition from the European community."}, {"y": 2021, "sub": "Geography", "diff": "hard", "q": "Consider the following about Indian Ocean Dipole (IOD):<br>1. It is defined by the difference in sea surface temperature between the western and eastern Indian Ocean.<br>2. Positive IOD is associated with increased rainfall in India.", "opts": ["1 only", "2 only", "Both", "Neither"], "ans": 2, "exp": "Both are correct. IOD measures the SST difference between western and eastern Indian Ocean. A positive IOD (warmer west, cooler east) typically brings enhanced monsoon rainfall to India."}, {"y": 2021, "sub": "IR", "diff": "medium", "q": "The 'Quad' (Quadrilateral Security Dialogue) consists of which countries?", "opts": ["USA, UK, India, Japan", "USA, India, Japan, Australia", "USA, India, France, Australia", "USA, UK, Japan, Australia"], "ans": 1, "exp": "The Quad consists of the United States, India, Japan, and Australia. It is a strategic security dialogue focused on a free and open Indo-Pacific."}];
 
-  // ── 2022 ──
-  {y:2022,sub:"Polity",diff:"hard",q:"Which of the following is NOT a feature of the 73rd Constitutional Amendment Act?",opts:["Three-tier Panchayati Raj system","Reservation for SC/ST in proportion to population","Giving judicial powers to Gram Sabha","Direct elections to all seats"],ans:2,exp:"The 73rd Amendment (1992) introduced a three-tier Panchayati Raj system with reservations for SC/ST and women, and direct elections. It did not confer judicial powers to Gram Sabhas."},
-  {y:2022,sub:"Economy",diff:"easy",q:"Which organization publishes the 'World Economic Outlook' report?",opts:["World Bank","IMF","WTO","OECD"],ans:1,exp:"The World Economic Outlook (WEO) is a survey published by the International Monetary Fund (IMF), usually twice a year, analyzing global economic developments."},
-  {y:2022,sub:"Environment",diff:"medium",q:"The Ramsar Convention is related to the conservation of which type of ecosystem?",opts:["Forests","Wetlands","Deserts","Coral reefs"],ans:1,exp:"The Ramsar Convention (1971) is an intergovernmental treaty for the conservation and wise use of wetlands. India has over 80 designated Ramsar sites."},
-  {y:2022,sub:"Geography",diff:"hard",q:"Which of the following statements about jet streams is/are correct? 1. They flow from west to east. 2. They are found in the stratosphere. 3. They influence the Indian monsoon.",opts:["1 and 3 only","2 and 3 only","1 only","All of the above"],ans:0,exp:"Jet streams flow from west to east in the upper troposphere (not stratosphere) and significantly influence the Indian monsoon pattern. The subtropical westerly jet and the tropical easterly jet both play roles."},
-  {y:2022,sub:"History",diff:"easy",q:"The 'Salt March' (Dandi March) of 1930 was led by Mahatma Gandhi to protest against which British law?",opts:["Rowlatt Act","Salt Tax","Land Revenue Act","Press Act"],ans:1,exp:"The Dandi March (March–April 1930) was a 241-mile march to the sea to make salt, directly defying the British monopoly on salt production and the salt tax."},
-  {y:2022,sub:"Science",diff:"medium",q:"Which Indian space mission was the first interplanetary mission by India?",opts:["Chandrayaan-1","Mangalyaan (MOM)","Chandrayaan-2","Aditya-L1"],ans:1,exp:"Mars Orbiter Mission (Mangalyaan), launched in November 2013, was India's first interplanetary mission. India became the first Asian nation to reach Mars orbit."},
-  {y:2022,sub:"Current Affairs",diff:"easy",q:"Which country hosted the COP27 climate summit in 2022?",opts:["UAE","India","Egypt","Germany"],ans:2,exp:"COP27 was held in Sharm el-Sheikh, Egypt in November 2022. A key outcome was the agreement to establish a 'Loss and Damage' fund for vulnerable countries."},
 
-  // ── 2021 ──
-  {y:2021,sub:"Polity",diff:"medium",q:"The President of India can be removed from office by which process?",opts:["Impeachment","No-confidence motion","Judicial review","Recall election"],ans:0,exp:"The President can only be removed through impeachment under Article 61. The process requires a resolution passed by a two-thirds majority in both Houses of Parliament."},
-  {y:2021,sub:"Economy",diff:"hard",q:"Which of the following is/are component(s) of the current account in the Balance of Payments? 1. Trade in goods 2. Trade in services 3. Foreign direct investment",opts:["1 and 2 only","1 only","All of the above","1, 2, and transfers"],ans:3,exp:"The current account comprises trade in goods, services, income, and current transfers. FDI falls under the capital/financial account, not the current account."},
-  {y:2021,sub:"Environment",diff:"easy",q:"Which of the following is NOT a biodiversity hotspot in India?",opts:["Western Ghats","Eastern Himalayas","Thar Desert","Indo-Burma region"],ans:2,exp:"India has four biodiversity hotspots: Western Ghats, Eastern Himalayas, Indo-Burma, and Sundaland. The Thar Desert is not a biodiversity hotspot."},
-  {y:2021,sub:"Geography",diff:"medium",q:"The Siachen Glacier is situated in which mountain range?",opts:["Pir Panjal","Karakoram","Zanskar","Greater Himalayas"],ans:1,exp:"Siachen Glacier, the world's highest battleground, is located in the eastern Karakoram range in the Himalayas at about 5,753 meters."},
-  {y:2021,sub:"History",diff:"hard",q:"The 'Permanent Settlement' of 1793 was introduced in which presidency?",opts:["Bombay Presidency","Madras Presidency","Bengal Presidency","All Presidencies"],ans:2,exp:"The Permanent Settlement was introduced by Lord Cornwallis in 1793 primarily in Bengal, Bihar, and Orissa. It fixed the land revenue in perpetuity to be paid by the zamindars."},
-  {y:2021,sub:"Science",diff:"easy",q:"Which vitamin is produced in the human body upon exposure to sunlight?",opts:["Vitamin A","Vitamin B12","Vitamin C","Vitamin D"],ans:3,exp:"Vitamin D is synthesized in the skin when it is exposed to ultraviolet B (UVB) radiation from sunlight."},
-  {y:2021,sub:"Current Affairs",diff:"medium",q:"The 'Production Linked Incentive (PLI) Scheme' launched by the Government of India primarily aims to:",opts:["Promote agricultural exports","Boost domestic manufacturing","Increase renewable energy","Fund startups"],ans:1,exp:"The PLI scheme was launched to enhance India's manufacturing capabilities, create jobs, and reduce import dependency across sectors like electronics, pharma, automobiles, and textiles."},
-
-  // ── 2020 ──
-  {y:2020,sub:"Polity",diff:"easy",q:"The concept of 'Judicial Review' in India is inspired by the constitution of which country?",opts:["UK","France","USA","Australia"],ans:2,exp:"Judicial Review in India is inspired by the American Constitution. The Supreme Court and High Courts can review the constitutionality of legislative and executive actions."},
-  {y:2020,sub:"Economy",diff:"medium",q:"'Core inflation' excludes which of the following?",opts:["Housing costs","Food and fuel prices","Industrial output","Service sector costs"],ans:1,exp:"Core inflation excludes volatile food and energy/fuel prices to give a clearer picture of the underlying, long-term trend in price levels."},
-  {y:2020,sub:"Environment",diff:"hard",q:"The 'Great Barrier Reef' has experienced mass bleaching events primarily due to:",opts:["Overfishing","Ocean acidification only","Elevated sea surface temperatures","Plastic pollution"],ans:2,exp:"Mass coral bleaching is primarily driven by elevated sea surface temperatures linked to climate change. The Great Barrier Reef has suffered multiple severe bleaching events in recent years."},
-  {y:2020,sub:"Geography",diff:"easy",q:"Which is the longest river in India?",opts:["Brahmaputra","Ganga","Godavari","Narmada"],ans:1,exp:"The Ganga is the longest river flowing entirely or partly within India, with a total length of about 2,525 km from Gangotri to the Bay of Bengal."},
-  {y:2020,sub:"History",diff:"medium",q:"The 'Quit India Movement' was launched in which year?",opts:["1940","1942","1944","1946"],ans:1,exp:"The Quit India Movement was launched on 8 August 1942 by Mahatma Gandhi at the Bombay session of the All-India Congress Committee, demanding an end to British rule."},
-  {y:2020,sub:"Science",diff:"easy",q:"Which gas is most abundant in Earth's atmosphere?",opts:["Oxygen","Carbon dioxide","Nitrogen","Argon"],ans:2,exp:"Nitrogen makes up approximately 78% of Earth's atmosphere by volume, followed by oxygen at about 21%."},
-
-  // ── 2019 ──
-  {y:2019,sub:"Polity",diff:"medium",q:"Which schedule of the Indian Constitution deals with the distribution of powers between the Union and States?",opts:["Fifth Schedule","Sixth Schedule","Seventh Schedule","Eighth Schedule"],ans:2,exp:"The Seventh Schedule contains three lists — Union List, State List, and Concurrent List — that distribute legislative powers between the Centre and States."},
-  {y:2019,sub:"Economy",diff:"easy",q:"What does GDP stand for?",opts:["Gross Domestic Product","General Development Plan","Grand Domestic Performance","Government Development Programme"],ans:0,exp:"GDP stands for Gross Domestic Product — the total monetary value of all finished goods and services produced within a country's borders in a specific time period."},
-  {y:2019,sub:"Environment",diff:"medium",q:"The 'Paris Agreement' on climate change was adopted in which year?",opts:["2012","2015","2018","2020"],ans:1,exp:"The Paris Agreement was adopted at COP21 in December 2015. It aims to limit global warming to well below 2°C, preferably 1.5°C, compared to pre-industrial levels."},
-  {y:2019,sub:"History",diff:"hard",q:"Who was the Viceroy of India at the time of the Jallianwala Bagh massacre (1919)?",opts:["Lord Irwin","Lord Chelmsford","Lord Reading","Lord Hardinge"],ans:1,exp:"Lord Chelmsford was the Viceroy of India during the Jallianwala Bagh massacre on 13 April 1919, when General Dyer ordered troops to fire on a peaceful gathering in Amritsar."},
-  {y:2019,sub:"Geography",diff:"medium",q:"Which of the following is the highest peak in India?",opts:["Nanda Devi","Kanchenjunga","K2","Mount Everest"],ans:2,exp:"K2 (8,611 m) in the Karakoram range is the highest peak within India's administered territory (in PoK region). Kanchenjunga (8,586 m) is the highest peak entirely within India's recognized borders."},
-  {y:2019,sub:"Science",diff:"medium",q:"Which of the following is used as a moderator in nuclear reactors?",opts:["Heavy water","Light oil","Carbon dioxide","Liquid sodium"],ans:0,exp:"Heavy water (deuterium oxide, D₂O) is commonly used as a moderator in pressurized heavy-water reactors (PHWRs), which India extensively uses in its nuclear program."},
-
-  // ── 2018 ──
-  {y:2018,sub:"Polity",diff:"hard",q:"Which of the following writs can be issued by the Supreme Court under Article 32? 1. Habeas Corpus 2. Mandamus 3. Certiorari 4. Prohibition 5. Quo Warranto",opts:["1, 2 and 3 only","1, 2, 3 and 4 only","All five","1 and 2 only"],ans:2,exp:"Under Article 32, the Supreme Court can issue all five types of writs: Habeas Corpus, Mandamus, Certiorari, Prohibition, and Quo Warranto for enforcement of fundamental rights."},
-  {y:2018,sub:"Economy",diff:"medium",q:"The 'Goods and Services Tax (GST)' in India is a:",opts:["Direct tax","Indirect tax","Progressive tax","Regressive direct tax"],ans:1,exp:"GST is an indirect tax levied on the supply of goods and services. It replaced multiple cascading taxes and was implemented on 1 July 2017 through the 101st Constitutional Amendment."},
-  {y:2018,sub:"Environment",diff:"easy",q:"The 'Chipko Movement' of the 1970s was related to the conservation of:",opts:["Rivers","Forests","Wildlife","Wetlands"],ans:1,exp:"The Chipko Movement (1973) in the Garhwal Himalayas was a forest conservation movement where villagers, especially women, hugged trees to prevent them from being felled by contractors."},
-  {y:2018,sub:"History",diff:"medium",q:"The 'Ryotwari System' of land revenue was primarily introduced in:",opts:["Bengal and Bihar","Madras and Bombay","Punjab and NWFP","Central Provinces"],ans:1,exp:"The Ryotwari System was introduced by Thomas Munro and Captain Read primarily in Madras and Bombay Presidencies. Under this system, the cultivator (ryot) was the owner and paid revenue directly to the state."},
-
-  // ── 2017 ──
-  {y:2017,sub:"Polity",diff:"easy",q:"The Preamble to the Indian Constitution was amended by which amendment?",opts:["42nd Amendment","44th Amendment","73rd Amendment","86th Amendment"],ans:0,exp:"The 42nd Amendment (1976) added three words — 'Socialist', 'Secular', and 'Integrity' — to the Preamble of the Indian Constitution."},
-  {y:2017,sub:"Economy",diff:"hard",q:"'Stagflation' refers to a situation of:",opts:["High growth and high inflation","Low growth and low inflation","Stagnant growth with high inflation","Rapid growth with deflation"],ans:2,exp:"Stagflation is an economic condition characterized by stagnant economic growth, high unemployment, and high inflation simultaneously — considered particularly difficult to address with monetary policy."},
-  {y:2017,sub:"Environment",diff:"medium",q:"The 'National Green Tribunal (NGT)' was established under which act?",opts:["Environment Protection Act, 1986","Forest Conservation Act, 1980","National Green Tribunal Act, 2010","Wildlife Protection Act, 1972"],ans:2,exp:"The NGT was established in 2010 under the National Green Tribunal Act for effective and expeditious disposal of cases relating to environmental protection and conservation."},
-  {y:2017,sub:"Geography",diff:"easy",q:"The 'Deccan Plateau' is bounded on the west by which mountain range?",opts:["Vindhya Range","Western Ghats","Eastern Ghats","Aravalli Range"],ans:1,exp:"The Deccan Plateau is a large triangular plateau bounded by the Western Ghats on the west, Eastern Ghats on the east, and the Satpura and Vindhya ranges to the north."},
-
-  // ── 2016 ──
-  {y:2016,sub:"Polity",diff:"medium",q:"The 'Finance Commission' is constituted under which article of the Constitution?",opts:["Article 243","Article 280","Article 300A","Article 312"],ans:1,exp:"Article 280 provides for the constitution of a Finance Commission every five years to recommend the distribution of net proceeds of taxes between the Centre and States."},
-  {y:2016,sub:"History",diff:"easy",q:"Who was known as the 'Grand Old Man of India'?",opts:["Bal Gangadhar Tilak","Dadabhai Naoroji","Gopal Krishna Gokhale","Lala Lajpat Rai"],ans:1,exp:"Dadabhai Naoroji (1825–1917) was called the 'Grand Old Man of India.' He was the first Indian to be elected to the British Parliament and authored 'Poverty and Un-British Rule in India.'"},
-  {y:2016,sub:"Science",diff:"medium",q:"'LIGO' made headlines for detecting which phenomenon for the first time?",opts:["Dark matter particles","Gravitational waves","Higgs boson","Neutrino oscillations"],ans:1,exp:"LIGO (Laser Interferometer Gravitational-Wave Observatory) first detected gravitational waves in September 2015, confirming a major prediction of Einstein's general theory of relativity. The discovery was announced in February 2016."},
-
-  // ── 2015 ──
-  {y:2015,sub:"Environment",diff:"hard",q:"The 'Nagoya Protocol' is related to:",opts:["Climate change mitigation","Access and benefit sharing of genetic resources","Marine pollution control","Ozone layer protection"],ans:1,exp:"The Nagoya Protocol (2010) is a supplementary agreement to the Convention on Biological Diversity. It provides a framework for access to genetic resources and the fair sharing of benefits arising from their utilization."},
-  {y:2015,sub:"Economy",diff:"easy",q:"Which institution is known as the 'lender of last resort' in India?",opts:["SBI","NABARD","RBI","SEBI"],ans:2,exp:"The Reserve Bank of India (RBI) acts as the lender of last resort, providing funds to commercial banks during financial crises to maintain stability in the banking system."},
-  {y:2015,sub:"Polity",diff:"medium",q:"The 'Right to Information Act' was enacted in which year?",opts:["2000","2003","2005","2007"],ans:2,exp:"The RTI Act was enacted in 2005, empowering citizens to request information from public authorities, promoting transparency and accountability in government."},
-
-  // ── 2014 ──
-  {y:2014,sub:"History",diff:"medium",q:"The 'Morley-Minto Reforms' of 1909 introduced which significant provision?",opts:["Dyarchy in provinces","Separate electorates for Muslims","Universal adult suffrage","Responsible government at the Centre"],ans:1,exp:"The Indian Councils Act 1909 (Morley-Minto Reforms) introduced separate electorates for Muslims, which was a major development in the constitutional history of India and sowed seeds of communal politics."},
-  {y:2014,sub:"Geography",diff:"hard",q:"Which of the following is/are east-flowing rivers of India? 1. Mahanadi 2. Narmada 3. Krishna 4. Tapti",opts:["1 and 3 only","2 and 4 only","1, 2 and 3","All of the above"],ans:0,exp:"Mahanadi and Krishna flow eastward into the Bay of Bengal. Narmada and Tapti are the major rivers that flow westward into the Arabian Sea."},
-
-  // ── 2013 ──
-  {y:2013,sub:"Polity",diff:"easy",q:"The 'Directive Principles of State Policy' are contained in which part of the Indian Constitution?",opts:["Part III","Part IV","Part IVA","Part V"],ans:1,exp:"Directive Principles of State Policy are enshrined in Part IV (Articles 36–51) of the Constitution. They are not justiciable but are fundamental in governance."},
-  {y:2013,sub:"Economy",diff:"medium",q:"'Repo rate' is the rate at which:",opts:["Banks lend to each other","RBI lends to commercial banks","Government borrows from RBI","Commercial banks lend to the public"],ans:1,exp:"Repo rate is the rate at which the Reserve Bank of India lends short-term money to commercial banks against securities. It is the primary monetary policy instrument."},
-  {y:2013,sub:"Science",diff:"easy",q:"The element with atomic number 1 is:",opts:["Helium","Hydrogen","Lithium","Carbon"],ans:1,exp:"Hydrogen has atomic number 1, meaning it has one proton in its nucleus. It is the lightest and most abundant element in the universe."},
-];
-
-/* ════════════════════════════════════════
-   DERIVED DATA
-   ════════════════════════════════════════ */
 const SUBJECTS = [...new Set(DB.map(q=>q.sub))].sort();
-const YEARS    = [...new Set(DB.map(q=>q.y))].sort((a,b)=>a-b);
-const SUB_COLORS = {Polity:'#6ea8ff',History:'#f59e0b',Geography:'#10b981',Economy:'#8b5cf6',Environment:'#14b8a6',Science:'#f472b6',"Current Affairs":'#fb923c'};
-const PER_PAGE = 8;
+const YEARS = [...new Set(DB.map(q=>q.y))].sort((a,b)=>a-b);
+const SUB_COLORS = {Polity:'#6ea8ff',History:'#f59e0b',Geography:'#10b981',Economy:'#8b5cf6',Environment:'#14b8a6',Science:'#f472b6',"Current Affairs":'#fb923c',IR:'#38bdf8',"Art & Culture":'#e879f9'};
+const PER_PAGE = 10;
+let state = {sub:'All',year:'All',diff:'All',search:'',page:0,attempts:{},correct:{}};
 
-let state = {sub:'All', year:'All', search:'', page:0, attempts:{}, correct:{}};
-
-/* ── Stat counter animation ── */
 function animateCount(el,target){let cur=0;const step=Math.max(1,Math.ceil(target/30));const iv=setInterval(()=>{cur+=step;if(cur>=target){cur=target;clearInterval(iv);}el.textContent=cur;},25);}
 animateCount(document.getElementById('statTotal'),DB.length);
+document.getElementById('statSubs').textContent=SUBJECTS.length;
 
-/* ════════════════════════════════════════
-   BUILD FILTERS
-   ════════════════════════════════════════ */
-(function buildFilters(){
+// Build filters
+(function(){
   const sf=document.getElementById('subjectFilters');
   SUBJECTS.forEach(s=>{const b=document.createElement('button');b.className='filter-btn';b.dataset.sub=s;b.textContent=s;sf.appendChild(b);});
   sf.addEventListener('click',e=>{if(!e.target.classList.contains('filter-btn'))return;sf.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');state.sub=e.target.dataset.sub;state.page=0;render();});
@@ -337,238 +209,149 @@ animateCount(document.getElementById('statTotal'),DB.length);
   YEARS.forEach(y=>{const b=document.createElement('button');b.className='yr-chip';b.dataset.yr=y;b.textContent=y;ys.appendChild(b);});
   ys.addEventListener('click',e=>{if(!e.target.classList.contains('yr-chip'))return;ys.querySelectorAll('.yr-chip').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');state.year=e.target.dataset.yr;state.page=0;render();});
 
+  document.getElementById('diffStrip').addEventListener('click',e=>{if(!e.target.classList.contains('diff-chip'))return;document.querySelectorAll('.diff-chip').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');state.diff=e.target.dataset.diff;state.page=0;render();});
+
   document.getElementById('qSearch').addEventListener('input',e=>{state.search=e.target.value.toLowerCase();state.page=0;render();});
 })();
 
-/* ════════════════════════════════════════
-   RENDER QUESTIONS
-   ════════════════════════════════════════ */
 function getFiltered(){
   return DB.filter(q=>{
-    if(state.sub!=='All' && q.sub!==state.sub) return false;
-    if(state.year!=='All' && q.y!==+state.year) return false;
-    if(state.search && !(q.q+' '+q.sub+' '+q.opts.join(' ')).toLowerCase().includes(state.search)) return false;
+    if(state.sub!=='All'&&q.sub!==state.sub)return false;
+    if(state.year!=='All'&&q.y!==+state.year)return false;
+    if(state.diff!=='All'&&q.diff!==state.diff)return false;
+    if(state.search&&!(q.q+' '+q.sub+' '+q.opts.join(' ')+' '+q.exp).toLowerCase().includes(state.search))return false;
     return true;
   });
 }
 
 function render(){
-  const filtered = getFiltered();
-  const grid = document.getElementById('qGrid');
-  const empty = document.getElementById('emptyState');
-  const totalPages = Math.ceil(filtered.length / PER_PAGE);
-  const page = Math.min(state.page, totalPages-1);
-  const slice = filtered.slice(page*PER_PAGE, (page+1)*PER_PAGE);
-
+  const filtered=getFiltered();const grid=document.getElementById('qGrid');const empty=document.getElementById('emptyState');
+  const totalPages=Math.ceil(filtered.length/PER_PAGE);const page=Math.min(state.page,Math.max(0,totalPages-1));
+  const slice=filtered.slice(page*PER_PAGE,(page+1)*PER_PAGE);
   if(!filtered.length){grid.innerHTML='';empty.style.display='block';document.getElementById('pagination').innerHTML='';return;}
   empty.style.display='none';
-
-  grid.innerHTML = slice.map((q,i)=>{
-    const idx = DB.indexOf(q);
-    const attempted = state.attempts[idx] !== undefined;
-    const wasCorrect = state.correct[idx];
-    return `
-    <div class="q-card ${attempted?'expanded':''}" data-sub="${q.sub}" data-idx="${idx}">
-      <div class="q-top">
-        <span class="q-year-badge">${q.y}</span>
-        <span class="q-sub-badge">${q.sub}</span>
-        <span class="q-diff ${q.diff}">${q.diff.charAt(0).toUpperCase()+q.diff.slice(1)}</span>
-      </div>
+  grid.innerHTML=slice.map((q,i)=>{
+    const idx=DB.indexOf(q);const attempted=state.attempts[idx]!==undefined;
+    return `<div class="q-card ${attempted?'expanded':''}" data-sub="${q.sub}" data-idx="${idx}">
+      <div class="q-top"><span class="q-year-badge">${q.y}</span><span class="q-sub-badge">${q.sub}</span><span class="q-num">Q${page*PER_PAGE+i+1}/${filtered.length}</span><span class="q-diff ${q.diff}">${q.diff.charAt(0).toUpperCase()+q.diff.slice(1)}</span></div>
       <div class="q-text">${q.q}</div>
-      <div class="q-options">
-        ${q.opts.map((o,oi)=>{
-          let cls='';
-          if(attempted){cls = oi===q.ans?'correct': (state.attempts[idx]===oi?'wrong':'');}
-          return `<div class="q-opt ${cls}" data-oi="${oi}" data-idx="${idx}"><span class="ol">${'ABCD'[oi]}</span><span>${o}</span></div>`;
-        }).join('')}
-      </div>
-      <div class="q-explain ${attempted?'show':''}">${attempted?'<strong>Explanation:</strong> '+q.exp:''}</div>
+      <div class="q-options">${q.opts.map((o,oi)=>{
+        let cls='';if(attempted){cls=oi===q.ans?'correct':(state.attempts[idx]===oi?'wrong':'');}
+        return `<div class="q-opt ${cls}" data-oi="${oi}" data-idx="${idx}"><span class="ol">${'ABCD'[oi]}</span><span>${o}</span></div>`;
+      }).join('')}</div>
+      <div class="q-explain ${attempted?'show':''}">${attempted?'<strong>'+(state.correct[idx]?'✓ Correct!':'✗ Incorrect.')+'</strong> '+q.exp:''}</div>
     </div>`;
   }).join('');
-
   // Pagination
-  const pg = document.getElementById('pagination');
-  if(totalPages<=1){pg.innerHTML='';return;}
-  let html=`<button class="pg-btn" onclick="changePage(${page-1})" ${page===0?'disabled':''}>← Prev</button>`;
-  for(let i=0;i<totalPages;i++){
-    if(totalPages>7 && i>1 && i<totalPages-2 && Math.abs(i-page)>1){if(i===2||i===totalPages-3)html+=`<span class="pg-info">…</span>`;continue;}
-    html+=`<button class="pg-btn ${i===page?'active':''}" onclick="changePage(${i})">${i+1}</button>`;
-  }
-  html+=`<button class="pg-btn" onclick="changePage(${page+1})" ${page>=totalPages-1?'disabled':''}>Next →</button>`;
-  html+=`<span class="pg-info">${filtered.length} questions</span>`;
+  const pg=document.getElementById('pagination');
+  if(totalPages<=1){pg.innerHTML=`<span class="pg-info">${filtered.length} questions</span>`;return;}
+  let html=`<button class="pg-btn" onclick="changePage(${page-1})" ${page===0?'disabled':''}>←</button>`;
+  const maxShow=7;let start=Math.max(0,page-3),end=Math.min(totalPages,start+maxShow);
+  if(end-start<maxShow)start=Math.max(0,end-maxShow);
+  if(start>0)html+=`<button class="pg-btn" onclick="changePage(0)">1</button><span class="pg-info">…</span>`;
+  for(let i=start;i<end;i++)html+=`<button class="pg-btn ${i===page?'active':''}" onclick="changePage(${i})">${i+1}</button>`;
+  if(end<totalPages)html+=`<span class="pg-info">…</span><button class="pg-btn" onclick="changePage(${totalPages-1})">${totalPages}</button>`;
+  html+=`<button class="pg-btn" onclick="changePage(${page+1})" ${page>=totalPages-1?'disabled':''}>→</button>`;
+  html+=`<span class="pg-info">${filtered.length} Qs</span>`;
   pg.innerHTML=html;
-
   updateStats();
 }
-
 window.changePage=function(p){state.page=Math.max(0,p);render();window.scrollTo({top:document.querySelector('.q-grid').offsetTop-80,behavior:'smooth'});};
 
-/* ── Answer click ── */
 document.addEventListener('click',function(e){
-  const opt = e.target.closest('.q-opt');
-  if(!opt) return;
-  const idx = +opt.dataset.idx;
-  if(state.attempts[idx]!==undefined) return;
-  const oi = +opt.dataset.oi;
-  state.attempts[idx] = oi;
-  state.correct[idx] = (oi === DB[idx].ans);
-  render();
+  const opt=e.target.closest('.q-opt');if(!opt)return;
+  const idx=+opt.dataset.idx;if(state.attempts[idx]!==undefined)return;
+  const oi=+opt.dataset.oi;state.attempts[idx]=oi;state.correct[idx]=(oi===DB[idx].ans);render();
 });
 
 function updateStats(){
-  const total = Object.keys(state.attempts).length;
-  const correct = Object.values(state.correct).filter(Boolean).length;
-  document.getElementById('statAttempted').textContent = total;
-  document.getElementById('statAccuracy').textContent = total ? Math.round(correct/total*100)+'%' : '—';
+  const t=Object.keys(state.attempts).length;const c=Object.values(state.correct).filter(Boolean).length;
+  document.getElementById('statAttempted').textContent=t;
+  document.getElementById('statAccuracy').textContent=t?Math.round(c/t*100)+'%':'—';
 }
 
-/* ════════════════════════════════════════
-   CHARTS — Canvas-based (no dependencies)
-   ════════════════════════════════════════ */
+// ══ CHARTS ══
 function drawTrendChart(){
-  const canvas = document.getElementById('trendCanvas');
-  const ctx = canvas.getContext('2d');
-  const dpr = window.devicePixelRatio||1;
-  const rect = canvas.parentElement.getBoundingClientRect();
-  canvas.width = rect.width*dpr; canvas.height = rect.height*dpr;
-  canvas.style.width = rect.width+'px'; canvas.style.height = rect.height+'px';
-  ctx.scale(dpr,dpr);
-  const W=rect.width, H=rect.height, pad={t:20,r:20,b:40,l:44};
-  const plotW=W-pad.l-pad.r, plotH=H-pad.t-pad.b;
-
-  // Data: count per subject per year
-  const data={};
-  SUBJECTS.forEach(s=>{data[s]={};YEARS.forEach(y=>data[s][y]=0);});
+  const canvas=document.getElementById('trendCanvas');const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;const rect=canvas.parentElement.getBoundingClientRect();
+  canvas.width=rect.width*dpr;canvas.height=rect.height*dpr;
+  canvas.style.width=rect.width+'px';canvas.style.height=rect.height+'px';
+  ctx.scale(dpr,dpr);const W=rect.width,H=rect.height,pad={t:20,r:20,b:36,l:42};
+  const plotW=W-pad.l-pad.r,plotH=H-pad.t-pad.b;
+  const data={};SUBJECTS.forEach(s=>{data[s]={};YEARS.forEach(y=>data[s][y]=0);});
   DB.forEach(q=>{if(data[q.sub])data[q.sub][q.y]=(data[q.sub][q.y]||0)+1;});
-  const maxV = Math.max(...SUBJECTS.map(s=>Math.max(...YEARS.map(y=>data[s][y]||0))),1);
-
-  // Grid
+  const maxV=Math.max(...SUBJECTS.map(s=>Math.max(...YEARS.map(y=>data[s][y]||0))),1);
   ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
   for(let i=0;i<=5;i++){const y2=pad.t+plotH-plotH*(i/5);ctx.beginPath();ctx.moveTo(pad.l,y2);ctx.lineTo(W-pad.r,y2);ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='11px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-8,y2+4);}
-
-  // X labels
-  ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';ctx.font='11px DM Sans';
-  YEARS.forEach((y,i)=>{const x=pad.l+plotW*(i/(YEARS.length-1));ctx.fillText("'"+String(y).slice(2),x,H-pad.b+18);});
-
-  // Lines
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='10px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-6,y2+4);}
+  ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';ctx.font='10px DM Sans';
+  YEARS.forEach((y,i)=>{ctx.fillText(y,pad.l+plotW*(i/(YEARS.length-1)),H-pad.b+16);});
   SUBJECTS.forEach(sub=>{
-    const color = SUB_COLORS[sub]||'#fff';
-    ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';
-    ctx.beginPath();
-    YEARS.forEach((y,i)=>{
-      const x=pad.l+plotW*(i/(YEARS.length-1));
-      const v=data[sub][y]||0;
-      const yPos=pad.t+plotH-plotH*(v/maxV);
-      i===0?ctx.moveTo(x,yPos):ctx.lineTo(x,yPos);
-    });
+    const color=SUB_COLORS[sub]||'#fff';ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();
+    YEARS.forEach((y,i)=>{const x=pad.l+plotW*(i/(YEARS.length-1));const v=data[sub][y]||0;const yPos=pad.t+plotH-plotH*(v/maxV);i===0?ctx.moveTo(x,yPos):ctx.lineTo(x,yPos);});
     ctx.stroke();
-    // Dots
-    YEARS.forEach((y,i)=>{
-      const x=pad.l+plotW*(i/(YEARS.length-1));
-      const v=data[sub][y]||0;
-      const yPos=pad.t+plotH-plotH*(v/maxV);
-      ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,yPos,3.5,0,Math.PI*2);ctx.fill();
-    });
+    YEARS.forEach((y,i)=>{const x=pad.l+plotW*(i/(YEARS.length-1));const v=data[sub][y]||0;const yPos=pad.t+plotH-plotH*(v/maxV);ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,yPos,3,0,Math.PI*2);ctx.fill();});
   });
-
-  // Legend
-  const leg=document.getElementById('trendLegend');
-  leg.innerHTML=SUBJECTS.map(s=>`<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="width:10px;height:10px;border-radius:50%;background:${SUB_COLORS[s]}"></span>${s}</span>`).join('');
+  document.getElementById('trendLegend').innerHTML=SUBJECTS.map(s=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:50%;background:${SUB_COLORS[s]}"></span>${s}</span>`).join('');
 }
 
 function drawHeatmap(){
   const wrap=document.getElementById('chartHeatmap');
-  const data={};
-  SUBJECTS.forEach(s=>{data[s]={};YEARS.forEach(y=>data[s][y]=0);});
+  const data={};SUBJECTS.forEach(s=>{data[s]={};YEARS.forEach(y=>data[s][y]=0);});
   DB.forEach(q=>{if(data[q.sub])data[q.sub][q.y]++;});
   const maxV=Math.max(...Object.values(data).flatMap(o=>Object.values(o)),1);
-
-  let html='<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:4px;font-size:12px;"><thead><tr><th style="text-align:left;color:var(--muted);padding:6px;font-weight:600;">Subject</th>';
-  YEARS.forEach(y=>html+=`<th style="color:var(--muted);font-weight:600;padding:6px;">'${String(y).slice(2)}</th>`);
-  html+='</tr></thead><tbody>';
+  let html='<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:4px;font-size:11px;"><thead><tr><th style="text-align:left;color:var(--muted);padding:5px;font-weight:600;">Subject</th>';
+  YEARS.forEach(y=>html+=`<th style="color:var(--muted);font-weight:600;padding:5px;">${y}</th>`);
+  html+='<th style="color:var(--muted);font-weight:600;padding:5px;">Total</th></tr></thead><tbody>';
   SUBJECTS.forEach(s=>{
-    html+=`<tr><td style="padding:6px;font-weight:700;white-space:nowrap;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${SUB_COLORS[s]};margin-right:6px;"></span>${s}</td>`;
-    YEARS.forEach(y=>{
-      const v=data[s][y]||0;
-      const intensity=v/maxV;
-      const bg=`rgba(${s==='Polity'?'110,168,255':s==='History'?'245,158,11':s==='Geography'?'16,185,129':s==='Economy'?'139,92,246':s==='Environment'?'20,184,166':s==='Science'?'244,114,182':'251,146,60'},${.1+intensity*.6})`;
-      html+=`<td style="text-align:center;padding:8px;border-radius:8px;background:${bg};font-weight:700;color:${intensity>.3?'#fff':'var(--muted)'}">${v||'·'}</td>`;
+    const total=YEARS.reduce((a,y)=>a+(data[s][y]||0),0);
+    html+=`<tr><td style="padding:5px;font-weight:700;white-space:nowrap;font-size:11px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${SUB_COLORS[s]};margin-right:5px;"></span>${s}</td>`;
+    YEARS.forEach(y=>{const v=data[s][y]||0;const intensity=v/maxV;
+      const c=SUB_COLORS[s]||'110,168,255';const rgb=c.startsWith('#')?parseInt(c.slice(1,3),16)+','+parseInt(c.slice(3,5),16)+','+parseInt(c.slice(5,7),16):'110,168,255';
+      html+=`<td style="text-align:center;padding:7px;border-radius:6px;background:rgba(${rgb},${(.08+intensity*.45).toFixed(2)});font-weight:700;color:${intensity>.2?'#fff':'var(--muted)'];font-size:12px;">${v||'·'}</td>`;
     });
-    html+='</tr>';
+    html+=`<td style="text-align:center;padding:7px;font-weight:900;font-size:13px;">${total}</td></tr>`;
   });
-  html+='</tbody></table></div>';
-  wrap.innerHTML=html;
+  html+='</tbody></table></div>';wrap.innerHTML=html;
 }
 
 function drawDifficultyChart(){
-  const canvas=document.getElementById('diffCanvas');
-  const ctx=canvas.getContext('2d');
-  const dpr=window.devicePixelRatio||1;
-  const rect=canvas.parentElement.getBoundingClientRect();
+  const canvas=document.getElementById('diffCanvas');const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;const rect=canvas.parentElement.getBoundingClientRect();
   canvas.width=rect.width*dpr;canvas.height=rect.height*dpr;
   canvas.style.width=rect.width+'px';canvas.style.height=rect.height+'px';
-  ctx.scale(dpr,dpr);
-  const W=rect.width,H=rect.height,pad={t:20,r:20,b:40,l:44};
+  ctx.scale(dpr,dpr);const W=rect.width,H=rect.height,pad={t:20,r:20,b:36,l:42};
   const plotW=W-pad.l-pad.r,plotH=H-pad.t-pad.b;
-
   const data={};YEARS.forEach(y=>data[y]={easy:0,medium:0,hard:0});
   DB.forEach(q=>{if(data[q.y])data[q.y][q.diff]++;});
   const maxV=Math.max(...YEARS.map(y=>(data[y].easy||0)+(data[y].medium||0)+(data[y].hard||0)),1);
   const diffColors={easy:'#34d399',medium:'#fbbf24',hard:'#f87171'};
-  const barW=Math.min(28,plotW/YEARS.length*.6);
-
-  // Grid
+  const barW=Math.min(32,plotW/YEARS.length*.55);
   ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
   for(let i=0;i<=5;i++){const y2=pad.t+plotH-plotH*(i/5);ctx.beginPath();ctx.moveTo(pad.l,y2);ctx.lineTo(W-pad.r,y2);ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='11px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-8,y2+4);}
-
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='10px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-6,y2+4);}
   YEARS.forEach((y,i)=>{
-    const x=pad.l+plotW*(i/(YEARS.length-1));
-    let cumY=pad.t+plotH;
-    ['easy','medium','hard'].forEach(d=>{
-      const v=data[y][d]||0;
-      const h=plotH*(v/maxV);
-      ctx.fillStyle=diffColors[d];
-      const r=4;
-      ctx.beginPath();
-      ctx.moveTo(x-barW/2+r,cumY);ctx.lineTo(x-barW/2+r,cumY-h);ctx.quadraticCurveTo(x-barW/2,cumY-h,x-barW/2,cumY-h+r);
-      ctx.lineTo(x-barW/2,cumY);ctx.lineTo(x+barW/2,cumY);ctx.lineTo(x+barW/2,cumY-h+r);ctx.quadraticCurveTo(x+barW/2,cumY-h,x+barW/2-r,cumY-h);
-      ctx.closePath();ctx.fill();
-      cumY-=h;
-    });
-    ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';ctx.font='11px DM Sans';
-    ctx.fillText("'"+String(y).slice(2),x,H-pad.b+18);
+    const x=pad.l+plotW*(i/(YEARS.length-1));let cumY=pad.t+plotH;
+    ['easy','medium','hard'].forEach(d=>{const v=data[y][d]||0;const h=plotH*(v/maxV);
+      ctx.fillStyle=diffColors[d];ctx.beginPath();
+      ctx.roundRect(x-barW/2,cumY-h,barW,h,[3]);ctx.fill();cumY-=h;});
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';ctx.font='10px DM Sans';ctx.fillText(y,x,H-pad.b+16);
   });
-
-  const leg=document.getElementById('trendLegend');
-  leg.innerHTML=['easy','medium','hard'].map(d=>`<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="width:10px;height:10px;border-radius:4px;background:${diffColors[d]}"></span>${d.charAt(0).toUpperCase()+d.slice(1)}</span>`).join('');
+  document.getElementById('trendLegend').innerHTML=['easy','medium','hard'].map(d=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:3px;background:${diffColors[d]}"></span>${d.charAt(0).toUpperCase()+d.slice(1)}</span>`).join('');
 }
 
-/* Chart tab switching */
 document.getElementById('chartTabs').addEventListener('click',function(e){
   if(!e.target.classList.contains('chart-tab'))return;
-  this.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));
-  e.target.classList.add('active');
+  this.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));e.target.classList.add('active');
   const v=e.target.dataset.view;
   document.getElementById('chartTrend').style.display=v==='trend'?'':'none';
   document.getElementById('chartHeatmap').style.display=v==='heatmap'?'':'none';
   document.getElementById('chartDifficulty').style.display=v==='difficulty'?'':'none';
-  if(v==='trend')drawTrendChart();
-  if(v==='heatmap')drawHeatmap();
-  if(v==='difficulty')drawDifficultyChart();
+  if(v==='trend')drawTrendChart();if(v==='heatmap')drawHeatmap();if(v==='difficulty')drawDifficultyChart();
 });
 
-/* ── Init ── */
-drawTrendChart();
-render();
-window.addEventListener('resize',()=>{
-  const active=document.querySelector('.chart-tab.active');
-  if(active){
-    if(active.dataset.view==='trend')drawTrendChart();
-    if(active.dataset.view==='difficulty')drawDifficultyChart();
-  }
-});
+drawTrendChart();render();
+window.addEventListener('resize',()=>{const a=document.querySelector('.chart-tab.active');if(a){if(a.dataset.view==='trend')drawTrendChart();if(a.dataset.view==='difficulty')drawDifficultyChart();}});
 </script>
 </body>
 </html>
