@@ -87,6 +87,9 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 .q-card[data-sub="Environment"]::before{background:#14b8a6;}
 .q-card[data-sub="Science"]::before{background:#f472b6;}
 .q-card[data-sub="Current Affairs"]::before{background:#fb923c;}
+.q-card[data-sub="Comprehension"]::before{background:#e879f9;}
+.q-card[data-sub="Mathematics"]::before{background:#38bdf8;}
+.q-card[data-sub="Reasoning"]::before{background:#fb7185;}
 .q-card:hover{border-color:rgba(255,255,255,.22);transform:translateY(-1px);}
 .q-card.expanded{border-color:rgba(124,247,212,.3);}
 .q-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
@@ -108,6 +111,25 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 .q-explain{margin-top:12px;padding:14px;border-radius:14px;background:rgba(124,247,212,.04);border:1px solid rgba(124,247,212,.12);font-size:13px;line-height:1.6;color:var(--muted);display:none;}
 .q-explain.show{display:block;animation:fadeSlideIn .3s ease;}
 @keyframes fadeSlideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── Passage Panel (Comprehension) ── */
+.passage-toggle{display:inline-flex;align-items:center;gap:7px;margin:12px 0 4px;padding:8px 16px;border-radius:999px;border:1px solid rgba(232,121,249,.2);background:rgba(232,121,249,.06);color:#e879f9;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;letter-spacing:.02em;user-select:none;}
+.passage-toggle:hover{background:rgba(232,121,249,.12);border-color:rgba(232,121,249,.4);transform:translateY(-1px);box-shadow:0 4px 16px rgba(232,121,249,.12);}
+.passage-toggle .p-icon{font-size:14px;transition:transform .3s;}
+.passage-toggle .p-chevron{display:inline-block;transition:transform .3s ease;font-size:10px;opacity:.7;}
+.passage-toggle.open .p-chevron{transform:rotate(180deg);}
+.passage-toggle.open{background:rgba(232,121,249,.12);border-color:rgba(232,121,249,.35);}
+.passage-panel{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1),opacity .3s ease,margin .3s ease;opacity:0;margin:0;}
+.passage-panel.open{max-height:600px;opacity:1;margin:10px 0 6px;}
+.passage-panel-inner{padding:16px 18px;border-radius:14px;border:1px solid rgba(232,121,249,.12);background:linear-gradient(135deg,rgba(232,121,249,.04),rgba(110,168,255,.03));backdrop-filter:blur(8px);position:relative;overflow:hidden;}
+.passage-panel-inner::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(232,121,249,.25),rgba(110,168,255,.2),transparent);}
+.passage-panel-inner::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(232,121,249,.1),transparent);}
+.passage-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#e879f9;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.passage-label .dot{width:6px;height:6px;border-radius:50%;background:#e879f9;animation:passagePulse 2s ease-in-out infinite;}
+@keyframes passagePulse{0%,100%{opacity:.5;}50%{opacity:1;}}
+.passage-text{font-size:13.5px;line-height:1.75;color:var(--muted);font-style:italic;}
+.passage-text em{color:var(--text);font-style:normal;font-weight:600;}
+.passage-placeholder{font-size:12px;color:rgba(232,121,249,.5);margin-top:8px;padding-top:8px;border-top:1px solid rgba(232,121,249,.08);}
 
 /* ── Pagination ── */
 .pagination{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:20px;flex-wrap:wrap;}
@@ -1529,11 +1551,48 @@ const DB = [
 ];
 
 /* ════════════════════════════════════════
+   PASSAGES — Comprehension reading material
+   Keyed by topic from "Passage (topic):" prefix.
+   Add your passage text here; questions reference
+   them automatically via the topic key.
+   ════════════════════════════════════════ */
+const PASSAGES = {
+  "Food waste/FAO": "Roughly one-third of food produced for human consumption — approximately 1.3 billion tonnes per year — gets lost or wasted globally. Food losses and waste amount to roughly US$680 billion in industrialized countries and US$310 billion in developing countries. Food loss refers to the decrease in mass or nutritional value of food during production, post-harvest handling, and processing stages. Land degradation, declining water resources, and increasing carbon emissions are consequences of food loss patterns. The energy spent on food that is ultimately wasted produces significant CO₂ emissions. Several developing countries face issues with supply chain management, inadequate storage, and inefficient distribution systems that contribute to food loss at multiple stages.",
+  "Inflation/fiscal policy": "When inflation is high, central banks typically respond by raising interest rates, a key monetary policy tool. However, monetary tightening alone may be insufficient to control rising prices without complementary fiscal discipline from the government. Higher interest rates increase the cost of government borrowing, affecting long-term bond yields and making debt servicing more expensive. If governments continue to run large fiscal deficits while central banks tighten, the effects of monetary policy become diluted. The interplay between monetary and fiscal policy is crucial — without fiscal austerity to back monetary measures, interest rate hikes may lose their effectiveness in combating persistent inflation.",
+  "Urban planning/systems approach": "Urban planning in the West evolved through a systems approach that integrated social sciences, geography, architecture, and environmental studies into a comprehensive curriculum. This interdisciplinary training produced professionals capable of addressing the complex, interconnected challenges of urban environments. In contrast, India's approach to urban management and planning education has developed differently, often emphasizing administrative procedures over holistic urban systems thinking. The rapid urbanization of Indian cities, with their unique challenges of density, informality, and infrastructure deficits, calls for a new generation of urban professionals equipped with modern, interdisciplinary knowledge to reimagine city governance and planning.",
+  "Digital discourse/social media": "In the realm of digital discourse, entities with high capital have the means to buy louder voices. Social media platforms, while appearing to democratize information access, are fundamentally products built by companies for profit. Their algorithms promote engagement regardless of whether content is inflammatory or misleading. Political discourse on these platforms increasingly focuses on outshining opponents rather than substantive debate. The attention economy rewards provocative content, and the absence of editorial gatekeeping means misinformation can spread unchecked. Those who can invest more resources command disproportionate influence in shaping public opinion.",
+  "Class 8 education challenges": "Surveys across India reveal a troubling mismatch between curricular expectations and actual learning outcomes. A significant proportion of Class 8 students demonstrate competencies far below what the curriculum expects. Despite years of schooling, many cannot perform basic arithmetic or read a simple paragraph. Yet parents overwhelmingly aspire for their children to go to college. The gap between parental expectations, curricular expectations, and actual competencies presents a fundamental challenge for public policy. Without addressing this mismatch, the promise of education as a pathway to opportunity remains unfulfilled for millions.",
+  "Class 8 education": "Surveys across India reveal a troubling mismatch between curricular expectations and actual learning outcomes. A significant proportion of Class 8 students demonstrate competencies far below what the curriculum expects. Despite years of schooling, many cannot perform basic arithmetic or read a simple paragraph. Yet parents overwhelmingly aspire for their children to go to college. The gap between parental expectations, curricular expectations, and actual competencies presents a fundamental challenge for public policy. Without addressing this mismatch, the promise of education as a pathway to opportunity remains unfulfilled for millions.",
+  "Science's social responsibility": "In the time of Newton and Galileo, the primary obligation of a scientist was seen as the pursuit and declaration of truth, regardless of its social implications. The scientific community was expected only to advance knowledge. However, in the modern era, this view has been fundamentally challenged. The immense power unleashed by scientific discoveries — from nuclear energy to genetic engineering — has forced a reckoning with the social consequences of research. Today, science is increasingly expected not just to pursue truth but also to bear responsibility for the welfare of society. The question is no longer simply what can be discovered, but how those discoveries affect human life.",
+  "History of science/mankind": "The history of mankind is increasingly the history of science. The question that troubles thoughtful observers is whether the horrors of modern life — the wars fought with ever more destructive weapons, the environmental degradation, the potential for surveillance and control — are an inevitable result of scientific progress. What is often overlooked in this debate is the fundamental truth about the relationship between science and mankind: science is, ultimately, what man has made it. It is a tool shaped by human choices, values, and failings. Whether science leads to liberation or destruction depends not on science itself but on the societies that wield it.",
+  "Merchant's journey/travel": "The ancient merchant, traveling along the Silk Road or across vast oceans, gained far more than material profit. When we meet other people while traveling, we learn to differentiate between what is parochial and what is universal in human experience. Travel strips away the comfortable assumption that our own customs and values represent the only way of life. The greatest gain of travel is the art of learning fundamental common values — honesty, hospitality, the bonds of family — that transcend cultures and continents. Understanding of humans deepens when we witness how different societies solve the same fundamental problems of existence.",
+  "Merchant/travel": "The ancient merchant, traveling along the Silk Road or across vast oceans, gained far more than material profit. When we meet other people while traveling, we learn to differentiate between what is parochial and what is universal in human experience. Travel strips away the comfortable assumption that our own customs and values represent the only way of life. The greatest gain of travel is the art of learning fundamental common values — honesty, hospitality, the bonds of family — that transcend cultures and continents. Understanding of humans deepens when we witness how different societies solve the same fundamental problems of existence.",
+  "Conventional classrooms": "The conventional classroom model, an inheritance from the industrial age, prioritizes fixed duration over genuine learning effectiveness. Every learner receives the same lectures, in the same way, for the same duration — regardless of individual pace, aptitude, or learning style. The central goal becomes completing a prescribed curriculum within a set timeframe rather than ensuring competency. This one-size-fits-all approach stamps out differentiation and reduces education to a conveyor belt of standardized instruction. In India, the result is an estimated employability rate of barely 10 percent among graduates, raising fundamental questions about whether education systems are preparing students for the real world.",
+  "Parental conflict/adolescence": "The relationship between parents and adolescent children is fraught with tension. Parents often mistake solicitude for love, when it may be a disguise for the love of power. Their dogmatic opinions on matters of morals and conduct drive their children to concealment and secrecy. The young person, caught between dependence and the growing urge for autonomy, often goes their own way in secret rather than face direct conflict. This happens not because the adolescent lacks affection for parents but because the parents' rigid approach leaves no room for honest disagreement. The transition from childhood to adulthood requires a new relationship — one of mutual respect rather than authority and obedience.",
+  "CO2 into stone/basalt rocks": "Scientists have demonstrated a method of converting carbon dioxide into limestone by pumping it, dissolved in water, into basalt rock formations deep underground. The basalt, rich in calcium and magnesium, reacts with the dissolved CO₂ to form stable carbonate minerals in a remarkably short timeframe. What was expected to take centuries occurred within just two years. The process essentially turns a greenhouse gas into solid rock, permanently removing it from the atmosphere. While questions remain about scalability and cost, the experiment offers a promising pathway for carbon sequestration — the long-term storage of carbon dioxide to mitigate climate change.",
+  "Icebergs/phytoplankton": "Giant icebergs, as they drift and slowly melt in the open ocean, release mineral nutrients — particularly iron — into the surrounding waters. These nutrients fuel an explosion of phytoplankton growth, forming the base of marine food chains. Satellite imagery has confirmed that phytoplankton blooms are significantly more concentrated around giant icebergs compared to the surrounding ocean. This enhanced primary productivity supports a cascade of marine life, from tiny zooplankton to large marine mammals. The phenomenon demonstrates how icebergs function as mobile nutrient-delivery systems, bearing directly on primary productivity and food chains in Antarctic waters.",
+  "Caterpillars/corn": "Researchers discovered that certain caterpillars, when feeding on corn plants, induce the plants to turn off their own defence mechanisms. The caterpillar's oral secretions contain compounds that suppress the plant's immune response, particularly those pathways associated with defence against pathogens. By manipulating the plant's biochemistry, the caterpillar creates a more favourable feeding environment. This discovery has significant implications: understanding how these compounds interact with plant defence pathways could help scientists develop organic, ecologically sustainable pesticides that work with natural biological processes rather than against them.",
+  "Robust democracy/media": "In a robust democracy, the media plays a normatively crucial role as a conduit of information between citizens and the state. Responsible media circulates content reflective of reality without distortion, enabling citizens to make informed judgments about governance and policy. However, the rise of partisan media and algorithmic content distribution has complicated this ideal. When media outlets prioritize sensationalism or ideological alignment over factual accuracy, the information ecosystem becomes polluted. The consequence is a citizenry that may be highly engaged yet poorly informed — a paradox that poses fundamental challenges to democratic accountability.",
+  "Interconnected home devices": "The proliferation of interconnected home devices — smart speakers, thermostats, refrigerators, security cameras — promises unprecedented convenience and efficiency. However, these devices are constantly collecting and transmitting data about household activities, routines, and preferences. Manufacturers gather this personal information, often with or without explicit user agreement, transforming private homes into corporate storefronts. Usage patterns reveal intimate details about inhabitants' lives, from sleep schedules to dietary habits. The security implications are equally concerning: each connected device is a potential entry point for malicious actors. The question of who owns and controls household data has become a pressing privacy concern.",
+  "Green growth/resource sustainability": "Traditional models of economic growth, premised on the unlimited extraction and consumption of natural resources, have led to environmental degradation that now threatens the very foundations of future prosperity. Nations that deplete their forests, pollute their water, and exhaust their soils may achieve short-term GDP growth but create long-term economic dead ends. The concept of green growth calls for rethinking development strategies toward resource efficiency and environmental sustainability. Maintaining high environmental standards becomes not just an ecological imperative but a prerequisite for steady, inclusive economic growth that does not mortgage the future for the present.",
+  "Poetry vs religion/science": "Poetry occupies a unique position in human intellectual life, distinct from both science and religion. Where science demands empirical proof and religion demands faith — both insisting on absolute truths — poetry makes no such demand. It does not expect belief in a unitarian truth. Instead, poetry abides by the plurality of life, embracing contradictions, ambiguities, and the full complexity of human experience. Poetry recognizes and accepts the imperfections in humans and the world, finding beauty and meaning in what is flawed and incomplete. This tolerance for contradiction is what makes poetry a space of freedom — where imagination and reality coexist without the pressure of resolution.",
+  "Flowers/insects": "It is a common misconception that flowers are Nature's luxury creations — beautiful ornaments that serve no practical purpose. In reality, flowers are among the most functionally purposeful structures in the plant kingdom. Their colours, scents, shapes, and patterns have evolved specifically to attract insects and other pollinators. The relationship between flowers and their pollinators is one of the most intricate partnerships in biology. Without insect pollination, the vast majority of flowering plants could not reproduce. The beauty of a flower is not gratuitous; it is an advertisement, a precisely calibrated signal designed to ensure the survival of the species.",
+  "Climate change/Indian states": "India's response to climate change must account for the extraordinary diversity of its geography and ecology. Coastal states face rising sea levels and intensified cyclones, while Himalayan regions confront glacial retreat and altered water flows. Arid states in the west deal with desertification and water scarcity, whereas northeastern states face intensified flooding. Each state possesses distinctive challenges and opportunities based on its geography, resources, and economic structure. Some states have significant wind power potential; others can leverage solar energy or biomass. These aspects need careful consideration for developing clear sustainable goals at the regional level rather than relying solely on one-size-fits-all national mandates.",
+  "Science/mankind": "The history of mankind is increasingly the history of science. The question that troubles thoughtful observers is whether the horrors of modern life — the wars fought with ever more destructive weapons, the environmental degradation, the potential for surveillance and control — are an inevitable result of scientific progress. What is often overlooked in this debate is the fundamental truth about the relationship between science and mankind: science is, ultimately, what man has made it. It is a tool shaped by human choices, values, and failings. Whether science leads to liberation or destruction depends not on science itself but on the societies that wield it.",
+};
+
+/** Extract passage topic key from a comprehension question's q field */
+function getPassageKey(q) {
+  const m = q.q.match(/^Passage\s*\(([^)]+)\)/);
+  return m ? m[1] : null;
+}
+
+/* ════════════════════════════════════════
    DERIVED DATA
    ════════════════════════════════════════ */
 const SUBJECTS = [...new Set(DB.map(q=>q.sub))].sort();
 const YEARS    = [...new Set(DB.map(q=>q.y))].sort((a,b)=>a-b);
-const SUB_COLORS = {Polity:'#6ea8ff',History:'#f59e0b',Geography:'#10b981',Economy:'#8b5cf6',Environment:'#14b8a6',Science:'#f472b6',"Current Affairs":'#fb923c'};
+const SUB_COLORS = {Polity:'#6ea8ff',History:'#f59e0b',Geography:'#10b981',Economy:'#8b5cf6',Environment:'#14b8a6',Science:'#f472b6',"Current Affairs":'#fb923c',Comprehension:'#e879f9',Mathematics:'#38bdf8',Reasoning:'#fb7185'};
 const PER_PAGE = 8;
 
 let state = {sub:'All', year:'All', search:'', page:0, attempts:{}, correct:{}};
@@ -1584,6 +1643,35 @@ function render(){
     const idx = DB.indexOf(q);
     const attempted = state.attempts[idx] !== undefined;
     const wasCorrect = state.correct[idx];
+
+    /* ── Comprehension passage handling ── */
+    let passageHTML = '';
+    let displayQ = q.q;
+    if(q.sub === 'Comprehension') {
+      const pKey = getPassageKey(q);
+      if(pKey) {
+        // Strip "Passage (topic): " prefix for cleaner question display
+        displayQ = q.q.replace(/^Passage\s*\([^)]+\)\s*:\s*/, '');
+        const pText = PASSAGES[pKey];
+        const hasPassage = pText && pText.trim().length > 0;
+        passageHTML = `
+          <button class="passage-toggle" onclick="event.stopPropagation();this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');" title="${hasPassage ? 'Click to read the passage' : 'Passage not yet added'}">
+            <span class="p-icon">📖</span>
+            <span>Read Passage — <em style="font-weight:500;opacity:.8">${pKey}</em></span>
+            <span class="p-chevron">▼</span>
+          </button>
+          <div class="passage-panel">
+            <div class="passage-panel-inner">
+              <div class="passage-label"><span class="dot"></span> Reading Passage</div>
+              ${hasPassage
+                ? `<div class="passage-text">${pText}</div>`
+                : `<div class="passage-text" style="opacity:.5">⚠ Passage text for "<strong>${pKey}</strong>" has not been added yet. Add it to the <code style="font-size:11px;background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px;">PASSAGES</code> dictionary in the source.</div>`
+              }
+            </div>
+          </div>`;
+      }
+    }
+
     return `
     <div class="q-card ${attempted?'expanded':''}" data-sub="${q.sub}" data-idx="${idx}">
       <div class="q-top">
@@ -1591,7 +1679,8 @@ function render(){
         <span class="q-sub-badge">${q.sub}</span>
         <span class="q-diff ${q.diff}">${q.diff.charAt(0).toUpperCase()+q.diff.slice(1)}</span>
       </div>
-      <div class="q-text">${q.q}</div>
+      <div class="q-text">${displayQ}</div>
+      ${passageHTML}
       <div class="q-options">
         ${q.opts.map((o,oi)=>{
           let cls='';
