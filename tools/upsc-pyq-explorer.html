@@ -48,14 +48,17 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 .filter-btn:hover,.filter-btn.active{color:var(--text);border-color:rgba(124,247,212,.5);background:rgba(124,247,212,.08);}
 .filter-btn.active{color:#061021;background:linear-gradient(135deg,rgba(110,168,255,.9),rgba(124,247,212,.9));border:none;}
 
-/* ── Year Selector ── */
-.year-strip{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;}
-.year-strip::-webkit-scrollbar{height:4px;}
-.year-strip::-webkit-scrollbar-track{background:transparent;}
-.year-strip::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+/* ── Year Selector (now wrapping like subjects) ── */
+.year-strip{display:flex;gap:6px;flex-wrap:wrap;padding:4px 0 12px;}
 .yr-chip{padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .12s;font-family:inherit;}
 .yr-chip:hover{border-color:rgba(110,168,255,.4);color:var(--text);}
 .yr-chip.active{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;border:none;}
+
+/* ── Mobile Filter Dropdowns ── */
+.mobile-filters{display:none;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.mobile-filters select{flex:1;min-width:100px;padding:10px 12px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='rgba(255,255,255,.5)' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer;backdrop-filter:blur(6px);}
+.mobile-filters select:focus{outline:none;border-color:rgba(124,247,212,.5);box-shadow:0 0 0 3px rgba(124,247,212,.1);}
+.mobile-filters select option{background:#0f1a2e;color:#e2e8f0;}
 
 /* ── Trend Chart Panel ── */
 .chart-panel{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:22px;backdrop-filter:blur(6px);position:relative;overflow:hidden;}
@@ -147,13 +150,34 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 .empty-state .big{font-size:48px;margin-bottom:12px;}
 .empty-state p{font-size:14px;}
 
+/* ── Clickable Chart Legends ── */
+.chart-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+.chart-legend-item{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer;padding:3px 8px;border-radius:999px;transition:all .15s;user-select:none;border:1px solid transparent;}
+.chart-legend-item:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);}
+.chart-legend-item.muted{opacity:.3;text-decoration:line-through;}
+.chart-legend-item .ldot{width:10px;height:10px;border-radius:50%;flex-shrink:0;transition:opacity .15s;}
+.chart-legend-item.muted .ldot{opacity:.3;}
+
+/* ── Gamified Answer Effects ── */
+.answer-fx-container{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;}
+.answer-particle{position:absolute;font-size:20px;animation:particleUp 1.2s ease-out forwards;pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3));}
+@keyframes particleUp{0%{opacity:1;transform:translateY(0) scale(1) rotate(0deg);}60%{opacity:1;}100%{opacity:0;transform:translateY(-120px) scale(.6) rotate(20deg);}}
+.answer-score-popup{position:fixed;left:50%;transform:translateX(-50%);font-size:28px;font-weight:900;z-index:9999;pointer-events:none;animation:scorePopup .9s ease-out forwards;text-shadow:0 2px 12px rgba(0,0,0,.5);}
+@keyframes scorePopup{0%{opacity:0;transform:translateX(-50%) translateY(20px) scale(.7);}30%{opacity:1;transform:translateX(-50%) translateY(-10px) scale(1.15);}60%{transform:translateX(-50%) translateY(-30px) scale(1);}100%{opacity:0;transform:translateX(-50%) translateY(-60px) scale(.8);}}
+
 /* ── Responsive ── */
 @media(max-width:640px){
   .stat-orbs{gap:10px;}
   .stat-orb{width:90px;height:90px;}
   .stat-orb .val{font-size:20px;}
-  .chart-wrap{height:220px;}
+  .chart-wrap{height:300px;}
   .heatmap-grid{grid-template-columns:repeat(auto-fill,minmax(65px,1fr));}
+  /* Show mobile dropdowns, hide desktop filters */
+  .mobile-filters{display:flex!important;}
+  #subjectFilters,#yearStrip,.diff-filter-row{display:none!important;}
+  .chart-legend{gap:6px;}
+  .chart-legend-item{font-size:10px;padding:2px 6px;}
+  .chart-legend-item .ldot{width:8px;height:8px;}
 }
 
 /* ── Entrance animations ── */
@@ -201,9 +225,11 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
       <button class="chart-tab" data-view="difficulty">Difficulty Split</button>
     </div>
     <div class="chart-wrap" id="chartTrend"><canvas id="trendCanvas"></canvas></div>
+    <div class="chart-legend" id="trendLegend"></div>
     <div id="chartHeatmap" style="display:none"></div>
+    <div class="chart-legend" id="heatmapLegend" style="display:none"></div>
     <div class="chart-wrap" id="chartDifficulty" style="display:none"><canvas id="diffCanvas"></canvas></div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;" id="trendLegend"></div>
+    <div class="chart-legend" id="diffLegend" style="display:none"></div>
   </section>
 
   <!-- ── CONTROLS ── -->
@@ -219,6 +245,12 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
     </div>
     <div class="year-strip" id="yearStrip">
       <button class="yr-chip active" data-yr="All">All Years</button>
+    </div>
+    <!-- Mobile dropdowns (hidden on desktop) -->
+    <div class="mobile-filters" id="mobileFilters">
+      <select id="mobSubject"><option value="All">All Subjects</option></select>
+      <select id="mobYear"><option value="All">All Years</option></select>
+      <select id="mobDiff"><option value="All">All Difficulty</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select>
     </div>
   </section>
 
@@ -5227,7 +5259,10 @@ const YEARS    = [...new Set(DB.map(q=>q.y))].sort((a,b)=>a-b);
 const SUB_COLORS = {Polity:'#6ea8ff',History:'#f59e0b',Geography:'#10b981',Economy:'#8b5cf6',Environment:'#14b8a6',Science:'#f472b6',"Current Affairs":'#fb923c',Comprehension:'#e879f9',Mathematics:'#38bdf8',Reasoning:'#fb7185'};
 const PER_PAGE = 8;
 
-let state = {sub:'All', year:'All', search:'', page:0, attempts:{}, correct:{}};
+let state = {sub:'All', year:'All', diff:'All', search:'', page:0, attempts:{}, correct:{}};
+let hiddenTrendSubs = new Set();
+let hiddenDiffLevels = new Set();
+let hiddenHeatmapSubs = new Set();
 
 /* ── Stat counter animation ── */
 function animateCount(el,target){let cur=0;const step=Math.max(1,Math.ceil(target/30));const iv=setInterval(()=>{cur+=step;if(cur>=target){cur=target;clearInterval(iv);}el.textContent=cur;},25);}
@@ -5239,13 +5274,27 @@ animateCount(document.getElementById('statTotal'),DB.length);
 (function buildFilters(){
   const sf=document.getElementById('subjectFilters');
   SUBJECTS.forEach(s=>{const b=document.createElement('button');b.className='filter-btn';b.dataset.sub=s;b.textContent=s;sf.appendChild(b);});
-  sf.addEventListener('click',e=>{if(!e.target.classList.contains('filter-btn'))return;sf.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');state.sub=e.target.dataset.sub;state.page=0;render();});
+  sf.addEventListener('click',e=>{if(!e.target.classList.contains('filter-btn'))return;sf.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');state.sub=e.target.dataset.sub;state.page=0;render();
+    document.getElementById('mobSubject').value=state.sub;});
 
   const ys=document.getElementById('yearStrip');
   YEARS.forEach(y=>{const b=document.createElement('button');b.className='yr-chip';b.dataset.yr=y;b.textContent=y;ys.appendChild(b);});
-  ys.addEventListener('click',e=>{if(!e.target.classList.contains('yr-chip'))return;ys.querySelectorAll('.yr-chip').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');state.year=e.target.dataset.yr;state.page=0;render();});
+  ys.addEventListener('click',e=>{if(!e.target.classList.contains('yr-chip'))return;ys.querySelectorAll('.yr-chip').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');state.year=e.target.dataset.yr;state.page=0;render();
+    document.getElementById('mobYear').value=state.year;});
 
   document.getElementById('qSearch').addEventListener('input',e=>{state.search=e.target.value.toLowerCase();state.page=0;render();});
+
+  /* Mobile dropdowns */
+  const mobSub=document.getElementById('mobSubject');
+  const mobYr=document.getElementById('mobYear');
+  const mobDiff=document.getElementById('mobDiff');
+  SUBJECTS.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;mobSub.appendChild(o);});
+  YEARS.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y;mobYr.appendChild(o);});
+  mobSub.addEventListener('change',e=>{state.sub=e.target.value;state.page=0;
+    sf.querySelectorAll('.filter-btn').forEach(b=>{b.classList.toggle('active',b.dataset.sub===state.sub);});render();});
+  mobYr.addEventListener('change',e=>{state.year=e.target.value;state.page=0;
+    ys.querySelectorAll('.yr-chip').forEach(b=>{b.classList.toggle('active',b.dataset.yr===state.year);});render();});
+  mobDiff.addEventListener('change',e=>{state.diff=e.target.value;state.page=0;render();});
 })();
 
 /* ════════════════════════════════════════
@@ -5255,6 +5304,7 @@ function getFiltered(){
   return DB.filter(q=>{
     if(state.sub!=='All' && q.sub!==state.sub) return false;
     if(state.year!=='All' && q.y!==+state.year) return false;
+    if(state.diff!=='All' && q.diff!==state.diff) return false;
     if(state.search && !(q.q+' '+q.sub+' '+q.opts.join(' ')).toLowerCase().includes(state.search)) return false;
     return true;
   });
@@ -5341,7 +5391,63 @@ function render(){
 
 window.changePage=function(p){state.page=Math.max(0,p);render();window.scrollTo({top:document.querySelector('.q-grid').offsetTop-80,behavior:'smooth'});};
 
-/* ── Answer click ── */
+/* ── Answer click with gamified mobile effects ── */
+function spawnAnswerFX(isCorrect, anchorEl){
+  const isMobile=window.innerWidth<=640;
+  if(!isMobile) return;
+  let container=document.querySelector('.answer-fx-container');
+  if(!container){container=document.createElement('div');container.className='answer-fx-container';document.body.appendChild(container);}
+
+  const rect=anchorEl.getBoundingClientRect();
+  const cx=rect.left+rect.width/2;
+  const cy=rect.top+rect.height/2;
+
+  if(isCorrect){
+    // Score popup
+    const pop=document.createElement('div');
+    pop.className='answer-score-popup';
+    pop.style.top=cy+'px';
+    pop.style.color='#34d399';
+    pop.textContent='+1 ✓';
+    container.appendChild(pop);
+    setTimeout(()=>pop.remove(),1000);
+
+    // Particle burst
+    const emojis=['🎯','⭐','🏆','✨','💎','🔥'];
+    for(let i=0;i<6;i++){
+      const p=document.createElement('div');
+      p.className='answer-particle';
+      p.textContent=emojis[i%emojis.length];
+      p.style.left=(cx-10+Math.random()*60-30)+'px';
+      p.style.top=(cy-10)+'px';
+      p.style.animationDelay=(i*0.06)+'s';
+      p.style.animationDuration=(0.8+Math.random()*0.5)+'s';
+      container.appendChild(p);
+      setTimeout(()=>p.remove(),1500);
+    }
+  } else {
+    const pop=document.createElement('div');
+    pop.className='answer-score-popup';
+    pop.style.top=cy+'px';
+    pop.style.color='#f87171';
+    pop.textContent='✗ Try harder!';
+    container.appendChild(pop);
+    setTimeout(()=>pop.remove(),1000);
+
+    const emojis=['💪','📚','🧠'];
+    for(let i=0;i<3;i++){
+      const p=document.createElement('div');
+      p.className='answer-particle';
+      p.textContent=emojis[i];
+      p.style.left=(cx-10+Math.random()*40-20)+'px';
+      p.style.top=(cy-10)+'px';
+      p.style.animationDelay=(i*0.08)+'s';
+      container.appendChild(p);
+      setTimeout(()=>p.remove(),1500);
+    }
+  }
+}
+
 document.addEventListener('click',function(e){
   const opt = e.target.closest('.q-opt');
   if(!opt) return;
@@ -5349,7 +5455,9 @@ document.addEventListener('click',function(e){
   if(state.attempts[idx]!==undefined) return;
   const oi = +opt.dataset.oi;
   state.attempts[idx] = oi;
-  state.correct[idx] = (oi === DB[idx].ans);
+  const isCorrect = (oi === DB[idx].ans);
+  state.correct[idx] = isCorrect;
+  spawnAnswerFX(isCorrect, opt);
   render();
 });
 
@@ -5373,6 +5481,7 @@ function drawTrendChart(){
   ctx.scale(dpr,dpr);
   const W=rect.width, H=rect.height, pad={t:20,r:20,b:40,l:44};
   const plotW=W-pad.l-pad.r, plotH=H-pad.t-pad.b;
+  const isMobile=W<500;
 
   // Data: count per subject per year
   const data={};
@@ -5383,16 +5492,17 @@ function drawTrendChart(){
   // Grid
   ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
   for(let i=0;i<=5;i++){const y2=pad.t+plotH-plotH*(i/5);ctx.beginPath();ctx.moveTo(pad.l,y2);ctx.lineTo(W-pad.r,y2);ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='11px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-8,y2+4);}
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font=(isMobile?'9':'11')+'px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-8,y2+4);}
 
   // X labels
-  ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';ctx.font='11px DM Sans';
-  YEARS.forEach((y,i)=>{const x=pad.l+plotW*(i/(YEARS.length-1));ctx.fillText("'"+String(y).slice(2),x,H-pad.b+18);});
+  ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';ctx.font=(isMobile?'9':'11')+'px DM Sans';
+  YEARS.forEach((y,i)=>{const x=pad.l+plotW*(i/(YEARS.length-1));if(isMobile&&YEARS.length>15&&i%2!==0)return;ctx.fillText("'"+String(y).slice(2),x,H-pad.b+18);});
 
   // Lines
   SUBJECTS.forEach(sub=>{
+    if(hiddenTrendSubs.has(sub)) return;
     const color = SUB_COLORS[sub]||'#fff';
-    ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.strokeStyle=color;ctx.lineWidth=isMobile?1.5:2.5;ctx.lineJoin='round';ctx.lineCap='round';
     ctx.beginPath();
     YEARS.forEach((y,i)=>{
       const x=pad.l+plotW*(i/(YEARS.length-1));
@@ -5406,13 +5516,14 @@ function drawTrendChart(){
       const x=pad.l+plotW*(i/(YEARS.length-1));
       const v=data[sub][y]||0;
       const yPos=pad.t+plotH-plotH*(v/maxV);
-      ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,yPos,3.5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,yPos,isMobile?2:3.5,0,Math.PI*2);ctx.fill();
     });
   });
 
-  // Legend
+  // Clickable Legend
   const leg=document.getElementById('trendLegend');
-  leg.innerHTML=SUBJECTS.map(s=>`<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="width:10px;height:10px;border-radius:50%;background:${SUB_COLORS[s]}"></span>${s}</span>`).join('');
+  leg.innerHTML=SUBJECTS.map(s=>`<span class="chart-legend-item${hiddenTrendSubs.has(s)?' muted':''}" data-sub="${s}"><span class="ldot" style="background:${SUB_COLORS[s]}"></span>${s}</span>`).join('');
+  leg.onclick=function(e){const it=e.target.closest('.chart-legend-item');if(!it)return;const s=it.dataset.sub;if(hiddenTrendSubs.has(s))hiddenTrendSubs.delete(s);else hiddenTrendSubs.add(s);drawTrendChart();};
 }
 
 function drawHeatmap(){
@@ -5421,22 +5532,29 @@ function drawHeatmap(){
   SUBJECTS.forEach(s=>{data[s]={};YEARS.forEach(y=>data[s][y]=0);});
   DB.forEach(q=>{if(data[q.sub])data[q.sub][q.y]++;});
   const maxV=Math.max(...Object.values(data).flatMap(o=>Object.values(o)),1);
+  const revYears=[...YEARS].reverse();
 
   let html='<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:4px;font-size:12px;"><thead><tr><th style="text-align:left;color:var(--muted);padding:6px;font-weight:600;">Subject</th>';
-  YEARS.forEach(y=>html+=`<th style="color:var(--muted);font-weight:600;padding:6px;">'${String(y).slice(2)}</th>`);
+  revYears.forEach(y=>html+=`<th style="color:var(--muted);font-weight:600;padding:6px;">'${String(y).slice(2)}</th>`);
   html+='</tr></thead><tbody>';
   SUBJECTS.forEach(s=>{
+    if(hiddenHeatmapSubs.has(s)){return;}
     html+=`<tr><td style="padding:6px;font-weight:700;white-space:nowrap;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${SUB_COLORS[s]};margin-right:6px;"></span>${s}</td>`;
-    YEARS.forEach(y=>{
+    revYears.forEach(y=>{
       const v=data[s][y]||0;
       const intensity=v/maxV;
-      const bg=`rgba(${s==='Polity'?'110,168,255':s==='History'?'245,158,11':s==='Geography'?'16,185,129':s==='Economy'?'139,92,246':s==='Environment'?'20,184,166':s==='Science'?'244,114,182':'251,146,60'},${.1+intensity*.6})`;
+      const bg=`rgba(${s==='Polity'?'110,168,255':s==='History'?'245,158,11':s==='Geography'?'16,185,129':s==='Economy'?'139,92,246':s==='Environment'?'20,184,166':s==='Science'?'244,114,182':s==='Comprehension'?'232,121,249':s==='Mathematics'?'56,189,248':s==='Reasoning'?'251,113,133':'251,146,60'},${.1+intensity*.6})`;
       html+=`<td style="text-align:center;padding:8px;border-radius:8px;background:${bg};font-weight:700;color:${intensity>.3?'#fff':'var(--muted)'}">${v||'·'}</td>`;
     });
     html+='</tr>';
   });
   html+='</tbody></table></div>';
   wrap.innerHTML=html;
+
+  // Clickable Legend
+  const leg=document.getElementById('heatmapLegend');
+  leg.innerHTML=SUBJECTS.map(s=>`<span class="chart-legend-item${hiddenHeatmapSubs.has(s)?' muted':''}" data-sub="${s}"><span class="ldot" style="background:${SUB_COLORS[s]}"></span>${s}</span>`).join('');
+  leg.onclick=function(e){const it=e.target.closest('.chart-legend-item');if(!it)return;const s=it.dataset.sub;if(hiddenHeatmapSubs.has(s))hiddenHeatmapSubs.delete(s);else hiddenHeatmapSubs.add(s);drawHeatmap();};
 }
 
 function drawDifficultyChart(){
@@ -5449,38 +5567,59 @@ function drawDifficultyChart(){
   ctx.scale(dpr,dpr);
   const W=rect.width,H=rect.height,pad={t:20,r:20,b:40,l:44};
   const plotW=W-pad.l-pad.r,plotH=H-pad.t-pad.b;
+  const isMobile=W<500;
 
   const data={};YEARS.forEach(y=>data[y]={easy:0,medium:0,hard:0});
   DB.forEach(q=>{if(data[q.y])data[q.y][q.diff]++;});
-  const maxV=Math.max(...YEARS.map(y=>(data[y].easy||0)+(data[y].medium||0)+(data[y].hard||0)),1);
+  const activeDiffs=['easy','medium','hard'].filter(d=>!hiddenDiffLevels.has(d));
+  const maxV=Math.max(...YEARS.map(y=>activeDiffs.reduce((s,d)=>s+(data[y][d]||0),0)),1);
   const diffColors={easy:'#34d399',medium:'#fbbf24',hard:'#f87171'};
-  const barW=Math.min(28,plotW/YEARS.length*.6);
+  const gap=isMobile?1:2;
+  const totalBarZone=plotW/YEARS.length;
+  const barW=Math.min(isMobile?16:28,totalBarZone-gap*2);
 
   // Grid
   ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
   for(let i=0;i<=5;i++){const y2=pad.t+plotH-plotH*(i/5);ctx.beginPath();ctx.moveTo(pad.l,y2);ctx.lineTo(W-pad.r,y2);ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='11px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-8,y2+4);}
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font=(isMobile?'9':'11')+'px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-8,y2+4);}
 
+  // Bars — proper stacked rectangles with rounded top
   YEARS.forEach((y,i)=>{
-    const x=pad.l+plotW*(i/(YEARS.length-1));
-    let cumY=pad.t+plotH;
-    ['easy','medium','hard'].forEach(d=>{
+    const cx=pad.l+(i+0.5)*totalBarZone;
+    let cumH=0;
+    activeDiffs.forEach((d,di)=>{
       const v=data[y][d]||0;
       const h=plotH*(v/maxV);
+      if(h<0.5) return;
+      const x0=cx-barW/2;
+      const y0=pad.t+plotH-cumH-h;
       ctx.fillStyle=diffColors[d];
-      const r=4;
+      const isTop=(di===activeDiffs.length-1)||(activeDiffs.slice(di+1).every(dd=>(data[y][dd]||0)===0));
+      const r=isTop?Math.min(4,barW/2,h):0;
       ctx.beginPath();
-      ctx.moveTo(x-barW/2+r,cumY);ctx.lineTo(x-barW/2+r,cumY-h);ctx.quadraticCurveTo(x-barW/2,cumY-h,x-barW/2,cumY-h+r);
-      ctx.lineTo(x-barW/2,cumY);ctx.lineTo(x+barW/2,cumY);ctx.lineTo(x+barW/2,cumY-h+r);ctx.quadraticCurveTo(x+barW/2,cumY-h,x+barW/2-r,cumY-h);
+      if(r>0){
+        ctx.moveTo(x0,y0+h);
+        ctx.lineTo(x0,y0+r);
+        ctx.arcTo(x0,y0,x0+r,y0,r);
+        ctx.lineTo(x0+barW-r,y0);
+        ctx.arcTo(x0+barW,y0,x0+barW,y0+r,r);
+        ctx.lineTo(x0+barW,y0+h);
+      } else {
+        ctx.rect(x0,y0,barW,h);
+      }
       ctx.closePath();ctx.fill();
-      cumY-=h;
+      cumH+=h;
     });
-    ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';ctx.font='11px DM Sans';
-    ctx.fillText("'"+String(y).slice(2),x,H-pad.b+18);
+    // X label
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';ctx.font=(isMobile?'9':'11')+'px DM Sans';
+    const label=isMobile&&YEARS.length>15&&i%2!==0?'':("'"+String(y).slice(2));
+    if(label)ctx.fillText(label,cx,H-pad.b+18);
   });
 
-  const leg=document.getElementById('trendLegend');
-  leg.innerHTML=['easy','medium','hard'].map(d=>`<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="width:10px;height:10px;border-radius:4px;background:${diffColors[d]}"></span>${d.charAt(0).toUpperCase()+d.slice(1)}</span>`).join('');
+  // Clickable Legend
+  const leg=document.getElementById('diffLegend');
+  leg.innerHTML=['easy','medium','hard'].map(d=>`<span class="chart-legend-item${hiddenDiffLevels.has(d)?' muted':''}" data-diff="${d}"><span class="ldot" style="background:${diffColors[d]};border-radius:4px"></span>${d.charAt(0).toUpperCase()+d.slice(1)}</span>`).join('');
+  leg.onclick=function(e){const it=e.target.closest('.chart-legend-item');if(!it)return;const d=it.dataset.diff;if(hiddenDiffLevels.has(d))hiddenDiffLevels.delete(d);else hiddenDiffLevels.add(d);drawDifficultyChart();};
 }
 
 /* Chart tab switching */
@@ -5490,8 +5629,11 @@ document.getElementById('chartTabs').addEventListener('click',function(e){
   e.target.classList.add('active');
   const v=e.target.dataset.view;
   document.getElementById('chartTrend').style.display=v==='trend'?'':'none';
+  document.getElementById('trendLegend').style.display=v==='trend'?'':'none';
   document.getElementById('chartHeatmap').style.display=v==='heatmap'?'':'none';
+  document.getElementById('heatmapLegend').style.display=v==='heatmap'?'':'none';
   document.getElementById('chartDifficulty').style.display=v==='difficulty'?'':'none';
+  document.getElementById('diffLegend').style.display=v==='difficulty'?'':'none';
   if(v==='trend')drawTrendChart();
   if(v==='heatmap')drawHeatmap();
   if(v==='difficulty')drawDifficultyChart();
