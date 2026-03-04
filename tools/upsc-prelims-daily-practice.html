@@ -421,6 +421,17 @@ function todayKey(){return new Date().toISOString().slice(0,10);}
 function getTodaySession(){return S.history.find(h=>h.date===todayKey()&&h.mode==='daily');}
 
 /* ════════════════════════
+   GLOBAL CLEANUP STATE
+   ════════════════════════ */
+let _dailyTimerIv=null;
+let _dailyNextHandler=null;
+
+function cleanupDaily(){
+  if(_dailyTimerIv){clearInterval(_dailyTimerIv);_dailyTimerIv=null;}
+  if(_dailyNextHandler){document.removeEventListener('click',_dailyNextHandler);_dailyNextHandler=null;}
+}
+
+/* ════════════════════════
    TAB SWITCHING
    ════════════════════════ */
 document.querySelector('.tab-nav').addEventListener('click',function(e){
@@ -428,6 +439,8 @@ document.querySelector('.tab-nav').addEventListener('click',function(e){
   if(!btn)return;
   this.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  // Cleanup before switching
+  cleanupDaily();
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const tab=btn.dataset.tab;
   document.getElementById('view'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
@@ -447,6 +460,8 @@ function getDailyQuestions(){
 }
 
 function renderDailyQuiz(){
+  // Always clean up previous timers/handlers first
+  cleanupDaily();
   const existing=getTodaySession();
   if(existing&&existing.completed){renderDailyResult(existing);return;}
   const questions=getDailyQuestions();
@@ -477,13 +492,16 @@ function renderDailyQuiz(){
       </div>
     </div>`;
 
+  // Timer — tracked globally for cleanup
   let sec=0;const timerEl=document.getElementById('timerVal');
-  const iv=setInterval(()=>{sec++;const m=Math.floor(sec/60);const s=sec%60;timerEl.textContent=m+':'+(s<10?'0':'')+s;},1000);
+  _dailyTimerIv=setInterval(()=>{sec++;if(!timerEl||!timerEl.isConnected)return;const m=Math.floor(sec/60);const s=sec%60;timerEl.textContent=m+':'+(s<10?'0':'')+s;},1000);
 
+  // Answer handler — scoped to area, no document-level listener needed for options
   let answered=false;
   area.querySelectorAll('.qo').forEach(el=>{
     el.addEventListener('click',function(){
-      if(answered)return;answered=true;clearInterval(iv);
+      if(answered)return;answered=true;
+      if(_dailyTimerIv){clearInterval(_dailyTimerIv);_dailyTimerIv=null;}
       const oi=+this.dataset.oi;const isCorrect=oi===q.ans;
       session.answers.push({qi:ci,chosen:oi,correct:isCorrect,time:sec});
       if(isCorrect)session.correct++;
@@ -501,9 +519,15 @@ function renderDailyQuiz(){
       document.getElementById('qActions').style.display='flex';
     });
   });
-  document.addEventListener('click',function handler(e){
-    if(e.target.id==='nextBtn'){document.removeEventListener('click',handler);renderDailyQuiz();}
-  });
+
+  // Next button — single tracked handler, cleaned up on tab switch
+  _dailyNextHandler=function(e){
+    if(e.target.id==='nextBtn'||e.target.closest('#nextBtn')){
+      cleanupDaily();
+      renderDailyQuiz();
+    }
+  };
+  document.addEventListener('click',_dailyNextHandler);
   updateStreakUI();
 }
 
