@@ -447,6 +447,7 @@ document.querySelector('.tab-nav').addEventListener('click',function(e){
   const tab=btn.dataset.tab;
   document.getElementById('view'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
   if(tab==='analytics')renderAnalytics();
+  if(tab==='practice')renderSubjectGrid();
 });
 
 /* ════════════════════════
