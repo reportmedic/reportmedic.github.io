@@ -133,11 +133,21 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 .an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
 .an-card canvas{width:100%!important;}
 
-/* ── Ring Chart ── */
-.ring-wrap{display:flex;align-items:center;justify-content:center;position:relative;padding:6px 0;}
-.ring-center{position:absolute;text-align:center;}
-.ring-center .rv{font-size:28px;font-weight:700;}
-.ring-center .rl{font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;}
+/* ── Overview Strip ── */
+.overview-strip{display:flex;align-items:center;gap:24px;}
+.ov-ring{position:relative;flex-shrink:0;width:100px;height:100px;}
+.ov-ring canvas{width:100px;height:100px;}
+.ov-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ov-ring-label .rv{font-size:22px;font-weight:700;line-height:1;}
+.ov-ring-label .rl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ov-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ov-stat{padding:12px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;}
+.ov-stat .os-val{font-size:18px;font-weight:700;line-height:1.2;font-family:'JetBrains Mono',monospace;}
+.ov-stat .os-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+@media(max-width:600px){
+  .overview-strip{flex-direction:column;gap:16px;}
+  .ov-stats{grid-template-columns:repeat(3,1fr);width:100%;}
+}
 
 /* ── Subject accuracy bars ── */
 .sub-bars{display:flex;flex-direction:column;gap:10px;}
@@ -163,12 +173,6 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 .trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
 .trend-mode-label.daily{background:rgba(110,168,255,.12);color:#6ea8ff;}
 .trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
-
-/* ── Stats grid inside Quick Stats ── */
-.qs-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.04);}
-.qs-row:last-child{border-bottom:none;}
-.qs-row .qs-label{color:var(--muted);font-size:13px;font-weight:500;}
-.qs-row .qs-val{font-weight:700;font-size:14px;font-family:'JetBrains Mono',monospace;}
 
 /* ── Difficulty Distribution ── */
 .diff-dist{display:flex;gap:10px;margin-top:6px;}
@@ -273,14 +277,15 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
       <p class="sub">Your diagnostic report — accuracy, trends, and weak spots. All data stays in your browser.</p>
     </div>
     <div class="analytics-grid" id="analyticsGrid">
-      <!-- Row 1: Ring + Quick Stats -->
-      <div class="an-card">
-        <h3><span class="icon" style="background:rgba(16,185,129,.1);color:#34d399;">◎</span>Overall Accuracy</h3>
-        <div class="ring-wrap"><canvas id="ringCanvas" width="160" height="160"></canvas><div class="ring-center"><div class="rv" id="ringVal">—</div><div class="rl">accuracy</div></div></div>
-      </div>
-      <div class="an-card">
-        <h3><span class="icon" style="background:rgba(110,168,255,.1);color:#6ea8ff;">⚡</span>Quick Stats</h3>
-        <div id="quickStats"></div>
+      <!-- Row 1: Compact Overview Strip -->
+      <div class="an-card full">
+        <div class="overview-strip">
+          <div class="ov-ring">
+            <canvas id="ringCanvas" width="100" height="100"></canvas>
+            <div class="ov-ring-label"><div class="rv" id="ringVal">—</div><div class="rl">accuracy</div></div>
+          </div>
+          <div class="ov-stats" id="quickStats"></div>
+        </div>
       </div>
       <!-- Row 2: Subject-wise -->
       <div class="an-card full">
@@ -666,13 +671,12 @@ function renderAnalytics(){
   const avgTimePerQ=totalA>0?Math.round(totalTime/totalA):0;
 
   document.getElementById('quickStats').innerHTML=`
-    <div class="qs-row"><span class="qs-label">Total Questions</span><span class="qs-val">${totalA}</span></div>
-    <div class="qs-row"><span class="qs-label">Correct / Wrong</span><span class="qs-val"><span style="color:#34d399">${totalC}</span> <span style="color:var(--muted);font-weight:400">/</span> <span style="color:#f87171">${totalA-totalC}</span></span></div>
-    <div class="qs-row"><span class="qs-label">Daily Challenges</span><span class="qs-val">${dailySessions.length}</span></div>
-    <div class="qs-row"><span class="qs-label">Practice Sessions</span><span class="qs-val">${practiceSessions.length}</span></div>
-    <div class="qs-row"><span class="qs-label">Current Streak</span><span class="qs-val">🔥 ${S.streak||0}</span></div>
-    ${avgTimePerQ?`<div class="qs-row"><span class="qs-label">Avg Time / Question</span><span class="qs-val">${avgTimePerQ}s</span></div>`:''}`;
-
+    <div class="ov-stat"><div class="os-val">${totalA}</div><div class="os-label">Questions</div></div>
+    <div class="ov-stat"><div class="os-val" style="color:#34d399">${totalC}</div><div class="os-label">Correct</div></div>
+    <div class="ov-stat"><div class="os-val" style="color:#f87171">${totalA-totalC}</div><div class="os-label">Wrong</div></div>
+    <div class="ov-stat"><div class="os-val">🔥 ${S.streak||0}</div><div class="os-label">Streak</div></div>
+    <div class="ov-stat"><div class="os-val">${dailySessions.length}</div><div class="os-label">Daily</div></div>
+    <div class="ov-stat"><div class="os-val">${avgTimePerQ?avgTimePerQ+'s':'—'}</div><div class="os-label">Avg Time</div></div>`;
   // ── Subject bars ──
   const bars=document.getElementById('subBars');
   bars.innerHTML=SUBJECTS.map(sub=>{
@@ -705,11 +709,11 @@ function renderAnalytics(){
 /* ── Ring ── */
 function drawRing(pct){
   const c=document.getElementById('ringCanvas');const ctx=c.getContext('2d');
-  const dpr=window.devicePixelRatio||1;c.width=160*dpr;c.height=160*dpr;c.style.width='160px';c.style.height='160px';ctx.scale(dpr,dpr);
-  const cx=80,cy=80,r=64,lw=8;
+  const dpr=window.devicePixelRatio||1;c.width=100*dpr;c.height=100*dpr;c.style.width='100px';c.style.height='100px';ctx.scale(dpr,dpr);
+  const cx=50,cy=50,r=40,lw=7;
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=lw;ctx.stroke();
   if(pct>0){
-    const grad=ctx.createLinearGradient(0,0,160,160);
+    const grad=ctx.createLinearGradient(0,0,100,100);
     grad.addColorStop(0,'#6ea8ff');grad.addColorStop(1,'#7cf7d4');
     ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+(Math.PI*2*pct/100));ctx.strokeStyle=grad;ctx.lineWidth=lw;ctx.lineCap='round';ctx.stroke();
   }
