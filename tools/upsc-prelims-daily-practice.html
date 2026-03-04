@@ -429,59 +429,25 @@ function getTodaySession(){return S.history.find(h=>h.date===todayKey()&&h.mode=
    GLOBAL CLEANUP STATE
    ════════════════════════ */
 let _dailyTimerIv=null;
-let _dailyTimerSec=0;  // track elapsed seconds globally
 
-function cleanupDaily(){
-  if(_dailyTimerIv){clearInterval(_dailyTimerIv);_dailyTimerIv=null;}
-}
-
-// Restart timer on existing quiz when switching back to daily tab
-function restartDailyTimerIfNeeded(){
-  const timerEl=document.getElementById('timerVal');
-  if(!timerEl)return; // no active question (result screen or empty)
-  // Check if question is already answered (actions visible)
-  const actions=document.getElementById('qActions');
-  if(actions&&actions.style.display==='flex')return; // already answered, no timer needed
-  // Resume timer
-  cleanupDaily();
-  _dailyTimerIv=setInterval(()=>{
-    _dailyTimerSec++;
-    if(!timerEl||!timerEl.isConnected){clearInterval(_dailyTimerIv);_dailyTimerIv=null;return;}
-    const m=Math.floor(_dailyTimerSec/60);const s=_dailyTimerSec%60;
-    timerEl.textContent=m+':'+(s<10?'0':'')+s;
-  },1000);
-}
-
-// Global next-button handler — called via onclick in HTML, no document listener needed
+// Global next-button handler
 window.handleDailyNext=function(){
-  cleanupDaily();
+  if(_dailyTimerIv){clearInterval(_dailyTimerIv);_dailyTimerIv=null;}
   renderDailyQuiz();
 };
 
 /* ════════════════════════
-   TAB SWITCHING
+   TAB SWITCHING — just show/hide, nothing else
    ════════════════════════ */
 document.querySelector('.tab-nav').addEventListener('click',function(e){
   const btn=e.target.closest('.tab-btn');
   if(!btn)return;
   this.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  cleanupDaily();
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const tab=btn.dataset.tab;
   document.getElementById('view'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
   if(tab==='analytics')renderAnalytics();
-  if(tab==='daily'){
-    // Defer to next frame — mobile browsers need the view to be display:block
-    // and fully laid out before we render into quizArea
-    requestAnimationFrame(()=>{
-      const area=document.getElementById('quizArea');
-      // Only re-render if the area is empty (lost content) or has stale result
-      if(!area||!area.children.length){renderDailyQuiz();}
-      else{restartDailyTimerIfNeeded();}
-    });
-  }
-  if(tab==='practice')renderSubjectGrid();
 });
 
 /* ════════════════════════
@@ -495,7 +461,7 @@ function getDailyQuestions(){
 }
 
 function renderDailyQuiz(){
-  cleanupDaily();
+  if(_dailyTimerIv){clearInterval(_dailyTimerIv);_dailyTimerIv=null;}
   const existing=getTodaySession();
   if(existing&&existing.completed){renderDailyResult(existing);return;}
   const questions=getDailyQuestions();
@@ -528,9 +494,9 @@ function renderDailyQuiz(){
     </div>`;
 
   // Timer — tracked globally for cleanup and resume
-  _dailyTimerSec=0;
+  let sec=0;
   const timerEl=document.getElementById('timerVal');
-  _dailyTimerIv=setInterval(()=>{_dailyTimerSec++;if(!timerEl||!timerEl.isConnected)return;const m=Math.floor(_dailyTimerSec/60);const s=_dailyTimerSec%60;timerEl.textContent=m+':'+(s<10?'0':'')+s;},1000);
+  _dailyTimerIv=setInterval(()=>{sec++;if(!timerEl||!timerEl.isConnected)return;const m=Math.floor(sec/60);const s=sec%60;timerEl.textContent=m+':'+(s<10?'0':'')+s;},1000);
 
   let answered=false;
   area.querySelectorAll('.qo').forEach(el=>{
@@ -538,7 +504,7 @@ function renderDailyQuiz(){
       if(answered)return;answered=true;
       if(_dailyTimerIv){clearInterval(_dailyTimerIv);_dailyTimerIv=null;}
       const oi=+this.dataset.oi;const isCorrect=oi===q.ans;
-      session.answers.push({qi:ci,chosen:oi,correct:isCorrect,time:_dailyTimerSec});
+      session.answers.push({qi:ci,chosen:oi,correct:isCorrect,time:sec});
       if(isCorrect)session.correct++;
       if(!S.subStats[q.sub])S.subStats[q.sub]={total:0,correct:0};
       S.subStats[q.sub].total++;if(isCorrect)S.subStats[q.sub].correct++;
@@ -837,7 +803,6 @@ renderDailyQuiz();
 renderSubjectGrid();
 updateStreakUI();
 </script>
-
 <!--Start of Tawk.to Script-->
 <script type="text/javascript">
 var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
@@ -851,6 +816,5 @@ s0.parentNode.insertBefore(s1,s0);
 })();
 </script>
 <!--End of Tawk.to Script-->
-  
 </body>
 </html>
