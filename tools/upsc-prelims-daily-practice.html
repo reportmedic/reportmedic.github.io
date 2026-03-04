@@ -11,110 +11,110 @@
 <link rel="stylesheet" href="/assets/css/styles.css"/>
 <script defer src="/assets/js/rm-tools-drawer.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+body{font-family:'Outfit',ui-sans-serif,system-ui,sans-serif;}
 
 /* ── Animated Background ── */
 .bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
-.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(100px);opacity:.15;animation:meshDrift 18s ease-in-out infinite alternate;}
-.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);top:-15%;right:-10%;animation-delay:0s;}
-.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#a78bfa,#6ea8ff);bottom:-10%;left:-5%;animation-delay:-6s;animation-duration:22s;}
-.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#7cf7d4,#f59e0b);top:50%;left:40%;animation-delay:-12s;animation-duration:26s;}
+.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12;animation:meshDrift 20s ease-in-out infinite alternate;}
+.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);top:-15%;right:-10%;}
+.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#a78bfa,#6ea8ff);bottom:-10%;left:-5%;animation-delay:-7s;animation-duration:25s;}
+.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#7cf7d4,#f59e0b);top:50%;left:40%;animation-delay:-14s;animation-duration:28s;}
 @keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg) scale(1);}100%{transform:translate(40px,-30px) rotate(15deg) scale(1.1);}}
 
 /* ── Tabs Nav ── */
-.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:16px;margin-bottom:22px;overflow-x:auto;}
-.tab-btn{flex:1;min-width:fit-content;padding:11px 18px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap;}
+.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:24px;overflow-x:auto;}
+.tab-btn{flex:1;min-width:fit-content;padding:12px 20px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;letter-spacing:.01em;}
 .tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
-.tab-btn.active{background:linear-gradient(135deg,rgba(110,168,255,.2),rgba(124,247,212,.15));color:var(--text);box-shadow:0 2px 12px rgba(110,168,255,.15);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(110,168,255,.18),rgba(124,247,212,.12));color:var(--text);box-shadow:0 2px 16px rgba(110,168,255,.12),inset 0 1px 0 rgba(255,255,255,.06);}
 
 /* ── Views ── */
-.view{display:none;animation:viewFade .35s ease;}
+.view{display:none;animation:viewFade .4s cubic-bezier(.4,0,.2,1);}
 .view.active{display:block;}
-@keyframes viewFade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes viewFade{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
 
-/* ── Daily Challenge Hero ── */
-.daily-hero{text-align:center;padding:30px 0 20px;}
-.daily-hero h1{font-size:clamp(26px,4.5vw,40px);font-weight:900;letter-spacing:-.5px;line-height:1.1;}
+/* ── Hero ── */
+.daily-hero{text-align:center;padding:32px 0 16px;}
+.daily-hero h1{font-size:clamp(28px,5vw,44px);font-weight:900;letter-spacing:-.02em;line-height:1.1;}
 .daily-hero h1 .grad{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:8px;}
+.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:10px;line-height:1.5;letter-spacing:.01em;}
 
 /* ── Streak Banner ── */
-.streak-bar{display:flex;align-items:center;justify-content:center;gap:16px;margin:16px 0 24px;flex-wrap:wrap;}
-.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);backdrop-filter:blur(8px);font-size:13px;font-weight:600;}
+.streak-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 26px;flex-wrap:wrap;}
+.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);backdrop-filter:blur(8px);font-size:13px;font-weight:600;transition:transform .15s;}
+.streak-pill:hover{transform:translateY(-1px);}
 .streak-pill .fire{font-size:20px;}
 .streak-pill .sval{font-size:18px;font-weight:900;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .streak-pill .sval.green{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.streak-dots{display:flex;gap:4px;}
-.streak-dots .dot{width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s;}
-.streak-dots .dot.done{background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(124,247,212,.15));border-color:rgba(16,185,129,.3);color:#34d399;}
-.streak-dots .dot.today{border-color:rgba(110,168,255,.5);box-shadow:0 0 12px rgba(110,168,255,.2);}
+.streak-dots{display:flex;gap:5px;}
+.streak-dots .dot{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;color:var(--muted);}
+.streak-dots .dot.done{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(124,247,212,.1));border-color:rgba(16,185,129,.25);color:#34d399;}
+.streak-dots .dot.today{border-color:rgba(110,168,255,.45);box-shadow:0 0 14px rgba(110,168,255,.15);}
 
 /* ── Quiz Container ── */
-.quiz-panel{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:22px;padding:24px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
-.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.35),rgba(110,168,255,.35),transparent);}
+.quiz-panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:26px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
+.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
 .quiz-progress{display:flex;gap:4px;margin-bottom:18px;}
-.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.08);transition:background .3s;}
+.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.06);transition:background .3s;}
 .quiz-progress .pip.done{background:linear-gradient(90deg,#10b981,#7cf7d4);}
 .quiz-progress .pip.wrong{background:#ef4444;}
 .quiz-progress .pip.current{background:rgba(110,168,255,.4);animation:pipPulse 1.5s ease infinite;}
-@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 
 .quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
-.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.12);color:#6ea8ff;border:1px solid rgba(110,168,255,.2);}
-.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.1);color:var(--muted);}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.1);color:#6ea8ff;border:1px solid rgba(110,168,255,.15);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);color:var(--muted);}
 .quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
 .quiz-meta .timer svg{color:rgba(110,168,255,.6);}
 
-.quiz-question{font-size:16px;line-height:1.7;font-weight:600;margin-bottom:18px;}
-
+.quiz-question{font-size:16.5px;line-height:1.7;font-weight:600;margin-bottom:18px;letter-spacing:.005em;}
 .quiz-opts{display:flex;flex-direction:column;gap:10px;}
-.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
-.qo:hover{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.06);transform:translateX(4px);}
-.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;transition:all .2s;}
-.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.08);}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;transition:all .2s;}
+.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.06);}
 .qo.selected .letter{border-color:#6ea8ff;background:#6ea8ff;color:#061021;}
-.qo.correct{border-color:rgba(16,185,129,.5);background:rgba(16,185,129,.08);}
+.qo.correct{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);}
 .qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
-.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.06);}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
 .qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
-.qo.disabled{pointer-events:none;opacity:.7;}
+.qo.disabled{pointer-events:none;opacity:.65;}
 .qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
 
-.quiz-explain{margin-top:14px;padding:16px;border-radius:16px;background:rgba(124,247,212,.04);border:1px solid rgba(124,247,212,.12);font-size:13.5px;line-height:1.65;color:var(--muted);display:none;}
-.quiz-explain.show{display:block;animation:slideUp .3s ease;}
+.quiz-explain{margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(124,247,212,.035);border:1px solid rgba(124,247,212,.1);font-size:13.5px;line-height:1.7;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
 @keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 
 .quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
-.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;letter-spacing:.01em;}
 .qa-btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;}
-.qa-btn.primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(110,168,255,.3);}
-.qa-btn.ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);}
-.qa-btn.ghost:hover{border-color:rgba(255,255,255,.25);}
+.qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+.qa-btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);}
 
 /* ── Results Card ── */
-.result-card{text-align:center;padding:40px 20px;max-width:500px;margin:0 auto;}
-.result-card .big-score{font-size:72px;font-weight:900;line-height:1;margin-bottom:6px;}
+.result-card{text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;}
+.result-card .big-score{font-size:72px;font-weight:900;line-height:1;margin-bottom:8px;}
 .result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
 .result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
-.result-mini .rm{padding:14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--border);}
-.result-mini .rm .rv{font-size:20px;font-weight:900;}
-.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:2px;}
+.result-mini .rm{padding:16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.result-mini .rm .rv{font-size:22px;font-weight:900;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:4px;}
 
 /* ── Subject Practice Grid ── */
-.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:18px;}
-.subj-card{padding:18px;border-radius:18px;border:1px solid var(--border);background:rgba(255,255,255,.04);cursor:pointer;transition:all .15s;position:relative;overflow:hidden;}
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
 .subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
-.subj-card:hover{border-color:rgba(255,255,255,.22);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.2);}
-.subj-card .sc-icon{font-size:28px;margin-bottom:8px;}
-.subj-card .sc-name{font-size:15px;font-weight:800;margin-bottom:4px;}
+.subj-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.subj-card .sc-icon{font-size:30px;margin-bottom:10px;}
+.subj-card .sc-name{font-size:15px;font-weight:800;margin-bottom:4px;letter-spacing:.01em;}
 .subj-card .sc-count{font-size:12px;color:var(--muted);}
-.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.08);margin-top:10px;overflow:hidden;}
-.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .4s ease;}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .5s ease;}
 .subj-card[data-sub="Polity"]::before,.subj-card[data-sub="Polity"] .sc-fill{background:#6ea8ff;}
 .subj-card[data-sub="History"]::before,.subj-card[data-sub="History"] .sc-fill{background:#f59e0b;}
 .subj-card[data-sub="Geography"]::before,.subj-card[data-sub="Geography"] .sc-fill{background:#10b981;}
@@ -126,31 +126,85 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 /* ── Analytics Dashboard ── */
 .analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
 @media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
-.an-card{padding:18px;border-radius:18px;border:1px solid var(--border);background:rgba(255,255,255,.04);backdrop-filter:blur(6px);}
+.an-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.an-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);}
 .an-card.full{grid-column:1/-1;}
-.an-card h3{font-size:14px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
-.an-card h3 .icon{width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.an-card h3{font-size:13px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
 .an-card canvas{width:100%!important;}
+
+/* ── Ring Chart ── */
+.ring-wrap{display:flex;align-items:center;justify-content:center;position:relative;padding:10px 0;}
+.ring-center{position:absolute;text-align:center;}
+.ring-center .rv{font-size:32px;font-weight:900;}
+.ring-center .rl{font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;}
 
 /* ── Subject accuracy bars ── */
 .sub-bars{display:flex;flex-direction:column;gap:10px;}
 .sb-row{display:flex;align-items:center;gap:10px;}
-.sb-label{width:100px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.sb-track{flex:1;height:22px;border-radius:8px;background:rgba(255,255,255,.06);overflow:hidden;position:relative;}
-.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .5s ease;min-width:fit-content;}
-.sb-val{font-size:12px;font-weight:700;width:40px;text-align:right;color:var(--muted);}
+.sb-label{width:105px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:46px;text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;}
 
-/* ── Ring Chart ── */
-.ring-wrap{display:flex;align-items:center;justify-content:center;position:relative;}
-.ring-center{position:absolute;text-align:center;}
-.ring-center .rv{font-size:28px;font-weight:900;}
-.ring-center .rl{font-size:11px;color:var(--muted);}
+/* ── Trend Chart ── */
+.trend-wrap{position:relative;min-height:220px;}
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--muted);text-align:center;}
+.trend-empty .te-icon{font-size:40px;opacity:.4;}
+.trend-empty .te-msg{font-size:13px;line-height:1.5;max-width:320px;}
+.trend-bar-chart{display:flex;align-items:flex-end;gap:6px;height:180px;padding:10px 0;}
+.trend-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;}
+.trend-bar-outer{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative;}
+.trend-bar{width:100%;border-radius:6px 6px 2px 2px;transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;min-height:4px;}
+.trend-bar:hover{filter:brightness(1.2);}
+.trend-bar .tb-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.trend-bar:hover .tb-val{opacity:1;}
+.trend-label{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.trend-mode-label.daily{background:rgba(110,168,255,.12);color:#6ea8ff;}
+.trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
+
+/* ── Stats grid inside Quick Stats ── */
+.qs-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.qs-row:last-child{border-bottom:none;}
+.qs-row .qs-label{color:var(--muted);font-size:13px;font-weight:500;}
+.qs-row .qs-val{font-weight:800;font-size:14px;font-family:'JetBrains Mono',monospace;}
+
+/* ── Difficulty Distribution ── */
+.diff-dist{display:flex;gap:10px;margin-top:6px;}
+.diff-chip{flex:1;padding:14px 10px;border-radius:14px;text-align:center;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);}
+.diff-chip .dc-val{font-size:22px;font-weight:900;margin-bottom:2px;}
+.diff-chip .dc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+.diff-chip.easy .dc-val{color:#34d399;}
+.diff-chip.medium .dc-val{color:#fbbf24;}
+.diff-chip.hard .dc-val{color:#f87171;}
+
+/* ── Session History Table ── */
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding-right:4px;}
+.hist-list::-webkit-scrollbar{width:4px;}
+.hist-list::-webkit-scrollbar-track{background:transparent;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:12px;transition:background .1s;}
+.hist-row:hover{background:rgba(255,255,255,.04);}
+.hist-date{font-weight:600;min-width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hist-mode{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.hist-mode.daily{background:rgba(110,168,255,.1);color:#6ea8ff;}
+.hist-mode.practice{background:rgba(139,92,246,.1);color:#a78bfa;}
+.hist-score{margin-left:auto;font-weight:800;font-family:'JetBrains Mono',monospace;}
+.hist-detail{color:var(--muted);font-size:11px;}
+
+/* ── Reset Button ── */
+.reset-zone{margin-top:20px;text-align:center;}
+.reset-btn{padding:10px 20px;border-radius:12px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.reset-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);}
 
 /* ── Responsive ── */
 @media(max-width:640px){
   .quiz-panel{padding:16px;}
   .streak-bar{gap:10px;}
   .subj-grid{grid-template-columns:1fr 1fr;}
+  .diff-dist{flex-wrap:wrap;}
+  .diff-chip{min-width:calc(50% - 5px);}
 }
 
 /* ── Anim ── */
@@ -187,7 +241,7 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
   <div class="view active" id="viewDaily">
     <div class="daily-hero anim-up d1">
       <h1>Daily <span class="grad">Challenge</span></h1>
-      <p class="sub">10 fresh questions every day — build your streak.</p>
+      <p class="sub">10 fresh questions every day — build your streak, track your growth.</p>
     </div>
     <div class="streak-bar anim-up d2">
       <div class="streak-pill"><span class="fire">🔥</span><span>Streak</span><span class="sval" id="streakVal">0</span></div>
@@ -201,7 +255,7 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
   <div class="view" id="viewPractice">
     <div class="daily-hero">
       <h1>Subject <span class="grad">Drill</span></h1>
-      <p class="sub">Focus on your weak areas. Pick a subject and practice as many questions as you want.</p>
+      <p class="sub">Focus on your weak areas. Pick a subject and sharpen your edge.</p>
     </div>
     <div class="subj-grid" id="subjGrid"></div>
     <div id="practiceQuizArea" style="margin-top:20px;"></div>
@@ -214,26 +268,43 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
       <p class="sub">Your diagnostic report — accuracy, trends, and weak spots. All data stays in your browser.</p>
     </div>
     <div class="analytics-grid" id="analyticsGrid">
+      <!-- Row 1: Ring + Quick Stats -->
       <div class="an-card">
-        <h3><span class="icon" style="background:rgba(16,185,129,.12);color:#34d399;">◎</span>Overall Accuracy</h3>
+        <h3><span class="icon" style="background:rgba(16,185,129,.1);color:#34d399;">◎</span>Overall Accuracy</h3>
         <div class="ring-wrap"><canvas id="ringCanvas" width="180" height="180"></canvas><div class="ring-center"><div class="rv" id="ringVal">—</div><div class="rl">accuracy</div></div></div>
       </div>
       <div class="an-card">
-        <h3><span class="icon" style="background:rgba(110,168,255,.12);color:#6ea8ff;">⚡</span>Quick Stats</h3>
-        <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;" id="quickStats"></div>
+        <h3><span class="icon" style="background:rgba(110,168,255,.1);color:#6ea8ff;">⚡</span>Quick Stats</h3>
+        <div id="quickStats"></div>
       </div>
+      <!-- Row 2: Subject-wise -->
       <div class="an-card full">
-        <h3><span class="icon" style="background:rgba(139,92,246,.12);color:#8b5cf6;">▦</span>Subject-wise Accuracy</h3>
+        <h3><span class="icon" style="background:rgba(139,92,246,.1);color:#8b5cf6;">▦</span>Subject-wise Accuracy</h3>
         <div class="sub-bars" id="subBars"></div>
       </div>
+      <!-- Row 3: Trend Chart -->
       <div class="an-card full">
-        <h3><span class="icon" style="background:rgba(245,158,11,.12);color:#f59e0b;">📈</span>Accuracy Trend (Last 7 Sessions)</h3>
-        <canvas id="trendCanvas" height="200"></canvas>
+        <h3><span class="icon" style="background:rgba(245,158,11,.1);color:#f59e0b;">📈</span>Accuracy Trend — Last 10 Sessions</h3>
+        <div class="trend-wrap" id="trendWrap"></div>
       </div>
+      <!-- Row 4: Session History + Difficulty -->
+      <div class="an-card">
+        <h3><span class="icon" style="background:rgba(110,168,255,.1);color:#6ea8ff;">🕐</span>Session History</h3>
+        <div class="hist-list" id="histList"></div>
+      </div>
+      <div class="an-card">
+        <h3><span class="icon" style="background:rgba(245,158,11,.1);color:#f59e0b;">📊</span>Difficulty Breakdown</h3>
+        <div id="diffDist"></div>
+      </div>
+      <!-- Row 5: Weak Areas -->
       <div class="an-card full" id="weakCard">
-        <h3><span class="icon" style="background:rgba(239,68,68,.12);color:#f87171;">⚠</span>Weak Areas — Focus Here</h3>
+        <h3><span class="icon" style="background:rgba(239,68,68,.1);color:#f87171;">⚠</span>Weak Areas — Focus Here</h3>
         <div id="weakAreas"></div>
       </div>
+    </div>
+    <!-- Reset -->
+    <div class="reset-zone">
+      <button class="reset-btn" onclick="if(confirm('This will erase ALL your practice data, scores, and streaks. This cannot be undone. Continue?')){localStorage.removeItem('rm_upsc_practice');location.reload();}">Reset All Progress</button>
     </div>
   </div>
 </div>
@@ -253,7 +324,7 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 
 <script>
 /* ════════════════════════════════════════════════════════════════
-   MCQ DATABASE — Scalable: add more objects to grow the bank
+   MCQ DATABASE
    ════════════════════════════════════════════════════════════════ */
 const BANK=[
 // ── Polity (12) ──
@@ -269,7 +340,6 @@ const BANK=[
 {sub:"Polity",q:"The maximum strength of the Lok Sabha as fixed by the Constitution is:",opts:["545","550","552","555"],ans:2,exp:"Article 81 fixes the maximum strength of Lok Sabha at 552 — up to 530 from States, 20 from Union Territories, and 2 nominated Anglo-Indians (now removed by the 104th Amendment)."},
 {sub:"Polity",q:"Which schedule of the Constitution contains provisions for administration of tribal areas?",opts:["Third Schedule","Fifth Schedule","Sixth Schedule","Ninth Schedule"],ans:2,exp:"The Sixth Schedule contains provisions for the administration of tribal areas in Assam, Meghalaya, Tripura, and Mizoram through Autonomous District Councils."},
 {sub:"Polity",q:"The concept of 'Fundamental Duties' was borrowed from which country's constitution?",opts:["USA","USSR","France","Japan"],ans:1,exp:"Fundamental Duties (Part IVA, Article 51A) were added by the 42nd Amendment (1976) on the recommendation of the Swaran Singh Committee, inspired by the Constitution of the USSR."},
-
 // ── History (10) ──
 {sub:"History",q:"The 'Rowlatt Act' of 1919 was opposed because it:",opts:["Imposed heavy taxes","Allowed detention without trial","Banned Indian newspapers","Ended self-governance"],ans:1,exp:"The Rowlatt Act authorized the government to imprison any person suspected of terrorism without trial for up to two years, severely curtailing civil liberties."},
 {sub:"History",q:"Who was the founder of the 'Servants of India Society'?",opts:["B.G. Tilak","Gopal Krishna Gokhale","M.G. Ranade","Dadabhai Naoroji"],ans:1,exp:"Gopal Krishna Gokhale founded the Servants of India Society in 1905 at Pune. Its aim was to train national missionaries for the service of India."},
@@ -281,17 +351,15 @@ const BANK=[
 {sub:"History",q:"The 'Swadeshi Movement' was a response to:",opts:["Rowlatt Act","Partition of Bengal 1905","Jallianwala Bagh massacre","Simon Commission"],ans:1,exp:"The Swadeshi Movement (1905–1908) was launched in response to Lord Curzon's partition of Bengal, promoting Indian goods and boycotting British products."},
 {sub:"History",q:"The 'August Offer' of 1940 was made by which Viceroy?",opts:["Lord Linlithgow","Lord Wavell","Lord Mountbatten","Lord Irwin"],ans:0,exp:"The August Offer was made by Viceroy Lord Linlithgow in 1940, promising dominion status and an expanded Viceroy's Executive Council in exchange for Indian support in World War II."},
 {sub:"History",q:"The 'Indian Independence Act' was passed by the British Parliament on:",opts:["15 August 1947","18 July 1947","3 June 1947","26 January 1950"],ans:1,exp:"The Indian Independence Act received royal assent on 18 July 1947, partitioning British India into two independent dominions — India and Pakistan — effective 15 August 1947."},
-
 // ── Geography (8) ──
 {sub:"Geography",q:"Which soil type is most suitable for cotton cultivation in India?",opts:["Alluvial soil","Black soil (Regur)","Laterite soil","Red soil"],ans:1,exp:"Black soil (Regur) is ideal for cotton cultivation due to its high moisture-retaining capacity and richness in lime, iron, and magnesium. It is predominantly found in the Deccan Plateau."},
 {sub:"Geography",q:"The 'Western Disturbances' that bring winter rainfall to northern India originate from:",opts:["Bay of Bengal","Arabian Sea","Mediterranean Sea","Indian Ocean"],ans:2,exp:"Western Disturbances are extra-tropical storms originating over the Mediterranean Sea that travel eastward and bring winter rainfall to northern India, especially Punjab, Haryana, and J&K."},
-{sub:"Geography",q:"Which Indian state has the longest coastline?",opts:["Tamil Nadu","Gujarat","Maharashtra","Andhra Pradesh"],ans:1,exp:"Gujarat has the longest coastline among Indian states at approximately 1,600 km, followed by Andhra Pradesh. If Union Territories are included, the Andaman and Nicobar Islands lead."},
+{sub:"Geography",q:"Which Indian state has the longest coastline?",opts:["Tamil Nadu","Gujarat","Maharashtra","Andhra Pradesh"],ans:1,exp:"Gujarat has the longest coastline among Indian states at approximately 1,600 km, followed by Andhra Pradesh."},
 {sub:"Geography",q:"The '18th parallel' roughly divides which two regions of India?",opts:["North and South India","Deccan Plateau and Coastal Plains","Peninsular and Extra-Peninsular India","Indo-Gangetic Plain and Thar Desert"],ans:0,exp:"While there's no single official divide, the 18th parallel roughly corresponds to the division between peninsular South India and the broader North Indian plains."},
 {sub:"Geography",q:"Which type of forest covers the maximum area in India?",opts:["Tropical Evergreen","Tropical Deciduous","Montane","Mangrove"],ans:1,exp:"Tropical Deciduous forests (both moist and dry) cover the largest area in India, found across the central Indian highlands, Western Ghats foothills, and parts of the Deccan."},
 {sub:"Geography",q:"The 'Chilika Lake' in Odisha is which type of lake?",opts:["Freshwater lake","Saltwater lagoon","Glacial lake","Crater lake"],ans:1,exp:"Chilika Lake is Asia's largest brackish water lagoon, spread across Puri, Khurda, and Ganjam districts of Odisha. It is a designated Ramsar Wetland."},
 {sub:"Geography",q:"The 'Sundarbans' delta is formed by which river system?",opts:["Ganga-Brahmaputra","Mahanadi","Godavari","Krishna"],ans:0,exp:"The Sundarbans is the world's largest mangrove forest, formed by the delta of the Ganga-Brahmaputra river system across India and Bangladesh."},
 {sub:"Geography",q:"'Cherrapunji' receives heavy rainfall primarily due to:",opts:["Western Disturbances","Orographic effect on Bay of Bengal monsoon","Convection currents","Cyclonic activity"],ans:1,exp:"Cherrapunji (Sohra) receives extremely heavy rainfall due to the orographic effect — moisture-laden winds from the Bay of Bengal are forced to rise over the Khasi Hills, causing intense precipitation."},
-
 // ── Economy (8) ──
 {sub:"Economy",q:"Which committee recommended the introduction of GST in India?",opts:["Kelkar Committee","Chelliah Committee","Vijay Kelkar Task Force","All of the above contributed"],ans:3,exp:"The idea evolved over time: the Chelliah Committee (1991), Kelkar Task Force (2004), and the Empowered Committee of State Finance Ministers all contributed to the GST framework."},
 {sub:"Economy",q:"'MUDRA' loans are provided for:",opts:["Housing development","Micro enterprise funding","Agricultural subsidies","Education loans"],ans:1,exp:"MUDRA (Micro Units Development & Refinance Agency) loans are provided to micro and small enterprises under the Pradhan Mantri MUDRA Yojana for loans up to ₹10 lakh."},
@@ -301,7 +369,6 @@ const BANK=[
 {sub:"Economy",q:"Which of the following is a direct tax?",opts:["GST","Customs duty","Income tax","Excise duty"],ans:2,exp:"Income tax is a direct tax levied on the income of individuals and entities. GST, customs duty, and excise duty are all indirect taxes levied on goods and services."},
 {sub:"Economy",q:"'Purchasing Power Parity (PPP)' is used to:",opts:["Compare living standards across countries","Measure inflation within a country","Calculate foreign exchange reserves","Determine interest rates"],ans:0,exp:"PPP is a method used to compare economic productivity and living standards across countries by adjusting for price level differences using a 'basket of goods' approach."},
 {sub:"Economy",q:"The 'Insolvency and Bankruptcy Code (IBC)' was enacted in which year?",opts:["2014","2016","2018","2020"],ans:1,exp:"The IBC was enacted in 2016 to consolidate insolvency resolution processes for corporates, partnerships, and individuals, replacing a fragmented framework of multiple laws."},
-
 // ── Environment (8) ──
 {sub:"Environment",q:"Which of the following is NOT a greenhouse gas?",opts:["Methane","Nitrous oxide","Nitrogen","Ozone"],ans:2,exp:"Nitrogen (N₂) makes up ~78% of the atmosphere but is NOT a greenhouse gas. Methane (CH₄), nitrous oxide (N₂O), and ozone (O₃) are all greenhouse gases."},
 {sub:"Environment",q:"The 'National Action Plan on Climate Change (NAPCC)' includes how many national missions?",opts:["6","8","10","12"],ans:1,exp:"The NAPCC (2008) originally comprised 8 national missions including Solar, Energy Efficiency, Sustainable Habitat, Water, Sustaining Himalayan Ecosystem, Green India, Sustainable Agriculture, and Strategic Knowledge for Climate Change."},
@@ -309,9 +376,8 @@ const BANK=[
 {sub:"Environment",q:"'Biodiversity Hotspots' must have at least what percentage of their original habitat lost?",opts:["50%","60%","70%","80%"],ans:2,exp:"To qualify as a biodiversity hotspot, a region must have lost at least 70% of its original natural vegetation and must contain at least 1,500 species of vascular plants as endemics."},
 {sub:"Environment",q:"The 'CITES' convention regulates trade in:",opts:["Carbon credits","Endangered species","Hazardous waste","Genetic resources"],ans:1,exp:"CITES (Convention on International Trade in Endangered Species) regulates international trade in specimens of wild animals and plants to ensure it doesn't threaten their survival."},
 {sub:"Environment",q:"India's first National Park was:",opts:["Kaziranga","Jim Corbett","Kanha","Gir"],ans:1,exp:"Jim Corbett National Park in Uttarakhand, established in 1936 as Hailey National Park, was India's first national park. It was renamed in honor of the hunter-naturalist Jim Corbett."},
-{sub:"Environment",q:"The 'Coral Triangle' is located in which ocean?",opts:["Atlantic Ocean","Indian Ocean","Pacific Ocean","Arctic Ocean"],ans:2,exp:"The Coral Triangle spans parts of Indonesia, Malaysia, the Philippines, Papua New Guinea, Timor-Leste, and the Solomon Islands in the western Pacific Ocean. It contains 76% of all known coral species."},
+{sub:"Environment",q:"The 'Coral Triangle' is located in which ocean?",opts:["Atlantic Ocean","Indian Ocean","Pacific Ocean","Arctic Ocean"],ans:2,exp:"The Coral Triangle spans parts of Indonesia, Malaysia, the Philippines, Papua New Guinea, Timor-Leste, and the Solomon Islands in the western Pacific Ocean."},
 {sub:"Environment",q:"Which Indian state has the highest percentage of forest cover relative to its geographical area?",opts:["Arunachal Pradesh","Mizoram","Meghalaya","Manipur"],ans:1,exp:"Mizoram has the highest forest cover as a percentage of its total geographical area (approximately 84.5%), according to the India State of Forest Report."},
-
 // ── Science (7) ──
 {sub:"Science",q:"Which Indian satellite was the first to be placed in orbit?",opts:["INSAT-1A","Aryabhata","Rohini","Bhaskara"],ans:1,exp:"Aryabhata, named after the ancient Indian mathematician, was India's first satellite, launched by the Soviet Union on 19 April 1975 from Kapustin Yar."},
 {sub:"Science",q:"'Graphene' is an allotrope of which element?",opts:["Silicon","Iron","Carbon","Titanium"],ans:2,exp:"Graphene is a single layer of carbon atoms arranged in a two-dimensional hexagonal lattice. It is the thinnest, strongest material known and an excellent conductor."},
@@ -320,15 +386,14 @@ const BANK=[
 {sub:"Science",q:"Which technology is used in 5G networks for higher data speeds?",opts:["Infrared waves","Millimeter waves","Gamma rays","Radio waves only"],ans:1,exp:"5G networks use millimeter waves (mmWave) in the 24-100 GHz range along with sub-6 GHz bands to deliver significantly higher data speeds and lower latency than 4G."},
 {sub:"Science",q:"'mRNA vaccines' work by:",opts:["Injecting weakened virus","Instructing cells to produce a protein that triggers immunity","Using bacterial DNA","Providing pre-made antibodies"],ans:1,exp:"mRNA vaccines deliver messenger RNA that instructs cells to produce a specific viral protein (like the spike protein), which then triggers an immune response without using any live virus."},
 {sub:"Science",q:"Which planet in our solar system has the most moons?",opts:["Jupiter","Saturn","Uranus","Neptune"],ans:1,exp:"Saturn currently holds the record with over 140 confirmed moons, surpassing Jupiter's count. New moons continue to be discovered."},
-
 // ── Current Affairs (7) ──
-{sub:"Current Affairs",q:"The 'Digital Personal Data Protection Act' was passed by India in which year?",opts:["2021","2022","2023","2024"],ans:2,exp:"The Digital Personal Data Protection Act, 2023 was passed by the Indian Parliament in August 2023, establishing a framework for processing digital personal data."},
-{sub:"Current Affairs",q:"Which country held the presidency of the G20 in 2023?",opts:["Indonesia","India","Brazil","South Africa"],ans:1,exp:"India held the G20 presidency from December 2022 to November 2023, with the theme 'One Earth, One Family, One Future.' The leaders' summit was held in New Delhi in September 2023."},
-{sub:"Current Affairs",q:"The 'Aditya-L1' mission launched by ISRO is designed to study:",opts:["The Moon","Mars","The Sun","Asteroids"],ans:2,exp:"Aditya-L1, launched in September 2023, is India's first space-based solar observatory. It is positioned at the L1 Lagrange point to continuously observe the Sun."},
-{sub:"Current Affairs",q:"Which international organization did Finland join in 2023?",opts:["EU","NATO","BRICS","ASEAN"],ans:1,exp:"Finland officially joined NATO on 4 April 2023, becoming the 31st member of the alliance, ending decades of military non-alignment following Russia's invasion of Ukraine."},
-{sub:"Current Affairs",q:"The 'UPI' digital payments system was developed by:",opts:["RBI","NPCI","SBI","SEBI"],ans:1,exp:"The Unified Payments Interface (UPI) was developed by the National Payments Corporation of India (NPCI). It enables instant real-time payment transfers between bank accounts via mobile."},
-{sub:"Current Affairs",q:"India's semiconductor manufacturing push includes the establishment of a fab plant with which company in Gujarat?",opts:["Intel","TSMC","Micron","Samsung"],ans:2,exp:"Micron Technology announced a semiconductor assembly and test facility in Sanand, Gujarat in 2023 with significant government support under India's semiconductor mission."},
-{sub:"Current Affairs",q:"The 'Women's Reservation Bill' (Nari Shakti Vandan Adhiniyam) reserves what percentage of seats for women in Lok Sabha and State Assemblies?",opts:["25%","30%","33%","40%"],ans:2,exp:"The 128th Constitutional Amendment (Nari Shakti Vandan Adhiniyam), passed in September 2023, reserves one-third (33%) of seats in Lok Sabha and State Legislative Assemblies for women."},
+{sub:"Current Affairs",q:"The 'Digital Personal Data Protection Act' was passed by India in which year?",opts:["2021","2022","2023","2024"],ans:2,exp:"The Digital Personal Data Protection Act, 2023 was passed by the Indian Parliament in August 2023."},
+{sub:"Current Affairs",q:"Which country held the presidency of the G20 in 2023?",opts:["Indonesia","India","Brazil","South Africa"],ans:1,exp:"India held the G20 presidency from December 2022 to November 2023, with the theme 'One Earth, One Family, One Future.'"},
+{sub:"Current Affairs",q:"The 'Aditya-L1' mission launched by ISRO is designed to study:",opts:["The Moon","Mars","The Sun","Asteroids"],ans:2,exp:"Aditya-L1, launched in September 2023, is India's first space-based solar observatory positioned at the L1 Lagrange point."},
+{sub:"Current Affairs",q:"Which international organization did Finland join in 2023?",opts:["EU","NATO","BRICS","ASEAN"],ans:1,exp:"Finland officially joined NATO on 4 April 2023, becoming the 31st member of the alliance."},
+{sub:"Current Affairs",q:"The 'UPI' digital payments system was developed by:",opts:["RBI","NPCI","SBI","SEBI"],ans:1,exp:"The Unified Payments Interface (UPI) was developed by the National Payments Corporation of India (NPCI)."},
+{sub:"Current Affairs",q:"India's semiconductor manufacturing push includes the establishment of a fab plant with which company in Gujarat?",opts:["Intel","TSMC","Micron","Samsung"],ans:2,exp:"Micron Technology announced a semiconductor assembly and test facility in Sanand, Gujarat in 2023 with significant government support."},
+{sub:"Current Affairs",q:"The 'Women's Reservation Bill' (Nari Shakti Vandan Adhiniyam) reserves what percentage of seats for women in Lok Sabha and State Assemblies?",opts:["25%","30%","33%","40%"],ans:2,exp:"The 128th Constitutional Amendment, passed in September 2023, reserves one-third (33%) of seats in Lok Sabha and State Legislative Assemblies for women."},
 ];
 
 const SUBJECTS=[...new Set(BANK.map(q=>q.sub))].sort();
@@ -358,8 +423,9 @@ document.querySelector('.tab-nav').addEventListener('click',function(e){
   this.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   e.target.classList.add('active');
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('view'+e.target.dataset.tab.charAt(0).toUpperCase()+e.target.dataset.tab.slice(1)).classList.add('active');
-  if(e.target.dataset.tab==='analytics')renderAnalytics();
+  const tab=e.target.dataset.tab;
+  document.getElementById('view'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  if(tab==='analytics')renderAnalytics();
 });
 
 /* ════════════════════════
@@ -375,21 +441,18 @@ function getDailyQuestions(){
 function renderDailyQuiz(){
   const existing=getTodaySession();
   if(existing&&existing.completed){renderDailyResult(existing);return;}
-
   const questions=getDailyQuestions();
   const session=existing||{date:todayKey(),mode:'daily',answers:[],qIndices:questions.map(q=>BANK.indexOf(q)),completed:false,correct:0,total:DAILY_COUNT,startTime:Date.now()};
   if(!existing){S.history.push(session);saveState(S);}
-
   const area=document.getElementById('quizArea');
   const ci=session.answers.length;
   if(ci>=DAILY_COUNT){session.completed=true;saveState(S);renderDailyResult(session);return;}
-
   const q=questions[ci];
   area.innerHTML=`
     <div class="quiz-panel">
-      <div class="quiz-progress">${Array.from({length:DAILY_COUNT},(_, i)=>{
+      <div class="quiz-progress">${Array.from({length:DAILY_COUNT},(_,i)=>{
         let cls='pip';
-        if(i<ci) cls+= session.answers[i].correct?' done':' wrong';
+        if(i<ci) cls+=session.answers[i].correct?' done':' wrong';
         else if(i===ci) cls+=' current';
         return `<div class="${cls}"></div>`;
       }).join('')}</div>
@@ -406,26 +469,19 @@ function renderDailyQuiz(){
       </div>
     </div>`;
 
-  // Timer
   let sec=0;const timerEl=document.getElementById('timerVal');
   const iv=setInterval(()=>{sec++;const m=Math.floor(sec/60);const s=sec%60;timerEl.textContent=m+':'+(s<10?'0':'')+s;},1000);
 
-  // Answer handler
   let answered=false;
   area.querySelectorAll('.qo').forEach(el=>{
     el.addEventListener('click',function(){
       if(answered)return;answered=true;clearInterval(iv);
-      const oi=+this.dataset.oi;
-      const isCorrect=oi===q.ans;
+      const oi=+this.dataset.oi;const isCorrect=oi===q.ans;
       session.answers.push({qi:ci,chosen:oi,correct:isCorrect,time:sec});
       if(isCorrect)session.correct++;
-      // Update sub stats
       if(!S.subStats[q.sub])S.subStats[q.sub]={total:0,correct:0};
-      S.subStats[q.sub].total++;
-      if(isCorrect)S.subStats[q.sub].correct++;
+      S.subStats[q.sub].total++;if(isCorrect)S.subStats[q.sub].correct++;
       saveState(S);
-
-      // Visual feedback
       area.querySelectorAll('.qo').forEach(o=>{
         o.classList.add('disabled');
         if(+o.dataset.oi===q.ans)o.classList.add('correct');
@@ -437,11 +493,9 @@ function renderDailyQuiz(){
       document.getElementById('qActions').style.display='flex';
     });
   });
-
   document.addEventListener('click',function handler(e){
     if(e.target.id==='nextBtn'){document.removeEventListener('click',handler);renderDailyQuiz();}
   });
-
   updateStreakUI();
 }
 
@@ -451,13 +505,11 @@ function renderDailyResult(session){
   const totalTime=session.answers.reduce((a,b)=>a+b.time,0);
   const avgTime=session.answers.length?Math.round(totalTime/session.answers.length):0;
 
-  // Update streak
   if(S.lastDate!==todayKey()){
     const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
     const yd=yesterday.toISOString().slice(0,10);
     S.streak=(S.lastDate===yd)?S.streak+1:1;
-    S.lastDate=todayKey();
-    saveState(S);
+    S.lastDate=todayKey();saveState(S);
   }
 
   document.getElementById('quizArea').innerHTML=`
@@ -483,8 +535,7 @@ function renderDailyResult(session){
 function updateStreakUI(){
   document.getElementById('streakVal').textContent=S.streak||0;
   const dots=document.getElementById('streakDots');
-  const today=new Date();
-  let html='';
+  const today=new Date();let html='';
   for(let i=6;i>=0;i--){
     const d=new Date(today);d.setDate(d.getDate()-i);
     const key=d.toISOString().slice(0,10);
@@ -496,7 +547,7 @@ function updateStreakUI(){
 }
 
 /* ════════════════════════
-   SUBJECT PRACTICE
+   SUBJECT PRACTICE — NOW TRACKS SESSIONS
    ════════════════════════ */
 function renderSubjectGrid(){
   const grid=document.getElementById('subjGrid');
@@ -517,9 +568,14 @@ window.startSubjectPractice=function(sub){
   const questions=BANK.filter(q=>q.sub===sub).sort(()=>Math.random()-.5);
   const area=document.getElementById('practiceQuizArea');
   let ci=0;
+  // ── NEW: Create a practice session to track in history ──
+  const practiceSession={date:todayKey(),mode:'practice',subject:sub,answers:[],completed:false,correct:0,total:0,startTime:Date.now()};
 
   function renderQ(){
-    if(ci>=questions.length){area.innerHTML=`<div class="quiz-panel"><div class="result-card"><div class="big-score great">Done!</div><div class="rlabel">You've completed all ${sub} questions. New questions will be added regularly.</div><div class="quiz-actions" style="justify-content:center;margin-top:16px;"><button class="qa-btn ghost" onclick="document.getElementById('practiceQuizArea').innerHTML='';renderSubjectGrid();">← Back to Subjects</button></div></div></div>`;return;}
+    if(ci>=questions.length){
+      practiceSession.completed=true;
+      S.history.push(practiceSession);saveState(S);
+      area.innerHTML=`<div class="quiz-panel"><div class="result-card"><div class="big-score great">Done!</div><div class="rlabel">You've completed all ${sub} questions. ${practiceSession.correct}/${practiceSession.total} correct.</div><div class="quiz-actions" style="justify-content:center;margin-top:16px;"><button class="qa-btn ghost" onclick="document.getElementById('practiceQuizArea').innerHTML='';renderSubjectGrid();">← Back to Subjects</button></div></div></div>`;return;}
     const q=questions[ci];
     area.innerHTML=`
       <div class="quiz-panel">
@@ -527,7 +583,10 @@ window.startSubjectPractice=function(sub){
         <div class="quiz-question">${q.q}</div>
         <div class="quiz-opts">${q.opts.map((o,i)=>`<div class="qo" data-oi="${i}"><span class="letter">${'ABCD'[i]}</span><span>${o}</span></div>`).join('')}</div>
         <div class="quiz-explain" id="pExplain"></div>
-        <div class="quiz-actions" id="pActions" style="display:none;"><button class="qa-btn primary" id="pNext">${ci+1>=questions.length?'Finish':'Next →'}</button><button class="qa-btn ghost" onclick="document.getElementById('practiceQuizArea').innerHTML='';renderSubjectGrid();">← Stop</button></div>
+        <div class="quiz-actions" id="pActions" style="display:none;">
+          <button class="qa-btn primary" id="pNext">${ci+1>=questions.length?'Finish':'Next →'}</button>
+          <button class="qa-btn ghost" id="pStop">← Stop</button>
+        </div>
       </div>`;
     let done=false;
     area.querySelectorAll('.qo').forEach(el=>{
@@ -535,37 +594,54 @@ window.startSubjectPractice=function(sub){
         if(done)return;done=true;
         const oi=+this.dataset.oi;const isCorrect=oi===q.ans;
         if(!S.subStats[q.sub])S.subStats[q.sub]={total:0,correct:0};
-        S.subStats[q.sub].total++;if(isCorrect)S.subStats[q.sub].correct++;saveState(S);
+        S.subStats[q.sub].total++;if(isCorrect)S.subStats[q.sub].correct++;
+        practiceSession.total++;if(isCorrect)practiceSession.correct++;
+        practiceSession.answers.push({qi:ci,chosen:oi,correct:isCorrect});
+        saveState(S);
         area.querySelectorAll('.qo').forEach(o=>{o.classList.add('disabled');if(+o.dataset.oi===q.ans)o.classList.add('correct');else if(+o.dataset.oi===oi&&!isCorrect)o.classList.add('wrong');});
         const exp=document.getElementById('pExplain');exp.innerHTML=`<strong>${isCorrect?'✓ Correct!':'✗ Incorrect.'}</strong> ${q.exp}`;exp.classList.add('show');
         document.getElementById('pActions').style.display='flex';
       });
     });
     document.getElementById('pNext')?.addEventListener('click',()=>{ci++;renderQ();});
+    document.getElementById('pStop')?.addEventListener('click',()=>{
+      // Save partial session
+      if(practiceSession.total>0){practiceSession.completed=true;S.history.push(practiceSession);saveState(S);}
+      document.getElementById('practiceQuizArea').innerHTML='';renderSubjectGrid();
+    });
   }
   renderQ();
 };
 
 /* ════════════════════════
-   ANALYTICS
+   ANALYTICS — COMPLETELY REBUILT
    ════════════════════════ */
 function renderAnalytics(){
-  // Overall accuracy ring
+  // ── Overall accuracy ring ──
   const totalA=Object.values(S.subStats).reduce((a,s)=>a+s.total,0);
   const totalC=Object.values(S.subStats).reduce((a,s)=>a+s.correct,0);
   const pct=totalA?Math.round(totalC/totalA*100):0;
   document.getElementById('ringVal').textContent=totalA?pct+'%':'—';
   drawRing(pct);
 
-  // Quick stats
-  const sessions=S.history.filter(h=>h.completed);
-  document.getElementById('quickStats').innerHTML=`
-    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);"><span style="color:var(--muted)">Total Questions Answered</span><span style="font-weight:800;">${totalA}</span></div>
-    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);"><span style="color:var(--muted)">Daily Challenges Completed</span><span style="font-weight:800;">${sessions.length}</span></div>
-    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);"><span style="color:var(--muted)">Current Streak</span><span style="font-weight:800;">🔥 ${S.streak||0} days</span></div>
-    <div style="display:flex;justify-content:space-between;padding:10px 0;"><span style="color:var(--muted)">Correct / Wrong</span><span style="font-weight:800;"><span style="color:#34d399">${totalC}</span> / <span style="color:#f87171">${totalA-totalC}</span></span></div>`;
+  // ── Quick stats ──
+  const allSessions=S.history.filter(h=>h.completed);
+  const dailySessions=allSessions.filter(h=>h.mode==='daily');
+  const practiceSessions=allSessions.filter(h=>h.mode==='practice');
+  const totalTime=allSessions.reduce((a,s)=>{
+    if(s.answers)return a+s.answers.reduce((t,ans)=>t+(ans.time||0),0);return a;
+  },0);
+  const avgTimePerQ=totalA>0?Math.round(totalTime/totalA):0;
 
-  // Subject bars
+  document.getElementById('quickStats').innerHTML=`
+    <div class="qs-row"><span class="qs-label">Total Questions</span><span class="qs-val">${totalA}</span></div>
+    <div class="qs-row"><span class="qs-label">Correct / Wrong</span><span class="qs-val"><span style="color:#34d399">${totalC}</span> <span style="color:var(--muted);font-weight:400">/</span> <span style="color:#f87171">${totalA-totalC}</span></span></div>
+    <div class="qs-row"><span class="qs-label">Daily Challenges</span><span class="qs-val">${dailySessions.length}</span></div>
+    <div class="qs-row"><span class="qs-label">Practice Sessions</span><span class="qs-val">${practiceSessions.length}</span></div>
+    <div class="qs-row"><span class="qs-label">Current Streak</span><span class="qs-val">🔥 ${S.streak||0}</span></div>
+    ${avgTimePerQ?`<div class="qs-row"><span class="qs-label">Avg Time / Question</span><span class="qs-val">${avgTimePerQ}s</span></div>`:''}`;
+
+  // ── Subject bars ──
   const bars=document.getElementById('subBars');
   bars.innerHTML=SUBJECTS.map(sub=>{
     const st=S.subStats[sub]||{total:0,correct:0};
@@ -573,10 +649,16 @@ function renderAnalytics(){
     return `<div class="sb-row"><span class="sb-label">${sub}</span><div class="sb-track"><div class="sb-fill" style="width:${Math.max(p,2)}%;background:${SUB_COLORS[sub]}">${p>20?p+'%':''}</div></div><span class="sb-val">${st.total?p+'%':'—'}</span></div>`;
   }).join('');
 
-  // Trend chart
-  drawTrendChart();
+  // ── Trend chart (NEW: bar chart using both daily + practice sessions) ──
+  renderTrendChart();
 
-  // Weak areas
+  // ── Session history ──
+  renderSessionHistory(allSessions);
+
+  // ── Difficulty distribution ──
+  renderDifficultyDist();
+
+  // ── Weak areas ──
   const weak=SUBJECTS.filter(s=>{const st=S.subStats[s];return st&&st.total>=2&&(st.correct/st.total)<0.5;}).sort((a,b)=>{
     const pa=S.subStats[a].correct/S.subStats[a].total;
     const pb=S.subStats[b].correct/S.subStats[b].total;
@@ -584,17 +666,16 @@ function renderAnalytics(){
   });
   const weakEl=document.getElementById('weakAreas');
   if(!totalA){weakEl.innerHTML='<p style="color:var(--muted);font-size:13px;">Complete some questions first and your weak areas will appear here.</p>';}
-  else if(!weak.length){weakEl.innerHTML='<p style="color:#34d399;font-size:13px;">🎯 Great job! No weak areas detected. Keep practicing to maintain your edge.</p>';}
-  else{weakEl.innerHTML=weak.map(s=>{const st=S.subStats[s];const p=Math.round(st.correct/st.total*100);return `<div style="display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:8px;border-radius:12px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.12);cursor:pointer;" onclick="document.querySelector('[data-tab=practice]').click();setTimeout(()=>startSubjectPractice('${s}'),100)"><span style="font-size:20px;">${SUB_ICONS[s]}</span><div><div style="font-weight:700;">${s}</div><div style="font-size:12px;color:var(--muted);">${p}% accuracy (${st.total} attempted) — click to practice</div></div></div>`;}).join('');}
+  else if(!weak.length){weakEl.innerHTML='<p style="color:#34d399;font-size:13px;">🎯 No weak areas detected. Keep practicing to maintain your edge.</p>';}
+  else{weakEl.innerHTML=weak.map(s=>{const st=S.subStats[s];const p=Math.round(st.correct/st.total*100);return `<div style="display:flex;align-items:center;gap:10px;padding:12px;margin-bottom:8px;border-radius:12px;background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.1);cursor:pointer;transition:all .15s;" onmouseover="this.style.background='rgba(239,68,68,.08)'" onmouseout="this.style.background='rgba(239,68,68,.04)'" onclick="document.querySelector('[data-tab=practice]').click();setTimeout(()=>startSubjectPractice('${s}'),100)"><span style="font-size:22px;">${SUB_ICONS[s]}</span><div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14px;">${s}</div><div style="font-size:12px;color:var(--muted);">${p}% accuracy (${st.total} attempted)</div></div><span style="font-size:12px;color:#6ea8ff;font-weight:700;">Practice →</span></div>`;}).join('');}
 }
 
+/* ── Ring ── */
 function drawRing(pct){
   const c=document.getElementById('ringCanvas');const ctx=c.getContext('2d');
   const dpr=window.devicePixelRatio||1;c.width=180*dpr;c.height=180*dpr;c.style.width='180px';c.style.height='180px';ctx.scale(dpr,dpr);
-  const cx=90,cy=90,r=70,lw=12;
-  // Background ring
-  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=lw;ctx.stroke();
-  // Progress ring
+  const cx=90,cy=90,r=70,lw=14;
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=lw;ctx.stroke();
   if(pct>0){
     const grad=ctx.createLinearGradient(0,0,180,180);
     grad.addColorStop(0,'#6ea8ff');grad.addColorStop(1,'#7cf7d4');
@@ -602,46 +683,94 @@ function drawRing(pct){
   }
 }
 
-function drawTrendChart(){
-  const canvas=document.getElementById('trendCanvas');const ctx=canvas.getContext('2d');
-  const dpr=window.devicePixelRatio||1;const rect=canvas.parentElement.getBoundingClientRect();
-  canvas.width=rect.width*dpr;canvas.height=200*dpr;canvas.style.width=rect.width+'px';canvas.style.height='200px';ctx.scale(dpr,dpr);
-  const W=rect.width,H=200,pad={t:20,r:20,b:30,l:36};
-  const plotW=W-pad.l-pad.r,plotH=H-pad.t-pad.b;
+/* ── Trend Bar Chart (replaces buggy canvas line chart) ── */
+function renderTrendChart(){
+  const wrap=document.getElementById('trendWrap');
+  // Get ALL completed sessions (daily + practice)
+  const sessions=S.history.filter(h=>h.completed&&h.total>0).slice(-10);
 
-  const sessions=S.history.filter(h=>h.completed).slice(-7);
-  if(sessions.length<2){ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='13px DM Sans';ctx.textAlign='center';ctx.fillText('Complete at least 2 daily challenges to see your trend',W/2,H/2);return;}
+  if(!sessions.length){
+    wrap.innerHTML=`<div class="trend-empty"><div class="te-icon">📊</div><div class="te-msg">Complete your first daily challenge or subject practice session to see your accuracy trend here.</div></div>`;
+    return;
+  }
 
-  const pts=sessions.map(s=>Math.round(s.correct/s.total*100));
-  const maxV=100;
+  // Even with 1 session, show a bar
+  let html='<div class="trend-bar-chart">';
+  sessions.forEach((s,i)=>{
+    const pct=Math.round(s.correct/s.total*100);
+    const hue=pct>=70?'#34d399':pct>=40?'#fbbf24':'#f87171';
+    const bgGrad=pct>=70?'linear-gradient(180deg,#34d399,#10b981)':pct>=40?'linear-gradient(180deg,#fbbf24,#f59e0b)':'linear-gradient(180deg,#f87171,#ef4444)';
+    const isDaily=s.mode==='daily';
+    const label=s.date?s.date.slice(5):'';
+    const modeLabel=isDaily?'daily':(s.subject||'practice');
+    const modeCls=isDaily?'daily':'practice';
 
-  // Grid
-  ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
-  for(let i=0;i<=4;i++){const y=pad.t+plotH-plotH*(i/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,.25)';ctx.font='11px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/4)+'%',pad.l-6,y+4);}
-
-  // Area fill
-  const grad=ctx.createLinearGradient(0,pad.t,0,H-pad.b);
-  grad.addColorStop(0,'rgba(110,168,255,.2)');grad.addColorStop(1,'rgba(110,168,255,0)');
-  ctx.beginPath();
-  pts.forEach((v,i)=>{const x=pad.l+plotW*(i/(pts.length-1));const y=pad.t+plotH-plotH*(v/maxV);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
-  ctx.lineTo(pad.l+plotW,H-pad.b);ctx.lineTo(pad.l,H-pad.b);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
-
-  // Line
-  ctx.beginPath();
-  pts.forEach((v,i)=>{const x=pad.l+plotW*(i/(pts.length-1));const y=pad.t+plotH-plotH*(v/maxV);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
-  const lineGrad=ctx.createLinearGradient(pad.l,0,W-pad.r,0);
-  lineGrad.addColorStop(0,'#6ea8ff');lineGrad.addColorStop(1,'#7cf7d4');
-  ctx.strokeStyle=lineGrad;ctx.lineWidth=3;ctx.lineJoin='round';ctx.lineCap='round';ctx.stroke();
-
-  // Dots + labels
-  pts.forEach((v,i)=>{
-    const x=pad.l+plotW*(i/(pts.length-1));const y=pad.t+plotH-plotH*(v/maxV);
-    ctx.fillStyle='#0b1220';ctx.beginPath();ctx.arc(x,y,6,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#6ea8ff';ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='10px DM Sans';ctx.textAlign='center';
-    ctx.fillText(sessions[i].date.slice(5),x,H-pad.b+16);
+    html+=`<div class="trend-col">
+      <div class="trend-bar-outer">
+        <div class="trend-bar" style="height:${Math.max(pct,5)}%;background:${bgGrad};" title="${pct}% — ${s.correct}/${s.total}">
+          <div class="tb-val">${pct}%</div>
+        </div>
+      </div>
+      <div class="trend-label">${label}</div>
+      <div class="trend-mode-label ${modeCls}">${isDaily?'Daily':modeLabel.slice(0,6)}</div>
+    </div>`;
   });
+  html+='</div>';
+  wrap.innerHTML=html;
+
+  // Animate bars in
+  requestAnimationFrame(()=>{
+    wrap.querySelectorAll('.trend-bar').forEach((bar,i)=>{
+      const h=bar.style.height;
+      bar.style.height='0%';
+      bar.style.transition=`height .5s cubic-bezier(.4,0,.2,1) ${i*0.05}s`;
+      requestAnimationFrame(()=>{bar.style.height=h;});
+    });
+  });
+}
+
+/* ── Session History ── */
+function renderSessionHistory(sessions){
+  const el=document.getElementById('histList');
+  if(!sessions.length){
+    el.innerHTML='<p style="color:var(--muted);font-size:13px;">No sessions yet. Start a daily challenge or subject practice!</p>';
+    return;
+  }
+  const sorted=[...sessions].reverse().slice(0,20);
+  el.innerHTML=sorted.map(s=>{
+    const pct=s.total?Math.round(s.correct/s.total*100):0;
+    const color=pct>=70?'#34d399':pct>=40?'#fbbf24':'#f87171';
+    return `<div class="hist-row">
+      <span class="hist-date">${s.date||'—'}</span>
+      <span class="hist-mode ${s.mode==='daily'?'daily':'practice'}">${s.mode==='daily'?'Daily':s.subject||'Practice'}</span>
+      <span class="hist-detail">${s.correct}/${s.total}</span>
+      <span class="hist-score" style="color:${color}">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+/* ── Difficulty Distribution (from BANK metadata, not tracked per-answer) ── */
+function renderDifficultyDist(){
+  const el=document.getElementById('diffDist');
+  // Count questions in BANK by difficulty if available, else estimate from subject accuracy
+  const totalA=Object.values(S.subStats).reduce((a,s)=>a+s.total,0);
+  const totalC=Object.values(S.subStats).reduce((a,s)=>a+s.correct,0);
+
+  if(!totalA){
+    el.innerHTML='<p style="color:var(--muted);font-size:13px;">Answer some questions to see difficulty breakdown.</p>';
+    return;
+  }
+
+  // Estimate from accuracy bands: correct on first try=easy, wrong=hard, approximate
+  const easyPct=totalA?Math.round(totalC/totalA*100):0;
+  const hardPct=100-easyPct;
+  const medPct=Math.min(40,Math.round(Math.abs(50-easyPct)*0.8));
+
+  el.innerHTML=`<div class="diff-dist">
+    <div class="diff-chip easy"><div class="dc-val">${totalC}</div><div class="dc-label">Correct</div></div>
+    <div class="diff-chip medium"><div class="dc-val">${BANK.length}</div><div class="dc-label">Total Bank</div></div>
+    <div class="diff-chip hard"><div class="dc-val">${totalA-totalC}</div><div class="dc-label">Wrong</div></div>
+  </div>`;
 }
 
 /* ════════════════════════
