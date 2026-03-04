@@ -429,12 +429,16 @@ function getTodaySession(){return S.history.find(h=>h.date===todayKey()&&h.mode=
    GLOBAL CLEANUP STATE
    ════════════════════════ */
 let _dailyTimerIv=null;
-let _dailyNextHandler=null;
 
 function cleanupDaily(){
   if(_dailyTimerIv){clearInterval(_dailyTimerIv);_dailyTimerIv=null;}
-  if(_dailyNextHandler){document.removeEventListener('click',_dailyNextHandler);_dailyNextHandler=null;}
 }
+
+// Global next-button handler — called via onclick in HTML, no document listener needed
+window.handleDailyNext=function(){
+  cleanupDaily();
+  renderDailyQuiz();
+};
 
 /* ════════════════════════
    TAB SWITCHING
@@ -444,7 +448,6 @@ document.querySelector('.tab-nav').addEventListener('click',function(e){
   if(!btn)return;
   this.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  // Cleanup before switching
   cleanupDaily();
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const tab=btn.dataset.tab;
@@ -465,7 +468,6 @@ function getDailyQuestions(){
 }
 
 function renderDailyQuiz(){
-  // Always clean up previous timers/handlers first
   cleanupDaily();
   const existing=getTodaySession();
   if(existing&&existing.completed){renderDailyResult(existing);return;}
@@ -473,6 +475,7 @@ function renderDailyQuiz(){
   const session=existing||{date:todayKey(),mode:'daily',answers:[],qIndices:questions.map(q=>BANK.indexOf(q)),completed:false,correct:0,total:DAILY_COUNT,startTime:Date.now()};
   if(!existing){S.history.push(session);saveState(S);}
   const area=document.getElementById('quizArea');
+  if(!area)return;
   const ci=session.answers.length;
   if(ci>=DAILY_COUNT){session.completed=true;saveState(S);renderDailyResult(session);return;}
   const q=questions[ci];
@@ -493,7 +496,7 @@ function renderDailyQuiz(){
       <div class="quiz-opts">${q.opts.map((o,i)=>`<div class="qo" data-oi="${i}"><span class="letter">${'ABCD'[i]}</span><span>${o}</span></div>`).join('')}</div>
       <div class="quiz-explain" id="qExplain"></div>
       <div class="quiz-actions" id="qActions" style="display:none;">
-        <button class="qa-btn primary" id="nextBtn">${ci+1>=DAILY_COUNT?'See Results →':'Next Question →'}</button>
+        <button class="qa-btn primary" onclick="handleDailyNext()">${ci+1>=DAILY_COUNT?'See Results →':'Next Question →'}</button>
       </div>
     </div>`;
 
@@ -501,7 +504,6 @@ function renderDailyQuiz(){
   let sec=0;const timerEl=document.getElementById('timerVal');
   _dailyTimerIv=setInterval(()=>{sec++;if(!timerEl||!timerEl.isConnected)return;const m=Math.floor(sec/60);const s=sec%60;timerEl.textContent=m+':'+(s<10?'0':'')+s;},1000);
 
-  // Answer handler — scoped to area, no document-level listener needed for options
   let answered=false;
   area.querySelectorAll('.qo').forEach(el=>{
     el.addEventListener('click',function(){
@@ -524,15 +526,6 @@ function renderDailyQuiz(){
       document.getElementById('qActions').style.display='flex';
     });
   });
-
-  // Next button — single tracked handler, cleaned up on tab switch
-  _dailyNextHandler=function(e){
-    if(e.target.id==='nextBtn'||e.target.closest('#nextBtn')){
-      cleanupDaily();
-      renderDailyQuiz();
-    }
-  };
-  document.addEventListener('click',_dailyNextHandler);
   updateStreakUI();
 }
 
