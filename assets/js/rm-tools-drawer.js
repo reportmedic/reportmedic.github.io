@@ -1,10 +1,10 @@
 /* ReportMedic — All Tools drawer (v2)
-   Injected on every tool page. Grouped by category, searchable, 56 tools.
+   Injected on every tool page. Grouped by category, searchable, 60 tools.
    Auto-marks the current page as active in the list. */
 (function(){
 
   /* ─────────────────────────────────────────
-     TOOL REGISTRY  (56 tools, matches index.html)
+     TOOL REGISTRY  (60 tools, matches index.html)
   ───────────────────────────────────────── */
   const tools = [
     // ── Compare
@@ -37,6 +37,10 @@
     { id:"eu-datasets",                              name:"EU Datasets",                  icon:"🇪🇺", cat:["Analyze"],             desc:"Browse 100 ready-to-use EU datasets across demographics, economy, health, housing, energy and more." },
     { id:"india-datasets",                           name:"India Datasets",               icon:"🇮🇳", cat:["Analyze"],             desc:"Browse 100 ready-to-use India datasets across demographics, economy, health, housing, energy and more." },
     { id:"usa-datasets",                             name:"USA Datasets",                 icon:"🇺🇸", cat:["Analyze"],             desc:"Browse 100 ready-to-use USA datasets across demographics, economy, health, housing, energy and more." },
+    { id:"employee-datasets",                        name:"Employee Datasets",            icon:"👥",  cat:["Analyze"],             desc:"Download 8 realistic employee datasets spanning USA, India, EU, UK, Australia, LATAM, Africa and China — 40K+ records each." },
+    { id:"duplicate-scanner",                        name:"Duplicate File Scanner",       icon:"⧉",  cat:["Analyze","Clean"],     desc:"Compare two folders, find duplicate files in the second based on the first, and move them into an organized duplicate directory." },
+    { id:"upsc-pyq-explorer",                        name:"UPSC PYQ Explorer",            icon:"📜",  cat:["Analyze"],             desc:"Explore 4,447+ UPSC CSAT Paper 2 previous year questions (2000–2025) — search, filter, and practice offline." },
+    { id:"upsc-prelims-daily-practice",              name:"UPSC Daily Practice",          icon:"🎯",  cat:["Analyze"],             desc:"Free UPSC Prelims MCQ practice with daily challenges, subject drills, and performance analytics — all offline." },
 
     // ── Convert
     { id:"markdown-to-html",                         name:"Markdown → HTML",              icon:"⌁",  cat:["Convert"],             desc:"Convert Markdown into clean, preview-ready HTML." },
