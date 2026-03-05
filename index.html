@@ -451,7 +451,7 @@
   const countLabel   = document.getElementById("countLabel");
   const drawer       = document.getElementById("drawer");
   const overlay      = document.getElementById("overlay");
-  const openDrawerBtn  = document.getElementById("openDrawerBtn");
+  const openDrawerBtn  = null; // button removed from nav
   const closeDrawerBtn = document.getElementById("closeDrawerBtn");
   const drawerSearchEl = document.getElementById("drawerSearch");
   const toast        = document.getElementById("toast");
@@ -602,7 +602,6 @@
     drawer.classList.remove("open");
   }
 
-  openDrawerBtn.onclick = openDrawer;
   closeDrawerBtn.onclick = closeDrawer;
   overlay.onclick = closeDrawer;
   document.getElementById("quickAll").onclick = openDrawer;
