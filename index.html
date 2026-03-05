@@ -235,6 +235,32 @@
   /* Show/hide mobile power strip */
   .mobile-power-strip{display:none;}
   @media(max-width:640px){.mobile-power-strip{display:flex;}}
+
+  /* ── Mobile: compact 2-column tool grid ── */
+  @media(max-width:640px){
+    .grid{
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap:8px !important;
+      margin-top:12px !important;
+    }
+    .card{
+      padding:10px 10px 9px !important;
+      min-height:unset !important;
+      gap:5px !important;
+      border-radius:14px !important;
+    }
+    .topline{gap:7px;}
+    .icon{
+      width:26px; height:26px;
+      border-radius:9px;
+      font-size:13px;
+      flex-shrink:0;
+    }
+    .title{font-size:12px; line-height:1.25;}
+    .desc{font-size:11px; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+    .meta{gap:4px; margin-top:4px;}
+    .tag{font-size:9.5px; padding:3px 6px;}
+  }
 </style>
 </head>
 <body>
@@ -293,7 +319,7 @@
       <div class="mobile-power-strip">
         <a class="mps-primary" href="/tools/compare-two-files-find-differences.html">⚡ Compare</a>
         <a class="mps-ghost" href="/tools/validate-data-schema-and-columns.html">✓ Validate</a>
-        <button class="mps-ghost" id="mobileAllTools">≡ All 56</button>
+        <a class="mps-ghost" href="#tools" id="mobileAllTools">≡ All 56</a>
       </div>
     </div>
 
@@ -605,7 +631,6 @@
   closeDrawerBtn.onclick = closeDrawer;
   overlay.onclick = closeDrawer;
   document.getElementById("quickAll").onclick = openDrawer;
-  document.getElementById("mobileAllTools").onclick = openDrawer;
   document.addEventListener("keydown", e => { if(e.key === "Escape") closeDrawer(); });
 
   /* ─────────────────────────────────────────
