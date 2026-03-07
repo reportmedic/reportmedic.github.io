@@ -1,0 +1,1118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Markdown Live Viewer — Real-time Preview — ReportMedic</title>
+  <meta name="description" content="Write Markdown and see a live preview instantly. Syntax highlighting, themes, export to HTML/PDF, word count, and more. Runs entirely in your browser." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+
+  <!-- Marked.js for Markdown parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+  <!-- highlight.js for syntax highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <!-- DOMPurify -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+<style>
+/* ─── Tool-specific overrides ─── */
+.panel h1 { display:flex; align-items:baseline; gap:.55rem; flex-wrap:wrap; }
+
+/* ─── Full-height editor layout ─── */
+.md-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255,255,255,.03);
+  min-height: 0;
+}
+
+/* ─── Toolbar ─── */
+.md-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: rgba(0,0,0,.25);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+.md-toolbar-sep {
+  width: 1px;
+  height: 22px;
+  background: var(--border);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+.md-tb-btn {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 8px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(238,246,255,.80);
+  cursor: pointer;
+  line-height: 1;
+  transition: background .1s, border-color .1s, color .1s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.md-tb-btn:hover {
+  background: rgba(255,255,255,.09);
+  border-color: var(--border);
+  color: rgba(238,246,255,1);
+}
+.md-tb-btn.active {
+  background: rgba(110,168,255,.14);
+  border-color: rgba(110,168,255,.35);
+  color: var(--brand);
+}
+.md-tb-select {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 8px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.06);
+  color: rgba(238,246,255,.90);
+  cursor: pointer;
+  outline: none;
+  height: 30px;
+}
+.md-tb-select:focus { border-color: rgba(110,168,255,.45); }
+
+.md-spacer { flex: 1; }
+
+/* ─── Stats bar ─── */
+.md-stats {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 5px 14px;
+  font-size: 11px;
+  color: var(--muted);
+  background: rgba(0,0,0,.18);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.md-stats span b { color: rgba(238,246,255,.88); font-weight: 700; }
+
+/* ─── Pane container ─── */
+.md-panes {
+  display: grid;
+  grid-template-columns: 1fr 4px 1fr;
+  min-height: 540px;
+  height: calc(100vh - 360px);
+  max-height: 800px;
+}
+.md-panes.mode-editor { grid-template-columns: 1fr 0 0; }
+.md-panes.mode-preview { grid-template-columns: 0 0 1fr; }
+
+/* ─── Editor pane ─── */
+.md-editor-pane {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+.md-editor-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 6px 14px;
+  background: rgba(0,0,0,.15);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+#mdInput {
+  flex: 1;
+  width: 100%;
+  padding: 16px 18px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 1.65;
+  background: rgba(8, 14, 26, .55);
+  border: none;
+  border-right: 1px solid var(--border);
+  color: rgba(238,246,255,.95);
+  outline: none;
+  resize: none;
+  tab-size: 2;
+  overflow-y: auto;
+  caret-color: var(--brand);
+}
+#mdInput::selection { background: rgba(110,168,255,.28); }
+
+/* ─── Divider (drag) ─── */
+.md-divider {
+  background: var(--border);
+  cursor: col-resize;
+  user-select: none;
+  flex-shrink: 0;
+  transition: background .12s;
+  position: relative;
+}
+.md-divider:hover, .md-divider.dragging { background: var(--brand); }
+.md-divider::after {
+  content: '⋮';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  color: var(--muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+/* ─── Preview pane ─── */
+.md-preview-pane {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+.md-preview-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 6px 14px;
+  background: rgba(0,0,0,.15);
+  border-bottom: 1px solid var(--border);
+}
+#mdPreview {
+  flex: 1;
+  padding: 20px 24px;
+  overflow-y: auto;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* ─── Preview typography (dark theme default) ─── */
+#mdPreview.theme-dark {
+  background: rgba(10,16,28,.45);
+  color: rgba(238,246,255,.94);
+}
+#mdPreview.theme-github {
+  background: #0d1117;
+  color: #e6edf3;
+}
+#mdPreview.theme-paper {
+  background: #fafafa;
+  color: #1a1a2e;
+}
+#mdPreview.theme-solarized {
+  background: #002b36;
+  color: #839496;
+}
+#mdPreview.theme-nord {
+  background: #2e3440;
+  color: #d8dee9;
+}
+
+/* shared prose */
+#mdPreview h1,#mdPreview h2,#mdPreview h3,#mdPreview h4,#mdPreview h5,#mdPreview h6 {
+  margin: 1.4em 0 .55em;
+  line-height: 1.25;
+  font-weight: 700;
+}
+#mdPreview h1 { font-size: 2em; border-bottom: 1px solid rgba(255,255,255,.12); padding-bottom:.35em; }
+#mdPreview h2 { font-size: 1.5em; border-bottom: 1px solid rgba(255,255,255,.08); padding-bottom:.25em; }
+#mdPreview h3 { font-size: 1.25em; }
+#mdPreview.theme-paper h1 { border-bottom-color: rgba(0,0,0,.12); }
+#mdPreview.theme-paper h2 { border-bottom-color: rgba(0,0,0,.08); }
+
+#mdPreview p { margin: .7em 0; }
+#mdPreview a { color: var(--brand); text-decoration: underline; text-underline-offset: 3px; }
+#mdPreview.theme-paper a { color: #0066cc; }
+#mdPreview.theme-solarized a { color: #268bd2; }
+#mdPreview.theme-nord a { color: #88c0d0; }
+
+#mdPreview ul, #mdPreview ol { padding-left: 1.6em; margin: .6em 0; }
+#mdPreview li { margin: .3em 0; }
+#mdPreview blockquote {
+  margin: .8em 0;
+  padding: .5em .9em;
+  border-left: 3px solid var(--brand);
+  background: rgba(110,168,255,.07);
+  border-radius: 0 8px 8px 0;
+  color: var(--muted);
+}
+#mdPreview.theme-paper blockquote { background: rgba(0,102,204,.06); color: #444; }
+#mdPreview code:not(pre code) {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: .88em;
+  background: rgba(255,255,255,.1);
+  padding: 2px 6px;
+  border-radius: 5px;
+  border: 1px solid rgba(255,255,255,.1);
+}
+#mdPreview.theme-paper code:not(pre code) { background: rgba(0,0,0,.07); border-color: rgba(0,0,0,.1); color: #c7254e; }
+#mdPreview pre {
+  border-radius: 10px;
+  margin: .9em 0;
+  overflow: auto;
+  border: 1px solid rgba(255,255,255,.1);
+}
+#mdPreview pre code { font-size: 13px; line-height: 1.55; }
+#mdPreview table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: .8em 0;
+  font-size: 14px;
+}
+#mdPreview th {
+  background: rgba(110,168,255,.12);
+  font-weight: 700;
+  text-align: left;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,.12);
+}
+#mdPreview td {
+  padding: 7px 12px;
+  border: 1px solid rgba(255,255,255,.1);
+}
+#mdPreview tr:nth-child(even) td { background: rgba(255,255,255,.03); }
+#mdPreview.theme-paper th { background: rgba(0,0,0,.07); border-color: rgba(0,0,0,.12); }
+#mdPreview.theme-paper td { border-color: rgba(0,0,0,.1); }
+#mdPreview.theme-paper tr:nth-child(even) td { background: rgba(0,0,0,.03); }
+
+#mdPreview img { max-width: 100%; border-radius: 8px; margin: .5em 0; }
+#mdPreview hr { border: none; border-top: 1px solid rgba(255,255,255,.14); margin: 1.5em 0; }
+#mdPreview.theme-paper hr { border-top-color: rgba(0,0,0,.15); }
+
+/* task list */
+#mdPreview input[type=checkbox] { margin-right: 6px; accent-color: var(--brand); }
+
+/* TOC sidebar */
+.md-toc-panel {
+  position: absolute;
+  top: 0; right: 0;
+  width: 220px;
+  height: 100%;
+  background: rgba(8,14,26,.88);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 14px 12px;
+  font-size: 12px;
+  transform: translateX(100%);
+  transition: transform .2s ease;
+  z-index: 5;
+  backdrop-filter: blur(10px);
+}
+.md-toc-panel.open { transform: translateX(0); }
+.md-toc-panel h4 { margin: 0 0 10px; font-size: 11px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); }
+.md-toc-panel a {
+  display: block;
+  text-decoration: none;
+  color: rgba(238,246,255,.78);
+  padding: 4px 0;
+  border-left: 2px solid transparent;
+  padding-left: 8px;
+  line-height: 1.35;
+  transition: border-color .1s, color .1s;
+}
+.md-toc-panel a:hover { border-left-color: var(--brand); color: rgba(238,246,255,1); }
+.md-toc-panel a.toc-h1 { font-weight: 700; }
+.md-toc-panel a.toc-h2 { padding-left: 16px; }
+.md-toc-panel a.toc-h3 { padding-left: 24px; font-size: 11px; color: var(--muted); }
+
+.md-preview-pane { position: relative; }
+
+/* ─── Bottom bar ─── */
+.md-bottom-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  background: rgba(0,0,0,.22);
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+/* ─── Focus mode overlay ─── */
+body.focus-mode .panel > *:not(.md-workspace) { opacity: 0; pointer-events: none; transition: opacity .3s; }
+body.focus-mode .md-workspace { border-radius: 0; border-left: none; border-right: none; }
+
+/* ─── Scroll sync indicator ─── */
+.sync-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--brand2);
+  display: inline-block;
+  opacity: 0;
+  transition: opacity .3s;
+}
+.sync-dot.active { opacity: 1; animation: pulse-dot 1.2s ease infinite; }
+@keyframes pulse-dot {
+  0%,100%{transform:scale(1);opacity:.8}
+  50%{transform:scale(1.4);opacity:1}
+}
+
+/* ─── Empty state ─── */
+.md-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 10px;
+  opacity: .35;
+  pointer-events: none;
+}
+.md-empty-icon { font-size: 44px; }
+.md-empty-text { font-size: 13px; text-align: center; line-height: 1.5; }
+
+/* ─── Responsive ─── */
+@media (max-width: 700px) {
+  .md-panes {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 1fr 1fr;
+    height: auto;
+    min-height: 700px;
+  }
+  .md-divider { display: none; }
+  #mdInput { border-right: none; border-bottom: 1px solid var(--border); }
+}
+
+/* ─── Print / export ─── */
+@media print {
+  header, .md-toolbar, .md-stats, .md-editor-pane,
+  .md-divider, .md-bottom-bar, .rm-footer, footer,
+  .md-editor-label, .panel > h1, .panel > p, .panel > .tiny, .panel > .hr { display: none !important; }
+  .md-panes { display: block; height: auto; }
+  #mdPreview { padding: 0; overflow: visible; }
+}
+
+/* ─── Tooltip ─── */
+[data-tip] { position: relative; }
+[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(0,0,0,.85);
+  border: 1px solid var(--border);
+  color: rgba(238,246,255,.9);
+  pointer-events: none;
+  z-index: 100;
+}
+
+.rm-kv{display:flex;gap:8px;align-items:baseline;padding:3px 0;}
+.rm-kv .k{color:var(--muted);min-width:80px;font-size:11.5px;}
+.rm-kv .v{font-size:11.5px;}
+</style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Markdown Live Viewer <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Write Markdown on the left, see a live preview on the right — instantly. Syntax highlighting, multiple themes, Table of Contents, word count, scroll sync, and export. Runs entirely in your browser, nothing leaves your device.</p>
+    <div class="tiny muted" style="margin-top:6px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+
+    <div class="hr"></div>
+
+    <div class="md-workspace">
+
+      <!-- ── Toolbar ── -->
+      <div class="md-toolbar">
+
+        <!-- View mode -->
+        <button class="md-tb-btn active" id="btnSplit" data-tip="Split view" onclick="setMode('split')">⊟ Split</button>
+        <button class="md-tb-btn" id="btnEditor" data-tip="Editor only" onclick="setMode('editor')">✏ Editor</button>
+        <button class="md-tb-btn" id="btnPreview" data-tip="Preview only" onclick="setMode('preview')">👁 Preview</button>
+
+        <div class="md-toolbar-sep"></div>
+
+        <!-- Format buttons -->
+        <button class="md-tb-btn" data-tip="Bold (Ctrl+B)" onclick="wrapSel('**','**')"><b>B</b></button>
+        <button class="md-tb-btn" data-tip="Italic (Ctrl+I)" onclick="wrapSel('*','*')"><i>I</i></button>
+        <button class="md-tb-btn" data-tip="Strikethrough" onclick="wrapSel('~~','~~')"><s>S</s></button>
+        <button class="md-tb-btn" data-tip="Inline code" onclick="wrapSel('`','`')">` `</button>
+        <button class="md-tb-btn" data-tip="Code block" onclick="insertCodeBlock()">{ }</button>
+        <button class="md-tb-btn" data-tip="Link" onclick="insertLink()">🔗</button>
+        <button class="md-tb-btn" data-tip="Image" onclick="insertImage()">🖼</button>
+        <button class="md-tb-btn" data-tip="Table" onclick="insertTable()">⊞ Table</button>
+        <button class="md-tb-btn" data-tip="Blockquote" onclick="insertLinePrefix('> ')">❝</button>
+        <button class="md-tb-btn" data-tip="Unordered list" onclick="insertLinePrefix('- ')">≡</button>
+        <button class="md-tb-btn" data-tip="Ordered list" onclick="insertOrderedList()">1.</button>
+        <button class="md-tb-btn" data-tip="Task list" onclick="insertLinePrefix('- [ ] ')">☑</button>
+        <button class="md-tb-btn" data-tip="Horizontal rule" onclick="insertAtNewLine('---\n')">―</button>
+
+        <div class="md-toolbar-sep"></div>
+
+        <!-- Headings -->
+        <select class="md-tb-select" id="headingSelect" onchange="insertHeading(this.value); this.value=''" title="Insert heading">
+          <option value="">Heading…</option>
+          <option value="1">H1</option>
+          <option value="2">H2</option>
+          <option value="3">H3</option>
+          <option value="4">H4</option>
+        </select>
+
+        <!-- Theme -->
+        <select class="md-tb-select" id="themeSelect" onchange="setTheme(this.value)" title="Preview theme">
+          <option value="dark">Dark</option>
+          <option value="github">GitHub</option>
+          <option value="paper">Paper</option>
+          <option value="solarized">Solarized</option>
+          <option value="nord">Nord</option>
+        </select>
+
+        <div class="md-spacer"></div>
+
+        <!-- Right-side actions -->
+        <button class="md-tb-btn" id="btnSync" data-tip="Toggle scroll sync" onclick="toggleSync()">⇅ Sync</button>
+        <button class="md-tb-btn" id="btnTOC" data-tip="Table of contents" onclick="toggleTOC()">≡ TOC</button>
+        <button class="md-tb-btn" id="btnFocus" data-tip="Focus mode" onclick="toggleFocus()">⛶ Focus</button>
+        <button class="md-tb-btn" data-tip="Open file" onclick="openFile()">📂</button>
+        <button class="md-tb-btn" data-tip="Save .md file" onclick="saveFile()">💾 Save</button>
+        <button class="md-tb-btn" data-tip="Copy Markdown" onclick="copyMd()">⎘ Copy MD</button>
+        <button class="md-tb-btn" data-tip="Copy as HTML" onclick="copyHtml()">⎘ Copy HTML</button>
+        <button class="md-tb-btn" data-tip="Export to HTML file" onclick="exportHtml()">⇟ HTML</button>
+        <button class="md-tb-btn" data-tip="Print / Save as PDF" onclick="printPdf()">⎙ PDF</button>
+        <button class="md-tb-btn" data-tip="Clear editor" onclick="clearEditor()" style="color:rgba(255,120,120,.8)">✕ Clear</button>
+
+        <input type="file" id="fileInput" accept=".md,.markdown,.txt" style="display:none" onchange="handleFileOpen(event)" />
+      </div>
+
+      <!-- ── Stats bar ── -->
+      <div class="md-stats">
+        <span><b id="statWords">0</b> words</span>
+        <span><b id="statChars">0</b> chars</span>
+        <span><b id="statLines">0</b> lines</span>
+        <span><b id="statReadTime">0</b> min read</span>
+        <span><b id="statHeadings">0</b> headings</span>
+        <span><b id="statLinks">0</b> links</span>
+        <span style="margin-left:auto; display:flex; align-items:center; gap:6px;">
+          <span class="sync-dot" id="syncDot"></span>
+          <span id="statSyncLabel" style="opacity:.6; font-size:11px;"></span>
+        </span>
+      </div>
+
+      <!-- ── Panes ── -->
+      <div class="md-panes" id="mdPanes">
+
+        <!-- Editor -->
+        <div class="md-editor-pane">
+          <div class="md-editor-label">✏ Markdown</div>
+          <textarea id="mdInput" spellcheck="false" placeholder="# Hello World
+
+Start typing your Markdown here…
+
+## Features
+- **Live preview** as you type
+- *Italic*, ~~strikethrough~~, `inline code`
+- Syntax highlighted code blocks
+- Tables, task lists, footnotes
+
+## Code Example
+```js
+const greet = name => `Hello, ${name}!`;
+console.log(greet('World'));
+```
+
+## Table
+| Name | Role | Status |
+|------|------|--------|
+| Alice | Dev | ✅ Active |
+| Bob | PM | ✅ Active |
+
+> Tip: Use the toolbar above to format text, switch themes, and export.
+"></textarea>
+        </div>
+
+        <!-- Divider -->
+        <div class="md-divider" id="mdDivider"></div>
+
+        <!-- Preview -->
+        <div class="md-preview-pane">
+          <div class="md-preview-label">👁 Preview</div>
+          <div id="mdPreview" class="theme-dark">
+            <div class="md-empty" id="mdEmpty">
+              <div class="md-empty-icon">📝</div>
+              <div class="md-empty-text">Start typing in the editor<br>to see your preview here</div>
+            </div>
+          </div>
+          <!-- TOC -->
+          <div class="md-toc-panel" id="mdTOC">
+            <h4>Table of Contents</h4>
+            <div id="tocContent"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Bottom bar ── -->
+      <div class="md-bottom-bar">
+        <span class="tiny muted" id="statusMsg">Ready — start typing or open a .md file</span>
+        <div style="flex:1"></div>
+        <span class="tiny muted">Runs 100% locally · Nothing uploaded</span>
+      </div>
+
+    </div><!-- .md-workspace -->
+
+  </div><!-- .panel -->
+
+  <div class="footer">© 2026 ReportMedic</div>
+</div>
+
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
+<!-- Learn More modal -->
+<div aria-hidden="true" aria-label="Markdown Live Viewer details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Markdown Live Viewer</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Write and preview Markdown with zero lag</li>
+        <li>Format docs with bold, italic, tables, code blocks, task lists</li>
+        <li>Export clean HTML or PDF for sharing</li>
+        <li>Switch themes to match your audience (GitHub, Paper, Nord…)</li>
+        <li>Track word count, read time, and document structure live</li>
+      </ul>
+      <h3>How it works</h3>
+      <ul>
+        <li>Type Markdown in the left pane — preview updates live on the right</li>
+        <li>Use the toolbar to insert formatting without memorising syntax</li>
+        <li>Open existing .md files directly, save back to disk at any time</li>
+        <li>Toggle scroll sync to keep editor and preview in lockstep</li>
+        <li>Use the TOC panel to navigate long documents instantly</li>
+      </ul>
+      <h3>Privacy</h3>
+      <ul>
+        <li>Everything runs in your browser</li>
+        <li>No content is uploaded or stored anywhere</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Learn More wire-up -->
+<script>
+(function rmLmWireUp(){
+  const setOpen = (id, isOpen) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    document.documentElement.classList.toggle('rmNoScroll', isOpen);
+    document.body.classList.toggle('rmNoScroll', isOpen);
+  };
+  document.querySelectorAll('[data-rm-lm-open]').forEach(a=>{
+    a.addEventListener('click', e=>{ e.preventDefault(); setOpen(a.getAttribute('data-rm-lm-open'), true); });
+  });
+  document.querySelectorAll('[data-rm-lm-close]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ setOpen(btn.getAttribute('data-rm-lm-close'), false); });
+  });
+  document.addEventListener('keydown', e=>{
+    if(e.key !== 'Escape') return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(el=> setOpen(el.id, false));
+  });
+  document.addEventListener('click', e=>{
+    if(e.target?.classList?.contains('rm-lm-backdrop') && e.target.id) setOpen(e.target.id, false);
+  });
+})();
+</script>
+
+<!-- Main editor logic -->
+<script>
+(() => {
+  const input   = document.getElementById('mdInput');
+  const preview = document.getElementById('mdPreview');
+  const empty   = document.getElementById('mdEmpty');
+  const tocPanel = document.getElementById('mdTOC');
+  const tocContent = document.getElementById('tocContent');
+  const panes   = document.getElementById('mdPanes');
+  const divider = document.getElementById('mdDivider');
+  const syncDot = document.getElementById('syncDot');
+  const statusMsg = document.getElementById('statusMsg');
+
+  let state = {
+    mode: 'split',
+    theme: 'dark',
+    syncScroll: true,
+    tocOpen: false,
+    focusMode: false,
+    syncingEditor: false,
+    syncingPreview: false,
+  };
+
+  // ── Configure marked ──
+  marked.setOptions({
+    gfm: true,
+    breaks: true,
+    pedantic: false,
+  });
+
+  // Custom renderer for task lists & heading IDs
+  const renderer = new marked.Renderer();
+  renderer.heading = (text, level) => {
+    const slug = text.toLowerCase().replace(/[^\w]+/g, '-').replace(/^-|-$/g,'');
+    return `<h${level} id="h-${slug}">${text}</h${level}>`;
+  };
+  renderer.listitem = (text) => {
+    if (/^\[( |x)\] /.test(text)) {
+      const checked = text.startsWith('[x]');
+      const content = text.replace(/^\[( |x)\] /, '');
+      return `<li><input type="checkbox" ${checked?'checked':''} disabled /> ${content}</li>`;
+    }
+    return `<li>${text}</li>`;
+  };
+
+  function renderMd(src) {
+    if (!src.trim()) return '';
+    const raw = marked.parse(src, { renderer });
+    return DOMPurify.sanitize(raw, { ADD_ATTR: ['id'] });
+  }
+
+  // ── Live render ──
+  let renderTimer = null;
+  function scheduleRender() {
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(doRender, 80);
+  }
+
+  function doRender() {
+    const src = input.value;
+    const html = renderMd(src);
+    if (!html) {
+      preview.innerHTML = '';
+      preview.appendChild(empty);
+      empty.style.display = 'flex';
+    } else {
+      empty.style.display = 'none';
+      preview.innerHTML = html;
+      // syntax highlight
+      preview.querySelectorAll('pre code').forEach(el => {
+        try { hljs.highlightElement(el); } catch(e){}
+      });
+    }
+    updateStats(src);
+    updateTOC();
+    setStatus('Updated');
+  }
+
+  input.addEventListener('input', scheduleRender);
+
+  // ── Stats ──
+  function updateStats(src) {
+    const words = src.trim() ? src.trim().split(/\s+/).length : 0;
+    const chars = src.length;
+    const lines = src ? src.split('\n').length : 0;
+    const readTime = Math.max(1, Math.ceil(words / 200));
+    const headings = (src.match(/^#{1,6}\s/gm) || []).length;
+    const links = (src.match(/\[.+?\]\(.+?\)/g) || []).length;
+    document.getElementById('statWords').textContent = words.toLocaleString();
+    document.getElementById('statChars').textContent = chars.toLocaleString();
+    document.getElementById('statLines').textContent = lines.toLocaleString();
+    document.getElementById('statReadTime').textContent = readTime;
+    document.getElementById('statHeadings').textContent = headings;
+    document.getElementById('statLinks').textContent = links;
+  }
+
+  // ── TOC ──
+  function updateTOC() {
+    const headings = preview.querySelectorAll('h1,h2,h3,h4');
+    if (!headings.length) { tocContent.innerHTML = '<span style="opacity:.5;font-size:11px">No headings found</span>'; return; }
+    const items = [...headings].map(h => {
+      const lvl = parseInt(h.tagName[1]);
+      const cls = `toc-h${lvl}`;
+      return `<a href="#${h.id}" class="${cls}" onclick="scrollToHeading(event,'${h.id}')">${h.textContent}</a>`;
+    }).join('');
+    tocContent.innerHTML = items;
+  }
+
+  window.scrollToHeading = (e, id) => {
+    e.preventDefault();
+    const el = preview.querySelector('#'+id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // ── Scroll sync ──
+  function syncHandler(src, dst) {
+    return () => {
+      if (!state.syncScroll) return;
+      const ratio = src.scrollTop / Math.max(1, src.scrollHeight - src.clientHeight);
+      dst.scrollTop = ratio * (dst.scrollHeight - dst.clientHeight);
+      syncDot.classList.add('active');
+      clearTimeout(syncDot._t);
+      syncDot._t = setTimeout(() => syncDot.classList.remove('active'), 400);
+    };
+  }
+  input.addEventListener('scroll', syncHandler(input, preview));
+  preview.addEventListener('scroll', syncHandler(preview, input));
+
+  window.toggleSync = () => {
+    state.syncScroll = !state.syncScroll;
+    document.getElementById('btnSync').classList.toggle('active', state.syncScroll);
+    document.getElementById('statSyncLabel').textContent = state.syncScroll ? 'Sync on' : 'Sync off';
+    syncDot.classList.toggle('active', state.syncScroll);
+  };
+  // default on
+  document.getElementById('btnSync').classList.add('active');
+  document.getElementById('statSyncLabel').textContent = 'Sync on';
+  syncDot.classList.add('active');
+
+  // ── Mode ──
+  window.setMode = (mode) => {
+    state.mode = mode;
+    panes.className = 'md-panes mode-' + mode;
+    ['split','editor','preview'].forEach(m => {
+      document.getElementById('btn'+m.charAt(0).toUpperCase()+m.slice(1)).classList.toggle('active', m === mode);
+    });
+  };
+
+  // ── Theme ──
+  window.setTheme = (t) => {
+    state.theme = t;
+    preview.className = `theme-${t}`;
+    // swap hljs theme
+    const themes = {
+      dark: 'github-dark', github: 'github-dark', paper: 'github', solarized: 'a11y-dark', nord: 'nord'
+    };
+    document.getElementById('hljs-theme').href =
+      `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${themes[t] || 'github-dark'}.min.css`;
+    doRender();
+  };
+
+  // ── TOC toggle ──
+  window.toggleTOC = () => {
+    state.tocOpen = !state.tocOpen;
+    tocPanel.classList.toggle('open', state.tocOpen);
+    document.getElementById('btnTOC').classList.toggle('active', state.tocOpen);
+  };
+
+  // ── Focus mode ──
+  window.toggleFocus = () => {
+    state.focusMode = !state.focusMode;
+    document.body.classList.toggle('focus-mode', state.focusMode);
+    document.getElementById('btnFocus').classList.toggle('active', state.focusMode);
+  };
+
+  // ── Toolbar helpers ──
+  function getCursorInfo() {
+    const start = input.selectionStart;
+    const end   = input.selectionEnd;
+    const val   = input.value;
+    return { start, end, val, sel: val.slice(start, end) };
+  }
+  function replaceRange(val, start, end, replacement, newCursorOffset) {
+    input.value = val.slice(0, start) + replacement + val.slice(end);
+    const pos = start + (newCursorOffset !== undefined ? newCursorOffset : replacement.length);
+    input.setSelectionRange(pos, pos);
+    input.focus();
+    scheduleRender();
+  }
+
+  window.wrapSel = (before, after) => {
+    const { start, end, val, sel } = getCursorInfo();
+    const placeholder = sel || 'text';
+    const wrapped = before + placeholder + after;
+    replaceRange(val, start, end, wrapped, before.length + placeholder.length);
+  };
+
+  window.insertLinePrefix = (prefix) => {
+    const { start, end, val } = getCursorInfo();
+    const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+    const lineEnd   = val.indexOf('\n', end);
+    const endIdx    = lineEnd === -1 ? val.length : lineEnd;
+    const line      = val.slice(lineStart, endIdx);
+    const newLine   = prefix + line;
+    replaceRange(val, lineStart, endIdx, newLine, newLine.length);
+    input.setSelectionRange(lineStart + newLine.length, lineStart + newLine.length);
+  };
+
+  window.insertOrderedList = () => {
+    insertAtNewLine('1. ');
+  };
+
+  window.insertAtNewLine = (text) => {
+    const { start, val } = getCursorInfo();
+    const needNewline = start > 0 && val[start - 1] !== '\n';
+    const ins = (needNewline ? '\n' : '') + text;
+    replaceRange(val, start, start, ins);
+  };
+
+  window.insertHeading = (level) => {
+    if (!level) return;
+    insertAtNewLine('#'.repeat(+level) + ' ');
+  };
+
+  window.insertCodeBlock = () => {
+    const { start, val, sel } = getCursorInfo();
+    const lang = 'js';
+    const ins = '```' + lang + '\n' + (sel || 'code here') + '\n```\n';
+    replaceRange(val, start, start + sel.length, ins, ins.length);
+  };
+
+  window.insertLink = () => {
+    const { start, end, val, sel } = getCursorInfo();
+    const text = sel || 'link text';
+    const ins = `[${text}](url)`;
+    replaceRange(val, start, end, ins, text.length + 3);
+  };
+
+  window.insertImage = () => {
+    const { start, val } = getCursorInfo();
+    const ins = '![alt text](image-url)';
+    replaceRange(val, start, start, ins);
+  };
+
+  window.insertTable = () => {
+    insertAtNewLine(
+      '| Column 1 | Column 2 | Column 3 |\n' +
+      '|----------|----------|----------|\n' +
+      '| Cell 1   | Cell 2   | Cell 3   |\n' +
+      '| Cell 4   | Cell 5   | Cell 6   |\n'
+    );
+  };
+
+  // ── Keyboard shortcuts ──
+  input.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey) {
+      if (e.key === 'b') { e.preventDefault(); wrapSel('**','**'); }
+      if (e.key === 'i') { e.preventDefault(); wrapSel('*','*'); }
+      if (e.key === 'k') { e.preventDefault(); insertLink(); }
+      if (e.key === 's') { e.preventDefault(); saveFile(); }
+    }
+    // Tab → 2 spaces
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const { start, end, val } = getCursorInfo();
+      replaceRange(val, start, end, '  ');
+    }
+  });
+
+  // ── File actions ──
+  window.openFile  = () => document.getElementById('fileInput').click();
+
+  window.handleFileOpen = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      input.value = ev.target.result;
+      scheduleRender();
+      setStatus('Opened: ' + file.name);
+    };
+    r.readAsText(file);
+    e.target.value = '';
+  };
+
+  window.saveFile = () => {
+    const blob = new Blob([input.value], { type: 'text/markdown;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'document.md';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+    setStatus('Saved as document.md');
+  };
+
+  window.copyMd = async () => {
+    try { await navigator.clipboard.writeText(input.value); setStatus('Markdown copied!'); }
+    catch(e) { setStatus('Copy failed'); }
+  };
+
+  window.copyHtml = async () => {
+    try { await navigator.clipboard.writeText(getExportHtml(false)); setStatus('HTML copied!'); }
+    catch(e) { setStatus('Copy failed'); }
+  };
+
+  function getExportHtml(standalone = true) {
+    const body = renderMd(input.value);
+    if (!standalone) return body;
+    const themeColors = {
+      dark:      { bg: '#0b1220', text: '#eef6ff', link: '#6ea8ff', border: 'rgba(255,255,255,.14)' },
+      github:    { bg: '#0d1117', text: '#e6edf3', link: '#58a6ff', border: '#30363d' },
+      paper:     { bg: '#fafafa', text: '#1a1a2e', link: '#0066cc', border: '#e0e0e0' },
+      solarized: { bg: '#002b36', text: '#839496', link: '#268bd2', border: '#073642' },
+      nord:      { bg: '#2e3440', text: '#d8dee9', link: '#88c0d0', border: '#3b4252' },
+    };
+    const c = themeColors[state.theme] || themeColors.dark;
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Exported Markdown</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<style>
+*{box-sizing:border-box}
+body{font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.7;
+  color:${c.text};background:${c.bg};max-width:860px;margin:0 auto;padding:32px 24px;}
+a{color:${c.link}}
+h1,h2,h3,h4,h5,h6{font-weight:700;line-height:1.25;margin:1.4em 0 .55em}
+h1{font-size:2em;border-bottom:1px solid ${c.border};padding-bottom:.35em}
+h2{font-size:1.5em;border-bottom:1px solid ${c.border};padding-bottom:.25em}
+p{margin:.7em 0}
+blockquote{margin:.8em 0;padding:.5em .9em;border-left:3px solid ${c.link};background:rgba(128,128,128,.1);border-radius:0 8px 8px 0}
+code:not(pre code){font-family:ui-monospace,Menlo,monospace;font-size:.88em;background:rgba(128,128,128,.15);padding:2px 6px;border-radius:5px}
+pre{border-radius:10px;margin:.9em 0;overflow:auto;border:1px solid ${c.border}}
+pre code{font-size:13px;line-height:1.55}
+table{border-collapse:collapse;width:100%;margin:.8em 0}
+th{font-weight:700;text-align:left;padding:8px 12px;border:1px solid ${c.border};background:rgba(128,128,128,.1)}
+td{padding:7px 12px;border:1px solid ${c.border}}
+tr:nth-child(even) td{background:rgba(128,128,128,.05)}
+img{max-width:100%;border-radius:8px}
+hr{border:none;border-top:1px solid ${c.border};margin:1.5em 0}
+ul,ol{padding-left:1.6em;margin:.6em 0}
+li{margin:.3em 0}
+</style>
+</head>
+<body>
+${body}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><\/script>
+<script>hljs.highlightAll();<\/script>
+</body>
+</html>`;
+  }
+
+  window.exportHtml = () => {
+    const html = getExportHtml(true);
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'document.html';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+    setStatus('Exported as document.html');
+  };
+
+  window.printPdf = () => {
+    // Set preview-only mode temporarily, then print
+    const prevMode = state.mode;
+    setMode('preview');
+    setTimeout(() => { window.print(); setTimeout(() => setMode(prevMode), 500); }, 150);
+  };
+
+  window.clearEditor = () => {
+    if (!input.value.trim() || confirm('Clear all content?')) {
+      input.value = '';
+      doRender();
+      setStatus('Cleared');
+    }
+  };
+
+  // ── Drag-to-resize divider ──
+  let isDragging = false;
+  divider.addEventListener('mousedown', e => {
+    isDragging = true;
+    divider.classList.add('dragging');
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+  });
+  document.addEventListener('mousemove', e => {
+    if (!isDragging || state.mode !== 'split') return;
+    const rect = panes.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const total = rect.width;
+    const pct = Math.min(80, Math.max(20, (x / total) * 100));
+    panes.style.gridTemplateColumns = `${pct}fr 4px ${100 - pct}fr`;
+  });
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      divider.classList.remove('dragging');
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    }
+  });
+
+  // ── Status helper ──
+  let statusTimer;
+  function setStatus(msg) {
+    statusMsg.textContent = msg;
+    clearTimeout(statusTimer);
+    statusTimer = setTimeout(() => { statusMsg.textContent = 'Ready'; }, 2500);
+  }
+
+  // ── Auto-save to sessionStorage ──
+  const STORAGE_KEY = 'rm_mdlv_content';
+  const saved = sessionStorage.getItem(STORAGE_KEY);
+  if (saved !== null && saved.length > 0) {
+    input.value = saved;
+    setStatus('Restored from session');
+  }
+  input.addEventListener('input', () => {
+    try { sessionStorage.setItem(STORAGE_KEY, input.value); } catch(e) {}
+  });
+
+  // ── Initial render ──
+  doRender();
+
+})();
+</script>
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6997965e73d8cb1c357e66ee/1jhs26oms';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+</body>
+</html>
