@@ -38,13 +38,11 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 .pyq-hero h1{font-size:clamp(28px,5vw,44px);font-weight:900;letter-spacing:-.5px;line-height:1.1;margin-bottom:12px;}
 .pyq-hero h1 .accent{background:linear-gradient(135deg,#f59e0b,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .pyq-hero .tagline{color:var(--muted);font-size:15px;max-width:640px;margin:0 auto 24px;line-height:1.6;}
-.stat-orbs{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:32px;}
-.stat-orb{display:flex;flex-direction:column;align-items:flex-start;padding:16px 20px;border-radius:16px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);backdrop-filter:blur(12px);transition:transform .18s,border-color .18s,background .18s;min-width:130px;position:relative;overflow:hidden;}
-.stat-orb::before{content:'';position:absolute;inset:0;background:var(--card-shine,transparent);opacity:.07;pointer-events:none;}
-.stat-orb:hover{transform:translateY(-3px);border-color:rgba(245,158,11,.35);background:rgba(255,255,255,.07);}
-.stat-orb .orb-icon{font-size:18px;margin-bottom:8px;opacity:.8;}
-.stat-orb .val{font-size:28px;font-weight:900;line-height:1;background:linear-gradient(135deg,#f59e0b,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.stat-orb .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:5px;font-weight:600;}
+.stat-orbs{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:28px;}
+.stat-orb{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);backdrop-filter:blur(10px);transition:transform .2s,border-color .2s;}
+.stat-orb:hover{transform:scale(1.08);border-color:rgba(245,158,11,.4);}
+.stat-orb .val{font-size:26px;font-weight:900;background:linear-gradient(135deg,#f59e0b,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-orb .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;text-align:center;line-height:1.2;}
 .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
 .search-box{flex:1;min-width:200px;position:relative;}
 .search-box input{width:100%;padding:12px 14px 12px 40px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);font-size:14px;outline:none;font-family:inherit;backdrop-filter:blur(6px);transition:border-color .15s,box-shadow .15s;}
@@ -208,36 +206,11 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
     <h1>CAT <span class="accent">Previous Year Papers</span></h1>
     <p class="tagline">9 years of CAT questions across VARC, DILR &amp; QA — searchable, section-wise, with trend analytics. Practice smarter, all in your browser. Free &amp; private.</p>
     <div class="stat-orbs">
-      <div class="stat-orb" style="--card-shine:linear-gradient(135deg,#f59e0b,#f472b6)">
-        <span class="orb-icon">📋</span>
-        <span class="val" id="statTotal">0</span>
-        <span class="lbl">Total PYQs</span>
-      </div>
-      <div class="stat-orb" style="--card-shine:linear-gradient(135deg,#6366f1,#a78bfa)">
-        <span class="orb-icon">📅</span>
-        <span class="val">9</span>
-        <span class="lbl">Years (2017–25)</span>
-      </div>
-      <div class="stat-orb" style="--card-shine:linear-gradient(135deg,#0ea5e9,#38bdf8)">
-        <span class="orb-icon">🕐</span>
-        <span class="val">3</span>
-        <span class="lbl">Slots / Year</span>
-      </div>
-      <div class="stat-orb" style="--card-shine:linear-gradient(135deg,#10b981,#34d399)">
-        <span class="orb-icon">🎯</span>
-        <span class="val" id="statAttempted">0</span>
-        <span class="lbl">Attempted</span>
-      </div>
-      <div class="stat-orb" style="--card-shine:linear-gradient(135deg,#34d399,#6ee7b7)">
-        <span class="orb-icon">✅</span>
-        <span class="val" id="statCorrect">0</span>
-        <span class="lbl">Correct</span>
-      </div>
-      <div class="stat-orb" style="--card-shine:linear-gradient(135deg,#f87171,#fb923c)">
-        <span class="orb-icon">✅</span>
-        <span class="val" id="statAccuracy">&mdash;</span>
-        <span class="lbl">Accuracy</span>
-      </div>
+      <div class="stat-orb"><span class="val" id="statTotal">0</span><span class="lbl">Total PYQs</span></div>
+      <div class="stat-orb"><span class="val">9</span><span class="lbl">Years</span></div>
+      <div class="stat-orb"><span class="val">12</span><span class="lbl">Subjects</span></div>
+      <div class="stat-orb"><span class="val" id="statAttempted">0</span><span class="lbl">Attempted</span></div>
+      <div class="stat-orb"><span class="val" id="statAccuracy">&mdash;</span><span class="lbl">Accuracy</span></div>
     </div>
   </section>
 
@@ -399,7 +372,7 @@ function resetAll(){activeSec='All';activeYear='All';activeSlot='All';activeTopi
 function buildTopicChips(){const topics=activeSec==='All'?TOPICS_BY_SEC.All:(TOPICS_BY_SEC[activeSec]||[]);const tc=document.getElementById('topicChips');tc.innerHTML='';function mkChip(t,label){const b=document.createElement('button');b.className='topic-chip'+(activeTopic===t?' active':'');b.dataset.t=t;b.textContent=label||t;b.onclick=function(){setTopic(t);};tc.appendChild(b);}mkChip('All','All Topics');topics.forEach(function(t){mkChip(t);});}
 document.getElementById('qSearch').addEventListener('input',function(){searchQ=this.value.toLowerCase();currentPage=1;render();});
 function getFiltered(){return DB.filter((q,idx)=>{if(activeSec!=='All'&&q.sec!==activeSec)return false;if(activeYear!=='All'&&q.y!=activeYear)return false;if(activeSlot!=='All'&&q.slot!=activeSlot)return false;if(activeTopic!=='All'&&q.topic!==activeTopic)return false;if(activeDiffs.size&&!activeDiffs.has(q.diff))return false;if(showUnanswered&&answers[idx]!==undefined)return false;if(searchQ&&!q.q.toLowerCase().includes(searchQ)&&!q.topic.toLowerCase().includes(searchQ)&&!(q.opts||[]).some(o=>o.toLowerCase().includes(searchQ)))return false;return true;});}
-function updateStats(){const a=Object.keys(answers).length;const c=Object.entries(answers).filter(([i,v])=>DB[i]&&DB[i].ans===v).length;document.getElementById('statAttempted').textContent=a;const sc=document.getElementById('statCorrect');if(sc)sc.textContent=c;document.getElementById('statAccuracy').textContent=a?Math.round(c/a*100)+'%':'—';}
+function updateStats(){const a=Object.keys(answers).length;const c=Object.entries(answers).filter(([i,v])=>DB[i]&&DB[i].ans===v).length;document.getElementById('statAttempted').textContent=a;document.getElementById('statAccuracy').textContent=a?Math.round(c/a*100)+'%':'—';}
 function render(){updateStats();const filtered=getFiltered();const total=filtered.length;const totalPages=Math.ceil(total/PER_PAGE)||1;currentPage=Math.min(currentPage,totalPages);const slice=filtered.slice((currentPage-1)*PER_PAGE,currentPage*PER_PAGE);document.getElementById('resultsInfo').textContent=`Showing ${total} question${total!==1?'s':''}`;const grid=document.getElementById('qGrid');const es=document.getElementById('emptyState');if(!slice.length){grid.innerHTML='';es.style.display='block';}else{es.style.display='none';grid.innerHTML=slice.map(q=>{const idx=DB.indexOf(q);const answered=answers[idx];const ph=q.passage?`<button class="passage-toggle" id="pToggle${idx}" onclick="togglePassage(event,${idx})"><span>📄 RC Passage</span> <span class="p-chevron">▾</span></button><div class="passage-panel" id="pPanel${idx}"><div class="passage-panel-inner"><div class="passage-label"><span class="dot"></span> Reading Passage</div><div class="passage-text">${PASSAGES[q.passage]||''}</div></div></div>`:'';return `<div class="q-card${answered!==undefined?' expanded':''}" data-sec="${q.sec}" data-topic="${q.topic}" id="card${idx}" onclick="expandCard(event,${idx})"><div class="q-top"><span class="q-year-badge">CAT ${q.y}</span><span class="q-year-badge" style="background:rgba(99,102,241,.12);color:#818cf8;border-color:rgba(99,102,241,.2)">S${q.slot||1}</span><span class="q-sec-badge" data-sec="${q.sec}">${q.sec}</span><span class="q-topic-badge">${q.topic}</span><span class="q-diff ${q.diff}">${q.diff[0].toUpperCase()+q.diff.slice(1)}</span></div><div class="q-text">${q.q}</div>${ph}${answered!==undefined?renderOptions(q,idx):'<div class="q-opt-ph" style="margin-top:14px;padding:11px 16px;border-radius:12px;border:1px dashed rgba(245,158,11,.35);background:rgba(245,158,11,.05);font-size:13px;color:rgba(245,158,11,.85);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer;letter-spacing:.01em;">&#9654;&nbsp;Tap anywhere to reveal options</div>'}<div class="q-explain${answered!==undefined?' show':''}" id="exp${idx}">${q.exp||''}</div></div>`;}).join('');}renderPagination(total,totalPages);}
 function renderOptions(q,idx){const answered=answers[idx];return `<div class="q-options">${(q.opts||[]).map((o,oi)=>{let cls='q-opt';if(answered!==undefined){if(oi===q.ans)cls+=' correct';else if(oi===answered)cls+=' wrong';}return `<div class="${cls}" onclick="selectAnswer(event,${idx},${oi})"><span class="ol">${String.fromCharCode(65+oi)}</span><span>${o}</span></div>`;}).join('')}</div>`;}
 function expandCard(e,idx){if(e.target.closest('.q-opt,.passage-toggle,.passage-panel'))return;if(answers[idx]!==undefined)return;const ph=document.getElementById('card'+idx).querySelector('.q-opt-ph');if(ph)ph.outerHTML=renderOptions(DB[idx],idx);}
