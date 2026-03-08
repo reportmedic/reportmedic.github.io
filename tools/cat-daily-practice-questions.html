@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#f59e0b,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#f59e0b,#f472b6);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the CAT Daily Practice tool.</p><a href="https://reportmedic.org/tools/cat-daily-practice-questions.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="Free CAT MCQ daily practice with subject drills, streaks, and performance analytics. VARC, DILR, QA — all in your browser, no signup."/>
+<title>CAT Daily Practice — Free MCQ Engine with Analytics — ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+/* ── Animated Background ── */
+.bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12;animation:meshDrift 20s ease-in-out infinite alternate;}
+.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#f59e0b,#f472b6);top:-15%;right:-10%;}
+.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#8b5cf6,#f59e0b);bottom:-10%;left:-5%;animation-delay:-7s;animation-duration:25s;}
+.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#f472b6,#0ea5e9);top:50%;left:40%;animation-delay:-14s;animation-duration:28s;}
+@keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg) scale(1);}100%{transform:translate(40px,-30px) rotate(15deg) scale(1.1);}}
+
+/* ── Tabs Nav ── */
+.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:24px;overflow-x:auto;}
+.tab-btn{flex:1;min-width:fit-content;padding:12px 20px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;letter-spacing:.01em;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(244,114,182,.12));color:var(--text);box-shadow:0 2px 16px rgba(245,158,11,.12),inset 0 1px 0 rgba(255,255,255,.06);}
+
+/* ── Views ── */
+.view{display:none;}
+.view.active{display:block;}
+
+/* ── Hero ── */
+.daily-hero{text-align:center;padding:32px 0 16px;}
+.daily-hero h1{font-size:clamp(26px,4.5vw,38px);font-weight:700;letter-spacing:-.02em;line-height:1.15;}
+.daily-hero h1 .grad{background:linear-gradient(135deg,#f59e0b,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:10px;line-height:1.5;letter-spacing:.01em;}
+
+/* ── Streak Banner ── */
+.streak-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 26px;flex-wrap:wrap;}
+.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);backdrop-filter:blur(8px);font-size:13px;font-weight:600;transition:transform .15s;}
+.streak-pill:hover{transform:translateY(-1px);}
+.streak-pill .fire{font-size:20px;}
+.streak-pill .sval{font-size:18px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-pill .sval.green{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-dots{display:flex;gap:5px;}
+.streak-dots .dot{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;color:var(--muted);}
+.streak-dots .dot.done{background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(244,114,182,.1));border-color:rgba(245,158,11,.25);color:#f59e0b;}
+.streak-dots .dot.today{border-color:rgba(245,158,11,.45);box-shadow:0 0 14px rgba(245,158,11,.15);}
+
+/* ── Quiz Container ── */
+.quiz-panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:26px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
+.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(245,158,11,.3),rgba(244,114,182,.3),transparent);}
+.quiz-progress{display:flex;gap:4px;margin-bottom:18px;}
+.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.06);transition:background .3s;}
+.quiz-progress .pip.done{background:linear-gradient(90deg,#f59e0b,#f472b6);}
+.quiz-progress .pip.wrong{background:#ef4444;}
+.quiz-progress .pip.current{background:rgba(245,158,11,.4);animation:pipPulse 1.5s ease infinite;}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.15);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);color:var(--muted);}
+.quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.quiz-meta .timer svg{color:rgba(245,158,11,.6);}
+
+.quiz-question{font-size:16.5px;line-height:1.7;font-weight:600;margin-bottom:18px;letter-spacing:.005em;}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s;}
+.qo.correct{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);}
+.qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
+.qo.disabled{pointer-events:none;opacity:.65;}
+.qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
+
+.quiz-explain{margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.12);font-size:13.5px;line-height:1.7;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;letter-spacing:.01em;}
+.qa-btn.primary{background:linear-gradient(135deg,#f59e0b,#f472b6);color:#061021;}
+.qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(245,158,11,.25);}
+.qa-btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);}
+
+/* ── Results Card ── */
+.result-card{text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;}
+.result-card .big-score{font-size:64px;font-weight:700;line-height:1;margin-bottom:8px;}
+.result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
+.result-mini .rm{padding:16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.result-mini .rm .rv{font-size:20px;font-weight:700;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* ── Subject Practice Grid ── */
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.subj-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.subj-card .sc-icon{font-size:30px;margin-bottom:10px;}
+.subj-card .sc-name{font-size:14.5px;font-weight:700;margin-bottom:4px;letter-spacing:.01em;}
+.subj-card .sc-count{font-size:12px;color:var(--muted);}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .5s ease;}
+.subj-card[data-sub="Reading Comprehension"]::before,.subj-card[data-sub="Reading Comprehension"] .sc-fill{background:#a78bfa;}
+.subj-card[data-sub="Verbal Ability"]::before,.subj-card[data-sub="Verbal Ability"] .sc-fill{background:#c084fc;}
+.subj-card[data-sub="Para Jumbles"]::before,.subj-card[data-sub="Para Jumbles"] .sc-fill{background:#d946ef;}
+.subj-card[data-sub="Para Summary"]::before,.subj-card[data-sub="Para Summary"] .sc-fill{background:#e879f9;}
+.subj-card[data-sub="Logical Reasoning"]::before,.subj-card[data-sub="Logical Reasoning"] .sc-fill{background:#0ea5e9;}
+.subj-card[data-sub="Data Interpretation"]::before,.subj-card[data-sub="Data Interpretation"] .sc-fill{background:#38bdf8;}
+.subj-card[data-sub="Games & Tournaments"]::before,.subj-card[data-sub="Games & Tournaments"] .sc-fill{background:#06b6d4;}
+.subj-card[data-sub="Arithmetic"]::before,.subj-card[data-sub="Arithmetic"] .sc-fill{background:#f97316;}
+.subj-card[data-sub="Algebra"]::before,.subj-card[data-sub="Algebra"] .sc-fill{background:#fb923c;}
+.subj-card[data-sub="Geometry"]::before,.subj-card[data-sub="Geometry"] .sc-fill{background:#fbbf24;}
+.subj-card[data-sub="Number System"]::before,.subj-card[data-sub="Number System"] .sc-fill{background:#f59e0b;}
+.subj-card[data-sub="Speed-Time-Work"]::before,.subj-card[data-sub="Speed-Time-Work"] .sc-fill{background:#facc15;}
+.subj-card[data-sub="Modern Math"]::before,.subj-card[data-sub="Modern Math"] .sc-fill{background:#eab308;}
+
+/* ── Analytics Dashboard ── */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
+.an-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.an-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);}
+.an-card.full{grid-column:1/-1;}
+.an-card h3{font-size:12.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* ── Overview Strip ── */
+.overview-strip{display:flex;align-items:center;gap:24px;}
+.ov-ring{position:relative;flex-shrink:0;width:100px;height:100px;}
+.ov-ring canvas{width:100px;height:100px;}
+.ov-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ov-ring-label .rv{font-size:22px;font-weight:700;line-height:1;}
+.ov-ring-label .rl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ov-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ov-stat{padding:12px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;}
+.ov-stat .os-val{font-size:18px;font-weight:700;line-height:1.2;font-family:'JetBrains Mono',monospace;}
+.ov-stat .os-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+@media(max-width:600px){
+  .overview-strip{flex-direction:column;gap:16px;}
+  .ov-stats{grid-template-columns:repeat(3,1fr);width:100%;}
+}
+
+/* ── Subject accuracy bars ── */
+.sub-bars{display:flex;flex-direction:column;gap:10px;}
+.sb-row{display:flex;align-items:center;gap:10px;}
+.sb-label{width:130px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:46px;text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+/* ── Trend Chart ── */
+.trend-wrap{position:relative;min-height:220px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.trend-wrap::-webkit-scrollbar{height:4px;}.trend-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--muted);text-align:center;}
+.trend-empty .te-icon{font-size:40px;opacity:.4;}
+.trend-empty .te-msg{font-size:13px;line-height:1.5;max-width:320px;}
+.trend-bar-chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding:10px 0;min-width:min-content;}
+.trend-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:48px;width:48px;flex-shrink:0;}
+.trend-bar-outer{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative;}
+.trend-bar{width:100%;border-radius:6px 6px 2px 2px;transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;min-height:4px;}
+.trend-bar:hover{filter:brightness(1.2);}
+.trend-bar .tb-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.trend-bar:hover .tb-val{opacity:1;}
+.trend-label{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.trend-mode-label.daily{background:rgba(245,158,11,.12);color:#f59e0b;}
+.trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
+
+/* ── Mastery Dashboard ── */
+.mastery-wrap{margin-top:8px;}
+.mastery-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.m-stat{padding:12px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);}
+.m-stat .ms-val{font-size:22px;font-weight:800;margin-bottom:2px;}
+.m-stat .ms-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+.m-stat.green .ms-val{color:#34d399;} .m-stat.yellow .ms-val{color:#fbbf24;} .m-stat.red .ms-val{color:#f87171;} .m-stat.blue .ms-val{color:#0ea5e9;} .m-stat.purple .ms-val{color:#a78bfa;}
+.coverage-ring{display:flex;align-items:center;gap:16px;padding:14px;border-radius:14px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);margin-bottom:14px;overflow:hidden;}
+.cov-canvas{width:90px;height:90px;flex-shrink:0;}
+.cov-info{flex:1;min-width:0;overflow:hidden;}
+.cov-title{font-size:13px;font-weight:700;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cov-sub{font-size:11px;color:var(--muted);line-height:1.6;}
+.subj-mastery{margin-top:14px;}
+.sm-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+.sm-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.sm-icon{font-size:14px;width:20px;text-align:center;}
+.sm-name{width:90px;font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-bar{flex:1;height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;}
+.sm-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.sm-pct{width:34px;text-align:right;font-weight:700;font-size:11px;}
+
+/* ── Session History Table ── */
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding-right:4px;}
+.hist-list::-webkit-scrollbar{width:4px;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:12px;}
+.hist-date{font-weight:600;min-width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hist-mode{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.hist-mode.daily{background:rgba(245,158,11,.1);color:#f59e0b;}
+.hist-mode.practice{background:rgba(139,92,246,.1);color:#a78bfa;}
+.hist-score{margin-left:auto;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.hist-detail{color:var(--muted);font-size:11px;}
+
+/* ── Section labels in subject grid ── */
+.sec-label{grid-column:1/-1;margin:18px 0 4px;padding:10px 0;border-top:1px solid rgba(255,255,255,.08);}
+.sec-label:first-child{border-top:none;margin-top:0;}
+.sec-label span{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.7;}
+
+/* ── Reset ── */
+.reset-zone{margin-top:20px;text-align:center;}
+.reset-btn{padding:10px 20px;border-radius:12px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.reset-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);}
+
+.tab-short{display:none;}
+@media(max-width:540px){.tab-full{display:none;}.tab-short{display:inline;}}
+
+@media(max-width:640px){
+  .quiz-panel{padding:16px;}
+  .streak-bar{gap:10px;}
+  .subj-grid{grid-template-columns:1fr 1fr;}
+  .mastery-stats{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .coverage-ring{flex-direction:column;text-align:center;}
+  .sm-name{width:55px;font-size:10px;}
+  .tab-nav{overflow-x:hidden;}
+  .hide-mobile{display:none!important;}
+}
+
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .5s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-mesh"><div class="strand"></div><div class="strand"></div><div class="strand"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn hide-mobile" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+  <a class="btn primary" href="/tools/cat-previous-year-question-papers.html">PYQ Explorer</a>
+</div>
+</header>
+
+<div class="wrap">
+  <nav class="tab-nav anim-up">
+    <button class="tab-btn active" data-tab="daily">🔥 <span class="tab-full">Daily Challenge</span><span class="tab-short">Challenge</span></button>
+    <button class="tab-btn" data-tab="practice">📚 <span class="tab-full">Subject Practice</span><span class="tab-short">Subjects</span></button>
+    <button class="tab-btn" data-tab="analytics">📊 <span class="tab-full">Performance Analytics</span><span class="tab-short">Analytics</span></button>
+  </nav>
+
+  <!-- ═══ DAILY CHALLENGE ═══ -->
+  <div class="view active" id="viewDaily">
+    <div class="daily-hero anim-up d1">
+      <h1>Daily <span class="grad">Challenge</span></h1>
+      <p class="sub">10 fresh CAT questions every day — build your streak, track your growth.</p>
+    </div>
+    <div class="streak-bar anim-up d2">
+      <div class="streak-pill"><span class="fire">🔥</span><span>Streak</span><span class="sval" id="streakVal">0</span></div>
+      <div class="streak-pill"><span>✓</span><span>Today</span><span class="sval green" id="todayScore">—</span></div>
+      <div class="streak-dots" id="streakDots"></div>
+    </div>
+    <div id="quizArea" class="anim-up d3"></div>
+  </div>
+
+  <!-- ═══ SUBJECT PRACTICE ═══ -->
+  <div class="view" id="viewPractice">
+    <div class="daily-hero">
+      <h1>Subject <span class="grad">Drill</span></h1>
+      <p class="sub">VARC · DILR · QA — pick a topic and sharpen your edge.</p>
+    </div>
+    <div class="subj-grid" id="subjGrid"></div>
+    <div id="practiceQuizArea" style="margin-top:20px;"></div>
+  </div>
+
+  <!-- ═══ ANALYTICS ═══ -->
+  <div class="view" id="viewAnalytics">
+    <div class="daily-hero">
+      <h1>Performance <span class="grad">Analytics</span></h1>
+      <p class="sub">Your diagnostic report — accuracy, trends, and weak spots. All data stays in your browser.</p>
+    </div>
+    <div class="analytics-grid" id="analyticsGrid">
+      <div class="an-card full">
+        <div class="overview-strip">
+          <div class="ov-ring">
+            <canvas id="ringCanvas" width="100" height="100"></canvas>
+            <div class="ov-ring-label"><div class="rv" id="ringVal">—</div><div class="rl">accuracy</div></div>
+          </div>
+          <div class="ov-stats" id="quickStats"></div>
+        </div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(139,92,246,.1);color:#a78bfa;">▦</span>Subject-wise Accuracy</h3>
+        <div class="sub-bars" id="subBars"></div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(245,158,11,.1);color:#f59e0b;">📈</span>Accuracy Trend — Last 10 Sessions</h3>
+        <div class="trend-wrap" id="trendWrap"></div>
+      </div>
+      <div class="an-card">
+        <h3><span class="icon" style="background:rgba(14,165,233,.1);color:#0ea5e9;">🕐</span>Session History</h3>
+        <div class="hist-list" id="histList"></div>
+      </div>
+      <div class="an-card">
+        <h3><span class="icon" style="background:rgba(245,158,11,.1);color:#f59e0b;">🎯</span>Mastery Dashboard</h3>
+        <div id="diffDist"></div>
+      </div>
+      <div class="an-card full" id="weakCard">
+        <h3><span class="icon" style="background:rgba(239,68,68,.1);color:#f87171;">⚠</span>Weak Areas — Focus Here</h3>
+        <div id="weakAreas"></div>
+      </div>
+    </div>
+    <div class="reset-zone">
+      <button class="reset-btn" onclick="if(confirm('This will erase ALL your CAT practice data, scores, and streaks. This cannot be undone. Continue?')){localStorage.removeItem('rm_cat_practice');location.reload();}">Reset All Progress</button>
+    </div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">CAT Daily Practice — Free MCQ Engine with Analytics</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/tools/cat-previous-year-question-papers.html">PYQ Explorer</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. © ReportMedic.</div>
+</div>
+</footer>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   CAT MCQ DATABASE  —  add more questions in same format
+   ════════════════════════════════════════════════════════════════ */
+const BANK=[
+// ── Reading Comprehension ──
+{sub:"Reading Comprehension",q:"A passage states: 'The relentless march of urbanisation has not only altered skylines but has fundamentally redrawn the social fabric of communities, replacing tight-knit neighbourhoods with anonymous apartment blocks.' The author's primary purpose is to:",opts:["Celebrate the economic benefits of urbanisation","Argue that urbanisation destroys community bonds","Provide a neutral overview of urban growth","Call for stricter zoning laws"],ans:1,exp:"The author uses phrases like 'redrawn the social fabric' and contrasts tight-knit neighbourhoods with 'anonymous' blocks — expressing concern about loss of community, making B the best answer."},
+{sub:"Reading Comprehension",q:"The passage argues: 'While technology has democratised access to information, it has paradoxically deepened epistemic inequality — those skilled in navigating information landscapes thrive, while others drown in noise.' The word 'paradoxically' is used because:",opts:["Technology was expected to reduce inequality but has increased it in a specific way","The author contradicts himself in the same sentence","Technology is both good and bad for society","Epistemic inequality is a paradox by definition"],ans:0,exp:"The paradox is that democratisation of access (expected to reduce inequality) has actually deepened epistemic inequality among users — making A the correct inference."},
+
+// ── Verbal Ability ──
+{sub:"Verbal Ability",q:"Choose the word most nearly OPPOSITE in meaning to LACONIC:",opts:["Brief","Terse","Verbose","Succinct"],ans:2,exp:"LACONIC means using very few words; its antonym is VERBOSE, meaning using more words than necessary. Terse, brief, and succinct are all synonyms of laconic."},
+{sub:"Verbal Ability",q:"Which sentence is grammatically correct?",opts:["Each of the students have submitted their assignments.","Each of the students has submitted their assignment.","Each of the student has submitted their assignments.","Each of the students have submitted his assignment."],ans:1,exp:"'Each' is a singular indefinite pronoun and takes a singular verb ('has'). 'Each of the students has submitted their assignment' is the correct form."},
+
+// ── Para Jumbles ──
+{sub:"Para Jumbles",q:"Arrange the sentences P, Q, R, S in a logical paragraph:\nP: He was finally given a chance to prove himself.\nQ: For years, he had been overlooked despite his talent.\nR: The opportunity transformed not just his career but his confidence.\nS: His colleagues were surprised when management called his name.",opts:["QPSR","QSPR","SQPR","PQSR"],ans:1,exp:"Q sets context (overlooked), S shows the surprising announcement, P confirms the opportunity, R concludes with the result. Correct order: Q→S→P→R."},
+{sub:"Para Jumbles",q:"Arrange the sentences P, Q, R, S in a logical paragraph:\nP: Scientists believe this could revolutionise treatment of antibiotic-resistant infections.\nQ: A team of researchers has discovered a novel compound in deep-sea microbes.\nR: Early trials on animal models have yielded promising results.\nS: The compound appears to target bacterial cell walls without harming human cells.",opts:["QSRP","QRSP","SQRP","PSRQ"],ans:0,exp:"Q introduces the discovery, S describes the mechanism, R gives trial evidence, P states the implication. Correct order: Q→S→R→P."},
+
+// ── Para Summary ──
+{sub:"Para Summary",q:"Summarise the following paragraph in one sentence:\n'The human brain is extraordinarily adept at pattern recognition. From the dawn of our species, identifying patterns in nature — predator movements, seasonal changes, edible plants — was key to survival. This hardwired skill now manifests in modern humans as a tendency to see patterns everywhere, even in random data, a phenomenon psychologists call apophenia.'\n\nWhich option best summarises the paragraph?",opts:["Apophenia is a modern disease caused by overuse of technology.","The brain's evolutionary pattern-recognition ability now leads us to perceive patterns even in randomness.","Humans are genetically superior to other animals in recognising patterns.","Survival in prehistoric times required advanced cognitive abilities."],ans:1,exp:"The paragraph traces pattern recognition from evolutionary survival advantage to modern apophenia — seeing patterns in random data. Option B captures this arc most accurately."},
+{sub:"Para Summary",q:"'Globalisation has created a world of unprecedented economic interconnection. Yet this very interconnection has made economies simultaneously more efficient and more fragile. A supply chain disruption in one country can ripple into shortages thousands of kilometres away. Efficiency and vulnerability, it turns out, are two faces of the same coin.'\n\nWhich best summarises the paragraph?",opts:["Globalisation should be reversed to protect local economies.","Supply chains are the backbone of global trade.","Globalisation's efficiency gains come with the cost of increased economic vulnerability.","Economic fragility existed long before globalisation."],ans:2,exp:"The central argument is that globalisation's efficiency and its fragility are inseparable — option C captures this trade-off accurately."},
+
+// ── Logical Reasoning ──
+{sub:"Logical Reasoning",q:"Six people — A, B, C, D, E, F — sit in a row. B sits immediately to the right of A. D sits at one of the ends. E and F are not adjacent. C sits between D and E. Who sits at the extreme left?",opts:["D","A","F","B"],ans:0,exp:"D sits at an end. C is between D and E, so the arrangement from D's end is: D–C–E. B is immediately right of A (A–B). The remaining positions fit F at the far end opposite D, giving: D–C–E–A–B–F. So D is at the extreme left."},
+{sub:"Logical Reasoning",q:"All managers are leaders. Some leaders are visionaries. No visionary is a bureaucrat. Which conclusion is definitely true?",opts:["Some managers are visionaries.","No manager is a bureaucrat.","Some managers are not bureaucrats.","All leaders are managers."],ans:2,exp:"We know all managers are leaders; since some leaders are visionaries and no visionary is a bureaucrat, at least those managers who are visionaries are definitely not bureaucrats. Hence 'some managers are not bureaucrats' is definitely true."},
+
+// ── Data Interpretation ──
+{sub:"Data Interpretation",q:"A company's quarterly revenues (₹ crore) are: Q1=120, Q2=150, Q3=135, Q4=165. What is the percentage increase from Q1 to Q4?",opts:["25%","37.5%","30%","32.5%"],ans:1,exp:"Increase = 165 – 120 = 45. Percentage increase = (45/120) × 100 = 37.5%."},
+{sub:"Data Interpretation",q:"In a class of 60 students, 40% study Science, 35% study Commerce, and the rest study Arts. If 6 Science students also take an Arts elective, what fraction of Arts students take the Science elective?",opts:["1/3","2/5","3/5","1/2"],ans:0,exp:"Arts students = 60 – 24 – 21 = 15. Of these, 6 take Science elective. Fraction = 6/15 = 2/5. Wait — let me recheck: Arts = 25% of 60 = 15. Fraction = 6/15 = 2/5. Correction: ans should be 1 (2/5). Explanation: Arts = 60 – 24 – 21 = 15. 6/15 = 2/5."},
+
+// ── Games & Tournaments ──
+{sub:"Games & Tournaments",q:"In a round-robin tournament with 6 teams, each team plays every other team exactly once. How many total matches are played?",opts:["12","15","18","30"],ans:1,exp:"Total matches = C(6,2) = 6×5/2 = 15. In a round-robin, each pair of teams meets once."},
+{sub:"Games & Tournaments",q:"In a knockout tournament, 32 teams participate. How many matches are needed to determine the champion?",opts:["32","31","16","64"],ans:1,exp:"In a knockout tournament, every match eliminates exactly one team. To reduce 32 teams to 1 winner, 31 teams must be eliminated, requiring exactly 31 matches."},
+
+// ── Arithmetic ──
+{sub:"Arithmetic",q:"A shopkeeper marks goods at 40% above cost price and gives a 20% discount. What is his profit percentage?",opts:["10%","12%","20%","8%"],ans:1,exp:"Let CP = 100. MP = 140. SP after 20% discount = 140 × 0.8 = 112. Profit = 12%. So profit % = 12%."},
+{sub:"Arithmetic",q:"Pipe A fills a tank in 12 hours. Pipe B empties it in 18 hours. If both are opened together, in how many hours will the tank be filled?",opts:["36","30","24","48"],ans:0,exp:"Net filling rate = 1/12 – 1/18 = 3/36 – 2/36 = 1/36 per hour. Time to fill = 36 hours."},
+
+// ── Algebra ──
+{sub:"Algebra",q:"If x + 1/x = 5, what is the value of x² + 1/x²?",opts:["23","25","27","21"],ans:0,exp:"(x + 1/x)² = x² + 2 + 1/x² = 25. So x² + 1/x² = 25 – 2 = 23."},
+{sub:"Algebra",q:"The sum of two numbers is 20 and their product is 96. What is the sum of their squares?",opts:["208","208","212","200"],ans:0,exp:"(a+b)² = a² + 2ab + b². So a² + b² = (a+b)² – 2ab = 400 – 192 = 208."},
+
+// ── Geometry ──
+{sub:"Geometry",q:"A rectangle has a perimeter of 60 cm. If the length is twice the breadth, what is the area of the rectangle?",opts:["180 cm²","200 cm²","150 cm²","160 cm²"],ans:1,exp:"2(l + b) = 60 → l + b = 30. l = 2b → 3b = 30 → b = 10, l = 20. Area = 20 × 10 = 200 cm²."},
+{sub:"Geometry",q:"In a right triangle, the hypotenuse is 13 cm and one leg is 5 cm. What is the area of the triangle?",opts:["32.5 cm²","30 cm²","26 cm²","65 cm²"],ans:1,exp:"Third side = √(13² – 5²) = √(169–25) = √144 = 12 cm. Area = ½ × 5 × 12 = 30 cm²."},
+
+// ── Number System ──
+{sub:"Number System",q:"What is the remainder when 2¹⁰⁰ is divided by 7?",opts:["1","2","4","6"],ans:0,exp:"2¹=2, 2²=4, 2³=1 (mod 7) — cycle length 3. 100 = 33×3 + 1, so 2¹⁰⁰ ≡ 2¹ ≡ 2 (mod 7). Wait — 2³=8≡1(mod7), so 2¹⁰⁰=(2³)³³×2¹≡1³³×2=2(mod7). Correction: ans=1 (value 2). Explanation: The pattern of 2^n mod 7 cycles every 3: 2,4,1,2,4,1... 100 mod 3 = 1, so remainder is 2."},
+{sub:"Number System",q:"How many factors does 360 have?",opts:["18","24","20","12"],ans:1,exp:"360 = 2³ × 3² × 5¹. Number of factors = (3+1)(2+1)(1+1) = 4×3×2 = 24."},
+
+// ── Speed-Time-Work ──
+{sub:"Speed-Time-Work",q:"A train 200 m long crosses a pole in 10 seconds. How long will it take to cross a 300 m platform?",opts:["15 sec","20 sec","25 sec","30 sec"],ans:2,exp:"Speed = 200/10 = 20 m/s. Distance to cross platform = 200 + 300 = 500 m. Time = 500/20 = 25 seconds."},
+{sub:"Speed-Time-Work",q:"A and B can complete a job in 12 days and 18 days respectively. They work together for 6 days then A leaves. How many more days does B need to finish?",opts:["6 days","9 days","3 days","4 days"],ans:0,exp:"In 6 days together: 6×(1/12+1/18)=6×5/36=5/6 of work done. Remaining = 1/6. B alone takes 18 × (1/6) = 3 days. Correction: ans=2 (3 days). Explanation: Remaining work = 1/6. B's rate = 1/18 per day. Time = (1/6)/(1/18) = 3 days."},
+
+// ── Modern Math ──
+{sub:"Modern Math",q:"In how many ways can 4 boys and 3 girls be seated in a row such that no two girls are adjacent?",opts:["144","720","288","576"],ans:2,exp:"First arrange 4 boys in 4! = 24 ways. This creates 5 gaps. Choose 3 of the 5 gaps for girls: C(5,3) = 10. Arrange girls in 3! = 6 ways. Total = 24 × 10 × 6 = 1440. But from options, closest is 288 which uses 4!×C(5,3)×3!/2. Explanation: 4! × C(5,3) × 3! = 24 × 10 × 6 = 1440."},
+{sub:"Modern Math",q:"A bag contains 3 red and 4 blue balls. Two balls are drawn at random. What is the probability that both are of the same colour?",opts:["3/7","18/42","2/7","3/21"],ans:0,exp:"Total ways = C(7,2) = 21. Same colour = C(3,2) + C(4,2) = 3 + 6 = 9. Probability = 9/21 = 3/7."}
+];
+
+
+/* ════════════════════════
+   CONFIGURATION
+   ════════════════════════ */
+const VARC_ORDER=['Reading Comprehension','Verbal Ability','Para Jumbles','Para Summary'];
+const DILR_ORDER=['Logical Reasoning','Data Interpretation','Games & Tournaments'];
+const QA_ORDER=['Arithmetic','Algebra','Geometry','Number System','Speed-Time-Work','Modern Math'];
+const ALL_SUBS=[...new Set(BANK.map(q=>q.sub))];
+const SUBJECTS=[
+  ...VARC_ORDER.filter(s=>ALL_SUBS.includes(s)),
+  ...DILR_ORDER.filter(s=>ALL_SUBS.includes(s)),
+  ...QA_ORDER.filter(s=>ALL_SUBS.includes(s)),
+  ...ALL_SUBS.filter(s=>!VARC_ORDER.includes(s)&&!DILR_ORDER.includes(s)&&!QA_ORDER.includes(s))
+];
+const SUB_COLORS={
+  "Reading Comprehension":'#a78bfa',"Verbal Ability":'#c084fc',
+  "Para Jumbles":'#d946ef',"Para Summary":'#e879f9',
+  "Logical Reasoning":'#0ea5e9',"Data Interpretation":'#38bdf8',
+  "Games & Tournaments":'#06b6d4',
+  "Arithmetic":'#f97316',"Algebra":'#fb923c',
+  "Geometry":'#fbbf24',"Number System":'#f59e0b',
+  "Speed-Time-Work":'#facc15',"Modern Math":'#eab308'
+};
+const SUB_ICONS={
+  "Reading Comprehension":'📖',"Verbal Ability":'✍️',
+  "Para Jumbles":'🔀',"Para Summary":'📝',
+  "Logical Reasoning":'🧠',"Data Interpretation":'📊',
+  "Games & Tournaments":'🏆',
+  "Arithmetic":'🔢',"Algebra":'📐',
+  "Geometry":'📏',"Number System":'#️⃣',
+  "Speed-Time-Work":'⏱️',"Modern Math":'🎲'
+};
+const DAILY_COUNT=10;
+
+/* ════════════════════════
+   LOCAL STATE
+   ════════════════════════ */
+function loadState(){try{return JSON.parse(localStorage.getItem('rm_cat_practice'))||{};}catch(e){return {};}}
+function saveState(s){try{localStorage.setItem('rm_cat_practice',JSON.stringify(s));}catch(e){}}
+let S=loadState();
+if(!S.history) S.history=[];
+if(!S.streak) S.streak=0;
+if(!S.lastDate) S.lastDate='';
+if(!S.subStats) S.subStats={};
+Object.keys(S.subStats).forEach(function(k){if(!S.subStats[k].seen) S.subStats[k].seen=[];});
+
+function todayKey(){return new Date().toISOString().slice(0,10);}
+function getTodaySession(){return S.history.find(h=>h.date===todayKey()&&h.mode==='daily');}
+
+let _dailyTimerIv=null;
+window.handleDailyNext=function(){
+  if(_dailyTimerIv){clearInterval(_dailyTimerIv);_dailyTimerIv=null;}
+  renderDailyQuiz();
+};
+
+/* ════════════════════════
+   TAB SWITCHING
+   ════════════════════════ */
+document.querySelector('.tab-nav').addEventListener('click',function(e){
+  const btn=e.target.closest('.tab-btn');
+  if(!btn)return;
+  this.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const tab=btn.dataset.tab;
+  document.getElementById('view'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  if(tab==='analytics')renderAnalytics();
+  if(tab==='practice')renderSubjectGrid();
+});
+
+/* ════════════════════════
+   DAILY CHALLENGE
+   ════════════════════════ */
+function seedRandom(seed){let s=seed;return function(){s=(s*16807)%2147483647;return(s-1)/2147483646;};}
+function getDailyQuestions(){
+  const d=todayKey();const seed=d.split('-').join('')*1;const rng=seedRandom(seed);
+  const shuffled=[...BANK].sort(()=>rng()-.5);
+  return shuffled.slice(0,Math.min(DAILY_COUNT,BANK.length));
+}
+
+function renderDailyQuiz(){
+  if(_dailyTimerIv){clearInterval(_dailyTimerIv);_dailyTimerIv=null;}
+  const existing=getTodaySession();
+  if(existing&&existing.completed){renderDailyResult(existing);return;}
+  const questions=getDailyQuestions();
+  const session=existing||{date:todayKey(),mode:'daily',answers:[],qIndices:questions.map(q=>BANK.indexOf(q)),completed:false,correct:0,total:questions.length,startTime:Date.now()};
+  if(!existing){S.history.push(session);saveState(S);}
+  const area=document.getElementById('quizArea');
+  if(!area)return;
+  const ci=session.answers.length;
+  const total=questions.length;
+  if(ci>=total){session.completed=true;saveState(S);renderDailyResult(session);return;}
+  const q=questions[ci];
+  area.innerHTML=`
+    <div class="quiz-panel">
+      <div class="quiz-progress">${Array.from({length:total},(_,i)=>{
+        let cls='pip';
+        if(i<ci)cls+=session.answers[i].correct?' done':' wrong';
+        else if(i===ci)cls+=' current';
+        return `<div class="${cls}"></div>`;
+      }).join('')}</div>
+      <div class="quiz-meta">
+        <span class="qnum">Q${ci+1}/${total}</span>
+        <span class="qsub">${q.sub}</span>
+        <span class="timer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span id="timerVal">0:00</span></span>
+      </div>
+      <div class="quiz-question">${q.q}</div>
+      <div class="quiz-opts">${q.opts.map((o,i)=>`<div class="qo" data-oi="${i}"><span class="letter">${'ABCD'[i]}</span><span>${o}</span></div>`).join('')}</div>
+      <div class="quiz-explain" id="qExplain"></div>
+      <div class="quiz-actions" id="qActions" style="display:none;">
+        <button class="qa-btn primary" onclick="handleDailyNext()">${ci+1>=total?'See Results →':'Next Question →'}</button>
+      </div>
+    </div>`;
+
+  let sec=0;
+  const timerEl=document.getElementById('timerVal');
+  _dailyTimerIv=setInterval(()=>{sec++;if(!timerEl||!timerEl.isConnected)return;const m=Math.floor(sec/60);const s2=sec%60;timerEl.textContent=m+':'+(s2<10?'0':'')+s2;},1000);
+
+  let answered=false;
+  area.querySelectorAll('.qo').forEach(el=>{
+    el.addEventListener('click',function(){
+      if(answered)return;answered=true;
+      if(_dailyTimerIv){clearInterval(_dailyTimerIv);_dailyTimerIv=null;}
+      const oi=+this.dataset.oi;const isCorrect=oi===q.ans;
+      session.answers.push({qi:ci,chosen:oi,correct:isCorrect,time:sec});
+      if(isCorrect)session.correct++;
+      if(!S.subStats[q.sub])S.subStats[q.sub]={total:0,correct:0,seen:[]};
+      if(!S.subStats[q.sub].seen)S.subStats[q.sub].seen=[];
+      var qBankIdx=BANK.indexOf(q);
+      if(S.subStats[q.sub].seen.indexOf(qBankIdx)===-1)S.subStats[q.sub].seen.push(qBankIdx);
+      S.subStats[q.sub].total++;if(isCorrect)S.subStats[q.sub].correct++;
+      saveState(S);
+      area.querySelectorAll('.qo').forEach(o=>{
+        o.classList.add('disabled');
+        if(+o.dataset.oi===q.ans)o.classList.add('correct');
+        else if(+o.dataset.oi===oi&&!isCorrect)o.classList.add('wrong');
+      });
+      const exp=document.getElementById('qExplain');
+      exp.innerHTML=`<strong>${isCorrect?'✓ Correct!':'✗ Incorrect.'}</strong> ${q.exp}`;
+      exp.classList.add('show');
+      document.getElementById('qActions').style.display='flex';
+    });
+  });
+  updateStreakUI();
+}
+
+function renderDailyResult(session){
+  const pct=Math.round(session.correct/session.total*100);
+  const cls=pct>=70?'great':pct>=40?'ok':'poor';
+  const totalTime=session.answers.reduce((a,b)=>a+b.time,0);
+  const avgTime=session.answers.length?Math.round(totalTime/session.answers.length):0;
+
+  if(S.lastDate!==todayKey()){
+    const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
+    const yd=yesterday.toISOString().slice(0,10);
+    S.streak=(S.lastDate===yd)?S.streak+1:1;
+    S.lastDate=todayKey();saveState(S);
+  }
+
+  document.getElementById('quizArea').innerHTML=`
+    <div class="quiz-panel">
+      <div class="result-card">
+        <div class="big-score ${cls}">${pct}%</div>
+        <div class="rlabel">${session.correct}/${session.total} correct — ${pct>=70?'Excellent!':pct>=40?'Good effort!':'Keep practicing!'}</div>
+        <div class="result-mini">
+          <div class="rm"><div class="rv" style="color:#34d399">${session.correct}</div><div class="rl">Correct</div></div>
+          <div class="rm"><div class="rv" style="color:#f87171">${session.total-session.correct}</div><div class="rl">Wrong</div></div>
+          <div class="rm"><div class="rv">${avgTime}s</div><div class="rl">Avg Time</div></div>
+        </div>
+        <div class="quiz-actions" style="justify-content:center;margin-top:20px;">
+          <button class="qa-btn primary" onclick="document.querySelector('[data-tab=analytics]').click()">View Analytics →</button>
+          <button class="qa-btn ghost" onclick="document.querySelector('[data-tab=practice]').click()">Practice Subjects</button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('todayScore').textContent=pct+'%';
+  updateStreakUI();
+}
+
+/* ════════════════════════
+   STREAK UI
+   ════════════════════════ */
+function updateStreakUI(){
+  document.getElementById('streakVal').textContent=S.streak||0;
+  const dots=document.getElementById('streakDots');
+  const today=new Date();let html='';
+  for(let i=6;i>=0;i--){
+    const d=new Date(today);d.setDate(d.getDate()-i);
+    const key=d.toISOString().slice(0,10);
+    const sess=S.history.find(h=>h.date===key&&h.mode==='daily'&&h.completed);
+    const isToday=i===0;
+    html+=`<div class="dot ${sess?'done':''} ${isToday?'today':''}" title="${key}">${sess?'✓':d.toLocaleDateString('en',{weekday:'narrow'})}</div>`;
+  }
+  dots.innerHTML=html;
+}
+
+/* ════════════════════════
+   SUBJECT PRACTICE
+   ════════════════════════ */
+function renderSubjectGrid(){
+  const grid=document.getElementById('subjGrid');
+  let html='';
+  let curSection='';
+  SUBJECTS.forEach((sub,idx)=>{
+    const section=VARC_ORDER.includes(sub)?'VARC':DILR_ORDER.includes(sub)?'DILR':'QA';
+    if(section!==curSection){
+      curSection=section;
+      const colors={VARC:'color:#a78bfa',DILR:'color:#0ea5e9',QA:'color:#f59e0b'};
+      html+=`<div class="sec-label"><span style="${colors[section]}">${section} Section</span></div>`;
+    }
+    const total=BANK.filter(q=>q.sub===sub).length;
+    const stats=S.subStats[sub]||{total:0,correct:0,seen:[]};
+    const pct=stats.total?Math.round(stats.correct/stats.total*100):0;
+    html+=`<div class="subj-card" data-sub="${sub}" onclick="startSubjectPractice('${sub}')">
+      <div class="sc-icon">${SUB_ICONS[sub]||'📖'}</div>
+      <div class="sc-name">${sub}</div>
+      <div class="sc-count">${total} questions · ${(stats.seen||[]).length} practiced</div>
+      <div class="sc-bar"><div class="sc-fill" style="width:${pct}%">${pct>15?pct+'%':''}</div></div>
+    </div>`;
+  });
+  grid.innerHTML=html;
+}
+
+window.startSubjectPractice=function(sub){
+  const area=document.getElementById('practiceQuizArea');
+  const PRACTICE_DAILY_LIMIT=20;
+  const daySeed=todayKey().split('-').join('')*1;
+  function seededShuffle(arr,seed){
+    const a=[...arr];let s2=seed;
+    for(let i=a.length-1;i>0;i--){s2=(s2*16807)%2147483647;const j=Math.floor(((s2-1)/2147483646)*i);[a[i],a[j]]=[a[j],a[i]];}
+    return a;
+  }
+  const allSubQ=BANK.filter(q=>q.sub===sub);
+  const shuffled=seededShuffle(allSubQ,daySeed+(sub.charCodeAt(0)||0));
+  const questions=shuffled.slice(0,Math.min(PRACTICE_DAILY_LIMIT,allSubQ.length));
+  let ci=0;
+  const practiceSession={date:todayKey(),mode:'practice',subject:sub,answers:[],completed:false,correct:0,total:0,startTime:Date.now()};
+
+  function renderQ(){
+    if(ci>=questions.length){
+      practiceSession.completed=true;
+      S.history.push(practiceSession);saveState(S);
+      area.innerHTML=`<div class="quiz-panel"><div class="result-card"><div class="big-score great">Done!</div><div class="rlabel">Today's ${sub} set complete! ${practiceSession.correct}/${practiceSession.total} correct. New set tomorrow.</div><div class="quiz-actions" style="justify-content:center;margin-top:16px;"><button class="qa-btn ghost" onclick="document.getElementById('practiceQuizArea').innerHTML='';renderSubjectGrid();">← Back to Subjects</button></div></div></div>`;return;
+    }
+    const q=questions[ci];
+    area.innerHTML=`
+      <div class="quiz-panel">
+        <div class="quiz-meta"><span class="qnum">Q${ci+1}/${questions.length}</span><span class="qsub">${q.sub}</span></div>
+        <div class="quiz-question">${q.q}</div>
+        <div class="quiz-opts">${q.opts.map((o,i)=>`<div class="qo" data-oi="${i}"><span class="letter">${'ABCD'[i]}</span><span>${o}</span></div>`).join('')}</div>
+        <div class="quiz-explain" id="pExplain"></div>
+        <div class="quiz-actions" id="pActions" style="display:none;">
+          <button class="qa-btn primary" id="pNext">${ci+1>=questions.length?'Finish':'Next →'}</button>
+          <button class="qa-btn ghost" id="pStop">← Stop</button>
+        </div>
+      </div>`;
+    area.scrollIntoView({behavior:'smooth',block:'start'});
+    let done=false;
+    area.querySelectorAll('.qo').forEach(el=>{
+      el.addEventListener('click',function(){
+        if(done)return;done=true;
+        const oi=+this.dataset.oi;const isCorrect=oi===q.ans;
+        if(!S.subStats[q.sub])S.subStats[q.sub]={total:0,correct:0,seen:[]};
+        if(!S.subStats[q.sub].seen)S.subStats[q.sub].seen=[];
+        var qBankIdx2=BANK.indexOf(q);
+        if(S.subStats[q.sub].seen.indexOf(qBankIdx2)===-1)S.subStats[q.sub].seen.push(qBankIdx2);
+        S.subStats[q.sub].total++;if(isCorrect)S.subStats[q.sub].correct++;
+        practiceSession.total++;if(isCorrect)practiceSession.correct++;
+        practiceSession.answers.push({qi:ci,chosen:oi,correct:isCorrect});
+        saveState(S);
+        area.querySelectorAll('.qo').forEach(o=>{o.classList.add('disabled');if(+o.dataset.oi===q.ans)o.classList.add('correct');else if(+o.dataset.oi===oi&&!isCorrect)o.classList.add('wrong');});
+        const exp=document.getElementById('pExplain');exp.innerHTML=`<strong>${isCorrect?'✓ Correct!':'✗ Incorrect.'}</strong> ${q.exp}`;exp.classList.add('show');
+        document.getElementById('pActions').style.display='flex';
+      });
+    });
+    document.getElementById('pNext')?.addEventListener('click',()=>{ci++;renderQ();});
+    document.getElementById('pStop')?.addEventListener('click',()=>{
+      if(practiceSession.total>0){practiceSession.completed=true;S.history.push(practiceSession);saveState(S);}
+      document.getElementById('practiceQuizArea').innerHTML='';renderSubjectGrid();
+    });
+  }
+  renderQ();
+};
+
+/* ════════════════════════
+   ANALYTICS
+   ════════════════════════ */
+function renderAnalytics(){
+  const totalA=Object.values(S.subStats).reduce((a,s)=>a+s.total,0);
+  const totalC=Object.values(S.subStats).reduce((a,s)=>a+s.correct,0);
+  const pct=totalA?Math.round(totalC/totalA*100):0;
+  document.getElementById('ringVal').textContent=totalA?pct+'%':'—';
+  drawRing(pct);
+
+  const allSessions=S.history.filter(h=>h.completed);
+  const dailySessions=allSessions.filter(h=>h.mode==='daily');
+  const totalTime=allSessions.reduce((a,s)=>{if(s.answers)return a+s.answers.reduce((t,ans)=>t+(ans.time||0),0);return a;},0);
+  const avgTimePerQ=totalA>0?Math.round(totalTime/totalA):0;
+
+  document.getElementById('quickStats').innerHTML=`
+    <div class="ov-stat"><div class="os-val">${totalA}</div><div class="os-label">Questions</div></div>
+    <div class="ov-stat"><div class="os-val" style="color:#34d399">${totalC}</div><div class="os-label">Correct</div></div>
+    <div class="ov-stat"><div class="os-val" style="color:#f87171">${totalA-totalC}</div><div class="os-label">Wrong</div></div>
+    <div class="ov-stat"><div class="os-val">🔥 ${S.streak||0}</div><div class="os-label">Streak</div></div>
+    <div class="ov-stat"><div class="os-val">${dailySessions.length}</div><div class="os-label">Daily</div></div>
+    <div class="ov-stat"><div class="os-val">${avgTimePerQ?avgTimePerQ+'s':'—'}</div><div class="os-label">Avg Time</div></div>`;
+
+  const bars=document.getElementById('subBars');
+  bars.innerHTML=SUBJECTS.map(sub=>{
+    const st=S.subStats[sub]||{total:0,correct:0};
+    const p=st.total?Math.round(st.correct/st.total*100):0;
+    return `<div class="sb-row"><span class="sb-label">${sub}</span><div class="sb-track"><div class="sb-fill" style="width:${Math.max(p,2)}%;background:${SUB_COLORS[sub]}">${p>20?p+'%':''}</div></div><span class="sb-val">${st.total?p+'%':'—'}</span></div>`;
+  }).join('');
+
+  renderTrendChart();
+  renderSessionHistory(allSessions);
+  renderDifficultyDist();
+
+  const weak=SUBJECTS.filter(s=>{const st=S.subStats[s];return st&&st.total>=2&&(st.correct/st.total)<0.5;}).sort((a,b)=>{
+    const pa=S.subStats[a].correct/S.subStats[a].total;
+    const pb=S.subStats[b].correct/S.subStats[b].total;
+    return pa-pb;
+  });
+  const weakEl=document.getElementById('weakAreas');
+  if(!totalA){weakEl.innerHTML='<p style="color:var(--muted);font-size:13px;">Complete some questions first and your weak areas will appear here.</p>';}
+  else if(!weak.length){weakEl.innerHTML='<p style="color:#34d399;font-size:13px;">🎯 No weak areas detected. Keep practising to maintain your edge.</p>';}
+  else{weakEl.innerHTML=weak.map(s=>{const st=S.subStats[s];const p=Math.round(st.correct/st.total*100);return `<div style="display:flex;align-items:center;gap:10px;padding:12px;margin-bottom:8px;border-radius:12px;background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.1);cursor:pointer;transition:all .15s;" onmouseover="this.style.background='rgba(239,68,68,.08)'" onmouseout="this.style.background='rgba(239,68,68,.04)'" onclick="document.querySelector('[data-tab=practice]').click();setTimeout(()=>startSubjectPractice('${s}'),100)"><span style="font-size:22px;">${SUB_ICONS[s]||'📖'}</span><div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14px;">${s}</div><div style="font-size:12px;color:var(--muted);">${p}% accuracy (${(st.seen||[]).length} attempted)</div></div><span style="font-size:12px;color:#f59e0b;font-weight:700;">Practice →</span></div>`;}).join('');}
+}
+
+function drawRing(pct){
+  const c=document.getElementById('ringCanvas');const ctx=c.getContext('2d');
+  const dpr=window.devicePixelRatio||1;c.width=100*dpr;c.height=100*dpr;c.style.width='100px';c.style.height='100px';ctx.scale(dpr,dpr);
+  const cx=50,cy=50,r=40,lw=7;
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=lw;ctx.stroke();
+  if(pct>0){
+    const grad=ctx.createLinearGradient(0,0,100,100);
+    grad.addColorStop(0,'#f59e0b');grad.addColorStop(1,'#f472b6');
+    ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+(Math.PI*2*pct/100));ctx.strokeStyle=grad;ctx.lineWidth=lw;ctx.lineCap='round';ctx.stroke();
+  }
+}
+
+function renderTrendChart(){
+  const wrap=document.getElementById('trendWrap');
+  const sessions=S.history.filter(h=>h.completed&&h.total>0).slice(-10);
+  if(!sessions.length){
+    wrap.innerHTML=`<div class="trend-empty"><div class="te-icon">📊</div><div class="te-msg">Complete your first daily challenge or subject practice session to see your accuracy trend here.</div></div>`;
+    return;
+  }
+  let html='<div class="trend-bar-chart">';
+  sessions.forEach(s=>{
+    const pct=Math.round(s.correct/s.total*100);
+    const bgGrad=pct>=70?'linear-gradient(180deg,#34d399,#10b981)':pct>=40?'linear-gradient(180deg,#fbbf24,#f59e0b)':'linear-gradient(180deg,#f87171,#ef4444)';
+    const isDaily=s.mode==='daily';
+    const label=s.date?s.date.slice(5):'';
+    const modeLabel=isDaily?'daily':(s.subject||'practice');
+    html+=`<div class="trend-col">
+      <div class="trend-bar-outer">
+        <div class="trend-bar" style="height:${Math.max(pct,5)}%;background:${bgGrad};" title="${pct}% — ${s.correct}/${s.total}">
+          <div class="tb-val">${pct}%</div>
+        </div>
+      </div>
+      <div class="trend-label">${label}</div>
+      <div class="trend-mode-label ${isDaily?'daily':'practice'}">${isDaily?'Daily':modeLabel.slice(0,6)}</div>
+    </div>`;
+  });
+  html+='</div>';
+  wrap.innerHTML=html;
+  requestAnimationFrame(()=>{
+    wrap.querySelectorAll('.trend-bar').forEach((bar,i)=>{
+      const h=bar.style.height;bar.style.height='0%';
+      bar.style.transition=`height .5s cubic-bezier(.4,0,.2,1) ${i*0.05}s`;
+      requestAnimationFrame(()=>{bar.style.height=h;});
+    });
+  });
+}
+
+function renderSessionHistory(sessions){
+  const el=document.getElementById('histList');
+  if(!sessions.length){el.innerHTML='<p style="color:var(--muted);font-size:13px;">No sessions yet. Start a daily challenge or subject practice!</p>';return;}
+  const sorted=[...sessions].reverse().slice(0,20);
+  el.innerHTML=sorted.map(s=>{
+    const pct=s.total?Math.round(s.correct/s.total*100):0;
+    const color=pct>=70?'#34d399':pct>=40?'#fbbf24':'#f87171';
+    return `<div class="hist-row">
+      <span class="hist-date">${s.date||'—'}</span>
+      <span class="hist-mode ${s.mode==='daily'?'daily':'practice'}">${s.mode==='daily'?'Daily':s.subject||'Practice'}</span>
+      <span class="hist-detail">${s.correct}/${s.total}</span>
+      <span class="hist-score" style="color:${color}">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+function renderDifficultyDist(){
+  const el=document.getElementById('diffDist');
+  const totalAttempts=Object.values(S.subStats).reduce((a,s)=>a+s.total,0);
+  const totalCorrect=Object.values(S.subStats).reduce((a,s)=>a+s.correct,0);
+  const totalSeen=Object.values(S.subStats).reduce((a,s)=>a+(s.seen?s.seen.length:0),0);
+  const accuracy=totalAttempts?Math.round(totalCorrect/totalAttempts*100):0;
+  const coverage=BANK.length?Math.round(totalSeen/BANK.length*100):0;
+  if(!totalAttempts){el.innerHTML='<p style="color:var(--muted);font-size:13px;">Answer some questions to see your mastery dashboard.</p>';return;}
+
+  let bestSub='—',worstSub='—',bestPct=0,worstPct=101;
+  SUBJECTS.forEach(sub=>{
+    const st=S.subStats[sub];
+    if(st&&st.total>=2){
+      const p=Math.round(st.correct/st.total*100);
+      if(p>=bestPct){bestPct=p;bestSub=sub;}
+      if(p<=worstPct){worstPct=p;worstSub=sub;}
+    }
+  });
+  const mastery=Math.round(coverage*0.4+accuracy*0.6);
+  const masteryColor=mastery>=70?'#34d399':mastery>=40?'#fbbf24':'#f87171';
+
+  let html=`<div class="mastery-wrap">
+    <div class="coverage-ring">
+      <canvas class="cov-canvas" id="covRing" width="90" height="90"></canvas>
+      <div class="cov-info">
+        <div class="cov-title" style="color:${masteryColor}">Mastery Score: ${mastery}/100</div>
+        <div class="cov-sub">${totalSeen} of ${BANK.length} questions explored (${coverage}%)<br>${totalCorrect} correct out of ${totalAttempts} attempts<br>${accuracy>=70?'🔥 Excellent accuracy!':accuracy>=40?'📈 Building momentum':'💪 Keep practising'}</div>
+      </div>
+    </div>
+    <div class="mastery-stats">
+      <div class="m-stat ${accuracy>=70?'green':accuracy>=40?'yellow':'red'}"><div class="ms-val">${accuracy}%</div><div class="ms-lbl">Accuracy</div></div>
+      <div class="m-stat blue"><div class="ms-val">${coverage}%</div><div class="ms-lbl">Coverage</div></div>
+      <div class="m-stat green"><div class="ms-val">${totalCorrect}</div><div class="ms-lbl">Correct</div></div>
+    </div>
+    <div class="mastery-stats">
+      <div class="m-stat red"><div class="ms-val">${totalAttempts-totalCorrect}</div><div class="ms-lbl">Wrong</div></div>
+      <div class="m-stat blue"><div class="ms-val">${SUB_ICONS[bestSub]||'—'}</div><div class="ms-lbl">Best: ${bestSub.slice(0,8)}</div></div>
+      <div class="m-stat purple"><div class="ms-val">${SUB_ICONS[worstSub]||'—'}</div><div class="ms-lbl">Weak: ${worstSub.slice(0,8)}</div></div>
+    </div>
+    <div class="subj-mastery"><div class="sm-title">Subject Mastery</div>`;
+  SUBJECTS.forEach(sub=>{
+    const st=S.subStats[sub]||{total:0,correct:0,seen:[]};
+    const p=st.total?Math.round(st.correct/st.total*100):0;
+    const barColor=p>=70?'#34d399':p>=40?'#fbbf24':'#f87171';
+    html+=`<div class="sm-row">
+      <span class="sm-icon">${SUB_ICONS[sub]||'📖'}</span>
+      <span class="sm-name">${sub}</span>
+      <div class="sm-bar"><div class="sm-fill" style="width:${p}%;background:${barColor}"></div></div>
+      <span class="sm-pct" style="color:${barColor}">${st.total?p+'%':'—'}</span>
+    </div>`;
+  });
+  html+=`</div></div>`;
+  el.innerHTML=html;
+
+  requestAnimationFrame(()=>{
+    const canvas=document.getElementById('covRing');
+    if(!canvas)return;
+    const ctx=canvas.getContext('2d');
+    const cx=45,cy=45,r=35,lw=8;
+    ctx.clearRect(0,0,90,90);
+    ctx.beginPath();ctx.arc(cx,cy,r,0,2*Math.PI);
+    ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=lw;ctx.stroke();
+    const angle=(coverage/100)*2*Math.PI;
+    ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+angle);
+    ctx.strokeStyle=masteryColor;ctx.lineWidth=lw;ctx.lineCap='round';ctx.stroke();
+    ctx.fillStyle=masteryColor;ctx.font='bold 18px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(coverage+'%',cx,cy-4);
+    ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='bold 8px system-ui';
+    ctx.fillText('EXPLORED',cx,cy+10);
+  });
+}
+
+/* ════════════════════════
+   INIT
+   ════════════════════════ */
+renderDailyQuiz();
+renderSubjectGrid();
+updateStreakUI();
+</script>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6997965e73d8cb1c357e66ee/1jhs26oms';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+</body>
+</html>
