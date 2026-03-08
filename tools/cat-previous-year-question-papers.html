@@ -24,11 +24,13 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 .pyq-hero h1{font-size:clamp(28px,5vw,44px);font-weight:900;letter-spacing:-.5px;line-height:1.1;margin-bottom:12px;}
 .pyq-hero h1 .accent{background:linear-gradient(135deg,#f59e0b,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .pyq-hero .tagline{color:var(--muted);font-size:15px;max-width:640px;margin:0 auto 24px;line-height:1.6;}
-.stat-orbs{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:28px;}
-.stat-orb{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);backdrop-filter:blur(10px);transition:transform .2s,border-color .2s;}
-.stat-orb:hover{transform:scale(1.08);border-color:rgba(245,158,11,.4);}
-.stat-orb .val{font-size:26px;font-weight:900;background:linear-gradient(135deg,#f59e0b,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.stat-orb .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;text-align:center;line-height:1.2;}
+.stat-orbs{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:32px;}
+.stat-orb{display:flex;flex-direction:column;align-items:flex-start;padding:16px 20px;border-radius:16px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);backdrop-filter:blur(12px);transition:transform .18s,border-color .18s,background .18s;min-width:130px;position:relative;overflow:hidden;}
+.stat-orb::before{content:'';position:absolute;inset:0;background:var(--card-shine,transparent);opacity:.07;pointer-events:none;}
+.stat-orb:hover{transform:translateY(-3px);border-color:rgba(245,158,11,.35);background:rgba(255,255,255,.07);}
+.stat-orb .orb-icon{font-size:18px;margin-bottom:8px;opacity:.8;}
+.stat-orb .val{font-size:28px;font-weight:900;line-height:1;background:linear-gradient(135deg,#f59e0b,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-orb .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:5px;font-weight:600;}
 .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
 .search-box{flex:1;min-width:200px;position:relative;}
 .search-box input{width:100%;padding:12px 14px 12px 40px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);font-size:14px;outline:none;font-family:inherit;backdrop-filter:blur(6px);transition:border-color .15s,box-shadow .15s;}
@@ -190,13 +192,33 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 
   <section class="pyq-hero anim-up">
     <h1>CAT <span class="accent">Previous Year Papers</span></h1>
-    <p class="tagline">3 years of CAT questions across VARC, DILR &amp; QA — searchable, section-wise, with trend analytics. Practice smarter, all in your browser. Free &amp; private.</p>
+    <p class="tagline">9 years of CAT questions across VARC, DILR &amp; QA — searchable, section-wise, with trend analytics. Practice smarter, all in your browser. Free &amp; private.</p>
     <div class="stat-orbs">
-      <div class="stat-orb"><span class="val" id="statTotal">0</span><span class="lbl">Total PYQs</span></div>
-      <div class="stat-orb"><span class="val">3</span><span class="lbl">Years</span></div>
-      <div class="stat-orb"><span class="val">7</span><span class="lbl">Slots</span></div>
-      <div class="stat-orb"><span class="val" id="statAttempted">0</span><span class="lbl">Attempted</span></div>
-      <div class="stat-orb"><span class="val" id="statAccuracy">&mdash;</span><span class="lbl">Accuracy</span></div>
+      <div class="stat-orb" style="--card-shine:linear-gradient(135deg,#f59e0b,#f472b6)">
+        <span class="orb-icon">📋</span>
+        <span class="val" id="statTotal">0</span>
+        <span class="lbl">Total PYQs</span>
+      </div>
+      <div class="stat-orb" style="--card-shine:linear-gradient(135deg,#6366f1,#a78bfa)">
+        <span class="orb-icon">📅</span>
+        <span class="val">9</span>
+        <span class="lbl">Years (2017–25)</span>
+      </div>
+      <div class="stat-orb" style="--card-shine:linear-gradient(135deg,#0ea5e9,#38bdf8)">
+        <span class="orb-icon">🕐</span>
+        <span class="val">3</span>
+        <span class="lbl">Slots / Year</span>
+      </div>
+      <div class="stat-orb" style="--card-shine:linear-gradient(135deg,#10b981,#34d399)">
+        <span class="orb-icon">🎯</span>
+        <span class="val" id="statAttempted">0</span>
+        <span class="lbl">Attempted</span>
+      </div>
+      <div class="stat-orb" style="--card-shine:linear-gradient(135deg,#f87171,#fb923c)">
+        <span class="orb-icon">✅</span>
+        <span class="val" id="statAccuracy">&mdash;</span>
+        <span class="lbl">Accuracy</span>
+      </div>
     </div>
   </section>
 
