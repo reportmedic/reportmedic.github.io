@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#f59e0b,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#f59e0b,#f472b6);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the CAT PYQ Explorer.</p><a href="https://reportmedic.org/tools/cat-previous-year-question-papers.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <meta name="description" content="Explore CAT previous year question papers with interactive analytics, section-wise filtering, and pattern insights. Free, offline, private."/>
@@ -214,6 +228,11 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
         <span class="val" id="statAttempted">0</span>
         <span class="lbl">Attempted</span>
       </div>
+      <div class="stat-orb" style="--card-shine:linear-gradient(135deg,#34d399,#6ee7b7)">
+        <span class="orb-icon">✅</span>
+        <span class="val" id="statCorrect">0</span>
+        <span class="lbl">Correct</span>
+      </div>
       <div class="stat-orb" style="--card-shine:linear-gradient(135deg,#f87171,#fb923c)">
         <span class="orb-icon">✅</span>
         <span class="val" id="statAccuracy">&mdash;</span>
@@ -334,9 +353,14 @@ const TOPICS_BY_SEC={
   QA:['Arithmetic','Algebra','Geometry','Number System','Modern Math','Mensuration']
 };
 const TOPIC_COLORS={'Reading Comprehension':'#a78bfa','Para Jumbles':'#c084fc','Para Summary':'#d946ef','Odd Sentence Out':'#e879f9','Sentence Completion':'#7c3aed','Tables':'#38bdf8','Bar Graph':'#0284c7','Pie Chart':'#22d3ee','Arrangements':'#0891b2','Games & Tournaments':'#06b6d4','Logical Reasoning':'#0e7490','Arithmetic':'#f97316','Algebra':'#fb923c','Geometry':'#fbbf24','Number System':'#f59e0b','Modern Math':'#facc15','Mensuration':'#eab308'};
+function getPassageKey(q){
+  const m=(q.passage||'').toString().trim().slice(0,60);
+  return m||null;
+}
+
 const PER_PAGE=10;
 let activeSec='All',activeYear='All',activeSlot='All',activeTopic='All',activeDiffs=new Set(),showUnanswered=false;
-let searchQ='',currentPage=1,answers={},hiddenDiffLevels=new Set(),hiddenTrendSecs=new Set();
+let searchQ='',currentPage=1,answers={},hiddenDiffLevels=new Set(),hiddenTrendSecs=new Set(),hiddenHeatmapTopics=new Set();
 
 // Assign pseudo-random difficulty (deterministic hash of question text)
 (function(){
@@ -348,8 +372,15 @@ let searchQ='',currentPage=1,answers={},hiddenDiffLevels=new Set(),hiddenTrendSe
   });
 })();
 
+function animateCount(el,target){
+  if(!el) return;
+  let cur=0;
+  const step=Math.max(1,Math.ceil(target/40));
+  const iv=setInterval(()=>{cur+=step;if(cur>=target){cur=target;clearInterval(iv);}el.textContent=cur;},20);
+}
+
 function init(){
-  document.getElementById('statTotal').textContent=DB.length;
+  animateCount(document.getElementById('statTotal'),DB.length);
   const yc=document.getElementById('yearStrip');
   YEARS.forEach(y=>{
     const b=document.createElement('button');b.className='yr-chip';b.dataset.yr=y;b.textContent=y;b.onclick=()=>setYear(y);yc.appendChild(b);
@@ -368,7 +399,7 @@ function resetAll(){activeSec='All';activeYear='All';activeSlot='All';activeTopi
 function buildTopicChips(){const topics=activeSec==='All'?TOPICS_BY_SEC.All:(TOPICS_BY_SEC[activeSec]||[]);const tc=document.getElementById('topicChips');tc.innerHTML='';function mkChip(t,label){const b=document.createElement('button');b.className='topic-chip'+(activeTopic===t?' active':'');b.dataset.t=t;b.textContent=label||t;b.onclick=function(){setTopic(t);};tc.appendChild(b);}mkChip('All','All Topics');topics.forEach(function(t){mkChip(t);});}
 document.getElementById('qSearch').addEventListener('input',function(){searchQ=this.value.toLowerCase();currentPage=1;render();});
 function getFiltered(){return DB.filter((q,idx)=>{if(activeSec!=='All'&&q.sec!==activeSec)return false;if(activeYear!=='All'&&q.y!==activeYear)return false;if(activeSlot!=='All'&&q.slot!==activeSlot)return false;if(activeTopic!=='All'&&q.topic!==activeTopic)return false;if(activeDiffs.size&&!activeDiffs.has(q.diff))return false;if(showUnanswered&&answers[idx]!==undefined)return false;if(searchQ&&!q.q.toLowerCase().includes(searchQ)&&!q.topic.toLowerCase().includes(searchQ)&&!(q.opts||[]).some(o=>o.toLowerCase().includes(searchQ)))return false;return true;});}
-function updateStats(){const a=Object.keys(answers).length;const c=Object.entries(answers).filter(([i,v])=>DB[i]&&DB[i].ans===v).length;document.getElementById('statAttempted').textContent=a;document.getElementById('statAccuracy').textContent=a?Math.round(c/a*100)+'%':'—';}
+function updateStats(){const a=Object.keys(answers).length;const c=Object.entries(answers).filter(([i,v])=>DB[i]&&DB[i].ans===v).length;document.getElementById('statAttempted').textContent=a;const sc=document.getElementById('statCorrect');if(sc)sc.textContent=c;document.getElementById('statAccuracy').textContent=a?Math.round(c/a*100)+'%':'—';}
 function render(){updateStats();const filtered=getFiltered();const total=filtered.length;const totalPages=Math.ceil(total/PER_PAGE)||1;currentPage=Math.min(currentPage,totalPages);const slice=filtered.slice((currentPage-1)*PER_PAGE,currentPage*PER_PAGE);document.getElementById('resultsInfo').textContent=`Showing ${total} question${total!==1?'s':''}`;const grid=document.getElementById('qGrid');const es=document.getElementById('emptyState');if(!slice.length){grid.innerHTML='';es.style.display='block';}else{es.style.display='none';grid.innerHTML=slice.map(q=>{const idx=DB.indexOf(q);const answered=answers[idx];const ph=q.passage?`<button class="passage-toggle" id="pToggle${idx}" onclick="togglePassage(event,${idx})"><span>📄 RC Passage</span> <span class="p-chevron">▾</span></button><div class="passage-panel" id="pPanel${idx}"><div class="passage-panel-inner"><div class="passage-label"><span class="dot"></span> Reading Passage</div><div class="passage-text">${PASSAGES[q.passage]||''}</div></div></div>`:'';return `<div class="q-card${answered!==undefined?' expanded':''}" data-sec="${q.sec}" data-topic="${q.topic}" id="card${idx}" onclick="expandCard(event,${idx})"><div class="q-top"><span class="q-year-badge">CAT ${q.y}</span><span class="q-year-badge" style="background:rgba(99,102,241,.12);color:#818cf8;border-color:rgba(99,102,241,.2)">S${q.slot||1}</span><span class="q-sec-badge" data-sec="${q.sec}">${q.sec}</span><span class="q-topic-badge">${q.topic}</span><span class="q-diff ${q.diff}">${q.diff[0].toUpperCase()+q.diff.slice(1)}</span></div><div class="q-text">${q.q}</div>${ph}${answered!==undefined?renderOptions(q,idx):'<div class="q-opt-ph" style="margin-top:14px;padding:11px 16px;border-radius:12px;border:1px dashed rgba(245,158,11,.35);background:rgba(245,158,11,.05);font-size:13px;color:rgba(245,158,11,.85);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer;letter-spacing:.01em;">&#9654;&nbsp;Tap anywhere to reveal options</div>'}<div class="q-explain${answered!==undefined?' show':''}" id="exp${idx}">${q.exp||''}</div></div>`;}).join('');}renderPagination(total,totalPages);}
 function renderOptions(q,idx){const answered=answers[idx];return `<div class="q-options">${(q.opts||[]).map((o,oi)=>{let cls='q-opt';if(answered!==undefined){if(oi===q.ans)cls+=' correct';else if(oi===answered)cls+=' wrong';}return `<div class="${cls}" onclick="selectAnswer(event,${idx},${oi})"><span class="ol">${String.fromCharCode(65+oi)}</span><span>${o}</span></div>`;}).join('')}</div>`;}
 function expandCard(e,idx){if(e.target.closest('.q-opt,.passage-toggle,.passage-panel'))return;if(answers[idx]!==undefined)return;const ph=document.getElementById('card'+idx).querySelector('.q-opt-ph');if(ph)ph.outerHTML=renderOptions(DB[idx],idx);}
@@ -463,12 +494,13 @@ function drawHeatmap(){
   topics.forEach(t=>{data[t]={};revYears.forEach(y=>data[t][y]=0);});
   DB.forEach(q=>{if(data[q.topic]&&data[q.topic][q.y]!==undefined)data[q.topic][q.y]++;});
   const maxV=Math.max(...topics.flatMap(t=>revYears.map(y=>data[t][y]||0)),1);
+  const visTopics=topics.filter(t=>!hiddenHeatmapTopics.has(t));
 
   let html='<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:4px;font-size:13px;"><thead><tr>';
   html+='<th style="text-align:left;color:var(--muted);padding:6px 10px;font-weight:600;white-space:nowrap">Topic</th>';
   revYears.forEach(y=>html+=`<th style="color:var(--muted);font-weight:600;padding:6px 4px;text-align:center">'${String(y).slice(2)}</th>`);
   html+='</tr></thead><tbody>';
-  topics.forEach(t=>{
+  visTopics.forEach(t=>{
     const color=TOPIC_COLORS[t]||'#888';
     html+=`<tr><td style="padding:7px 10px;font-weight:700;white-space:nowrap;font-size:13px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${color};margin-right:7px;vertical-align:middle"></span>${t}</td>`;
     revYears.forEach(y=>{
@@ -481,7 +513,18 @@ function drawHeatmap(){
   });
   html+='</tbody></table></div>';
   wrap.innerHTML=html;
-  document.getElementById('heatmapLegend').innerHTML='<span style="font-size:11px;color:var(--muted)">Darker cell = more questions that year · hover for detail</span>';
+
+  // Clickable legend
+  const leg=document.getElementById('heatmapLegend');
+  leg.style.display='';
+  leg.innerHTML=topics.map(t=>`<span class="chart-legend-item${hiddenHeatmapTopics.has(t)?' muted':''}" data-topic="${t}"><span class="ldot" style="background:${TOPIC_COLORS[t]||'#888'}"></span>${t}</span>`).join('');
+  leg.onclick=function(e){
+    const it=e.target.closest('.chart-legend-item');
+    if(!it)return;
+    const t=it.dataset.topic;
+    if(hiddenHeatmapTopics.has(t))hiddenHeatmapTopics.delete(t);else hiddenHeatmapTopics.add(t);
+    drawHeatmap();
+  };
 }
 function drawDifficultyChart(){
   const canvas=document.getElementById('diffCanvas');
