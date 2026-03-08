@@ -160,9 +160,16 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
   .mobile-filters{display:flex!important;}
   #subjectFilters,#yearStrip,#topicFilters{display:none!important;}
 }
+
+#chartTooltip{position:fixed;pointer-events:none;background:rgba(12,12,28,.95);border:1px solid rgba(255,255,255,.13);border-radius:10px;padding:9px 13px;font-size:12px;color:#fff;z-index:9999;box-shadow:0 6px 24px rgba(0,0,0,.5);opacity:0;transition:opacity .1s;white-space:nowrap;min-width:130px;}
+#chartTooltip .tt-yr{font-size:10px;color:rgba(255,255,255,.45);margin-bottom:5px;letter-spacing:.5px;}
+#chartTooltip .tt-row{display:flex;align-items:center;gap:7px;line-height:1.8;}
+#chartTooltip .tt-swatch{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
+#chartTooltip .tt-divider{border-top:1px solid rgba(255,255,255,.1);margin:4px 0;}
 </style>
 </head>
 <body class="tools-page">
+<div id="chartTooltip"></div>
 <div class="bg-orbs"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
 <div class="answer-fx-container" id="fxContainer"></div>
 
@@ -309,6 +316,16 @@ const PER_PAGE=10;
 let activeSec='All',activeYear='All',activeSlot='All',activeTopic='All',activeDiffs=new Set(),showUnanswered=false;
 let searchQ='',currentPage=1,answers={},hiddenDiffLevels=new Set(),hiddenTrendSecs=new Set();
 
+// Assign pseudo-random difficulty (deterministic hash of question text)
+(function(){
+  const buckets=['easy','medium','medium','medium','hard'];
+  DB.forEach(function(q){
+    var h=0, s=q.q||'';
+    for(var i=0;i<Math.min(s.length,50);i++) h=(h*31+s.charCodeAt(i))&0xffff;
+    q.diff=buckets[h%5];
+  });
+})();
+
 function init(){
   document.getElementById('statTotal').textContent=DB.length;
   const yc=document.getElementById('yearStrip');
@@ -449,29 +466,34 @@ function drawDifficultyChart(){
   const ctx=canvas.getContext('2d');
   const dpr=window.devicePixelRatio||1;
   const rect=canvas.parentElement.getBoundingClientRect();
-  canvas.width=rect.width*dpr;canvas.height=rect.height*dpr;
-  canvas.style.width=rect.width+'px';canvas.style.height=rect.height+'px';
+  canvas.width=rect.width*dpr; canvas.height=rect.height*dpr;
+  canvas.style.width=rect.width+'px'; canvas.style.height=rect.height+'px';
   ctx.scale(dpr,dpr);
-  const W=rect.width,H=rect.height,pad={t:20,r:20,b:40,l:44};
-  const plotW=W-pad.l-pad.r,plotH=H-pad.t-pad.b;
+  const W=rect.width, H=rect.height, pad={t:20,r:20,b:40,l:44};
+  const plotW=W-pad.l-pad.r, plotH=H-pad.t-pad.b;
   const isMobile=W<500;
   const years=YEARS.slice().reverse();
 
-  const data={};years.forEach(y=>data[y]={easy:0,medium:0,hard:0});
-  DB.forEach(q=>{if(data[q.y])data[q.y][q.diff]++;});
+  const data={};
+  years.forEach(y=>data[y]={easy:0,medium:0,hard:0});
+  DB.forEach(q=>{if(data[q.y]) data[q.y][q.diff]++;});
   const activeDiffs=['easy','medium','hard'].filter(d=>!hiddenDiffLevels.has(d));
   const maxV=Math.max(...years.map(y=>activeDiffs.reduce((s,d)=>s+(data[y][d]||0),0)),1);
-  const diffColors={easy:'#34d399',medium:'#fbbf24',hard:'#f87171'};
+  const DC={easy:'#34d399',medium:'#fbbf24',hard:'#f87171'};
   const totalBarZone=plotW/years.length;
-  const barW=Math.min(isMobile?16:28,totalBarZone-4);
+  const barW=Math.min(isMobile?16:28, totalBarZone-4);
 
-  // Grid
-  ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
+  // Store column hit areas for tooltip
+  canvas._cols=years.map((y,i)=>({y,cx:pad.l+(i+0.5)*totalBarZone,x1:pad.l+i*totalBarZone,x2:pad.l+(i+1)*totalBarZone,data:data[y]}));
+
+  // Grid lines
+  ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.lineWidth=1;
   for(let i=0;i<=5;i++){
     const y2=pad.t+plotH*(1-i/5);
-    ctx.beginPath();ctx.moveTo(pad.l,y2);ctx.lineTo(W-pad.r,y2);ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font=(isMobile?'9':'11')+'px DM Sans';
-    ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-8,y2+4);
+    ctx.beginPath(); ctx.moveTo(pad.l,y2); ctx.lineTo(W-pad.r,y2); ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.3)';
+    ctx.font=(isMobile?'9':'11')+'px DM Sans'; ctx.textAlign='right';
+    ctx.fillText(Math.round(maxV*i/5), pad.l-8, y2+4);
   }
 
   // Stacked bars
@@ -481,30 +503,68 @@ function drawDifficultyChart(){
     activeDiffs.forEach((d,di)=>{
       const v=data[y][d]||0;
       const h=plotH*(v/maxV);
-      if(h<0.5)return;
-      const x0=cx-barW/2,y0=pad.t+plotH-cumH-h;
-      ctx.fillStyle=diffColors[d];
+      if(h<0.5) return;
+      const x0=cx-barW/2, y0=pad.t+plotH-cumH-h;
+      ctx.fillStyle=DC[d];
       const isTop=activeDiffs.slice(di+1).every(dd=>(data[y][dd]||0)===0);
       const r=isTop?Math.min(4,barW/2,h):0;
       ctx.beginPath();
       if(r>0){
-        ctx.moveTo(x0,y0+h);ctx.lineTo(x0,y0+r);
-        ctx.arcTo(x0,y0,x0+r,y0,r);ctx.lineTo(x0+barW-r,y0);
-        ctx.arcTo(x0+barW,y0,x0+barW,y0+r,r);ctx.lineTo(x0+barW,y0+h);
-      }else{ctx.rect(x0,y0,barW,h);}
-      ctx.closePath();ctx.fill();
+        ctx.moveTo(x0,y0+h); ctx.lineTo(x0,y0+r);
+        ctx.arcTo(x0,y0,x0+r,y0,r); ctx.lineTo(x0+barW-r,y0);
+        ctx.arcTo(x0+barW,y0,x0+barW,y0+r,r); ctx.lineTo(x0+barW,y0+h);
+      } else { ctx.rect(x0,y0,barW,h); }
+      ctx.closePath(); ctx.fill();
       cumH+=h;
     });
     // X label
-    ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';
+    ctx.fillStyle='rgba(255,255,255,.35)'; ctx.textAlign='center';
     ctx.font=(isMobile?'9':'11')+'px DM Sans';
-    ctx.fillText("'"+String(y).slice(2),cx,H-pad.b+18);
+    ctx.fillText("'"+String(y).slice(2), cx, H-pad.b+18);
   });
 
   // Clickable legend
   const leg=document.getElementById('diffLegend');
-  leg.innerHTML=['easy','medium','hard'].map(d=>`<span class="chart-legend-item${hiddenDiffLevels.has(d)?' muted':''}" data-diff="${d}"><span class="ldot" style="background:${diffColors[d]};border-radius:4px"></span>${d.charAt(0).toUpperCase()+d.slice(1)}</span>`).join('');
-  leg.onclick=function(e){const it=e.target.closest('.chart-legend-item');if(!it)return;const d=it.dataset.diff;if(hiddenDiffLevels.has(d))hiddenDiffLevels.delete(d);else hiddenDiffLevels.add(d);drawDifficultyChart();};
+  leg.style.display='';
+  leg.innerHTML=['easy','medium','hard'].map(d=>
+    `<span class="chart-legend-item${hiddenDiffLevels.has(d)?' muted':''}" data-diff="${d}">
+       <span class="ldot" style="background:${DC[d]};border-radius:4px"></span>
+       ${d.charAt(0).toUpperCase()+d.slice(1)}
+     </span>`).join('');
+  leg.onclick=function(e){
+    const it=e.target.closest('.chart-legend-item');
+    if(!it) return;
+    const d=it.dataset.diff;
+    if(hiddenDiffLevels.has(d)) hiddenDiffLevels.delete(d); else hiddenDiffLevels.add(d);
+    drawDifficultyChart();
+  };
+
+  // Canvas hover tooltip
+  const tip=document.getElementById('chartTooltip');
+  canvas.onmousemove=function(e){
+    const cr=canvas.getBoundingClientRect();
+    const mx=(e.clientX-cr.left)*(W/cr.width);
+    const col=canvas._cols.find(c=>mx>=c.x1&&mx<=c.x2);
+    if(!col){ tip.style.opacity='0'; return; }
+    const d=col.data;
+    const shown=['easy','medium','hard'].filter(dd=>!hiddenDiffLevels.has(dd));
+    const total=shown.reduce((s,dd)=>s+(d[dd]||0),0);
+    const rows=shown.map(dd=>`<div class="tt-row">
+      <span class="tt-swatch" style="background:${DC[dd]}"></span>
+      <span style="flex:1">${dd.charAt(0).toUpperCase()+dd.slice(1)}</span>
+      <strong>${d[dd]||0}</strong>
+    </div>`).join('');
+    tip.innerHTML=`<div class="tt-yr">CAT ${col.y}</div>${rows}<div class="tt-divider"></div><div class="tt-row"><span style="flex:1;opacity:.6">Total</span><strong>${total}</strong></div>`;
+    tip.style.opacity='1';
+    const tx=e.clientX+16, ty=e.clientY-20;
+    // Ensure tooltip stays in viewport
+    requestAnimationFrame(()=>{
+      const tw=tip.offsetWidth, th=tip.offsetHeight;
+      tip.style.left=(tx+tw>window.innerWidth ? e.clientX-tw-10 : tx)+'px';
+      tip.style.top=(ty+th>window.innerHeight ? e.clientY-th-10 : ty)+'px';
+    });
+  };
+  canvas.onmouseleave=function(){ tip.style.opacity='0'; };
 }
 document.getElementById('chartTabs').addEventListener('click',function(e){if(!e.target.classList.contains('chart-tab'))return;this.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));e.target.classList.add('active');const v=e.target.dataset.view;document.getElementById('chartTrend').style.display=v==='trend'?'':'none';document.getElementById('trendLegend').style.display=v==='trend'?'':'none';document.getElementById('chartHeatmap').style.display=v==='heatmap'?'':'none';document.getElementById('heatmapLegend').style.display=v==='heatmap'?'':'none';document.getElementById('chartDifficulty').style.display=v==='difficulty'?'':'none';document.getElementById('diffLegend').style.display=v==='difficulty'?'':'none';if(v==='trend')drawTrendChart();if(v==='heatmap')drawHeatmap();if(v==='difficulty')drawDifficultyChart();});
 window.addEventListener('resize',()=>{const active=document.querySelector('.chart-tab.active');if(!active)return;if(active.dataset.view==='trend')drawTrendChart();if(active.dataset.view==='difficulty')drawDifficultyChart();});
