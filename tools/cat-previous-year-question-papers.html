@@ -201,8 +201,8 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
       <button class="chart-tab" data-view="difficulty">Difficulty Split</button>
     </div>
     <div class="chart-wrap" id="chartTrend"><canvas id="trendCanvas"></canvas></div>
-    <div class="chart-legend" id="trendLegend"></div>
-    <div id="chartHeatmap" style="display:none;padding:8px 0"></div>
+    <div class="chart-legend" id="trendLegend" style="min-height:28px"></div>
+    <div id="chartHeatmap" style="display:none"></div>
     <div class="chart-legend" id="heatmapLegend" style="display:none"></div>
     <div class="chart-wrap" id="chartDifficulty" style="display:none"><canvas id="diffCanvas"></canvas></div>
     <div class="chart-legend" id="diffLegend" style="display:none"></div>
@@ -307,10 +307,8 @@ const TOPICS_BY_SEC={
 const TOPIC_COLORS={'Reading Comprehension':'#a78bfa','Para Jumbles':'#c084fc','Para Summary':'#d946ef','Odd Sentence Out':'#e879f9','Sentence Completion':'#7c3aed','Tables':'#38bdf8','Bar Graph':'#0284c7','Pie Chart':'#22d3ee','Arrangements':'#0891b2','Games & Tournaments':'#06b6d4','Logical Reasoning':'#0e7490','Arithmetic':'#f97316','Algebra':'#fb923c','Geometry':'#fbbf24','Number System':'#f59e0b','Modern Math':'#facc15','Mensuration':'#eab308'};
 const PER_PAGE=10;
 let activeSec='All',activeYear='All',activeSlot='All',activeTopic='All',activeDiffs=new Set(),showUnanswered=false;
-let searchQ='',currentPage=1,answers={},hiddenDiffLevels=new Set();
+let searchQ='',currentPage=1,answers={},hiddenDiffLevels=new Set(),hiddenTrendSecs=new Set();
 
-// Assign pseudo difficulty distribution (20% easy, 60% medium, 20% hard)
-(function(){const diff=['easy','medium','medium','medium','hard'];DB.forEach(q=>{let h=0;for(let i=0;i<q.q.length&&i<40;i++)h=(h*31+q.q.charCodeAt(i))&0xffff;q.diff=diff[h%5];});})();
 function init(){
   document.getElementById('statTotal').textContent=DB.length;
   const yc=document.getElementById('yearStrip');
@@ -321,7 +319,7 @@ function init(){
   buildTopicChips();drawTrendChart();render();
 }
 function setSec(s){activeSec=s;activeTopic='All';currentPage=1;document.querySelectorAll('.sec-chip').forEach(c=>c.classList.toggle('active',c.dataset.sec===s));document.getElementById('mobSubject').value=s;buildTopicChips();render();}
-function setYear(y){activeYear=y;activeSlot='All';currentPage=1;document.querySelectorAll('.yr-chip').forEach(c=>c.classList.toggle('active',String(c.dataset.yr)===String(y)));document.getElementById('mobYear').value=y;document.querySelectorAll('[data-slot]').forEach(c=>c.classList.toggle('active',c.dataset.slot==='All'));document.getElementById('mobSlot').value='All';render();}
+function setYear(y){activeYear=y;currentPage=1;document.querySelectorAll('.yr-chip').forEach(c=>c.classList.toggle('active',String(c.dataset.yr)===String(y)));document.getElementById('mobYear').value=y;render();}
 function setSlot(s){activeSlot=s;currentPage=1;document.querySelectorAll('[data-slot]').forEach(c=>c.classList.toggle('active',String(c.dataset.slot)===String(s)));document.getElementById('mobSlot').value=String(s);render();}
 function setTopic(t){activeTopic=t;currentPage=1;document.querySelectorAll('.topic-chip').forEach(c=>c.classList.toggle('active',c.dataset.t===t));render();}
 function toggleDiff(d){if(activeDiffs.has(d))activeDiffs.delete(d);else activeDiffs.add(d);document.getElementById('btn'+d[0].toUpperCase()+d.slice(1)).classList.toggle('active',activeDiffs.has(d));document.getElementById('mobDiff').value='All';currentPage=1;render();}
@@ -341,49 +339,173 @@ function spawnFX(x,y,correct){const c=document.getElementById('fxContainer');con
 function renderPagination(total,totalPages){const pg=document.getElementById('pagination');if(totalPages<=1){pg.innerHTML='';return;}let html=`<button class="pg-btn" ${currentPage===1?'disabled':''} onclick="goPage(${currentPage-1})">&#8592; Prev</button>`;const range=[...new Set([1,Math.max(1,currentPage-1),currentPage,Math.min(totalPages,currentPage+1),totalPages])].sort((a,b)=>a-b);let prev=0;range.forEach(p=>{if(p-prev>1)html+='<span class="pg-info">…</span>';html+=`<button class="pg-btn${p===currentPage?' active':''}" onclick="goPage(${p})">${p}</button>`;prev=p;});html+=`<button class="pg-btn" ${currentPage===totalPages?'disabled':''} onclick="goPage(${currentPage+1})">Next &#8594;</button>`;html+=`<span class="pg-info">Page ${currentPage} of ${totalPages}</span>`;pg.innerHTML=html;}
 function goPage(p){currentPage=p;render();window.scrollTo({top:document.querySelector('.wrap').offsetTop,behavior:'smooth'});}
 function getCanvas(id){const canvas=document.getElementById(id);const rect=canvas.parentElement.getBoundingClientRect();const DPR=window.devicePixelRatio||1;canvas.width=rect.width*DPR;canvas.height=280*DPR;const ctx=canvas.getContext('2d');ctx.scale(DPR,DPR);return{ctx,W:rect.width,H:280};}
-function drawTrendChart(){const{ctx,W,H}=getCanvas('trendCanvas');ctx.clearRect(0,0,W,H);const pad={t:30,r:20,b:30,l:45};const plotW=W-pad.l-pad.r,plotH=H-pad.t-pad.b;const years=YEARS.slice().reverse();const n=years.length;if(n<1)return;const data={};years.forEach(y=>{data[y]={};SECTIONS.forEach(s=>data[y][s]=0);});DB.forEach(q=>{if(data[q.y])data[q.y][q.sec]++;});const maxV=Math.max(...years.flatMap(y=>SECTIONS.map(s=>data[y][s])),1);// grid lines
-ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1;const ticks=5;for(let i=0;i<=ticks;i++){const yy=pad.t+plotH*(1-i/ticks);ctx.beginPath();ctx.moveTo(pad.l,yy);ctx.lineTo(W-pad.r,yy);ctx.stroke();ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='10px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/ticks),pad.l-5,yy+4);}// x labels
-years.forEach((y,i)=>{const x=pad.l+(n<2?plotW/2:i*plotW/(n-1));ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='11px DM Sans';ctx.textAlign='center';ctx.fillText(y,x,H-pad.b+16);});// draw lines per section
-SECTIONS.forEach(sec=>{const color=SEC_COLORS[sec];const pts=years.map((y,i)=>{const x=pad.l+(n<2?plotW/2:i*plotW/(n-1));const y0=pad.t+plotH*(1-data[y][sec]/maxV);return[x,y0];});// shadow line
-ctx.shadowColor=color;ctx.shadowBlur=6;ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();pts.forEach(([x,y],i)=>i===0?ctx.moveTo(x,y):ctx.lineTo(x,y));ctx.stroke();ctx.shadowBlur=0;// area fill
-ctx.fillStyle=color+'28';ctx.beginPath();pts.forEach(([x,y],i)=>i===0?ctx.moveTo(x,y):ctx.lineTo(x,y));ctx.lineTo(pts[pts.length-1][0],pad.t+plotH);ctx.lineTo(pts[0][0],pad.t+plotH);ctx.closePath();ctx.fill();// dots
-pts.forEach(([x,y],i)=>{ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.strokeStyle='#1a1a2e';ctx.lineWidth=1.5;ctx.stroke();});// tooltip on hover (value labels)
-pts.forEach(([x,y],i)=>{const v=data[years[i]][sec];if(v>0&&n<=12){ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='9px DM Sans';ctx.textAlign='center';ctx.fillText(v,x,y-8);}});});document.getElementById('trendLegend').innerHTML=SECTIONS.map(s=>`<span class="chart-legend-item"><span class="ldot" style="background:${SEC_COLORS[s]}"></span>${s}</span>`).join('');}
+function drawTrendChart(){
+  const canvas=document.getElementById('trendCanvas');
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.parentElement.getBoundingClientRect();
+  canvas.width=rect.width*dpr; canvas.height=rect.height*dpr;
+  canvas.style.width=rect.width+'px'; canvas.style.height=rect.height+'px';
+  ctx.scale(dpr,dpr);
+  const W=rect.width,H=rect.height,pad={t:20,r:20,b:40,l:44};
+  const plotW=W-pad.l-pad.r,plotH=H-pad.t-pad.b;
+  const isMobile=W<500;
+  const years=YEARS.slice().reverse();
+  const n=years.length;
+  if(n<1)return;
+
+  // Data per section per year
+  const data={};
+  SECTIONS.forEach(s=>{data[s]={};years.forEach(y=>data[s][y]=0);});
+  DB.forEach(q=>{if(data[q.sec]&&data[q.sec][q.y]!==undefined)data[q.sec][q.y]++;});
+  const maxV=Math.max(...SECTIONS.flatMap(s=>years.map(y=>data[s][y]||0)),1);
+
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){
+    const y2=pad.t+plotH*(1-i/5);
+    ctx.beginPath();ctx.moveTo(pad.l,y2);ctx.lineTo(W-pad.r,y2);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.3)';
+    ctx.font=(isMobile?'9':'11')+'px DM Sans';ctx.textAlign='right';
+    ctx.fillText(Math.round(maxV*i/5),pad.l-8,y2+4);
+  }
+
+  // X labels
+  ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';
+  ctx.font=(isMobile?'9':'11')+'px DM Sans';
+  years.forEach((y,i)=>{
+    const x=pad.l+(n<2?plotW/2:i*plotW/(n-1));
+    ctx.fillText("'"+String(y).slice(2),x,H-pad.b+18);
+  });
+
+  // Lines per section
+  SECTIONS.forEach(sec=>{
+    if(hiddenTrendSecs.has(sec))return;
+    const color=SEC_COLORS[sec];
+    const pts=years.map((y,i)=>{
+      const x=pad.l+(n<2?plotW/2:i*plotW/(n-1));
+      const yPos=pad.t+plotH*(1-(data[sec][y]||0)/maxV);
+      return[x,yPos];
+    });
+    // Area fill
+    ctx.fillStyle=color+'22';
+    ctx.beginPath();
+    pts.forEach(([x,y],i)=>i===0?ctx.moveTo(x,y):ctx.lineTo(x,y));
+    ctx.lineTo(pts[pts.length-1][0],pad.t+plotH);
+    ctx.lineTo(pts[0][0],pad.t+plotH);
+    ctx.closePath();ctx.fill();
+    // Line
+    ctx.strokeStyle=color;ctx.lineWidth=isMobile?1.5:2.5;
+    ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.beginPath();
+    pts.forEach(([x,y],i)=>i===0?ctx.moveTo(x,y):ctx.lineTo(x,y));
+    ctx.stroke();
+    // Dots
+    pts.forEach(([x,y],i)=>{
+      const v=data[sec][years[i]]||0;
+      ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,isMobile?2:3.5,0,Math.PI*2);ctx.fill();
+      if(v>0&&n<=12){
+        ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='9px DM Sans';ctx.textAlign='center';
+        ctx.fillText(v,x,y-8);
+      }
+    });
+  });
+
+  // Clickable legend
+  const leg=document.getElementById('trendLegend');
+  leg.innerHTML=SECTIONS.map(s=>`<span class="chart-legend-item${hiddenTrendSecs.has(s)?' muted':''}" data-sec="${s}"><span class="ldot" style="background:${SEC_COLORS[s]}"></span>${s}</span>`).join('');
+  leg.onclick=function(e){const it=e.target.closest('.chart-legend-item');if(!it)return;const s=it.dataset.sec;if(hiddenTrendSecs.has(s))hiddenTrendSecs.delete(s);else hiddenTrendSecs.add(s);drawTrendChart();};
+}
 function drawHeatmap(){
-  const container=document.getElementById('chartHeatmap');
-  // Build topic x year grid
+  const wrap=document.getElementById('chartHeatmap');
   const topics=Object.keys(TOPIC_COLORS).filter(t=>DB.some(q=>q.topic===t));
-  const years=YEARS.slice().reverse(); // oldest to newest
-  // count[topic][year]
-  const count={};
-  topics.forEach(t=>{count[t]={};years.forEach(y=>count[t][y]=0);});
-  DB.forEach(q=>{if(count[q.topic]&&count[q.topic][q.y]!==undefined)count[q.topic][q.y]++;});
-  const maxC=Math.max(...topics.flatMap(t=>years.map(y=>count[t][y])),1);
-  const cols=years.length;
-  let html='<div style="overflow-x:auto">';
-  html+='<table style="border-collapse:separate;border-spacing:3px;font-size:10px;white-space:nowrap">';
-  // Header row: years
-  html+='<tr><th style="text-align:left;padding:2px 6px;color:var(--muted);font-weight:500">Topic</th>';
-  years.forEach(y=>{html+=`<th style="text-align:center;padding:2px 4px;color:var(--muted);font-weight:500">${y}</th>`;});
-  html+='</tr>';
+  const revYears=YEARS.slice().reverse();
+  const data={};
+  topics.forEach(t=>{data[t]={};revYears.forEach(y=>data[t][y]=0);});
+  DB.forEach(q=>{if(data[q.topic]&&data[q.topic][q.y]!==undefined)data[q.topic][q.y]++;});
+  const maxV=Math.max(...topics.flatMap(t=>revYears.map(y=>data[t][y]||0)),1);
+
+  let html='<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:4px;font-size:13px;"><thead><tr>';
+  html+='<th style="text-align:left;color:var(--muted);padding:6px 10px;font-weight:600;white-space:nowrap">Topic</th>';
+  revYears.forEach(y=>html+=`<th style="color:var(--muted);font-weight:600;padding:6px 4px;text-align:center">'${String(y).slice(2)}</th>`);
+  html+='</tr></thead><tbody>';
   topics.forEach(t=>{
     const color=TOPIC_COLORS[t]||'#888';
-    html+=`<tr><td style="padding:2px 6px;color:rgba(255,255,255,.7)">${t}</td>`;
-    years.forEach(y=>{
-      const v=count[t][y];
-      const intensity=v/maxC;
-      const alpha=v>0?Math.round(intensity*200+30):15;
-      const bg=color+(alpha.toString(16).padStart(2,'0'));
-      const title=v>0?`${t} ${y}: ${v}q`:'';
-      html+=`<td title="${title}" style="text-align:center;padding:3px 4px;min-width:28px;border-radius:4px;background:${bg};color:${v>0?'rgba(255,255,255,.9)':'rgba(255,255,255,.2)'}">${v||''}</td>`;
+    html+=`<tr><td style="padding:7px 10px;font-weight:700;white-space:nowrap;font-size:13px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${color};margin-right:7px;vertical-align:middle"></span>${t}</td>`;
+    revYears.forEach(y=>{
+      const v=data[t][y]||0;
+      const intensity=v/maxV;
+      const alpha=v>0?0.12+intensity*0.65:0.04;
+      html+=`<td title="${t} ${y}: ${v}q" style="text-align:center;padding:8px 4px;border-radius:8px;background:${color}${Math.round(alpha*255).toString(16).padStart(2,'0')};font-weight:${v>0?700:400};font-size:13px;color:${intensity>0.25?'#fff':'rgba(255,255,255,.25)'}">${v||'·'}</td>`;
     });
     html+='</tr>';
   });
-  html+='</table></div>';
-  container.innerHTML=html;
-  document.getElementById('heatmapLegend').innerHTML='<span style="font-size:11px;color:var(--muted)">Darker cell = more questions that year</span>';
+  html+='</tbody></table></div>';
+  wrap.innerHTML=html;
+  document.getElementById('heatmapLegend').innerHTML='<span style="font-size:11px;color:var(--muted)">Darker cell = more questions that year · hover for detail</span>';
 }
-function drawDifficultyChart(){const{ctx,W,H}=getCanvas('diffCanvas');ctx.clearRect(0,0,W,H);const pad={t:20,r:20,b:30,l:40};const plotW=W-pad.l-pad.r,plotH=H-pad.t-pad.b;const data={};YEARS.forEach(y=>data[y]={easy:0,medium:0,hard:0});DB.forEach(q=>{if(data[q.y])data[q.y][q.diff]++;});const activeDiffs=['easy','medium','hard'].filter(d=>!hiddenDiffLevels.has(d));const maxV=Math.max(...YEARS.map(y=>activeDiffs.reduce((s,d)=>s+(data[y][d]||0),0)),1);ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;for(let i=0;i<=5;i++){const yy=pad.t+plotH*(1-i/5);ctx.beginPath();ctx.moveTo(pad.l,yy);ctx.lineTo(W-pad.r,yy);ctx.stroke();ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='10px DM Sans';ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-6,yy+4);}const barZone=plotW/YEARS.length,barW=Math.min(60,barZone-12);YEARS.forEach((y,i)=>{const cx=pad.l+(i+0.5)*barZone;let cumH=0;activeDiffs.forEach((d,di)=>{const v=data[y][d]||0;const h=plotH*(v/maxV);if(h<0.5)return;const x0=cx-barW/2,y0=pad.t+plotH-cumH-h;ctx.fillStyle=DIFF_COLORS[d];const isTop=activeDiffs.slice(di+1).every(dd=>(data[y][dd]||0)===0);const r=isTop?Math.min(5,barW/2,h):0;ctx.beginPath();if(r>0){ctx.moveTo(x0,y0+h);ctx.lineTo(x0,y0+r);ctx.arcTo(x0,y0,x0+r,y0,r);ctx.lineTo(x0+barW-r,y0);ctx.arcTo(x0+barW,y0,x0+barW,y0+r,r);ctx.lineTo(x0+barW,y0+h);}else{ctx.rect(x0,y0,barW,h);}ctx.closePath();ctx.fill();cumH+=h;});ctx.fillStyle='rgba(255,255,255,.4)';ctx.textAlign='center';ctx.font='11px DM Sans';ctx.fillText(y,cx,H-pad.b+16);});const leg=document.getElementById('diffLegend');leg.innerHTML=['easy','medium','hard'].map(d=>`<span class="chart-legend-item${hiddenDiffLevels.has(d)?' muted':''}" data-diff="${d}"><span class="ldot" style="background:${DIFF_COLORS[d]};border-radius:4px"></span>${d[0].toUpperCase()+d.slice(1)}</span>`).join('');leg.onclick=function(e){const it=e.target.closest('.chart-legend-item');if(!it)return;const d=it.dataset.diff;if(hiddenDiffLevels.has(d))hiddenDiffLevels.delete(d);else hiddenDiffLevels.add(d);drawDifficultyChart();};}
+function drawDifficultyChart(){
+  const canvas=document.getElementById('diffCanvas');
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.parentElement.getBoundingClientRect();
+  canvas.width=rect.width*dpr;canvas.height=rect.height*dpr;
+  canvas.style.width=rect.width+'px';canvas.style.height=rect.height+'px';
+  ctx.scale(dpr,dpr);
+  const W=rect.width,H=rect.height,pad={t:20,r:20,b:40,l:44};
+  const plotW=W-pad.l-pad.r,plotH=H-pad.t-pad.b;
+  const isMobile=W<500;
+  const years=YEARS.slice().reverse();
+
+  const data={};years.forEach(y=>data[y]={easy:0,medium:0,hard:0});
+  DB.forEach(q=>{if(data[q.y])data[q.y][q.diff]++;});
+  const activeDiffs=['easy','medium','hard'].filter(d=>!hiddenDiffLevels.has(d));
+  const maxV=Math.max(...years.map(y=>activeDiffs.reduce((s,d)=>s+(data[y][d]||0),0)),1);
+  const diffColors={easy:'#34d399',medium:'#fbbf24',hard:'#f87171'};
+  const totalBarZone=plotW/years.length;
+  const barW=Math.min(isMobile?16:28,totalBarZone-4);
+
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){
+    const y2=pad.t+plotH*(1-i/5);
+    ctx.beginPath();ctx.moveTo(pad.l,y2);ctx.lineTo(W-pad.r,y2);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font=(isMobile?'9':'11')+'px DM Sans';
+    ctx.textAlign='right';ctx.fillText(Math.round(maxV*i/5),pad.l-8,y2+4);
+  }
+
+  // Stacked bars
+  years.forEach((y,i)=>{
+    const cx=pad.l+(i+0.5)*totalBarZone;
+    let cumH=0;
+    activeDiffs.forEach((d,di)=>{
+      const v=data[y][d]||0;
+      const h=plotH*(v/maxV);
+      if(h<0.5)return;
+      const x0=cx-barW/2,y0=pad.t+plotH-cumH-h;
+      ctx.fillStyle=diffColors[d];
+      const isTop=activeDiffs.slice(di+1).every(dd=>(data[y][dd]||0)===0);
+      const r=isTop?Math.min(4,barW/2,h):0;
+      ctx.beginPath();
+      if(r>0){
+        ctx.moveTo(x0,y0+h);ctx.lineTo(x0,y0+r);
+        ctx.arcTo(x0,y0,x0+r,y0,r);ctx.lineTo(x0+barW-r,y0);
+        ctx.arcTo(x0+barW,y0,x0+barW,y0+r,r);ctx.lineTo(x0+barW,y0+h);
+      }else{ctx.rect(x0,y0,barW,h);}
+      ctx.closePath();ctx.fill();
+      cumH+=h;
+    });
+    // X label
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.textAlign='center';
+    ctx.font=(isMobile?'9':'11')+'px DM Sans';
+    ctx.fillText("'"+String(y).slice(2),cx,H-pad.b+18);
+  });
+
+  // Clickable legend
+  const leg=document.getElementById('diffLegend');
+  leg.innerHTML=['easy','medium','hard'].map(d=>`<span class="chart-legend-item${hiddenDiffLevels.has(d)?' muted':''}" data-diff="${d}"><span class="ldot" style="background:${diffColors[d]};border-radius:4px"></span>${d.charAt(0).toUpperCase()+d.slice(1)}</span>`).join('');
+  leg.onclick=function(e){const it=e.target.closest('.chart-legend-item');if(!it)return;const d=it.dataset.diff;if(hiddenDiffLevels.has(d))hiddenDiffLevels.delete(d);else hiddenDiffLevels.add(d);drawDifficultyChart();};
+}
 document.getElementById('chartTabs').addEventListener('click',function(e){if(!e.target.classList.contains('chart-tab'))return;this.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));e.target.classList.add('active');const v=e.target.dataset.view;document.getElementById('chartTrend').style.display=v==='trend'?'':'none';document.getElementById('trendLegend').style.display=v==='trend'?'':'none';document.getElementById('chartHeatmap').style.display=v==='heatmap'?'':'none';document.getElementById('heatmapLegend').style.display=v==='heatmap'?'':'none';document.getElementById('chartDifficulty').style.display=v==='difficulty'?'':'none';document.getElementById('diffLegend').style.display=v==='difficulty'?'':'none';if(v==='trend')drawTrendChart();if(v==='heatmap')drawHeatmap();if(v==='difficulty')drawDifficultyChart();});
 window.addEventListener('resize',()=>{const active=document.querySelector('.chart-tab.active');if(!active)return;if(active.dataset.view==='trend')drawTrendChart();if(active.dataset.view==='difficulty')drawDifficultyChart();});
 init();
