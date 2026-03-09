@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#f59e0b,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#f59e0b,#f472b6);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the Gaokao PYQ Explorer.</p><a href="https://reportmedic.org/tools/gaokao-previous-year-question-papers.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="高考历年真题在线练习平台——分科目筛选、趋势分析、难度分布。免费、离线、隐私保护。"/>
+<title>高考历年真题 — 趋势分析与模式探索 — ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,400&family=Noto+Sans+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans SC','DM Sans',ui-sans-serif,system-ui,sans-serif;}
+.bg-orbs{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-orbs .orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.18;animation:orbFloat 20s ease-in-out infinite;}
+.bg-orbs .orb:nth-child(1){width:600px;height:600px;background:#ef4444;top:-10%;left:-5%;animation-delay:0s;}
+.bg-orbs .orb:nth-child(2){width:500px;height:500px;background:#f59e0b;top:40%;right:-8%;animation-delay:-7s;animation-duration:25s;}
+.bg-orbs .orb:nth-child(3){width:400px;height:400px;background:#8b5cf6;bottom:-5%;left:30%;animation-delay:-14s;animation-duration:22s;}
+@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(30px,-40px) scale(1.05);}66%{transform:translate(-20px,30px) scale(.95);}}
+.pyq-hero{padding:40px 0 20px;text-align:center;position:relative;}
+.pyq-hero h1{font-size:clamp(28px,5vw,44px);font-weight:900;letter-spacing:-.5px;line-height:1.1;margin-bottom:12px;}
+.pyq-hero h1 .accent{background:linear-gradient(135deg,#ef4444,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.pyq-hero .tagline{color:var(--muted);font-size:15px;max-width:640px;margin:0 auto 24px;line-height:1.6;}
+.stat-orbs{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:28px;}
+.stat-orb{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);backdrop-filter:blur(10px);transition:transform .2s,border-color .2s;}
+.stat-orb:hover{transform:scale(1.08);border-color:rgba(239,68,68,.4);}
+.stat-orb .val{font-size:26px;font-weight:900;background:linear-gradient(135deg,#ef4444,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-orb .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;text-align:center;line-height:1.2;}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+.search-box{flex:1;min-width:200px;position:relative;}
+.search-box input{width:100%;padding:12px 14px 12px 40px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);font-size:14px;outline:none;font-family:inherit;backdrop-filter:blur(6px);transition:border-color .15s,box-shadow .15s;}
+.search-box input:focus{border-color:rgba(239,68,68,.5);box-shadow:0 0 0 3px rgba(239,68,68,.1);}
+.search-box svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+.filter-btn{padding:10px 16px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;backdrop-filter:blur(6px);}
+.filter-btn:hover,.filter-btn.active{color:var(--text);border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.08);}
+.filter-btn.active{color:#1a0a00;background:linear-gradient(135deg,rgba(239,68,68,.9),rgba(245,158,11,.9));border:none;}
+.sec-chip{padding:8px 18px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;transition:all .12s;font-family:inherit;letter-spacing:.04em;}
+.sec-chip:hover{color:var(--text);}
+.sec-chip[data-sec="All"].active{background:linear-gradient(135deg,rgba(239,68,68,.9),rgba(245,158,11,.9));color:#1a0a00;border:none;}
+.sec-chip[data-sec="语文"].active{background:linear-gradient(135deg,#ef4444,#f87171);color:#fff;border:none;}
+.sec-chip[data-sec="数学"].active{background:linear-gradient(135deg,#3b82f6,#60a5fa);color:#fff;border:none;}
+.sec-chip[data-sec="英语"].active{background:linear-gradient(135deg,#10b981,#34d399);color:#fff;border:none;}
+.sec-chip[data-sec="物理"].active{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#1a0a00;border:none;}
+.sec-chip[data-sec="化学"].active{background:linear-gradient(135deg,#8b5cf6,#a78bfa);color:#fff;border:none;}
+.sec-chip[data-sec="生物"].active{background:linear-gradient(135deg,#14b8a6,#2dd4bf);color:#fff;border:none;}
+.sec-chip[data-sec="政治"].active{background:linear-gradient(135deg,#e11d48,#fb7185);color:#fff;border:none;}
+.sec-chip[data-sec="历史"].active{background:linear-gradient(135deg,#a16207,#ca8a04);color:#fff;border:none;}
+.sec-chip[data-sec="地理"].active{background:linear-gradient(135deg,#0891b2,#22d3ee);color:#fff;border:none;}
+.topic-chip-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.topic-chip{padding:5px 12px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .12s;font-family:inherit;}
+.topic-chip:hover{border-color:rgba(255,255,255,.3);color:var(--text);}
+.topic-chip.active{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.1);color:#ef4444;}
+.year-strip{display:flex;gap:6px;flex-wrap:wrap;padding:4px 0 12px;}
+.yr-chip{padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .12s;font-family:inherit;}
+.yr-chip:hover{border-color:rgba(239,68,68,.4);color:var(--text);}
+.yr-chip.active{background:linear-gradient(135deg,#ef4444,#f59e0b);color:#1a0a00;border:none;}
+.mobile-filters{display:none;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.mobile-filters select{flex:1;min-width:100px;padding:10px 12px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='rgba(255,255,255,.5)' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer;backdrop-filter:blur(6px);}
+.mobile-filters select:focus{outline:none;border-color:rgba(239,68,68,.5);}
+.mobile-filters select option{background:#0f1a2e;color:#e2e8f0;}
+.q-grid{display:flex;flex-direction:column;gap:12px;}
+.q-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:18px;padding:18px;backdrop-filter:blur(6px);transition:border-color .15s,transform .15s;cursor:pointer;position:relative;overflow:hidden;}
+.q-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px;}
+.q-card[data-sec="语文"]::before{background:#ef4444;}
+.q-card[data-sec="数学"]::before{background:#3b82f6;}
+.q-card[data-sec="英语"]::before{background:#10b981;}
+.q-card[data-sec="物理"]::before{background:#f59e0b;}
+.q-card[data-sec="化学"]::before{background:#8b5cf6;}
+.q-card[data-sec="生物"]::before{background:#14b8a6;}
+.q-card[data-sec="政治"]::before{background:#e11d48;}
+.q-card[data-sec="历史"]::before{background:#a16207;}
+.q-card[data-sec="地理"]::before{background:#0891b2;}
+.q-card:hover{border-color:rgba(255,255,255,.22);transform:translateY(-1px);}
+.q-card.expanded{border-color:rgba(239,68,68,.3);}
+.q-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.q-year-badge{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.2);}
+.q-sec-badge{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:var(--muted);}
+.q-topic-badge{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,.08);color:var(--muted);background:rgba(255,255,255,.03);}
+.q-diff{margin-left:auto;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.q-diff.easy{background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.2);}
+.q-diff.medium{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.2);}
+.q-diff.hard{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2);}
+.q-text{font-size:14.5px;line-height:1.65;font-weight:500;white-space:pre-line;}
+.q-options{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
+.q-opt{padding:11px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);font-size:13.5px;cursor:pointer;transition:all .12s;display:flex;align-items:flex-start;gap:10px;}
+.q-opt:hover{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.06);}
+.q-opt .ol{width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .15s;}
+.q-opt.correct{border-color:rgba(16,185,129,.5);background:rgba(16,185,129,.08);}
+.q-opt.correct .ol{border-color:#10b981;background:#10b981;color:#061021;}
+.q-opt.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.06);}
+.q-opt.wrong .ol{border-color:#ef4444;background:#ef4444;color:#fff;}
+.q-explain{margin-top:12px;padding:14px;border-radius:14px;background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.12);font-size:13px;line-height:1.6;color:var(--muted);display:none;}
+.q-explain.show{display:block;animation:fadeSlideIn .3s ease;}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.pagination{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:20px;flex-wrap:wrap;}
+.pg-btn{padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .12s;font-family:inherit;}
+.pg-btn:hover{border-color:rgba(239,68,68,.4);color:var(--text);}
+.pg-btn.active{background:linear-gradient(135deg,#ef4444,#f59e0b);color:#1a0a00;border:none;}
+.pg-btn:disabled{opacity:.3;cursor:not-allowed;}
+.pg-info{font-size:12px;color:var(--muted);}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-state .big{font-size:48px;margin-bottom:12px;}
+.empty-state p{font-size:14px;}
+.answer-fx-container{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;}
+.answer-particle{position:absolute;font-size:20px;animation:particleUp 1.2s ease-out forwards;pointer-events:none;}
+@keyframes particleUp{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-120px) scale(.6) rotate(20deg);}}
+.answer-score-popup{position:fixed;left:50%;transform:translateX(-50%);font-size:28px;font-weight:900;z-index:9999;pointer-events:none;animation:scorePopup .9s ease-out forwards;}
+@keyframes scorePopup{0%{opacity:0;transform:translateX(-50%) translateY(20px) scale(.7);}30%{opacity:1;transform:translateX(-50%) translateY(-10px) scale(1.15);}100%{opacity:0;transform:translateX(-50%) translateY(-60px) scale(.8);}}
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .6s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}
+@media(max-width:640px){
+  .stat-orbs{gap:10px;}
+  .stat-orb{width:90px;height:90px;}
+  .stat-orb .val{font-size:20px;}
+  .mobile-filters{display:flex!important;}
+  #subjectFilters,#yearStrip,#topicFilters{display:none!important;}
+}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-orbs"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+<div class="answer-fx-container" id="fxContainer"></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn nav-home" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+</div>
+</header>
+
+<div class="wrap">
+
+  <section class="pyq-hero anim-up">
+    <h1>高考 <span class="accent">历年真题</span></h1>
+    <p class="tagline">覆盖语文、数学、英语及选考科目的历年高考真题——分科筛选、难度分析、趋势追踪。在浏览器中练习，免费且隐私安全。</p>
+    <div class="stat-orbs">
+      <div class="stat-orb"><span class="val" id="statTotal">0</span><span class="lbl">真题总数</span></div>
+      <div class="stat-orb"><span class="val" id="statYears">0</span><span class="lbl">年份</span></div>
+      <div class="stat-orb"><span class="val" id="statSubs">9</span><span class="lbl">科目</span></div>
+      <div class="stat-orb"><span class="val" id="statAttempted">0</span><span class="lbl">已作答</span></div>
+      <div class="stat-orb"><span class="val" id="statAccuracy">&mdash;</span><span class="lbl">正确率</span></div>
+    </div>
+  </section>
+
+  <section class="anim-up delay-2">
+    <div class="controls">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="qSearch" placeholder="搜索题目… 例如：函数、阅读理解、力学"/>
+      </div>
+    </div>
+    <div class="controls" id="subjectFilters">
+      <button class="sec-chip active" data-sec="All" onclick="setSec('All')">全部科目</button>
+      <button class="sec-chip" data-sec="语文" onclick="setSec('语文')">📖 语文</button>
+      <button class="sec-chip" data-sec="数学" onclick="setSec('数学')">📐 数学</button>
+      <button class="sec-chip" data-sec="英语" onclick="setSec('英语')">🌐 英语</button>
+      <button class="sec-chip" data-sec="物理" onclick="setSec('物理')">⚡ 物理</button>
+      <button class="sec-chip" data-sec="化学" onclick="setSec('化学')">🧪 化学</button>
+      <button class="sec-chip" data-sec="生物" onclick="setSec('生物')">🧬 生物</button>
+      <button class="sec-chip" data-sec="政治" onclick="setSec('政治')">📜 政治</button>
+      <button class="sec-chip" data-sec="历史" onclick="setSec('历史')">🏛 历史</button>
+      <button class="sec-chip" data-sec="地理" onclick="setSec('地理')">🌍 地理</button>
+      <span style="margin-left:4px;color:var(--border)">|</span>
+      <button class="filter-btn" id="btnEasy" onclick="toggleDiff('easy')">简单</button>
+      <button class="filter-btn" id="btnMedium" onclick="toggleDiff('medium')">中等</button>
+      <button class="filter-btn" id="btnHard" onclick="toggleDiff('hard')">困难</button>
+      <button class="filter-btn" id="btnUnanswered" onclick="toggleUnanswered()">未作答</button>
+      <button class="filter-btn" style="margin-left:auto;font-size:12px;padding:8px 14px;" onclick="resetAll()">重置</button>
+    </div>
+    <div id="topicFilters">
+      <div class="topic-chip-row" id="topicChips"></div>
+    </div>
+    <div class="year-strip" id="yearStrip">
+      <button class="yr-chip active" data-yr="All" onclick="setYear('All')">全部年份</button>
+    </div>
+    <div class="mobile-filters" id="mobileFilters">
+      <select id="mobSubject" onchange="setSec(this.value)">
+        <option value="All">全部科目</option>
+        <option value="语文">语文</option>
+        <option value="数学">数学</option>
+        <option value="英语">英语</option>
+        <option value="物理">物理</option>
+        <option value="化学">化学</option>
+        <option value="生物">生物</option>
+        <option value="政治">政治</option>
+        <option value="历史">历史</option>
+        <option value="地理">地理</option>
+      </select>
+      <select id="mobYear" onchange="setYear(this.value)">
+        <option value="All">全部年份</option>
+      </select>
+      <select id="mobDiff" onchange="setMobDiff(this.value)">
+        <option value="All">全部难度</option>
+        <option value="easy">简单</option>
+        <option value="medium">中等</option>
+        <option value="hard">困难</option>
+      </select>
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin:6px 0 2px;" id="resultsInfo"></div>
+  </section>
+
+  <section class="anim-up delay-3">
+    <div class="q-grid" id="qGrid"></div>
+    <div class="pagination" id="pagination"></div>
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="big">&#128269;</div>
+      <p>没有匹配的题目，请尝试调整筛选条件。</p>
+    </div>
+  </section>
+
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">高考历年真题 &mdash; 趋势分析与模式探索</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">所有数据在浏览器本地运行，不会上传任何内容。 &copy; ReportMedic.</div>
+</div>
+</footer>
+
+<script>
+const DB=[
+{"y":2024,"sec":"语文","topic":"现代文阅读","diff":"medium","q":"下列对材料相关内容的理解和分析，正确的一项是","opts":["科技的发展使人类的生存环境不断恶化","人工智能的应用范围仅限于工业生产领域","数字技术正在深刻改变人类的生活方式","所有新技术的应用都会带来严重的社会问题"],"ans":2,"exp":"材料主要论述了数字技术对人类生活方式的深刻影响，选项C最准确地概括了这一核心观点。"},
+{"y":2024,"sec":"数学","topic":"函数与导数","diff":"medium","q":"已知函数 f(x) = x³ - 3x + 1，则 f(x) 的极大值为","opts":["3","1","-1","2"],"ans":0,"exp":"f'(x) = 3x² - 3 = 0，解得 x = ±1。f''(-1) = -6 < 0，所以 x = -1 是极大值点。f(-1) = -1 + 3 + 1 = 3。"},
+{"y":2024,"sec":"英语","topic":"阅读理解","diff":"medium","q":"What is the main idea of the passage?","opts":["Technology has made communication easier but less meaningful.","Social media has replaced traditional forms of entertainment.","The internet has created new opportunities for education worldwide.","Modern transportation has reduced the need for digital communication."],"ans":2,"exp":"The passage primarily discusses how the internet has opened up educational opportunities across the globe, making option C the best answer."},
+{"y":2024,"sec":"物理","topic":"力学","diff":"medium","q":"一个质量为2kg的物体在光滑水平面上受到水平力F=10N的作用，则物体的加速度为","opts":["2 m/s²","5 m/s²","10 m/s²","20 m/s²"],"ans":1,"exp":"根据牛顿第二定律 F = ma，a = F/m = 10/2 = 5 m/s²。"},
+{"y":2024,"sec":"化学","topic":"化学平衡","diff":"medium","q":"对于可逆反应 2SO₂ + O₂ ⇌ 2SO₃（正反应为放热反应），下列措施中能使平衡向正反应方向移动的是","opts":["升高温度","减小压强","增大SO₂的浓度","使用催化剂"],"ans":2,"exp":"增大反应物SO₂的浓度，根据勒夏特列原理，平衡向正反应方向（消耗SO₂的方向）移动。"},
+{"y":2024,"sec":"生物","topic":"细胞代谢","diff":"medium","q":"关于光合作用和呼吸作用的关系，下列叙述正确的是","opts":["光合作用只在白天进行，呼吸作用只在夜间进行","光合作用产生的O₂可用于呼吸作用","光合作用和呼吸作用不能同时进行","呼吸作用只发生在动物细胞中"],"ans":1,"exp":"光合作用产生的氧气可以直接被细胞的呼吸作用利用，这是两个过程之间最基本的物质联系。"},
+{"y":2024,"sec":"政治","topic":"经济生活","diff":"medium","q":"市场经济条件下，价格的变动会影响需求量。一般来说，当某商品价格上升时","opts":["该商品的需求量增加","该商品的需求量减少","该商品替代品的需求量减少","该商品互补品的需求量增加"],"ans":1,"exp":"根据需求定律，在其他条件不变的情况下，商品价格上升，消费者对该商品的需求量会减少。"},
+{"y":2024,"sec":"历史","topic":"中国古代史","diff":"medium","q":"秦朝建立后，为巩固统一，在地方推行的制度是","opts":["分封制","郡县制","行省制","三省六部制"],"ans":1,"exp":"秦始皇统一六国后，废除分封制，在全国推行郡县制，由中央直接管辖地方，加强了中央集权。"},
+{"y":2024,"sec":"地理","topic":"自然地理","diff":"medium","q":"下列关于地球自转的叙述，正确的是","opts":["地球自转的周期是24小时（一个太阳日）","地球自转产生了四季更替","地球自转导致了昼夜交替现象","赤道地区的自转线速度最小"],"ans":2,"exp":"地球的自转导致了昼夜交替现象。四季更替是地球公转的结果，而非自转。赤道地区的自转线速度最大。"}
+];
+
+const YEARS=[...new Set(DB.map(q=>q.y))].sort((a,b)=>b-a);
+const SECTIONS=['语文','数学','英语','物理','化学','生物','政治','历史','地理'];
+const SEC_COLORS={'语文':'#ef4444','数学':'#3b82f6','英语':'#10b981','物理':'#f59e0b','化学':'#8b5cf6','生物':'#14b8a6','政治':'#e11d48','历史':'#a16207','地理':'#0891b2'};
+const TOPICS_BY_SEC={
+  All:[...new Set(DB.map(q=>q.topic))].sort(),
+  '语文':['现代文阅读','古诗文阅读','语言文字运用','写作'],
+  '数学':['函数与导数','三角函数','数列','立体几何','解析几何','概率与统计','集合与逻辑'],
+  '英语':['阅读理解','完形填空','语法填空','写作','听力'],
+  '物理':['力学','电磁学','光学','热学','原子物理'],
+  '化学':['化学平衡','有机化学','无机化学','电化学','实验探究'],
+  '生物':['细胞代谢','遗传学','生态学','分子生物学','实验设计'],
+  '政治':['经济生活','政治生活','文化生活','哲学'],
+  '历史':['中国古代史','中国近现代史','世界史'],
+  '地理':['自然地理','人文地理','区域地理']
+};
+
+const PER_PAGE=10;
+let activeSec='All',activeYear='All',activeTopic='All',activeDiffs=new Set(),showUnanswered=false;
+let searchQ='',currentPage=1,answers={};
+
+function animateCount(el,target){if(!el)return;let cur=0;const step=Math.max(1,Math.ceil(target/40));const iv=setInterval(()=>{cur+=step;if(cur>=target){cur=target;clearInterval(iv);}el.textContent=cur;},20);}
+
+function init(){
+  animateCount(document.getElementById('statTotal'),DB.length);
+  document.getElementById('statYears').textContent=YEARS.length;
+  const yc=document.getElementById('yearStrip');
+  YEARS.forEach(y=>{
+    const b=document.createElement('button');b.className='yr-chip';b.dataset.yr=y;b.textContent=y;b.onclick=()=>setYear(y);yc.appendChild(b);
+    const o=document.createElement('option');o.value=y;o.textContent=y;document.getElementById('mobYear').appendChild(o);
+  });
+  buildTopicChips();render();
+}
+function setSec(s){activeSec=s;activeTopic='All';currentPage=1;document.querySelectorAll('.sec-chip').forEach(c=>c.classList.toggle('active',c.dataset.sec===s));document.getElementById('mobSubject').value=s;buildTopicChips();render();}
+function setYear(y){activeYear=y;currentPage=1;document.querySelectorAll('.yr-chip').forEach(c=>c.classList.toggle('active',String(c.dataset.yr)===String(y)));document.getElementById('mobYear').value=y;render();}
+function setTopic(t){activeTopic=t;currentPage=1;document.querySelectorAll('.topic-chip').forEach(c=>c.classList.toggle('active',c.dataset.t===t));render();}
+function toggleDiff(d){if(activeDiffs.has(d))activeDiffs.delete(d);else activeDiffs.add(d);document.getElementById('btn'+({easy:'Easy',medium:'Medium',hard:'Hard'}[d]||d)).classList.toggle('active',activeDiffs.has(d));currentPage=1;render();}
+function setMobDiff(d){activeDiffs=d==='All'?new Set():new Set([d]);currentPage=1;render();}
+function toggleUnanswered(){showUnanswered=!showUnanswered;document.getElementById('btnUnanswered').classList.toggle('active',showUnanswered);currentPage=1;render();}
+function resetAll(){activeSec='All';activeYear='All';activeTopic='All';activeDiffs=new Set();showUnanswered=false;searchQ='';document.getElementById('qSearch').value='';document.querySelectorAll('.sec-chip').forEach(c=>c.classList.toggle('active',c.dataset.sec==='All'));document.querySelectorAll('.yr-chip').forEach(c=>c.classList.toggle('active',c.dataset.yr==='All'));['Easy','Medium','Hard'].forEach(d=>document.getElementById('btn'+d).classList.remove('active'));document.getElementById('btnUnanswered').classList.remove('active');document.getElementById('mobSubject').value='All';document.getElementById('mobYear').value='All';document.getElementById('mobDiff').value='All';buildTopicChips();currentPage=1;render();}
+function buildTopicChips(){const topics=activeSec==='All'?TOPICS_BY_SEC.All:(TOPICS_BY_SEC[activeSec]||[]);const tc=document.getElementById('topicChips');tc.innerHTML='';function mk(t,l){const b=document.createElement('button');b.className='topic-chip'+(activeTopic===t?' active':'');b.dataset.t=t;b.textContent=l||t;b.onclick=()=>setTopic(t);tc.appendChild(b);}mk('All','全部题型');topics.forEach(t=>mk(t));}
+document.getElementById('qSearch').addEventListener('input',function(){searchQ=this.value.toLowerCase();currentPage=1;render();});
+function getFiltered(){return DB.filter((q,idx)=>{if(activeSec!=='All'&&q.sec!==activeSec)return false;if(activeYear!=='All'&&q.y!=activeYear)return false;if(activeTopic!=='All'&&q.topic!==activeTopic)return false;if(activeDiffs.size&&!activeDiffs.has(q.diff))return false;if(showUnanswered&&answers[idx]!==undefined)return false;if(searchQ&&!q.q.toLowerCase().includes(searchQ)&&!q.topic.toLowerCase().includes(searchQ)&&!(q.opts||[]).some(o=>o.toLowerCase().includes(searchQ)))return false;return true;});}
+function updateStats(){const a=Object.keys(answers).length;const c=Object.entries(answers).filter(([i,v])=>DB[i]&&DB[i].ans===v).length;document.getElementById('statAttempted').textContent=a;document.getElementById('statAccuracy').textContent=a?Math.round(c/a*100)+'%':'—';}
+function render(){updateStats();const filtered=getFiltered();const total=filtered.length;const totalPages=Math.ceil(total/PER_PAGE)||1;currentPage=Math.min(currentPage,totalPages);const slice=filtered.slice((currentPage-1)*PER_PAGE,currentPage*PER_PAGE);document.getElementById('resultsInfo').textContent='共 '+total+' 道题目';const grid=document.getElementById('qGrid');const es=document.getElementById('emptyState');if(!slice.length){grid.innerHTML='';es.style.display='block';}else{es.style.display='none';grid.innerHTML=slice.map(q=>{const idx=DB.indexOf(q);const answered=answers[idx];const diffLabel={'easy':'简单','medium':'中等','hard':'困难'}[q.diff];return '<div class="q-card'+(answered!==undefined?' expanded':'')+'" data-sec="'+q.sec+'" id="card'+idx+'" onclick="expandCard(event,'+idx+')"><div class="q-top"><span class="q-year-badge">'+q.y+'年高考</span><span class="q-sec-badge">'+q.sec+'</span><span class="q-topic-badge">'+q.topic+'</span><span class="q-diff '+q.diff+'">'+diffLabel+'</span></div><div class="q-text">'+q.q+'</div>'+(answered!==undefined?renderOptions(q,idx):'<div class="q-opt-ph" style="margin-top:14px;padding:11px 16px;border-radius:12px;border:1px dashed rgba(239,68,68,.35);background:rgba(239,68,68,.05);font-size:13px;color:rgba(239,68,68,.85);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer;">&#9654;&nbsp;点击查看选项</div>')+'<div class="q-explain'+(answered!==undefined?' show':'')+'" id="exp'+idx+'">'+(q.exp||'')+'</div></div>';}).join('');}renderPagination(total,totalPages);}
+function renderOptions(q,idx){const answered=answers[idx];return '<div class="q-options">'+(q.opts||[]).map((o,oi)=>{let cls='q-opt';if(answered!==undefined){if(oi===q.ans)cls+=' correct';else if(oi===answered)cls+=' wrong';}return '<div class="'+cls+'" onclick="selectAnswer(event,'+idx+','+oi+')"><span class="ol">'+String.fromCharCode(65+oi)+'</span><span>'+o+'</span></div>';}).join('')+'</div>';}
+function expandCard(e,idx){if(e.target.closest('.q-opt'))return;if(answers[idx]!==undefined)return;const ph=document.getElementById('card'+idx).querySelector('.q-opt-ph');if(ph)ph.outerHTML=renderOptions(DB[idx],idx);}
+function selectAnswer(e,idx,chosen){e.stopPropagation();if(answers[idx]!==undefined)return;answers[idx]=chosen;const q=DB[idx];const correct=chosen===q.ans;spawnFX(e.clientX,e.clientY,correct);const card=document.getElementById('card'+idx);const od=card.querySelector('.q-options');if(od)od.outerHTML=renderOptions(q,idx);const exp=document.getElementById('exp'+idx);if(exp)exp.classList.add('show');card.classList.add('expanded');updateStats();}
+function spawnFX(x,y,correct){const c=document.getElementById('fxContainer');const emojis=correct?['✅','🎉','⭐']:['❌'];for(let i=0;i<(correct?5:2);i++){const p=document.createElement('div');p.className='answer-particle';p.textContent=emojis[i%emojis.length];p.style.left=(x+Math.random()*60-30)+'px';p.style.top=(y+Math.random()*40-20)+'px';c.appendChild(p);setTimeout(()=>p.remove(),1300);}const popup=document.createElement('div');popup.className='answer-score-popup';popup.textContent=correct?'+1 ✓':'✗';popup.style.color=correct?'#34d399':'#f87171';popup.style.top=(y-30)+'px';c.appendChild(popup);setTimeout(()=>popup.remove(),1000);}
+function renderPagination(total,totalPages){const pg=document.getElementById('pagination');if(totalPages<=1){pg.innerHTML='';return;}let h='<button class="pg-btn" onclick="goPage('+(currentPage-1)+')"'+(currentPage===1?' disabled':'')+'>‹</button>';const start=Math.max(1,currentPage-2),end=Math.min(totalPages,currentPage+2);for(let i=start;i<=end;i++){h+='<button class="pg-btn'+(i===currentPage?' active':'')+'" onclick="goPage('+i+')">'+i+'</button>';}h+='<button class="pg-btn" onclick="goPage('+(currentPage+1)+')"'+(currentPage===totalPages?' disabled':'')+'>›</button>';h+='<span class="pg-info">'+currentPage+' / '+totalPages+'</span>';pg.innerHTML=h;}
+function goPage(p){currentPage=p;render();window.scrollTo({top:document.getElementById('qGrid').offsetTop-80,behavior:'smooth'});}
+init();
+</script>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6997965e73d8cb1c357e66ee/1jhs26oms';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+</body>
+</html>
