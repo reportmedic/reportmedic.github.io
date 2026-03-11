@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="Practice IRA-1, IRA-2, Diagnostic, and PRA questions for TCS ILP. Covers Java, .NET, SAP, ITIS, SQL, Web Tech, BizSkills, Python, and Aspire modules — free, offline, private."/>
+<title>TCS ILP Preparation Guide — IRA Practice, Diagnostics & PRA — ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+.bg-orbs{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-orbs .orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.16;animation:orbFloat 20s ease-in-out infinite;}
+.bg-orbs .orb:nth-child(1){width:600px;height:600px;background:#f59e0b;top:-10%;left:-5%;animation-delay:0s;}
+.bg-orbs .orb:nth-child(2){width:500px;height:500px;background:#60a5fa;top:40%;right:-8%;animation-delay:-7s;animation-duration:25s;}
+.bg-orbs .orb:nth-child(3){width:400px;height:400px;background:#a78bfa;bottom:-5%;left:30%;animation-delay:-14s;animation-duration:22s;}
+@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(30px,-40px) scale(1.05);}66%{transform:translate(-20px,30px) scale(.95);}}
+
+.pyq-hero{padding:40px 0 20px;text-align:center;position:relative;}
+.pyq-hero h1{font-size:clamp(26px,5vw,42px);font-weight:900;letter-spacing:-.5px;line-height:1.1;margin-bottom:12px;}
+.pyq-hero h1 .accent{background:linear-gradient(135deg,#f59e0b,#fb923c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.pyq-hero .tagline{color:var(--muted);font-size:15px;max-width:640px;margin:0 auto 24px;line-height:1.6;}
+
+.stat-orbs{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:28px;}
+.stat-orb{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);backdrop-filter:blur(10px);transition:transform .2s,border-color .2s;}
+.stat-orb:hover{transform:scale(1.08);border-color:rgba(245,158,11,.4);}
+.stat-orb .val{font-size:24px;font-weight:900;background:linear-gradient(135deg,#f59e0b,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-orb .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;text-align:center;line-height:1.2;}
+
+/* Phase chips (like year chips in UPSC tool) */
+.phase-strip{display:flex;gap:6px;flex-wrap:wrap;padding:4px 0 12px;}
+.ph-chip{padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .12s;font-family:inherit;}
+.ph-chip:hover{border-color:rgba(245,158,11,.4);color:var(--text);}
+.ph-chip.active{background:linear-gradient(135deg,#f59e0b,#fb923c);color:#1a0a00;border:none;}
+
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px;}
+.search-box{flex:1;min-width:200px;position:relative;}
+.search-box input{width:100%;padding:12px 14px 12px 40px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);font-size:14px;outline:none;font-family:inherit;backdrop-filter:blur(6px);transition:border-color .15s,box-shadow .15s;}
+.search-box input:focus{border-color:rgba(245,158,11,.5);box-shadow:0 0 0 3px rgba(245,158,11,.1);}
+.search-box svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+.filter-btn{padding:10px 16px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;backdrop-filter:blur(6px);}
+.filter-btn:hover,.filter-btn.active{color:var(--text);border-color:rgba(245,158,11,.5);background:rgba(245,158,11,.08);}
+.filter-btn.active{color:#1a0a00;background:linear-gradient(135deg,rgba(245,158,11,.9),rgba(251,146,60,.9));border:none;}
+
+.diff-filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+
+/* Charts panel */
+.chart-panel{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:22px;backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.chart-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(245,158,11,.3),rgba(96,165,250,.3),transparent);}
+.chart-panel h2{font-size:16px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.chart-panel h2 .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#fb923c);}
+.chart-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.chart-tab{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .12s;font-family:inherit;}
+.chart-tab:hover{color:var(--text);border-color:rgba(255,255,255,.2);}
+.chart-tab.active{background:rgba(245,158,11,.15);color:#f59e0b;border-color:rgba(245,158,11,.3);}
+.chart-wrap{position:relative;height:260px;margin-bottom:8px;}
+.chart-wrap canvas{width:100%!important;height:100%!important;}
+
+/* heatmap for topic distribution */
+.heatmap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;margin-top:10px;}
+.heat-cell{padding:10px 6px;border-radius:12px;text-align:center;border:1px solid rgba(255,255,255,.06);transition:transform .12s,border-color .12s;cursor:default;}
+.heat-cell:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.2);}
+.heat-cell .hv{font-size:18px;font-weight:900;}
+.heat-cell .hl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+
+/* Question cards */
+.q-grid{display:flex;flex-direction:column;gap:12px;}
+.q-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:18px;padding:18px;backdrop-filter:blur(6px);transition:border-color .15s,transform .15s;cursor:pointer;position:relative;overflow:hidden;}
+.q-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px;}
+.q-card[data-sub="Aspire/KYT"]::before{background:#7cf7d4;}
+.q-card[data-sub="Java"]::before{background:#f59e0b;}
+.q-card[data-sub=".NET"]::before{background:#60a5fa;}
+.q-card[data-sub="SAP"]::before{background:#10b981;}
+.q-card[data-sub="ITIS"]::before{background:#8b5cf6;}
+.q-card[data-sub="SQL"]::before{background:#38bdf8;}
+.q-card[data-sub="Web Tech"]::before{background:#fb923c;}
+.q-card[data-sub="BizSkills"]::before{background:#f472b6;}
+.q-card[data-sub="Python"]::before{background:#facc15;}
+.q-card:hover{border-color:rgba(255,255,255,.22);transform:translateY(-1px);}
+.q-card.expanded{border-color:rgba(245,158,11,.3);}
+
+.q-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.q-phase-badge{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.2);}
+.q-sub-badge{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,.1);color:var(--muted);}
+.q-diff{margin-left:auto;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.q-diff.easy{background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.2);}
+.q-diff.medium{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.2);}
+.q-diff.hard{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2);}
+
+.q-text{font-size:14.5px;line-height:1.65;font-weight:500;}
+.q-code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 14px;margin:10px 0;line-height:1.6;overflow-x:auto;color:#e2e8f0;white-space:pre;}
+
+.q-options{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
+.q-opt{padding:11px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);font-size:13.5px;cursor:pointer;transition:all .12s;display:flex;align-items:flex-start;gap:10px;}
+.q-opt:hover{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.06);}
+.q-opt .ol{width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .15s;}
+.q-opt.correct{border-color:rgba(16,185,129,.5);background:rgba(16,185,129,.08);}
+.q-opt.correct .ol{border-color:#10b981;background:#10b981;color:#061021;}
+.q-opt.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.06);}
+.q-opt.wrong .ol{border-color:#ef4444;background:#ef4444;color:#fff;}
+
+.q-explain{margin-top:12px;padding:14px;border-radius:14px;background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.12);font-size:13px;line-height:1.6;color:var(--muted);display:none;}
+.q-explain.show{display:block;animation:fadeSlideIn .3s ease;}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+.pagination{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:20px;flex-wrap:wrap;}
+.pg-btn{padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .12s;font-family:inherit;}
+.pg-btn:hover{border-color:rgba(245,158,11,.4);color:var(--text);}
+.pg-btn.active{background:linear-gradient(135deg,#f59e0b,#fb923c);color:#1a0a00;border:none;}
+.pg-btn:disabled{opacity:.3;cursor:not-allowed;}
+.pg-info{font-size:12px;color:var(--muted);}
+
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-state .big{font-size:48px;margin-bottom:12px;}
+
+.mobile-filters{display:none;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.mobile-filters select{flex:1;min-width:100px;padding:10px 12px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='rgba(255,255,255,.5)' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer;backdrop-filter:blur(6px);}
+.mobile-filters select:focus{outline:none;border-color:rgba(245,158,11,.5);box-shadow:0 0 0 3px rgba(245,158,11,.1);}
+.mobile-filters select option{background:#0f1a2e;color:#e2e8f0;}
+
+.answer-fx-container{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;}
+.answer-particle{position:absolute;font-size:20px;animation:particleUp 1.2s ease-out forwards;pointer-events:none;}
+@keyframes particleUp{0%{opacity:1;transform:translateY(0) scale(1);}60%{opacity:1;}100%{opacity:0;transform:translateY(-120px) scale(.6) rotate(20deg);}}
+.answer-score-popup{position:fixed;left:50%;transform:translateX(-50%);font-size:28px;font-weight:900;z-index:9999;pointer-events:none;animation:scorePopup .9s ease-out forwards;text-shadow:0 2px 12px rgba(0,0,0,.5);}
+@keyframes scorePopup{0%{opacity:0;transform:translateX(-50%) translateY(20px) scale(.7);}30%{opacity:1;transform:translateX(-50%) translateY(-10px) scale(1.15);}60%{transform:translateX(-50%) translateY(-30px) scale(1);}100%{opacity:0;transform:translateX(-50%) translateY(-60px) scale(.8);}}
+
+.chart-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+.chart-legend-item{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer;padding:3px 8px;border-radius:999px;transition:all .15s;user-select:none;border:1px solid transparent;}
+.chart-legend-item:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);}
+.chart-legend-item.muted{opacity:.3;text-decoration:line-through;}
+.chart-legend-item .ldot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .6s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}.delay-4{animation-delay:.4s}
+
+@media(max-width:640px){
+  .nav-home{display:none!important;}
+  .stat-orbs{gap:10px;}
+  .stat-orb{width:90px;height:90px;}
+  .stat-orb .val{font-size:18px;}
+  .chart-wrap{height:240px;}
+  .heatmap-grid{grid-template-columns:repeat(auto-fill,minmax(72px,1fr));}
+  .mobile-filters{display:flex!important;}
+  #subjectFilters,#phaseStrip,.diff-filter-row{display:none!important;}
+  .q-text{font-size:13.5px;}
+  .q-code{font-size:11.5px;}
+}
+</style>
+</head>
+<body class="tools-page">
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#f59e0b,#fb923c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#f59e0b,#fb923c);color:#1a0a00;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site.</p><a href="https://reportmedic.org/tools/tcs-ilp-preparation-guide.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked');
+  }
+})();
+</script>
+
+<div class="bg-orbs"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+<div class="answer-fx-container" id="fxContainer"></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn nav-home" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+  <a class="btn primary" href="/tools/upsc-prelims-daily-practice.html">UPSC Practice</a>
+</div>
+</header>
+
+<div class="wrap">
+  <section class="pyq-hero anim-up">
+    <h1>TCS ILP <span class="accent">Prep Guide</span></h1>
+    <p class="tagline">IRA-1, IRA-2, Diagnostics and PRA — practice questions covering every stream and every phase of your ILP training.</p>
+    <div class="stat-orbs">
+      <div class="stat-orb"><span class="val" id="statTotal">0</span><span class="lbl">Questions</span></div>
+      <div class="stat-orb"><span class="val">9</span><span class="lbl">Topics</span></div>
+      <div class="stat-orb"><span class="val">4</span><span class="lbl">Phases</span></div>
+      <div class="stat-orb"><span class="val" id="statAttempted">0</span><span class="lbl">Attempted</span></div>
+      <div class="stat-orb"><span class="val" id="statAccuracy">—</span><span class="lbl">Accuracy</span></div>
+    </div>
+  </section>
+
+  <!-- Chart Panel -->
+  <section class="chart-panel anim-up delay-1">
+    <h2><span class="dot"></span> Topic & Difficulty Overview</h2>
+    <div class="chart-tabs" id="chartTabs">
+      <button class="chart-tab active" data-view="topic">Topic Distribution</button>
+      <button class="chart-tab" data-view="phase">Phase Breakdown</button>
+      <button class="chart-tab" data-view="difficulty">Difficulty Split</button>
+    </div>
+    <div class="chart-wrap" id="chartTopicWrap"><canvas id="topicCanvas"></canvas></div>
+    <div class="chart-legend" id="topicLegend"></div>
+    <div class="chart-wrap" id="chartPhaseWrap" style="display:none"><canvas id="phaseCanvas"></canvas></div>
+    <div class="chart-wrap" id="chartDiffWrap" style="display:none"><canvas id="diffCanvas"></canvas></div>
+    <div class="chart-legend" id="diffLegend" style="display:none"></div>
+  </section>
+
+  <!-- Controls -->
+  <section class="anim-up delay-2">
+    <div class="controls">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="qSearch" placeholder="Search — e.g., HashSet, JDBC, OSI, ITIL, PostBack…"/>
+      </div>
+    </div>
+    <div class="controls" id="subjectFilters">
+      <button class="filter-btn active" data-sub="All">All Topics</button>
+    </div>
+    <div class="phase-strip" id="phaseStrip">
+      <button class="ph-chip active" data-ph="All">All Phases</button>
+      <button class="ph-chip" data-ph="IRA-1">IRA-1</button>
+      <button class="ph-chip" data-ph="IRA-2">IRA-2</button>
+      <button class="ph-chip" data-ph="Diagnostic">Diagnostic</button>
+      <button class="ph-chip" data-ph="PRA">PRA</button>
+    </div>
+    <div class="diff-filter-row" id="diffFilterRow">
+      <button class="filter-btn active" data-diff="All" id="diffAll">All Levels</button>
+      <button class="filter-btn" data-diff="easy">Easy</button>
+      <button class="filter-btn" data-diff="medium">Medium</button>
+      <button class="filter-btn" data-diff="hard">Hard</button>
+    </div>
+    <div class="mobile-filters" id="mobileFilters">
+      <select id="mobSub"><option value="All">All Topics</option></select>
+      <select id="mobPhase"><option value="All">All Phases</option><option value="IRA-1">IRA-1</option><option value="IRA-2">IRA-2</option><option value="Diagnostic">Diagnostic</option><option value="PRA">PRA</option></select>
+      <select id="mobDiff"><option value="All">All Levels</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select>
+    </div>
+  </section>
+
+  <!-- Questions -->
+  <section class="anim-up delay-3">
+    <div class="q-grid" id="qGrid"></div>
+    <div class="pagination" id="pagination"></div>
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="big">🔍</div>
+      <p>No questions match your filters. Try a different topic or phase.</p>
+    </div>
+  </section>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">TCS ILP Preparation Guide — IRA, Diagnostics & PRA Practice</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/tools/upsc-prelims-daily-practice.html">UPSC Practice</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All practice runs locally in your browser. Nothing is uploaded. © ReportMedic.</div>
+</div>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   TCS ILP QUESTION DATABASE
+   Fields: phase (IRA-1 | IRA-2 | Diagnostic | PRA), sub (topic),
+           diff (easy|medium|hard), q, opts[], ans (0-based index), exp
+   ═══════════════════════════════════════════════════════════════ */
+const DB = [
+
+/* ── ASPIRE / KYT (IRA-1 based) ── */
+{phase:"IRA-1",sub:"Aspire/KYT",diff:"easy",q:"TCS (Tata Consultancy Services) was founded in which year?",opts:["1968","1972","1965","1980"],ans:0,exp:"TCS was founded in 1968 as a division of Tata Sons and became a separate legal entity. It is one of the oldest IT services companies in India."},
+{phase:"IRA-1",sub:"Aspire/KYT",diff:"easy",q:"Which online platform hosts the Aspire pre-ILP learning program?",opts:["Ultimatix","TCS iON","iCalms","TCS BaNCS"],ans:1,exp:"Aspire is hosted on TCS iON, the company's digital learning and assessment platform. You receive login credentials via email after your offer is confirmed."},
+{phase:"IRA-1",sub:"Aspire/KYT",diff:"easy",q:"What does the KYT module in Aspire stand for?",opts:["Keep Your Target","Know Your TCS","Knowledge Yield Training","Key Year Tracker"],ans:1,exp:"KYT stands for 'Know Your TCS'. It introduces freshers to TCS history, values, organisational structure, and culture before the ILP begins."},
+{phase:"IRA-1",sub:"Aspire/KYT",diff:"easy",q:"ILP in TCS stands for:",opts:["Integrated Learning Platform","Induction and Learning Process","Initial Learning Program","Individual Leadership Program"],ans:2,exp:"ILP stands for Initial Learning Program — the mandatory training program every fresher must complete before being deployed to a live project."},
+{phase:"IRA-1",sub:"Aspire/KYT",diff:"easy",q:"Aspire Miles are scores earned by completing which activity?",opts:["Attending corporate events","Completing Aspire modules and activities on TCS iON","Referring other freshers","Clearing background verification"],ans:1,exp:"Aspire Miles are earned by completing learning modules, assessments, and activities on the TCS iON platform. They are visible to future managers and reflect pre-ILP preparation effort."},
+{phase:"IRA-1",sub:"Aspire/KYT",diff:"easy",q:"What is the internal HR and self-service portal used by all TCS employees?",opts:["Aspire","TCS iON","Ultimatix","iCalms"],ans:2,exp:"Ultimatix is TCS's enterprise HR and self-service portal. You use it to update personal details, access payslips, apply for leaves, and complete competency assessments."},
+{phase:"IRA-1",sub:"Aspire/KYT",diff:"easy",q:"IRA-1 (Initial Readiness Assessment 1) is primarily based on which pre-ILP program?",opts:["Tech Lounge","Aspire","iCalms modules","Certification courses"],ans:1,exp:"IRA-1 tests knowledge from the Aspire program (KYT, business skills, and foundational tech). It typically consists of 40 questions in 30 minutes with no negative marking."},
+{phase:"IRA-1",sub:"Aspire/KYT",diff:"medium",q:"What is the minimum pass mark typically required for IRA-1?",opts:["40 out of 100","55 out of 100","65 out of 100","75 out of 100"],ans:1,exp:"The general pass mark for IRA-1 is around 55 out of 100. There is no negative marking, making thorough Aspire preparation the best strategy."},
+{phase:"IRA-1",sub:"Aspire/KYT",diff:"medium",q:"IRA-2 (Initial Readiness Assessment 2) is based on which program?",opts:["Aspire","Tech Lounge","BizSkills modules","iCalms"],ans:1,exp:"IRA-2 is based on the Tech Lounge content — the stream-specific pre-ILP online learning module. It typically has negative marking and is harder than IRA-1."},
+{phase:"IRA-1",sub:"Aspire/KYT",diff:"easy",q:"What does TCS ILP Phase 1 primarily focus on?",opts:["Team project delivery","Core skill learning for assigned technology stream","Client interaction","Certification preparation"],ans:1,exp:"Phase 1 (Core Skills) spans the first ~30 working days and focuses on foundational learning for your assigned technology stream through online modules, instructor sessions, and diagnostic assessments."},
+{phase:"IRA-1",sub:"Aspire/KYT",diff:"medium",q:"What percentage is typically required to pass a section diagnostic (D-Test) during ILP Phase 1?",opts:["50%","55%","65%","75%"],ans:2,exp:"The standard pass percentage for section diagnostics is 65%. Failing leads to a re-do attempt, then a remedial. Failing all three leads to LAP (Learning Acceleration Program)."},
+{phase:"IRA-1",sub:"Aspire/KYT",diff:"medium",q:"LAP in TCS ILP stands for:",opts:["Learning Acceleration Program","Late Assessment Protocol","Learning Assessment Phase","Lateral Advancement Program"],ans:0,exp:"LAP stands for Learning Acceleration Program — an extended training period of 10-15 additional working days for associates who fail to clear assessments after all available attempts."},
+{phase:"IRA-1",sub:"Aspire/KYT",diff:"easy",q:"Which assessment carries the MOST weight in determining your overall ILP rating?",opts:["IRA-1","IRA-2","Technical Diagnostics and PRA","Attendance record"],ans:2,exp:"Technical diagnostics and the PRA (Performance Readiness Assessment) carry the highest weight in the overall ILP rating, followed by the project evaluation and BizSkills assessments."},
+{phase:"IRA-1",sub:"Aspire/KYT",diff:"medium",q:"What does iCalms refer to in TCS?",opts:["Internal Communication and Learning Management System","A certification portal within Ultimatix for tracking competencies","An email client","An HR ticketing tool"],ans:1,exp:"iCalms is the competency management module within Ultimatix where TCS employees track and increase their skill levels. During the bench period after ILP, increasing iCalms competencies improves project allocation prospects."},
+{phase:"IRA-1",sub:"Aspire/KYT",diff:"easy",q:"ILP Phase 2 primarily involves:",opts:["Individual online learning modules","Team-based project delivery simulating real project work","HR documentation","Campus recruitment"],ans:1,exp:"Phase 2 (Project Delivery) spans the next ~30 working days and involves teams of 5-6 freshers building a complete project using the technologies covered in Phase 1, simulating a real TCS project."},
+
+/* ── JAVA (IRA-2 / Diagnostic / PRA) ── */
+{phase:"IRA-2",sub:"Java",diff:"medium",q:"Which OOP principle is demonstrated when a subclass provides its own specific implementation of a method that is already defined in its parent class?",opts:["Encapsulation","Method Overloading","Method Overriding","Abstraction"],ans:2,exp:"Method Overriding (runtime polymorphism) occurs when a subclass redefines a method inherited from the parent. It is resolved at runtime using dynamic dispatch."},
+{phase:"Diagnostic",sub:"Java",diff:"medium",q:"What is the output of the following code?\n\nclass A { void show() { System.out.println(\"A\"); } }\nclass B extends A { void show() { System.out.println(\"B\"); } }\nA obj = new B();\nobj.show();",opts:["A","B","Compilation Error","Runtime Error"],ans:1,exp:"This demonstrates dynamic dispatch (runtime polymorphism). The reference type is A, but the object is B. The JVM calls the overridden method in B, so output is 'B'."},
+{phase:"Diagnostic",sub:"Java",diff:"medium",q:"What happens when you try to add a duplicate element to a HashSet in Java?",opts:["An exception is thrown","The duplicate replaces the existing element","The add() method returns false and the duplicate is NOT added","The set converts to a list automatically"],ans:2,exp:"HashSet does not allow duplicates. When a duplicate is added, add() simply returns false. No exception is thrown and the set remains unchanged."},
+{phase:"Diagnostic",sub:"Java",diff:"medium",q:"Which of the following correctly represents the JDBC steps in the correct order?",opts:["Load Driver → Create Statement → Connect → Execute → Process ResultSet → Close","Load Driver → Connect → Create Statement → Execute Query → Process ResultSet → Close","Connect → Load Driver → Execute → Create Statement → Close","Load Driver → Execute → Connect → Create Statement → Close"],ans:1,exp:"The correct JDBC sequence is: Load Driver → Establish Connection → Create Statement → Execute Query → Process ResultSet → Close Resources. Alumni report this as one of the most-tested Diagnostic patterns."},
+{phase:"IRA-2",sub:"Java",diff:"easy",q:"Which Servlet lifecycle method is called exactly ONCE when the servlet is first loaded into memory?",opts:["service()","init()","doGet()","destroy()"],ans:1,exp:"init() is called once when the servlet is first loaded. service() is called for each request. destroy() is called once when the servlet is removed. This is a very frequently tested IRA-2 and Diagnostic question."},
+{phase:"Diagnostic",sub:"Java",diff:"medium",q:"In terms of random access by index, what is the time complexity difference between ArrayList and LinkedList?",opts:["Both O(1)","ArrayList O(1), LinkedList O(n)","ArrayList O(n), LinkedList O(1)","Both O(n)"],ans:1,exp:"ArrayList uses a backing array, so index-based access is O(1). LinkedList uses nodes, requiring traversal from the head — making random access O(n)."},
+{phase:"Diagnostic",sub:"Java",diff:"medium",q:"What is the output of: System.out.println(10 + 20 + \"TCS\");",opts:["1020TCS","TCS30","30TCS","Compilation Error"],ans:2,exp:"Java evaluates left to right. 10+20 = 30 (integer addition), then 30+\"TCS\" = \"30TCS\" (string concatenation). Output: 30TCS."},
+{phase:"PRA",sub:"Java",diff:"hard",q:"Which keyword is used to declare that a method may throw a checked exception, making it the caller's responsibility to handle it?",opts:["throw","throws","catch","finally"],ans:1,exp:"'throws' is used in the method signature to declare that the method may propagate a checked exception. 'throw' is used inside a method to actually throw an exception object."},
+{phase:"Diagnostic",sub:"Java",diff:"medium",q:"What is the correct execution order when both catch and finally are present and an exception IS caught?",opts:["try → finally","try → catch","try → catch → finally","catch → try → finally"],ans:2,exp:"When an exception is thrown and caught: the try block runs until the exception, then the catch block executes, then the finally block always runs last."},
+{phase:"Diagnostic",sub:"Java",diff:"medium",q:"In Java, which access modifier makes a member accessible ONLY within the same class?",opts:["public","protected","default (no modifier)","private"],ans:3,exp:"'private' restricts access to the class itself. 'default' is package-level. 'protected' allows package + subclasses. 'public' allows access from anywhere."},
+{phase:"IRA-2",sub:"Java",diff:"easy",q:"Which of the following is a correct characteristic of an abstract class in Java?",opts:["It can be instantiated directly","It can have both abstract and concrete methods","It cannot have constructors","All its methods must be abstract"],ans:1,exp:"An abstract class can have a mix of abstract methods (no body) and concrete methods (with body). It cannot be instantiated directly, but it CAN have constructors (called via super() from subclasses)."},
+{phase:"Diagnostic",sub:"Java",diff:"hard",q:"In the Collections framework, which data structure maintains elements in sorted order and does NOT allow duplicate keys?",opts:["ArrayList","HashMap","TreeSet","LinkedHashMap"],ans:2,exp:"TreeSet stores elements in natural sorted order and does not allow duplicates. It implements the SortedSet interface using a Red-Black tree internally."},
+{phase:"PRA",sub:"Java",diff:"hard",q:"What is the difference between method OVERLOADING and method OVERRIDING?",opts:["Both are resolved at compile time","Overloading is compile-time polymorphism (same class, different parameters); Overriding is runtime polymorphism (subclass redefines parent method)","Overriding is compile-time; Overloading is runtime","They are the same concept with different names"],ans:1,exp:"Overloading: same method name, different parameters in the SAME class — resolved at compile time (static polymorphism). Overriding: subclass redefines parent method with same signature — resolved at runtime (dynamic polymorphism)."},
+{phase:"Diagnostic",sub:"Java",diff:"medium",q:"Which of the following statements about the 'final' keyword in Java is CORRECT?",opts:["A final method can be overridden","A final class can be extended","A final variable can be reassigned","A final method cannot be overridden"],ans:3,exp:"A final method cannot be overridden by subclasses. A final class cannot be extended (e.g., String class). A final variable can only be assigned once."},
+{phase:"PRA",sub:"Java",diff:"hard",q:"In JSP, which implicit object represents the HTTP session?",opts:["request","response","application","session"],ans:3,exp:"The 'session' implicit object in JSP represents the HttpSession object, used to store user-specific data across multiple requests. It is one of 9 JSP implicit objects."},
+{phase:"Diagnostic",sub:"Java",diff:"medium",q:"Which interface must a class implement to allow its objects to be used as keys in a HashMap correctly?",opts:["Serializable","Cloneable","Both equals() and hashCode() must be overridden","Comparable"],ans:2,exp:"For correct HashMap behavior, objects used as keys must override both equals() and hashCode(). If two objects are equal via equals(), they MUST have the same hashCode()."},
+{phase:"IRA-2",sub:"Java",diff:"easy",q:"In Java, what does the 'this' keyword refer to?",opts:["The parent class object","The current class instance","A static reference","The return value of a method"],ans:1,exp:"'this' refers to the current object instance. It is used to differentiate instance variables from local variables, to call other constructors in the same class, or to pass the current object as a parameter."},
+{phase:"Diagnostic",sub:"Java",diff:"medium",q:"What is the output?\n\nint[] arr = {5, 3, 1, 4, 2};\nSystem.out.println(arr.length);",opts:["4","5","6","Compilation Error"],ans:1,exp:"arr.length returns the number of elements in the array. The array has 5 elements (indices 0-4), so output is 5. Note: it is .length (not .length()) for arrays."},
+{phase:"PRA",sub:"Java",diff:"hard",q:"In JDBC, what is the purpose of ResultSet.next()?",opts:["Closes the connection","Returns true and advances the cursor to the next row; returns false if no more rows","Moves to the previous row","Resets the cursor to the beginning"],ans:1,exp:"ResultSet.next() advances the cursor by one row. It returns true if a row is available (and positions the cursor on it) and false when all rows have been read."},
+
+/* ── .NET (IRA-2 / Diagnostic) ── */
+{phase:"IRA-2",sub:".NET",diff:"hard",q:"What is the correct order of the ASP.NET Web Forms page lifecycle events?",opts:["Init → Load → PostBack → PreRender → Unload","PreInit → Init → InitComplete → PreLoad → Load → PreRender → Unload","Load → Init → PreRender → Unload","Init → PreRender → Load → Unload"],ans:1,exp:"The correct ASP.NET page lifecycle order is: PreInit → Init → InitComplete → PreLoad → Load → LoadComplete → PreRender → SaveViewState → Render → Unload. This is the single most tested .NET IRA-2 pattern."},
+{phase:"IRA-2",sub:".NET",diff:"medium",q:"Which ADO.NET object is used for a DISCONNECTED data access model (data cached in memory)?",opts:["SqlDataReader","SqlCommand","DataSet with SqlDataAdapter","SqlConnection"],ans:2,exp:"DataSet (used with SqlDataAdapter) represents a disconnected model — data is loaded into memory and you work with it without a live database connection. SqlDataReader is connected and forward-only."},
+{phase:"Diagnostic",sub:".NET",diff:"medium",q:"Which ADO.NET object provides a forward-only, read-only stream of data in CONNECTED mode?",opts:["DataSet","DataTable","SqlDataReader","SqlDataAdapter"],ans:2,exp:"SqlDataReader provides fast, forward-only, read-only access to query results while maintaining an open connection. It is more efficient than DataSet when you only need to read data once."},
+{phase:"Diagnostic",sub:".NET",diff:"medium",q:"In C#, what is the following syntax called?\n\npublic int Age { get; set; }",opts:["A method","An auto-implemented property","A field","A delegate"],ans:1,exp:"This is an auto-implemented property in C#. The compiler automatically creates a private backing field. Properties with explicit get/set logic use full syntax with backing fields declared separately."},
+{phase:"Diagnostic",sub:".NET",diff:"medium",q:"In C#, which access modifier makes a member accessible within the same ASSEMBLY but NOT from external assemblies?",opts:["public","private","protected","internal"],ans:3,exp:"'internal' restricts access to the current assembly. 'protected internal' extends this to derived classes in other assemblies. This is a C#-specific modifier not found in Java."},
+{phase:"IRA-2",sub:".NET",diff:"medium",q:"What does 'PostBack' mean in the context of ASP.NET Web Forms?",opts:["A background data refresh","When a page is submitted back to itself (same page handling its own form submission)","An HTTP 302 redirect","A JavaScript callback"],ans:1,exp:"PostBack occurs when a Web Forms page submits its data to itself for server-side processing. The IsPostBack property is used to distinguish first-load from subsequent submissions."},
+{phase:"Diagnostic",sub:".NET",diff:"hard",q:"In C#, which keyword makes a method that MUST be implemented by any non-abstract derived class?",opts:["virtual","override","abstract","sealed"],ans:2,exp:"An 'abstract' method has no implementation in the base class and forces any concrete derived class to provide an implementation. 'virtual' methods have a default implementation and CAN be overridden."},
+{phase:"PRA",sub:".NET",diff:"hard",q:"What is the correct sequence for reading data using SqlDataReader in ADO.NET?",opts:["Open Connection → Execute Reader → Read → Close","Create SqlCommand → Open Connection → ExecuteReader() → while(reader.Read()) → Close","Connect → Read → Execute → Close","Execute → Connect → Read → Close"],ans:1,exp:"The correct sequence: create SqlConnection + SqlCommand → Open connection → call ExecuteReader() → loop with reader.Read() to process rows → Close reader and connection."},
+{phase:"Diagnostic",sub:".NET",diff:"medium",q:"In ASP.NET Web Forms, which control is used to display data from a data source in a tabular format with built-in sorting and paging?",opts:["TextBox","Label","GridView","DropDownList"],ans:2,exp:"GridView is the primary data-bound control in ASP.NET Web Forms for displaying tabular data. It supports automatic sorting, paging, editing, and deleting of rows with minimal code."},
+{phase:"IRA-2",sub:".NET",diff:"medium",q:"What is ViewState in ASP.NET?",opts:["A JavaScript state manager","A mechanism to persist page and control values between PostBacks by storing them in a hidden field","A server-side session cache","A database for temporary data"],ans:1,exp:"ViewState is ASP.NET's mechanism for maintaining page control values between PostBacks. Values are serialised and stored in a hidden __VIEWSTATE field. Understanding when ViewState loads is critical for the project phase."},
+{phase:"Diagnostic",sub:".NET",diff:"hard",q:"Which of the following is a key difference between C# and Java regarding properties?",opts:["Java has native property syntax like C#","C# provides native property syntax with get/set accessors; Java uses explicit getX()/setX() methods","Both languages have identical property support","C# does not support properties"],ans:1,exp:"C# has built-in property syntax (get/set accessors) as a language feature. Java relies on convention — getter and setter methods like getName() and setName() — rather than native property syntax."},
+{phase:"PRA",sub:".NET",diff:"hard",q:"In T-SQL (SQL Server), which feature allows you to store and reuse a pre-compiled SQL block with parameters?",opts:["View","Index","Stored Procedure","Trigger"],ans:2,exp:"Stored Procedures in T-SQL are pre-compiled, reusable SQL code blocks that accept parameters. They improve performance (pre-compiled execution plan) and security (abstract direct table access)."},
+
+/* ── SAP (IRA-2 / Diagnostic) ── */
+{phase:"IRA-2",sub:"SAP",diff:"medium",q:"In SAP MM, which transaction code is used to CREATE a Purchase Order?",opts:["ME21N","ME51N","VA01","MM01"],ans:0,exp:"ME21N is the standard transaction code for creating a Purchase Order in SAP MM. ME51N is for Purchase Requisition. VA01 is for Sales Order (SD). MM01 is for creating Material Masters."},
+{phase:"IRA-2",sub:"SAP",diff:"medium",q:"What does the 'three-system landscape' in SAP refer to?",opts:["Three separate SAP modules (FICO, MM, SD)","Development → Quality → Production systems","Three database types supported by SAP","Hardware: server, storage, network"],ans:1,exp:"The three-system landscape consists of Development (DEV), Quality Assurance (QAS), and Production (PRD) systems. Configuration changes are made in DEV, tested in QAS, then transported to PRD."},
+{phase:"Diagnostic",sub:"SAP",diff:"medium",q:"What is the purpose of a Transport Request in SAP?",opts:["To schedule background jobs","To transfer configuration changes from one SAP system to another (e.g., DEV to QAS)","To move user roles between clients","To process delivery notes in SD"],ans:1,exp:"A Transport Request is an SAP mechanism to move customisation and configuration changes between systems in the landscape. All changes in DEV are collected in a Transport Request before being moved to QAS and then PRD."},
+{phase:"IRA-2",sub:"SAP",diff:"easy",q:"What does 'FICO' stand for in SAP?",opts:["File Control Operations","Financial Accounting and Controlling","Functional Interface and Configuration Objects","Finance Input and Cost Output"],ans:1,exp:"FICO stands for Financial Accounting (FI) and Controlling (CO) — the two closely related SAP modules that manage financial transactions, reporting, and cost management."},
+{phase:"IRA-2",sub:"SAP",diff:"medium",q:"ABAP stands for:",opts:["Automated Business Application Programming","Advanced Business Application Programming","Application Business Architecture Platform","Automated Backend Application Processing"],ans:1,exp:"ABAP stands for Advanced Business Application Programming — SAP's proprietary programming language used to develop custom reports, forms, interfaces, and enhancements within the SAP environment."},
+{phase:"Diagnostic",sub:"SAP",diff:"hard",q:"In SAP MM, what is the correct sequence of the standard procurement cycle?",opts:["PR → RFQ → PO → Goods Receipt → Invoice Verification → Payment","PO → PR → Goods Receipt → Invoice → Payment","Goods Receipt → PO → PR → Invoice → Payment","RFQ → PO → Goods Receipt → PR → Invoice"],ans:0,exp:"The standard MM procurement cycle: Purchase Requisition (PR) → Request for Quotation (RFQ) → Purchase Order (PO) → Goods Receipt (GR) → Invoice Verification (MIRO) → Payment (FI)."},
+{phase:"Diagnostic",sub:"SAP",diff:"medium",q:"In SAP, what does 'client' refer to?",opts:["A customer organisation","An independent organisational unit within an SAP system with its own master data, configuration, and business data","A type of server","A user security role"],ans:1,exp:"In SAP, a 'client' is a self-contained unit within a single SAP system instance. Each client has its own master data and customising. For example, client 100 (DEV) and client 200 (PRD) exist on the same server."},
+{phase:"IRA-2",sub:"SAP",diff:"easy",q:"Which SAP module handles Sales and Distribution processes?",opts:["FI","MM","SD","PP"],ans:2,exp:"SD (Sales and Distribution) manages the order-to-cash process: customer inquiries, quotations, sales orders, delivery, billing, and payment. It integrates tightly with MM and FI."},
+{phase:"Diagnostic",sub:"SAP",diff:"hard",q:"In SAP ABAP, what is an 'internal table'?",opts:["A physical database table","A temporary in-program data structure (like an array of structures) used to hold multiple rows of data in memory","A SAP-standard configuration table","A cross-client table"],ans:1,exp:"An internal table in ABAP is a dynamic in-memory data structure similar to an array of structures. It is used to hold multiple rows of data within a program for processing, before writing to or reading from database tables."},
+{phase:"Diagnostic",sub:"SAP",diff:"medium",q:"Which SAP transaction code is used to DISPLAY (not change) a purchase order?",opts:["ME21N","ME22N","ME23N","ME24N"],ans:2,exp:"In SAP, naming conventions for transaction codes often follow a pattern: ME21N = Create PO, ME22N = Change PO, ME23N = Display PO. The 'N' suffix indicates the newer, more ergonomic interface."},
+
+/* ── ITIS (IRA-2 / Diagnostic) ── */
+{phase:"IRA-2",sub:"ITIS",diff:"medium",q:"At which OSI model layer is routing of packets between different networks performed?",opts:["Layer 2 — Data Link","Layer 4 — Transport","Layer 3 — Network","Layer 1 — Physical"],ans:2,exp:"Layer 3 (Network) handles logical addressing (IP addresses) and routing. Routers operate at Layer 3. Layer 2 (Data Link) uses MAC addresses for local delivery. Layer 4 (Transport) manages end-to-end connections."},
+{phase:"IRA-2",sub:"ITIS",diff:"easy",q:"Which Windows command-line tool is used to display the IP configuration of a machine?",opts:["netstat","ping","ipconfig","tracert"],ans:2,exp:"ipconfig displays the IP address, subnet mask, and default gateway for all network adapters. 'ipconfig /all' shows detailed information including DHCP server and MAC address."},
+{phase:"Diagnostic",sub:"ITIS",diff:"medium",q:"In ITIL, how is an 'Incident' defined?",opts:["A planned change to IT infrastructure","An unplanned interruption or reduction in quality of an IT service","A routine service request from a user","A scheduled maintenance window"],ans:1,exp:"ITIL defines an Incident as 'an unplanned interruption to an IT service or reduction in the quality of an IT service.' Incident Management aims to restore normal service as quickly as possible."},
+{phase:"IRA-2",sub:"ITIS",diff:"easy",q:"What does DHCP stand for, and what is its primary function?",opts:["Dynamic Host Configuration Protocol — automatically assigns IP addresses to devices","Direct Host Control Protocol — manages firewall rules","Dynamic HTTP Connection Protocol — routes web traffic","Domain Host Configuration Protocol — resolves domain names to IPs"],ans:0,exp:"DHCP (Dynamic Host Configuration Protocol) automatically assigns IP addresses, subnet masks, default gateways, and DNS server addresses to network devices, eliminating manual IP configuration."},
+{phase:"Diagnostic",sub:"ITIS",diff:"medium",q:"Which of the following correctly describes the difference between RAM and ROM?",opts:["RAM is permanent; ROM is temporary","RAM is volatile (data lost when power is off); ROM is non-volatile (retains data without power)","RAM is the processor; ROM is memory","Both are volatile"],ans:1,exp:"RAM (Random Access Memory) is volatile — it loses all data when power is removed. ROM (Read-Only Memory) is non-volatile — it retains data permanently. RAM stores active programs; ROM stores firmware like BIOS."},
+{phase:"Diagnostic",sub:"ITIS",diff:"medium",q:"In Windows Server, what is Active Directory primarily used for?",opts:["Managing disk partitions","Centralised authentication and directory services for users, computers, and resources on a network","Antivirus scanning","Network packet routing"],ans:1,exp:"Active Directory (AD) is Microsoft's directory service that centralises user authentication, authorisation, and management of network resources. It uses Lightweight Directory Access Protocol (LDAP) and Kerberos authentication."},
+{phase:"IRA-2",sub:"ITIS",diff:"easy",q:"What does LAN stand for?",opts:["Large Area Network","Linear Access Network","Local Area Network","Linked Application Node"],ans:2,exp:"LAN stands for Local Area Network — a network covering a small geographic area like an office floor or building. It typically uses Ethernet cables or Wi-Fi and offers high speeds with low latency."},
+{phase:"Diagnostic",sub:"ITIS",diff:"medium",q:"In networking, what is the purpose of a subnet mask?",opts:["To encrypt network traffic between nodes","To determine which portion of an IP address identifies the network and which identifies the host","To assign MAC addresses to devices","To rate-limit traffic between subnets"],ans:1,exp:"A subnet mask defines the boundary between the network portion and the host portion of an IP address. For example, 255.255.255.0 (/24) means the first 3 octets are the network, and the last octet identifies the host."},
+{phase:"Diagnostic",sub:"ITIS",diff:"medium",q:"Which ITIL process is responsible for controlling the lifecycle of all changes to IT infrastructure to minimise risk?",opts:["Incident Management","Problem Management","Change Management","Service Catalogue Management"],ans:2,exp:"Change Management in ITIL controls the lifecycle of changes to IT infrastructure. All changes (Normal, Standard, or Emergency) must go through an approval process (CAB — Change Advisory Board) before implementation."},
+{phase:"Diagnostic",sub:"ITIS",diff:"hard",q:"Which protocol translates human-readable domain names (e.g., reportmedic.org) into IP addresses?",opts:["DHCP","DNS","HTTP","FTP"],ans:1,exp:"DNS (Domain Name System) translates domain names to IP addresses. When you type a URL, your browser first queries a DNS server to resolve the domain to an IP address before establishing a connection."},
+{phase:"IRA-2",sub:"ITIS",diff:"hard",q:"In the TCP/IP model, which layer combines the OSI model's Session, Presentation, and Application layers?",opts:["Network Access Layer","Internet Layer","Transport Layer","Application Layer"],ans:3,exp:"The TCP/IP Application Layer corresponds to OSI's Session (Layer 5), Presentation (Layer 6), and Application (Layer 7) combined. Protocols like HTTP, FTP, SMTP, and DNS operate at this layer."},
+
+/* ── SQL / Databases (Diagnostic) ── */
+{phase:"Diagnostic",sub:"SQL",diff:"easy",q:"Which SQL command permanently removes all rows from a table WITHOUT logging individual row deletions (and cannot be easily rolled back)?",opts:["DELETE","DROP","TRUNCATE","REMOVE"],ans:2,exp:"TRUNCATE removes all rows quickly by deallocating data pages. It is minimally logged. DELETE removes rows one by one and is fully logged, allowing rollback. DROP removes the table structure itself."},
+{phase:"Diagnostic",sub:"SQL",diff:"medium",q:"Which type of SQL JOIN returns ALL rows from BOTH tables, with NULL values where no match exists?",opts:["INNER JOIN","LEFT JOIN","RIGHT JOIN","FULL OUTER JOIN"],ans:3,exp:"FULL OUTER JOIN returns all rows from both tables. Rows with no match in the other table get NULL for that table's columns. INNER JOIN only returns matching rows."},
+{phase:"Diagnostic",sub:"SQL",diff:"medium",q:"What is the correct logical order of SQL SELECT clause execution?",opts:["SELECT → FROM → WHERE → GROUP BY → HAVING → ORDER BY","FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY","FROM → SELECT → WHERE → GROUP BY → ORDER BY","WHERE → FROM → SELECT → GROUP BY → HAVING"],ans:1,exp:"SQL logical execution order: FROM → JOIN → WHERE → GROUP BY → HAVING → SELECT → DISTINCT → ORDER BY → LIMIT. This explains why you cannot use SELECT aliases in WHERE clauses."},
+{phase:"Diagnostic",sub:"SQL",diff:"easy",q:"Which SQL clause filters aggregated GROUPS (used after GROUP BY)?",opts:["WHERE","FILTER","HAVING","RESTRICT"],ans:2,exp:"HAVING filters groups created by GROUP BY, typically using aggregate functions (e.g., HAVING COUNT(*) > 5). WHERE filters individual rows BEFORE grouping."},
+{phase:"Diagnostic",sub:"SQL",diff:"medium",q:"Which SQL constraint allows NULL values but ensures all non-NULL values in a column are unique?",opts:["PRIMARY KEY","NOT NULL","UNIQUE","CHECK"],ans:2,exp:"UNIQUE constraint ensures no two rows have the same value in the column, but allows multiple NULLs (in most databases). PRIMARY KEY also enforces uniqueness but additionally prohibits NULLs."},
+{phase:"Diagnostic",sub:"SQL",diff:"medium",q:"What is the difference between DELETE and TRUNCATE in SQL?",opts:["DELETE is DDL; TRUNCATE is DML","DELETE is DML, can be rolled back, fires triggers; TRUNCATE is DDL, minimally logged, does not fire row-level triggers","Both are identical in behaviour","TRUNCATE can be rolled back; DELETE cannot"],ans:1,exp:"DELETE: DML, logged row-by-row, can be rolled back, fires triggers, can include WHERE clause. TRUNCATE: DDL (in most databases), minimally logged, faster, no WHERE clause, generally not easily rolled back."},
+{phase:"Diagnostic",sub:"SQL",diff:"easy",q:"Which aggregate function counts the number of non-NULL values in a column?",opts:["SUM()","TOTAL()","COUNT()","LENGTH()"],ans:2,exp:"COUNT(column_name) counts non-NULL values. COUNT(*) counts all rows including NULLs. SUM() adds numeric values. COUNT() is one of the most frequently used aggregate functions in ILP diagnostics."},
+{phase:"PRA",sub:"SQL",diff:"hard",q:"A subquery that returns exactly one column and one row and can be used anywhere a single value is expected is called:",opts:["Correlated subquery","Scalar subquery","Inline view","Nested join"],ans:1,exp:"A scalar subquery returns a single value (one row, one column) and can be used like a literal value in SELECT, WHERE, or HAVING clauses. A correlated subquery references columns from the outer query."},
+{phase:"Diagnostic",sub:"SQL",diff:"medium",q:"Which SQL join type returns only the rows where a match is found in BOTH tables?",opts:["LEFT OUTER JOIN","FULL OUTER JOIN","INNER JOIN","CROSS JOIN"],ans:2,exp:"INNER JOIN returns only rows that have matching values in both tables. Non-matching rows from either table are excluded from the result set."},
+{phase:"PRA",sub:"SQL",diff:"hard",q:"What is the purpose of database NORMALIZATION?",opts:["To combine multiple tables into one for speed","To eliminate data redundancy and ensure data integrity by organising data into well-structured tables","To create indexes for faster queries","To back up database data"],ans:1,exp:"Normalisation organises relational databases to reduce redundancy and improve data integrity. The normal forms (1NF, 2NF, 3NF) progressively eliminate anomalies in insert, update, and delete operations."},
+
+/* ── WEB TECH (IRA-2 / Diagnostic) ── */
+{phase:"IRA-2",sub:"Web Tech",diff:"easy",q:"Which HTML tag is used to create a hyperlink?",opts:["<link>","<a>","<href>","<url>"],ans:1,exp:"The <a> (anchor) tag creates hyperlinks. The href attribute specifies the destination URL. <link> is used in <head> to link external resources like CSS stylesheets."},
+{phase:"Diagnostic",sub:"Web Tech",diff:"easy",q:"In CSS, which property controls the space BETWEEN the element's content and its border?",opts:["margin","border-spacing","padding","gap"],ans:2,exp:"Padding is the space inside the border (between content and border). Margin is the space outside the border (between the element's border and adjacent elements)."},
+{phase:"IRA-2",sub:"Web Tech",diff:"easy",q:"Which JavaScript method selects a DOM element by its id attribute?",opts:["document.getElement()","document.getElementById()","document.querySelector('id')","document.getById()"],ans:1,exp:"document.getElementById('someId') returns the element with the matching id. document.querySelector('#someId') also works but is more flexible, accepting any CSS selector."},
+{phase:"Diagnostic",sub:"Web Tech",diff:"medium",q:"Which HTTP method is used to submit form data that should NOT appear in the URL?",opts:["GET","HEAD","POST","PUT"],ans:2,exp:"POST sends form data in the request body, not in the URL. GET sends parameters in the URL (query string), making it visible and cacheable. POST is used for login forms, file uploads, and sensitive data."},
+{phase:"Diagnostic",sub:"Web Tech",diff:"easy",q:"What does CSS stand for?",opts:["Computer Style Sheets","Cascading Style Sheets","Creative Style Syntax","Coded Style Sheets"],ans:1,exp:"CSS stands for Cascading Style Sheets. The 'cascading' refers to the order of precedence when multiple rules apply to the same element (inline > internal > external, and specificity rules)."},
+{phase:"IRA-2",sub:"Web Tech",diff:"easy",q:"Which HTML attribute makes a form input field mandatory before form submission?",opts:["mandatory","validate","required","important"],ans:2,exp:"The 'required' attribute on an <input> element prevents form submission if the field is empty, triggering browser's built-in validation. Added in HTML5."},
+{phase:"Diagnostic",sub:"Web Tech",diff:"medium",q:"What is the correct way to link an external CSS file to an HTML page?",opts:["<css href=\"style.css\">","<link rel=\"stylesheet\" href=\"style.css\">","<style src=\"style.css\">","<script href=\"style.css\">"],ans:1,exp:"External CSS is linked using: <link rel=\"stylesheet\" href=\"filename.css\"> placed in the <head> section. The rel=\"stylesheet\" attribute tells the browser this link is a stylesheet."},
+{phase:"Diagnostic",sub:"Web Tech",diff:"medium",q:"In JavaScript, what is the difference between '==' and '==='?",opts:["No difference","'==' checks value with type coercion; '===' checks value AND type (strict equality)","'===' only works for numbers","'==' is assignment; '===' is comparison"],ans:1,exp:"'==' performs type coercion (e.g., '5' == 5 is true). '===' is strict equality with no coercion ('5' === 5 is false). Best practice is to use === to avoid unexpected coercion bugs."},
+
+/* ── BIZSKILLS (Assessment) ── */
+{phase:"Diagnostic",sub:"BizSkills",diff:"easy",q:"When writing a professional business email requesting a meeting reschedule, which subject line is most appropriate?",opts:["hey","URGENT!!!","Request to Reschedule — Project Alpha Review Meeting","meeting"],ans:2,exp:"Effective email subject lines are specific, professional, and informative. The recipient should understand the purpose without opening the email. Vague or all-caps subjects are unprofessional."},
+{phase:"Diagnostic",sub:"BizSkills",diff:"medium",q:"During an ILP presentation, a senior faculty member asks a question you genuinely do not know the answer to. The best response is:",opts:["'That's not my topic area'","'I don't know, maybe someone else can answer'","'That's an excellent question, I will look into this and get back to you today'","Attempt to guess an answer to avoid appearing ignorant"],ans:2,exp:"Acknowledging uncertainty while committing to follow up demonstrates professionalism, intellectual honesty, and reliability. Guessing risks giving wrong information. Never leave an unanswered question hanging."},
+{phase:"Diagnostic",sub:"BizSkills",diff:"easy",q:"Which of the following behaviours demonstrates ACTIVE LISTENING?",opts:["Interrupting with your own experience while someone is speaking","Planning your reply while the other person is still talking","Maintaining eye contact, nodding, and asking clarifying questions","Checking your phone occasionally"],ans:2,exp:"Active listening involves full attention, visual engagement, and responsive body language. It signals respect and improves mutual understanding — a key BizSkills competency assessed both in group activities and the speaking assessment."},
+{phase:"Diagnostic",sub:"BizSkills",diff:"easy",q:"In a TCS professional context, 'EOD' stands for:",opts:["End of Development","End of Day","End of Deployment","Error on Demand"],ans:1,exp:"EOD (End of Day) is standard business shorthand used in status updates, email commitments ('I will send this by EOD'), and project communications. Using corporate terminology correctly is part of professional communication."},
+{phase:"Diagnostic",sub:"BizSkills",diff:"medium",q:"When a client requests a feature change that is outside the agreed project scope, the CORRECT first action is to:",opts:["Immediately implement the change to maintain client goodwill","Ignore the request","Document the request and escalate to the project manager for scope assessment","Refuse the client directly"],ans:2,exp:"Any scope change must go through formal change control. Implementing without documentation risks scope creep. The project manager determines whether to formally extend scope, budget, and timeline."},
+{phase:"Diagnostic",sub:"BizSkills",diff:"medium",q:"Which is the most professionally appropriate email salutation for a client you have never met?",opts:["Hey buddy,","Yo [Name],","Dear Mr./Ms. [Surname],","Hi [First name only],"],ans:2,exp:"'Dear Mr./Ms. [Surname]' is the standard formal salutation for first-time professional correspondence. Once a relationship is established, first-name addressing may become appropriate based on the client's communication style."},
+{phase:"Diagnostic",sub:"BizSkills",diff:"easy",q:"BizSkills assessments at TCS ILP primarily evaluate which competency?",opts:["Coding ability","Communication skills — both spoken English and professional writing","Technical architecture knowledge","Project management certification"],ans:1,exp:"BizSkills assessments cover spoken communication (clarity, grammar, pronunciation, confidence) and written communication (email writing, reports, grammar). They are the most common reason for LAP placement, ahead of technical failures."},
+{phase:"Diagnostic",sub:"BizSkills",diff:"medium",q:"During the ILP project phase, what is generally expected of the team lead role?",opts:["The team lead does all the coding while others document","The team lead coordinates the team, manages task allocation, runs stand-ups, and is responsible for overall project delivery","The team lead is exempted from assessments","The role is purely ceremonial"],ans:1,exp:"Volunteering for the team lead role is viewed favourably by faculty. The lead is expected to demonstrate coordination, ownership, and communication skills — all of which are explicitly evaluated in the Phase 2 assessment."},
+
+/* ── PYTHON (IRA-2 / Diagnostic) ── */
+{phase:"IRA-2",sub:"Python",diff:"easy",q:"What is the output of: print(type([])) in Python?",opts:["<class 'tuple'>","<class 'list'>","<class 'array'>","<class 'set'>"],ans:1,exp:"An empty [] creates a list object. type([]) returns <class 'list'>. Python's built-in type() function returns the type of any object."},
+{phase:"IRA-2",sub:"Python",diff:"easy",q:"Which Python data structure stores data as key-value pairs?",opts:["list","tuple","dictionary","set"],ans:2,exp:"A dictionary (dict) stores key-value pairs. Keys must be unique and immutable. Values can be of any type. Dictionaries are unordered in Python 3.6 and below, but maintain insertion order from Python 3.7+."},
+{phase:"Diagnostic",sub:"Python",diff:"easy",q:"Which keyword is used to define a function in Python?",opts:["function","def","fun","define"],ans:1,exp:"'def' is used to define a function in Python. Functions are first-class objects and can be assigned to variables, passed as arguments, and returned from other functions."},
+{phase:"IRA-2",sub:"Python",diff:"medium",q:"Which of the following is a MUTABLE data type in Python?",opts:["str","tuple","frozenset","list"],ans:3,exp:"Lists are mutable — you can add, remove, or change elements after creation. Strings, tuples, and frozensets are immutable. Mutability is critical for understanding how Python passes objects to functions."},
+{phase:"Diagnostic",sub:"Python",diff:"medium",q:"What does 'PEP 8' refer to in Python?",opts:["Python Error Protocol version 8","Python Enhancement Proposal for style guidelines (coding conventions)","Python Extension Package version 8","Python Execution Plan"],ans:1,exp:"PEP 8 is Python's official style guide. It defines conventions for indentation (4 spaces), naming (snake_case for variables), line length (79 chars), and code organisation to improve readability."},
+{phase:"Diagnostic",sub:"Python",diff:"medium",q:"What is the output of the following Python code?\n\nmy_list = [1, 2, 3]\nmy_list.append([4, 5])\nprint(len(my_list))",opts:["5","4","2","3"],ans:1,exp:"append() adds the entire [4, 5] list as a single element at the end. The result is [1, 2, 3, [4, 5]], which has 4 elements. To add each element separately, use extend() instead."},
+{phase:"PRA",sub:"Python",diff:"hard",q:"In Python, what is the difference between a shallow copy and a deep copy of a list?",opts:["They are identical","Shallow copy copies only the top-level object; nested objects are still shared. Deep copy creates fully independent copies of all nested objects.","Deep copy is faster than shallow copy","Shallow copy uses more memory than deep copy"],ans:1,exp:"import copy; copy.copy() creates a shallow copy — nested lists are shared. copy.deepcopy() creates completely independent copies. This difference matters when modifying nested structures."},
+
+]; /* end DB */
+
+/* ══════════════════════════════════════════
+   APP STATE
+══════════════════════════════════════════ */
+const PER_PAGE = 10;
+let activeSub = 'All', activePhase = 'All', activeDiff = 'All';
+let searchQuery = '';
+let currentPage = 1;
+let attempted = 0, correct = 0;
+const answered = new Map(); // cardIndex → true/false
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('statTotal').textContent = DB.length;
+  buildSubjectFilters();
+  buildMobileSubject();
+  renderAll();
+  initCharts();
+  bindEvents();
+});
+
+/* ══════════════════════════════════════════
+   FILTERS BUILD
+══════════════════════════════════════════ */
+const SUB_COLORS = {
+  'Aspire/KYT':'#7cf7d4',
+  'Java':'#f59e0b',
+  '.NET':'#60a5fa',
+  'SAP':'#10b981',
+  'ITIS':'#8b5cf6',
+  'SQL':'#38bdf8',
+  'Web Tech':'#fb923c',
+  'BizSkills':'#f472b6',
+  'Python':'#facc15'
+};
+const PHASE_COLORS = {'IRA-1':'#7cf7d4','IRA-2':'#f59e0b','Diagnostic':'#60a5fa','PRA':'#f87171'};
+
+function buildSubjectFilters() {
+  const subs = [...new Set(DB.map(q => q.sub))].sort();
+  const wrap = document.getElementById('subjectFilters');
+  subs.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.dataset.sub = s;
+    btn.textContent = s;
+    btn.style.setProperty('--sub-color', SUB_COLORS[s] || '#fff');
+    wrap.appendChild(btn);
+  });
+}
+
+function buildMobileSubject() {
+  const sel = document.getElementById('mobSub');
+  const subs = [...new Set(DB.map(q => q.sub))].sort();
+  subs.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s; opt.textContent = s;
+    sel.appendChild(opt);
+  });
+}
+
+/* ══════════════════════════════════════════
+   FILTERING
+══════════════════════════════════════════ */
+function filteredDB() {
+  const q = searchQuery.toLowerCase();
+  return DB.filter(item => {
+    if (activeSub !== 'All' && item.sub !== activeSub) return false;
+    if (activePhase !== 'All' && item.phase !== activePhase) return false;
+    if (activeDiff !== 'All' && item.diff !== activeDiff) return false;
+    if (q && !item.q.toLowerCase().includes(q) &&
+           !item.sub.toLowerCase().includes(q) &&
+           !item.exp.toLowerCase().includes(q) &&
+           !item.opts.some(o => o.toLowerCase().includes(q))) return false;
+    return true;
+  });
+}
+
+/* ══════════════════════════════════════════
+   RENDER QUESTIONS
+══════════════════════════════════════════ */
+function renderAll() {
+  const data = filteredDB();
+  const total = data.length;
+  const pages = Math.ceil(total / PER_PAGE);
+  if (currentPage > pages) currentPage = 1;
+  const start = (currentPage - 1) * PER_PAGE;
+  const slice = data.slice(start, start + PER_PAGE);
+
+  const grid = document.getElementById('qGrid');
+  const empty = document.getElementById('emptyState');
+  grid.innerHTML = '';
+
+  if (!total) { empty.style.display = ''; renderPagination(0, 0); return; }
+  empty.style.display = 'none';
+
+  slice.forEach((item, localIdx) => {
+    const globalIdx = DB.indexOf(item);
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.dataset.sub = item.sub;
+    card.dataset.idx = globalIdx;
+
+    // Detect if question contains a code block (indicated by newlines)
+    const hasCode = item.q.includes('\n');
+    let qText = item.q, codeHtml = '';
+    if (hasCode) {
+      const parts = item.q.split('\n');
+      qText = parts[0];
+      codeHtml = `<div class="q-code">${parts.slice(1).join('\n').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
+    }
+
+    card.innerHTML = `
+      <div class="q-top">
+        <span class="q-phase-badge">${item.phase}</span>
+        <span class="q-sub-badge">${item.sub}</span>
+        <span class="q-diff ${item.diff}">${item.diff}</span>
+      </div>
+      <div class="q-text">${qText}</div>
+      ${codeHtml}
+      <div class="q-options" id="opts-${globalIdx}">
+        ${item.opts.map((o,i) => `<div class="q-opt" data-idx="${globalIdx}" data-opt="${i}">
+          <span class="ol">${String.fromCharCode(65+i)}</span>
+          <span>${o}</span>
+        </div>`).join('')}
+      </div>
+      <div class="q-explain" id="exp-${globalIdx}">💡 ${item.exp}</div>
+    `;
+    grid.appendChild(card);
+
+    // Restore answered state
+    if (answered.has(globalIdx)) {
+      const {chosen} = answered.get(globalIdx);
+      lockCard(card, globalIdx, item, chosen, false);
+    }
+  });
+
+  renderPagination(pages, total);
+}
+
+function lockCard(card, globalIdx, item, chosen, animate) {
+  const opts = card.querySelectorAll('.q-opt');
+  opts.forEach((o, i) => {
+    o.style.pointerEvents = 'none';
+    if (i === item.ans) o.classList.add('correct');
+    else if (i === chosen && chosen !== item.ans) o.classList.add('wrong');
+  });
+  const exp = document.getElementById(`exp-${globalIdx}`);
+  if (exp) exp.classList.add('show');
+  card.classList.add('expanded');
+}
+
+/* ══════════════════════════════════════════
+   ANSWER HANDLING
+══════════════════════════════════════════ */
+document.getElementById('qGrid').addEventListener('click', e => {
+  const opt = e.target.closest('.q-opt');
+  if (!opt) return;
+  const globalIdx = parseInt(opt.dataset.idx);
+  if (answered.has(globalIdx)) return;
+  const chosen = parseInt(opt.dataset.opt);
+  const item = DB[globalIdx];
+  const isCorrect = chosen === item.ans;
+
+  answered.set(globalIdx, { chosen });
+  attempted++;
+  if (isCorrect) correct++;
+  updateAccuracy();
+
+  const card = opt.closest('.q-card');
+  lockCard(card, globalIdx, item, chosen, true);
+
+  if (isCorrect) {
+    spawnFX(opt.getBoundingClientRect(), true);
+    showScorePopup(opt.getBoundingClientRect(), '+1 ✓');
+  } else {
+    spawnFX(opt.getBoundingClientRect(), false);
+    showScorePopup(opt.getBoundingClientRect(), '✗');
+  }
+});
+
+function updateAccuracy() {
+  document.getElementById('statAttempted').textContent = attempted;
+  document.getElementById('statAccuracy').textContent = attempted
+    ? Math.round((correct / attempted) * 100) + '%' : '—';
+}
+
+/* ══════════════════════════════════════════
+   FX
+══════════════════════════════════════════ */
+function spawnFX(rect, isCorrect) {
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const emojis = isCorrect ? ['✅','⭐','🎯','💡','🔥'] : ['❌','💭','📚'];
+  for (let i = 0; i < 4; i++) {
+    const p = document.createElement('div');
+    p.className = 'answer-particle';
+    p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    p.style.left = (cx + (Math.random() - .5) * 80) + 'px';
+    p.style.top = cy + 'px';
+    p.style.animationDelay = (i * 80) + 'ms';
+    document.getElementById('fxContainer').appendChild(p);
+    setTimeout(() => p.remove(), 1400);
+  }
+}
+function showScorePopup(rect, text) {
+  const pop = document.createElement('div');
+  pop.className = 'answer-score-popup';
+  pop.textContent = text;
+  pop.style.top = (rect.top - 20) + 'px';
+  pop.style.color = text.includes('+') ? '#34d399' : '#f87171';
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 1000);
+}
+
+/* ══════════════════════════════════════════
+   PAGINATION
+══════════════════════════════════════════ */
+function renderPagination(pages, total) {
+  const pg = document.getElementById('pagination');
+  pg.innerHTML = '';
+  if (pages <= 1) return;
+
+  const prev = document.createElement('button');
+  prev.className = 'pg-btn';
+  prev.textContent = '← Prev';
+  prev.disabled = currentPage === 1;
+  prev.onclick = () => { currentPage--; renderAll(); scrollToTop(); };
+  pg.appendChild(prev);
+
+  for (let i = 1; i <= pages; i++) {
+    if (pages > 7 && i !== 1 && i !== pages && Math.abs(i - currentPage) > 2) {
+      if (i === 2 || i === pages - 1) { const d = document.createElement('span'); d.className = 'pg-info'; d.textContent = '…'; pg.appendChild(d); }
+      continue;
+    }
+    const btn = document.createElement('button');
+    btn.className = 'pg-btn' + (i === currentPage ? ' active' : '');
+    btn.textContent = i;
+    btn.onclick = () => { currentPage = i; renderAll(); scrollToTop(); };
+    pg.appendChild(btn);
+  }
+
+  const next = document.createElement('button');
+  next.className = 'pg-btn';
+  next.textContent = 'Next →';
+  next.disabled = currentPage === pages;
+  next.onclick = () => { currentPage++; renderAll(); scrollToTop(); };
+  pg.appendChild(next);
+
+  const info = document.createElement('span');
+  info.className = 'pg-info';
+  info.textContent = `${total} questions`;
+  pg.appendChild(info);
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: document.getElementById('qGrid').offsetTop - 80, behavior: 'smooth' });
+}
+
+/* ══════════════════════════════════════════
+   EVENT BINDINGS
+══════════════════════════════════════════ */
+function bindEvents() {
+  // Subject filter
+  document.getElementById('subjectFilters').addEventListener('click', e => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    document.querySelectorAll('#subjectFilters .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeSub = btn.dataset.sub;
+    currentPage = 1;
+    renderAll();
+  });
+
+  // Phase chips
+  document.getElementById('phaseStrip').addEventListener('click', e => {
+    const chip = e.target.closest('.ph-chip');
+    if (!chip) return;
+    document.querySelectorAll('.ph-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    activePhase = chip.dataset.ph;
+    currentPage = 1;
+    renderAll();
+  });
+
+  // Difficulty filter
+  document.getElementById('diffFilterRow').addEventListener('click', e => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    document.querySelectorAll('#diffFilterRow .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeDiff = btn.dataset.diff;
+    currentPage = 1;
+    renderAll();
+  });
+
+  // Search
+  document.getElementById('qSearch').addEventListener('input', e => {
+    searchQuery = e.target.value;
+    currentPage = 1;
+    renderAll();
+  });
+
+  // Mobile selects
+  document.getElementById('mobSub').addEventListener('change', e => {
+    activeSub = e.target.value; currentPage = 1; renderAll();
+  });
+  document.getElementById('mobPhase').addEventListener('change', e => {
+    activePhase = e.target.value; currentPage = 1; renderAll();
+  });
+  document.getElementById('mobDiff').addEventListener('change', e => {
+    activeDiff = e.target.value; currentPage = 1; renderAll();
+  });
+
+  // Chart tabs
+  document.getElementById('chartTabs').addEventListener('click', e => {
+    const tab = e.target.closest('.chart-tab');
+    if (!tab) return;
+    document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const view = tab.dataset.view;
+    document.getElementById('chartTopicWrap').style.display = view === 'topic' ? '' : 'none';
+    document.getElementById('topicLegend').style.display = view === 'topic' ? '' : 'none';
+    document.getElementById('chartPhaseWrap').style.display = view === 'phase' ? '' : 'none';
+    document.getElementById('chartDiffWrap').style.display = view === 'difficulty' ? '' : 'none';
+    document.getElementById('diffLegend').style.display = view === 'difficulty' ? '' : 'none';
+  });
+}
+
+/* ══════════════════════════════════════════
+   CHART.JS CHARTS
+══════════════════════════════════════════ */
+function initCharts() {
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js';
+  script.onload = buildCharts;
+  document.head.appendChild(script);
+}
+
+function buildCharts() {
+  // Topic distribution bar chart
+  const subs = Object.keys(SUB_COLORS);
+  const subCounts = subs.map(s => DB.filter(q => q.sub === s).length);
+
+  const topicCtx = document.getElementById('topicCanvas').getContext('2d');
+  new Chart(topicCtx, {
+    type: 'bar',
+    data: {
+      labels: subs,
+      datasets: [{
+        label: 'Questions',
+        data: subCounts,
+        backgroundColor: subs.map(s => (SUB_COLORS[s] || '#fff') + '55'),
+        borderColor: subs.map(s => SUB_COLORS[s] || '#fff'),
+        borderWidth: 2,
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,.06)' } },
+        y: { ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,.06)' } }
+      }
+    }
+  });
+
+  // Phase breakdown
+  const phases = ['IRA-1','IRA-2','Diagnostic','PRA'];
+  const phaseCtx = document.getElementById('phaseCanvas').getContext('2d');
+  const phaseSubs = subs;
+  const phaseDatasets = phases.map((ph, pi) => ({
+    label: ph,
+    data: phaseSubs.map(s => DB.filter(q => q.phase === ph && q.sub === s).length),
+    backgroundColor: Object.values(PHASE_COLORS)[pi] + '55',
+    borderColor: Object.values(PHASE_COLORS)[pi],
+    borderWidth: 2,
+    borderRadius: 6
+  }));
+  new Chart(phaseCtx, {
+    type: 'bar',
+    data: { labels: subs, datasets: phaseDatasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
+      scales: {
+        x: { stacked: true, ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,.06)' } },
+        y: { stacked: true, ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,.06)' } }
+      }
+    }
+  });
+
+  // Difficulty doughnut
+  const diffs = ['easy','medium','hard'];
+  const diffCounts = diffs.map(d => DB.filter(q => q.diff === d).length);
+  const diffColors = ['#34d399','#fbbf24','#f87171'];
+  const diffCtx = document.getElementById('diffCanvas').getContext('2d');
+  new Chart(diffCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Easy','Medium','Hard'],
+      datasets: [{ data: diffCounts, backgroundColor: diffColors.map(c => c + '99'), borderColor: diffColors, borderWidth: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#94a3b8', font: { size: 12 } } } },
+      cutout: '60%'
+    }
+  });
+
+  const dLegend = document.getElementById('diffLegend');
+  ['Easy','Medium','Hard'].forEach((l, i) => {
+    const item = document.createElement('div');
+    item.className = 'chart-legend-item';
+    item.innerHTML = `<span class="ldot" style="background:${diffColors[i]}"></span>${l} (${diffCounts[i]})`;
+    dLegend.appendChild(item);
+  });
+}
+</script>
+
+<!-- Tawk.to chat widget -->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6997965e73d8cb1c357e66ee/1jhs26oms';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+
+</body>
+</html>
