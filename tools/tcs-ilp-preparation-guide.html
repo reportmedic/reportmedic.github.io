@@ -31,6 +31,10 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 .stat-orb{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);backdrop-filter:blur(10px);transition:transform .2s,border-color .2s;}
 .stat-orb:hover{transform:scale(1.08);border-color:rgba(245,158,11,.4);}
 .stat-orb .val{font-size:24px;font-weight:900;background:linear-gradient(135deg,#f59e0b,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-orb.daily-done{border-color:rgba(52,211,153,.45);background:rgba(52,211,153,.07);}
+.stat-orb.daily-done .val{background:linear-gradient(135deg,#34d399,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+#dailyBanner{display:none;margin:0 0 22px;padding:14px 20px;border-radius:14px;background:linear-gradient(135deg,rgba(52,211,153,.13),rgba(16,185,129,.06));border:1px solid rgba(52,211,153,.3);text-align:center;font-size:13.5px;color:#6ee7b7;line-height:1.6;}
+#dailyBanner strong{color:#34d399;display:block;font-size:16px;margin-bottom:4px;}
 .stat-orb .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;text-align:center;line-height:1.2;}
 
 /* Phase chips (like year chips in UPSC tool) */
@@ -195,6 +199,7 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
       <div class="stat-orb"><span class="val">4</span><span class="lbl">Phases</span></div>
       <div class="stat-orb"><span class="val" id="statAttempted">0</span><span class="lbl">Attempted</span></div>
       <div class="stat-orb"><span class="val" id="statAccuracy">—</span><span class="lbl">Accuracy</span></div>
+      <div class="stat-orb" id="dailyOrb"><span class="val" id="statDaily">0/20</span><span class="lbl">Today's Quota</span></div>
     </div>
   </section>
 
@@ -246,6 +251,7 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
 
   <!-- Questions -->
   <section class="anim-up delay-3">
+    <div id="dailyBanner"><strong>Daily quota complete! 🎉</strong>You've answered 20 questions today. Come back tomorrow for a fresh set — consistency is what clears ILP assessments.</div>
     <div class="q-grid" id="qGrid"></div>
     <div class="pagination" id="pagination"></div>
     <div class="empty-state" id="emptyState" style="display:none">
@@ -394,7 +400,209 @@ const DB = [
 {phase:"Diagnostic",sub:"Python",diff:"medium",q:"What is the output of the following Python code?\n\nmy_list = [1, 2, 3]\nmy_list.append([4, 5])\nprint(len(my_list))",opts:["5","4","2","3"],ans:1,exp:"append() adds the entire [4, 5] list as a single element at the end. The result is [1, 2, 3, [4, 5]], which has 4 elements. To add each element separately, use extend() instead."},
 {phase:"PRA",sub:"Python",diff:"hard",q:"In Python, what is the difference between a shallow copy and a deep copy of a list?",opts:["They are identical","Shallow copy copies only the top-level object; nested objects are still shared. Deep copy creates fully independent copies of all nested objects.","Deep copy is faster than shallow copy","Shallow copy uses more memory than deep copy"],ans:1,exp:"import copy; copy.copy() creates a shallow copy — nested lists are shared. copy.deepcopy() creates completely independent copies. This difference matters when modifying nested structures."},
 
+/* ── JAVA - IRA-1 & additional coverage ── */
+{phase:"IRA-1",sub:"Java",diff:"easy",q:"Which of the following correctly declares a String variable in Java?",opts:["string s = 'Hello';","String s = \"Hello\";","String s = 'Hello';","str s = \"Hello\";"],ans:1,exp:"Java's String is a class (capital S) and string literals use double quotes. Single quotes are for char literals. The type 'string' (lowercase) does not exist in Java."},
+{phase:"IRA-1",sub:"Java",diff:"easy",q:"What is the entry point of every standalone Java application?",opts:["public void start()","public static void main(String[] args)","static void run()","public void main()"],ans:1,exp:"The JVM always calls public static void main(String[] args) as the starting point. The signature must be exact — public, static, void, named main, accepting a String array."},
+{phase:"IRA-1",sub:"Java",diff:"medium",q:"Which Java keyword prevents a class from being subclassed?",opts:["static","abstract","final","immutable"],ans:2,exp:"'final' on a class prevents it from being extended. The String class is a well-known example. 'abstract' requires subclassing (opposite). 'static' applies to members, not top-level classes."},
+{phase:"IRA-2",sub:"Java",diff:"hard",q:"What is the output of the following code?\n\nString s1 = \"TCS\";\nString s2 = \"TCS\";\nString s3 = new String(\"TCS\");\nSystem.out.println(s1 == s2);\nSystem.out.println(s1 == s3);",opts:["true\ntrue","true\nfalse","false\nfalse","false\ntrue"],ans:1,exp:"s1 and s2 both reference the same String literal from the String Pool, so s1==s2 is true. s3 creates a new object on the heap with 'new', so s1==s3 is false. Always use .equals() to compare String content."},
+{phase:"PRA",sub:"Java",diff:"medium",q:"In Java, which design pattern ensures only ONE instance of a class exists throughout the application?",opts:["Factory","Observer","Singleton","Decorator"],ans:2,exp:"The Singleton pattern restricts instantiation to one object. It is implemented using a private constructor and a static getInstance() method. Commonly used for connection pools, loggers, and configuration managers."},
+{phase:"Diagnostic",sub:"Java",diff:"easy",q:"Which Java collection maintains insertion order and allows duplicates?",opts:["HashSet","TreeSet","HashMap","ArrayList"],ans:3,exp:"ArrayList is an ordered, index-based collection that allows duplicate elements and maintains insertion order. HashSet does not allow duplicates. HashMap stores key-value pairs."},
+
+/* ── PYTHON - coverage fill ── */
+{phase:"IRA-1",sub:"Python",diff:"easy",q:"What symbol starts a single-line comment in Python?",opts:["//","#","/* */","--"],ans:1,exp:"Python uses # to begin a single-line comment. Everything after # on that line is ignored. Multi-line comments conventionally use triple quotes (''' or \"\"\") though these are technically string literals."},
+{phase:"IRA-1",sub:"Python",diff:"easy",q:"Which of the following creates a tuple in Python?",opts:["t = [1, 2, 3]","t = {1, 2, 3}","t = (1, 2, 3)","t = <1, 2, 3>"],ans:2,exp:"Parentheses create a tuple. Square brackets create a list. Curly braces create a set (or dict with key:value pairs). Tuples are immutable — their values cannot be changed after creation."},
+{phase:"IRA-1",sub:"Python",diff:"medium",q:"What is the output of: print(2 ** 3) in Python?",opts:["6","5","8","23"],ans:2,exp:"The ** operator is Python's exponentiation operator. 2 ** 3 means 2 raised to the power of 3 = 8. This is different from most other languages that use Math.pow() or ^ for exponentiation."},
+{phase:"IRA-2",sub:"Python",diff:"hard",q:"What is the output of the following Python code?\n\ndef func(x, lst=[]):\n    lst.append(x)\n    return lst\nprint(func(1))\nprint(func(2))",opts:["[1]\n[2]","[1]\n[1, 2]","[1, 2]\n[1, 2]","Error"],ans:1,exp:"This is the classic mutable default argument trap. The default list [] is created ONCE when the function is defined, not on each call. The second call appends to the same list. Use lst=None and create inside as a fix."},
+{phase:"PRA",sub:"Python",diff:"medium",q:"Which Python module provides classes for working with dates and times?",opts:["time","calendar","datetime","date"],ans:2,exp:"The 'datetime' module provides datetime.date, datetime.time, datetime.datetime, and datetime.timedelta. For example: from datetime import datetime; now = datetime.now(). The standalone 'time' module works with Unix timestamps."},
+{phase:"Diagnostic",sub:"Python",diff:"hard",q:"What is the output of: print(list(range(2, 10, 3)))?",opts:["[2, 5, 8]","[2, 4, 6, 8]","[2, 5, 8, 11]","[3, 6, 9]"],ans:0,exp:"range(start, stop, step): starts at 2, adds 3 each time — 2, 5, 8. Next would be 11, but 11 >= 10 (stop), so it halts. Result: [2, 5, 8]. The stop value is always exclusive."},
+{phase:"PRA",sub:"Python",diff:"hard",q:"What is the difference between a shallow copy and a deep copy in Python?",opts:["They are identical","Shallow copy copies only the top-level object; nested objects are still shared. Deep copy creates fully independent copies of all nested objects.","Deep copy is faster","Shallow copy uses more memory"],ans:1,exp:"import copy; copy.copy() creates a shallow copy — nested lists/objects are shared references. copy.deepcopy() creates completely independent copies. This matters when nested mutable objects are modified."},
+
+/* ── SQL - IRA-1, IRA-2 & PRA coverage ── */
+{phase:"IRA-1",sub:"SQL",diff:"easy",q:"SQL stands for:",opts:["Structured Query Language","Sequential Query Logic","Standard Question Language","Structured Question Logic"],ans:0,exp:"SQL stands for Structured Query Language — the standard language for relational databases. It was developed at IBM in the 1970s and became an ANSI/ISO standard. It is used in MySQL, PostgreSQL, Oracle, and SQL Server."},
+{phase:"IRA-1",sub:"SQL",diff:"easy",q:"Which SQL statement retrieves data from a table?",opts:["GET","FETCH","SELECT","RETRIEVE"],ans:2,exp:"SELECT is the fundamental SQL data retrieval statement. Basic syntax: SELECT column1, column2 FROM table_name WHERE condition; It is the most frequently used SQL command in every assessment."},
+{phase:"IRA-1",sub:"SQL",diff:"medium",q:"Which SQL command is used to add a new row of data into a table?",opts:["ADD","UPDATE","INSERT INTO","APPEND"],ans:2,exp:"INSERT INTO inserts new rows. Syntax: INSERT INTO table_name (col1, col2) VALUES (val1, val2); UPDATE modifies existing rows. INSERT does not update existing data."},
+{phase:"IRA-2",sub:"SQL",diff:"medium",q:"What is a PRIMARY KEY in a relational database?",opts:["Any column with unique values","A column (or combination) that uniquely identifies each row and cannot be NULL","A foreign key reference","An indexed column"],ans:1,exp:"A PRIMARY KEY uniquely identifies each row, enforces NOT NULL, and creates a unique index automatically. A table can only have one primary key, though it can span multiple columns (composite key)."},
+{phase:"IRA-2",sub:"SQL",diff:"medium",q:"Which SQL clause sorts query results?",opts:["SORT BY","GROUP BY","ORDER BY","ARRANGE BY"],ans:2,exp:"ORDER BY sorts results. Default is ascending (ASC). Use DESC for descending. Example: SELECT name FROM employees ORDER BY salary DESC; ORDER BY runs last in SQL logical execution order."},
+{phase:"PRA",sub:"SQL",diff:"hard",q:"What is a VIEW in SQL?",opts:["A physical copy of a table","A virtual table defined by a SELECT query that does not store data itself","A type of index","A stored procedure's result"],ans:1,exp:"A VIEW is a named SQL query stored in the database. It behaves like a table but contains no data — querying a view runs the underlying SELECT. Views simplify complex queries and implement column-level security."},
+{phase:"IRA-2",sub:"SQL",diff:"easy",q:"Which SQL command modifies existing data in a table?",opts:["MODIFY","ALTER","UPDATE","CHANGE"],ans:2,exp:"UPDATE modifies existing rows. Syntax: UPDATE table SET col = value WHERE condition; Without a WHERE clause, ALL rows are updated — a common and dangerous mistake. Always specify a WHERE condition."},
+
+/* ── Web Tech - IRA-1, PRA & additional ── */
+{phase:"IRA-1",sub:"Web Tech",diff:"easy",q:"What does HTML stand for?",opts:["Hyper Text Markup Language","High Tech Modern Language","Hyperlink Text Management Language","Home Tool Markup Language"],ans:0,exp:"HTML stands for HyperText Markup Language. It defines the structure and content of web pages using elements (tags like <h1>, <p>, <a>). It is not a programming language — it is a markup language."},
+{phase:"IRA-1",sub:"Web Tech",diff:"easy",q:"Which HTML element defines the largest heading on a page?",opts:["<h6>","<heading>","<h1>","<header>"],ans:2,exp:"<h1> is the largest and most important heading. HTML has six levels: h1 through h6. h1 is used for the primary page title and is important for SEO. Each page should typically have only one <h1>."},
+{phase:"IRA-1",sub:"Web Tech",diff:"medium",q:"Which HTML tag is used to embed a JavaScript file into a web page?",opts:["<javascript>","<js>","<script>","<code>"],ans:2,exp:"The <script> tag includes JavaScript. For external files: <script src=\"file.js\"></script>. It can be placed in <head> (with defer/async) or at the end of <body>. <link> is for CSS; <script> is for JavaScript."},
+{phase:"PRA",sub:"Web Tech",diff:"hard",q:"What is the purpose of the 'defer' attribute on a <script> tag?",opts:["Runs the script immediately","Delays page load by 5 seconds","Script downloads in parallel but executes AFTER the HTML document is fully parsed","Disables the script"],ans:2,exp:"'defer' allows the browser to download the script without blocking HTML parsing. The script executes after the document is parsed but before DOMContentLoaded. Deferred scripts run in order, unlike 'async'."},
+{phase:"PRA",sub:"Web Tech",diff:"medium",q:"In JavaScript, which method attaches an event listener to a DOM element?",opts:["element.on('click', fn)","element.addEvent('click', fn)","element.addEventListener('click', fn)","element.bindEvent('click', fn)"],ans:2,exp:"addEventListener(event, handler) is the standard DOM event binding method. It allows multiple handlers for the same event on the same element. Unlike the onclick attribute, it supports event capture and bubbling control."},
+{phase:"Diagnostic",sub:"Web Tech",diff:"hard",q:"In CSS, what is the difference between 'display:none' and 'visibility:hidden'?",opts:["They are identical","display:none removes the element from layout (no space); visibility:hidden hides it but reserves the space","visibility:hidden removes from layout; display:none keeps space","Both keep the space"],ans:1,exp:"display:none collapses the element completely — it takes no space in layout. visibility:hidden makes it invisible but it still occupies its normal space. This distinction affects surrounding element positions."},
+{phase:"PRA",sub:"Web Tech",diff:"hard",q:"What is the purpose of localStorage in browser JavaScript?",opts:["Stores data on the server","Stores key-value string data in the browser with no expiration, persisting across sessions","Stores session data cleared when the tab closes","Stores cookies with a 24-hour expiry"],ans:1,exp:"localStorage stores string key-value pairs persistently in the browser with no expiry. Data survives page refreshes and browser restarts. sessionStorage is similar but cleared when the tab closes. Neither is secure for sensitive data."},
+
+/* ── BizSkills - IRA-1, IRA-2, PRA ── */
+{phase:"IRA-1",sub:"BizSkills",diff:"easy",q:"In a professional workplace, 'WFH' stands for:",opts:["Work From Hospital","Working For Hours","Work From Home","Work Flow Hub"],ans:2,exp:"WFH stands for Work From Home — remote work from a non-office location. Understanding standard workplace abbreviations (WFH, EOD, ETA, FYI, KPI, SLA) is assessed in BizSkills foundations."},
+{phase:"IRA-1",sub:"BizSkills",diff:"easy",q:"Which is the most professional way to greet a new colleague on your first day?",opts:["Ignore them until they introduce themselves","Send a casual WhatsApp","Walk over, make eye contact, smile, and introduce yourself with your name and team","Wave from across the room"],ans:2,exp:"Direct, confident introductions with eye contact demonstrate professionalism and social awareness. TCS BizSkills assessments explicitly evaluate interpersonal communication skills including first impressions."},
+{phase:"IRA-1",sub:"BizSkills",diff:"medium",q:"What does KPI stand for in a business context?",opts:["Key Process Interaction","Keep People Informed","Key Performance Indicator","Knowledge Process Integration"],ans:2,exp:"KPI (Key Performance Indicator) is a measurable value that indicates how effectively an individual, team, or organisation is achieving business objectives. Examples: SLA compliance %, defect rate, customer satisfaction score."},
+{phase:"IRA-2",sub:"BizSkills",diff:"medium",q:"You receive a critical client email at 5:45 PM requesting data by EOD. You cannot deliver in time. The best action is:",opts:["Ignore it until tomorrow","Forward it to a colleague without informing them","Reply immediately acknowledging receipt, state your delivery time, and offer partial data if possible","Send it next morning without explanation"],ans:2,exp:"Prompt acknowledgement of client communication is essential. Setting realistic expectations, offering partial solutions, and maintaining transparency prevents escalations. Silence is the worst response in professional communication."},
+{phase:"IRA-2",sub:"BizSkills",diff:"easy",q:"In an email, what does 'CC' mean?",opts:["Carbon Copy — recipient receives a copy for information","Critical Comment","Courtesy Call","Classified Content"],ans:0,exp:"CC (Carbon Copy) sends a copy to additional recipients who are not the primary audience but should be informed. BCC (Blind Carbon Copy) hides recipients from each other. Misusing CC/BCC in client emails is a common professional mistake."},
+{phase:"PRA",sub:"BizSkills",diff:"hard",q:"During your PRA presentation, a panel member continuously interrupts with challenging questions. The BEST response is:",opts:["Ask them to stop interrupting","Defend your stance aggressively","Pause, acknowledge the question, answer concisely, then redirect back to your presentation flow","Ignore the questions and continue"],ans:2,exp:"Composure under pressure is explicitly evaluated in the PRA. Acknowledging an interruption gracefully while steering back to your content signals both confidence and respect — the combination that earns high BizSkills marks."},
+{phase:"PRA",sub:"BizSkills",diff:"medium",q:"In a TCS project status update email to a senior manager, which writing style is most appropriate?",opts:["Casual, with emoji and abbreviations like 'gr8'","Lengthy prose covering every detail","Concise bullet points with RAG status (Red/Amber/Green), key risks, and next actions","A single-line update with no detail"],ans:2,exp:"Senior stakeholders prefer structured, scannable updates. RAG status (Red=at risk, Amber=caution, Green=on track), key risks, and next steps give the full picture efficiently. Conciseness is valued over verbosity in professional writing."},
+
+/* ── SAP - IRA-1, PRA ── */
+{phase:"IRA-1",sub:"SAP",diff:"easy",q:"What does SAP stand for?",opts:["Systems, Applications, and Products in Data Processing","Software Architecture and Programming","Standard Application Protocol","Systems Architecture Platform"],ans:0,exp:"SAP stands for Systems, Applications, and Products in Data Processing. Founded in 1972 in Germany, it is the world's leading ERP software company with over 400,000 customers globally."},
+{phase:"IRA-1",sub:"SAP",diff:"easy",q:"SAP ERP integrates which core business functions?",opts:["Only Finance and HR","Finance, Supply Chain, Sales, HR, and many more in a unified system","Only Manufacturing and Logistics","Email and calendar management only"],ans:1,exp:"SAP ERP unifies all core business processes: Financial Accounting (FI), Controlling (CO), Materials Management (MM), Sales and Distribution (SD), HR, Production Planning (PP) — all sharing a single database."},
+{phase:"IRA-1",sub:"SAP",diff:"medium",q:"What is SAP HANA?",opts:["SAP's HR module","An in-memory database platform that allows extremely fast data processing and real-time analytics","A project management tool","SAP's email client"],ans:1,exp:"SAP HANA is an in-memory, column-oriented relational database that processes data in RAM rather than on disk. It dramatically speeds up analytics and reporting. S/4HANA is the latest SAP ERP running exclusively on HANA."},
+{phase:"PRA",sub:"SAP",diff:"hard",q:"What is the difference between Customising (IMG) and ABAP Development in SAP?",opts:["They are the same thing","Customising uses IMG to configure standard SAP without coding; ABAP Development creates custom programs, reports, and enhancements using code","ABAP is only for reports; IMG is for security","IMG is for production; ABAP is for DEV only"],ans:1,exp:"Customising (SPRO/IMG) configures SAP's standard behaviour — defining company codes, fiscal years, plant settings. ABAP Development creates custom code: reports (SE38), function modules, user exits, and BAPIs. Both are essential SAP consultant skills."},
+{phase:"PRA",sub:"SAP",diff:"medium",q:"What is an SAP BAPI?",opts:["Background Application Programming Interface","Business Application Programming Interface — a standardised remote-enabled function module used to integrate external systems with SAP","A transport request","A Basis admin tool"],ans:1,exp:"BAPI (Business Application Programming Interface) provides standardised interfaces to SAP business objects. They are remote-enabled function modules used in integrations (with external systems, web services, and RFC calls)."},
+
+/* ── ITIS - IRA-1, PRA ── */
+{phase:"IRA-1",sub:"ITIS",diff:"easy",q:"Which of the following best describes the role of an Operating System?",opts:["A program that writes code automatically","Software that manages hardware resources and provides services for application programs","A type of database","A programming language"],ans:1,exp:"An OS (like Windows, Linux, macOS) acts as an intermediary between hardware and application software. It manages CPU scheduling, memory allocation, file systems, I/O devices, and provides a user interface."},
+{phase:"IRA-1",sub:"ITIS",diff:"easy",q:"What does CPU stand for?",opts:["Central Processing Unit","Computer Programming Utility","Core Processor Unit","Central Program Updater"],ans:0,exp:"CPU (Central Processing Unit) is the primary hardware component that executes instructions. It performs arithmetic, logic, control, and I/O operations. CPU speed is measured in GHz (gigahertz)."},
+{phase:"IRA-1",sub:"ITIS",diff:"medium",q:"Which of the following is a difference between HDD and SSD storage?",opts:["They are identical","HDD uses spinning magnetic platters (slower, cheaper per GB); SSD uses flash memory chips (faster, more expensive per GB)","SSD stores more data than HDD","HDD is faster than SSD"],ans:1,exp:"HDD (Hard Disk Drive) uses spinning magnetic platters — slower (seek time ~5ms) but cheaper per GB. SSD (Solid State Drive) uses NAND flash — much faster (read ~500MB/s), no moving parts, but historically more expensive per GB."},
+{phase:"PRA",sub:"ITIS",diff:"hard",q:"In ITIL, what is the difference between an Incident and a Problem?",opts:["They are the same","An Incident is an unplanned service disruption needing fast restoration; a Problem is the underlying root cause investigated to prevent recurrence","A Problem is urgent; an Incident is not","Problems are user-reported; Incidents are system-detected"],ans:1,exp:"Incident Management restores service quickly (workarounds are acceptable). Problem Management investigates root cause to permanently eliminate the source. A Problem may be raised from recurring Incidents. They are separate processes with different goals."},
+{phase:"PRA",sub:"ITIS",diff:"medium",q:"What is a Virtual Private Network (VPN)?",opts:["A physical network cable","An encrypted tunnel over the internet enabling secure remote access to a private network","A type of Wi-Fi router","A firewall rule set"],ans:1,exp:"A VPN creates an encrypted secure tunnel over the public internet, allowing remote workers to access corporate resources as if physically on-site. TCS employees use VPN for remote access to internal tools and client systems."},
+
+/* ── Aspire/KYT - IRA-2, Diagnostic, PRA ── */
+{phase:"IRA-2",sub:"Aspire/KYT",diff:"medium",q:"What is the TCS Tech Lounge?",opts:["A physical lounge in TCS offices","The stream-specific online pre-ILP learning platform that prepares freshers for IRA-2 in their technology stream","A social networking feature in Ultimatix","A certification testing portal"],ans:1,exp:"Tech Lounge provides stream-specific learning (Java, .NET, SAP, ITIS, etc.) before ILP begins. IRA-2 is based on Tech Lounge content and typically carries negative marking (-0.25 per wrong answer), making it harder than IRA-1."},
+{phase:"IRA-2",sub:"Aspire/KYT",diff:"medium",q:"Negative marking in IRA-2 typically deducts how much per wrong answer?",opts:["0.25 marks","0.5 marks","1 mark","2 marks"],ans:0,exp:"IRA-2 typically applies -0.25 negative marking per wrong answer (similar to competitive exam patterns like UPSC). This penalises random guessing. Attempt only questions you are reasonably confident about."},
+{phase:"IRA-2",sub:"Aspire/KYT",diff:"easy",q:"Which platform is used to access both IRA-1 and IRA-2 assessments?",opts:["Ultimatix","TCS iON","iCalms","Aspire Direct"],ans:1,exp:"Both IRA-1 and IRA-2 are conducted on the TCS iON platform. Your login credentials are shared via email after your offer is confirmed. The same platform hosts Aspire modules, Tech Lounge, and the assessments."},
+{phase:"Diagnostic",sub:"Aspire/KYT",diff:"easy",q:"What is the format of a Diagnostic Assessment (D-Test) during ILP Phase 1?",opts:["A group discussion","A written essay","An MCQ-based computer test on the stream's foundational concepts","A hands-on coding project"],ans:2,exp:"Diagnostic Assessments are MCQ-based computer tests taken after completing each module in ILP Phase 1. Pass mark is typically 65%. You get multiple attempts — failing all leads to LAP (Learning Acceleration Program)."},
+{phase:"Diagnostic",sub:"Aspire/KYT",diff:"medium",q:"What happens if a trainee fails all three attempts at a section diagnostic?",opts:["Immediate termination","They are sent to LAP (Learning Acceleration Program) — 10-15 additional training days","They get a final fourth attempt","They are transferred to a different stream"],ans:1,exp:"Failing all three diagnostic attempts (main + re-do + remedial) results in placement in LAP (Learning Acceleration Program) — extended training of 10-15 days with focused coaching before a fresh attempt."},
+{phase:"PRA",sub:"Aspire/KYT",diff:"medium",q:"PRA in TCS ILP stands for:",opts:["Performance Review Assessment","Project Readiness Assessment","Performance Readiness Assessment","Professional Ranking Assessment"],ans:2,exp:"PRA stands for Performance Readiness Assessment — the final summative assessment at the end of ILP. It tests technical competency AND communication skills. A strong PRA score significantly influences your project deployment allocation."},
+{phase:"PRA",sub:"Aspire/KYT",diff:"hard",q:"Which of the following factors does NOT contribute to a TCS ILP trainee's overall performance rating?",opts:["IRA scores","Diagnostic assessment scores","PRA score","Number of LinkedIn connections"],ans:3,exp:"ILP performance ratings are based on: IRA-1, IRA-2, Diagnostic assessments, BizSkills, Phase 2 project evaluation, and PRA score. Personal social media activity is not a formal evaluation criterion."},
+
+/* ── .NET - IRA-1 & hard coverage ── */
+{phase:"IRA-1",sub:".NET",diff:"easy",q:"The .NET Framework was developed by which company?",opts:["Oracle","Sun Microsystems","Microsoft","IBM"],ans:2,exp:"The .NET Framework was developed by Microsoft, released in 2002. It provides the CLR (Common Language Runtime) and BCL (Base Class Library). .NET Core and .NET 5+ are its cross-platform successors."},
+{phase:"IRA-1",sub:".NET",diff:"easy",q:"Which programming language is primarily used for .NET development?",opts:["Java","C++","C#","Python"],ans:2,exp:"C# (C Sharp) is the primary .NET language, designed by Microsoft specifically for the platform. Other supported languages include VB.NET and F#. C# is syntactically similar to Java but has unique features like properties and LINQ."},
+{phase:"IRA-1",sub:".NET",diff:"medium",q:"What does CLR stand for in .NET?",opts:["Compiled Language Runtime","Common Language Runtime","Central Logic Router","Code Loading Registry"],ans:1,exp:"CLR (Common Language Runtime) is the virtual machine at the heart of .NET. It provides JIT compilation, garbage collection, type safety, exception handling, and security. It is the .NET equivalent of Java's JVM."},
+{phase:"Diagnostic",sub:".NET",diff:"easy",q:"What does 'managed code' mean in the .NET context?",opts:["Code written only by Microsoft","Code executed under the supervision of the CLR, which handles memory management and security","Code that compiles without errors","Code with unit tests"],ans:1,exp:"Managed code runs under CLR supervision. The CLR handles memory allocation (via the garbage collector), type safety checks, exception propagation, and security permissions. 'Unmanaged code' (like C/C++) runs directly on the OS without CLR."},
+{phase:"PRA",sub:".NET",diff:"hard",q:"What is the difference between SqlDataReader and DataSet in ADO.NET?",opts:["They are identical","SqlDataReader is connected, forward-only, read-only and fast; DataSet is disconnected, in-memory, supports navigation and multiple tables","DataSet is faster than SqlDataReader","SqlDataReader supports offline mode"],ans:1,exp:"SqlDataReader: open connection required, reads one row at a time, forward-only, very fast for large result sets. DataSet+SqlDataAdapter: fills an in-memory cache (disconnected), supports multiple tables, relationships, and offline data manipulation."},
+
+/* ── GAP FILL ROUND 2 ── */
+
+/* Aspire/KYT IRA-1 hard */
+{phase:"IRA-1",sub:"Aspire/KYT",diff:"hard",q:"In the TCS ILP performance evaluation system, which of the following CORRECTLY describes the weighting hierarchy?",opts:["IRA-1 has the highest weight","BizSkills scores outweigh technical diagnostics","PRA and technical diagnostics carry the most weight, followed by project evaluation; IRA-1 is least weighted","All assessments carry equal weight"],ans:2,exp:"PRA (Performance Readiness Assessment) and technical diagnostics form the bulk of the evaluation. Project phase performance is next. IRA-1 (Aspire-based) carries the least weight since it tests pre-joining knowledge. A poor IRA-1 can be recovered; a poor PRA is harder to recover from."},
+
+/* Aspire/KYT IRA-2 hard */
+{phase:"IRA-2",sub:"Aspire/KYT",diff:"hard",q:"A fresher consistently passes all diagnostic tests with 75%+ but scores poorly in BizSkills speaking assessment due to nervousness. According to ILP protocol, the most likely outcome is:",opts:["Automatic LAP placement","Deployment to any project regardless","Possible extended BizSkills coaching and re-assessment before PRA, with project allocation reflecting the BizSkills score","Immediate separation"],ans:2,exp:"BizSkills failures are the most common reason for LAP in TCS ILP — more common than technical failures. Poor BizSkills scores lead to remediation sessions and re-assessments. Project allocation considers both technical and communication ratings."},
+
+/* Aspire/KYT Diagnostic hard */
+{phase:"Diagnostic",sub:"Aspire/KYT",diff:"hard",q:"During ILP, a trainee fails the Module 3 diagnostic on the first attempt, scores 60% on the re-do (pass mark 65%), then fails the remedial. What happens next?",opts:["They pass with an average score","They are moved to a different stream","They enter LAP (Learning Acceleration Program) for that module with additional 10-15 working days of focused training","They are asked to resign"],ans:2,exp:"Failing all three attempts (main, re-do, remedial) at a diagnostic triggers LAP. LAP provides focused remedial training on the failed module(s). After LAP, the trainee gets another chance at the diagnostic. This is NOT termination — it is a support mechanism."},
+
+/* Aspire/KYT PRA easy */
+{phase:"PRA",sub:"Aspire/KYT",diff:"easy",q:"The PRA (Performance Readiness Assessment) is conducted at which stage of TCS ILP?",opts:["Before ILP begins","After IRA-1","At the very beginning of Phase 1","At the end of ILP, before deployment to a project"],ans:3,exp:"PRA is the final assessment before a trainee is deployed to a live project. It is the capstone evaluation covering technical competency and communication. A strong PRA significantly influences which project and account you are allocated to."},
+
+/* Java IRA-1 hard */
+{phase:"IRA-1",sub:"Java",diff:"hard",q:"In Java, which concept allows a single interface to be used to represent multiple types at runtime?",opts:["Encapsulation","Polymorphism","Inheritance only","Abstraction only"],ans:1,exp:"Polymorphism (many forms) allows one interface or parent type to refer to objects of different subclasses at runtime. This is the key OOP principle behind dynamic dispatch, design patterns, and the Strategy and Factory patterns."},
+
+/* Java PRA easy */
+{phase:"PRA",sub:"Java",diff:"easy",q:"Which Java keyword is used to refer to the parent class's constructor?",opts:["parent()","base()","super()","this()"],ans:2,exp:"super() calls the parent class constructor. It must be the first statement in the child constructor. super.method() calls a parent method. this() calls another constructor in the same class."},
+
+/* .NET IRA-1 hard */
+{phase:"IRA-1",sub:".NET",diff:"hard",q:"In the .NET ecosystem, what is the purpose of the GAC (Global Assembly Cache)?",opts:["A CPU cache for .NET apps","A central repository for shared .NET assemblies (DLLs) that multiple applications on the same machine can reference","A garbage collection log","A database connection pool"],ans:1,exp:"The GAC is a machine-wide code cache for shared .NET assemblies. Strong-named assemblies (with a public key token) can be installed in the GAC, allowing multiple applications to share a single copy rather than each having their own."},
+
+/* .NET IRA-2 easy */
+{phase:"IRA-2",sub:".NET",diff:"easy",q:"In C#, which keyword is used to declare a constant whose value can never change?",opts:["static","readonly","const","final"],ans:2,exp:"'const' declares a compile-time constant — the value must be assigned at declaration and can never be changed. 'readonly' fields can be assigned in a constructor (runtime constant). Java uses 'final' for this; C# uses 'const' or 'readonly'."},
+
+/* .NET PRA easy */
+{phase:"PRA",sub:".NET",diff:"easy",q:"In ASP.NET, which object stores data that persists across ALL user sessions on the server?",opts:["Session","ViewState","Cookie","Application"],ans:3,exp:"The Application object stores global data shared across all users and all sessions on the server. Session stores per-user data. ViewState stores per-page data for a single user's PostBack cycle. Application state is rarely used in modern apps."},
+
+/* .NET PRA medium */
+{phase:"PRA",sub:".NET",diff:"medium",q:"In C#, what is the difference between an interface and an abstract class?",opts:["They are identical","An interface has no implementation and supports multiple inheritance; an abstract class can have implementation and fields but supports only single inheritance","Abstract classes have no constructors; interfaces do","Interfaces can only contain properties"],ans:1,exp:"Interface: pure contract (all abstract by default in C# before 8.0), supports multiple implementation. Abstract class: can have concrete methods, fields, constructors, and partial implementation but only single inheritance. Use interface for capabilities; abstract class for shared base behaviour."},
+
+/* SAP IRA-1 hard */
+{phase:"IRA-1",sub:"SAP",diff:"hard",q:"In SAP, what is a 'client-independent' setting?",opts:["A setting that applies only to the 100 client","A configuration that applies across ALL clients in a SAP system (e.g., system parameters, some repository objects)","A setting exclusive to production","A user permission level"],ans:1,exp:"Client-independent settings apply to ALL clients in an SAP system (like repository objects, ABAP code, system parameters). Client-dependent settings apply only within the specific client (like business data, customising). This distinction is important for transport planning."},
+
+/* SAP IRA-2 hard */
+{phase:"IRA-2",sub:"SAP",diff:"hard",q:"What is the purpose of an SAP User Exit?",opts:["A logout function","A way to add custom code to standard SAP programs without modifying the original source, preserving upgrade compatibility","An error-handling mechanism","A client deletion process"],ans:1,exp:"User Exits are predefined extension points in standard SAP programs where customers can add custom ABAP code. They preserve upgrade compatibility because custom code sits separately from SAP standard code. Types include Customer Exits, BAdIs, and Enhancement Spots."},
+
+/* SAP Diagnostic easy */
+{phase:"Diagnostic",sub:"SAP",diff:"easy",q:"In SAP SD, what does a 'Sales Order' represent?",opts:["A purchase of raw materials","A legal commitment from a customer to buy goods or services at agreed prices, quantities, and delivery dates","A vendor invoice","An inventory adjustment"],ans:1,exp:"A Sales Order (transaction VA01) is the core SD document. It records a customer's commitment to buy specific products at agreed prices and dates. It triggers delivery, billing, and revenue recognition processes downstream."},
+
+/* SAP PRA easy */
+{phase:"PRA",sub:"SAP",diff:"easy",q:"What does the SAP transaction code 'SE38' refer to?",opts:["Creating a Purchase Order","ABAP Editor — used to create, view, and edit ABAP programs","Displaying a Sales Order","Running a material requirements report"],ans:1,exp:"SE38 opens the ABAP Editor, the primary development environment for writing and testing ABAP code. Other key development TCs: SE80 (Object Navigator), SE37 (Function Builder), SE11 (Data Dictionary)."},
+
+/* ITIS IRA-1 hard */
+{phase:"IRA-1",sub:"ITIS",diff:"hard",q:"Which of the following correctly describes the difference between a hub, switch, and router?",opts:["They are all the same","Hub broadcasts to all ports (Layer 1); Switch forwards using MAC addresses to specific ports (Layer 2); Router routes between networks using IP addresses (Layer 3)","Switch uses IP addresses; Router uses MAC addresses","Hub is Layer 3; Router is Layer 2"],ans:1,exp:"Hub: dumb device, broadcasts all traffic to all ports (Layer 1 — Physical). Switch: intelligent, uses MAC address table to send frames only to the correct port (Layer 2 — Data Link). Router: connects different networks using IP routing tables (Layer 3 — Network)."},
+
+/* ITIS Diagnostic easy */
+{phase:"Diagnostic",sub:"ITIS",diff:"easy",q:"What does 'HTTP' stand for?",opts:["HyperText Transfer Protocol","High Traffic Transfer Protocol","HyperText Terminal Protocol","Hosted Text Transport Protocol"],ans:0,exp:"HTTP (HyperText Transfer Protocol) is the foundational protocol for data communication on the web. HTTPS is HTTP secured with TLS/SSL encryption. HTTP operates at the Application Layer (Layer 7) of the OSI model."},
+
+/* ITIS PRA easy */
+{phase:"PRA",sub:"ITIS",diff:"easy",q:"In ITIL, what is a 'Service Level Agreement' (SLA)?",opts:["An employment contract","A documented agreement between a service provider and a customer defining service targets, responsibilities, and consequences for non-compliance","A software license","An escalation procedure"],ans:1,exp:"An SLA is a formal agreement defining service expectations: uptime targets (e.g., 99.9%), response times, support hours, and consequences for missed targets. TCS manages SLAs with clients for all managed services and support engagements."},
+
+/* SQL IRA-1 hard */
+{phase:"IRA-1",sub:"SQL",diff:"hard",q:"What is the difference between a CLUSTERED and NON-CLUSTERED index in SQL Server?",opts:["They are identical","A clustered index physically orders table rows on disk (one per table); a non-clustered index is a separate structure pointing back to the data rows (multiple allowed)","Non-clustered is faster than clustered always","Clustered indexes can only be on primary keys"],ans:1,exp:"Clustered index: physically sorts and stores table rows — there can be only one per table (typically on the primary key). Non-clustered index: a separate B-tree structure with pointers to the actual data — multiple allowed per table."},
+
+/* SQL IRA-2 hard */
+{phase:"IRA-2",sub:"SQL",diff:"hard",q:"What is a FOREIGN KEY constraint and what does it enforce?",opts:["A primary key in another table","A constraint that enforces referential integrity — it ensures a value in one table must exist as a primary key in another (parent) table","A column with unique values","An automatically generated ID"],ans:1,exp:"FOREIGN KEY enforces referential integrity between two tables. The FK column in the child table must match an existing value in the referenced PK column of the parent table (or be NULL). This prevents orphaned records."},
+
+/* SQL Diagnostic hard */
+{phase:"Diagnostic",sub:"SQL",diff:"hard",q:"What is a correlated subquery in SQL?",opts:["A subquery that runs once and returns one value","A subquery that references a column from the outer query — it executes once for EACH ROW processed by the outer query","A join between two subqueries","A subquery in the FROM clause"],ans:1,exp:"A correlated subquery references columns from the outer/enclosing query. It is re-executed for each row of the outer query, making it potentially slow. Example: SELECT * FROM emp e WHERE salary > (SELECT AVG(salary) FROM emp WHERE dept=e.dept)."},
+
+/* SQL PRA easy */
+{phase:"PRA",sub:"SQL",diff:"easy",q:"What does the SQL DISTINCT keyword do?",opts:["Sorts results alphabetically","Removes duplicate rows from a SELECT result set","Makes a column a primary key","Counts only unique values"],ans:1,exp:"SELECT DISTINCT eliminates duplicate rows from the result set. Example: SELECT DISTINCT dept FROM employees returns each department only once even if many employees share the same dept value."},
+
+/* SQL PRA medium */
+{phase:"PRA",sub:"SQL",diff:"medium",q:"Which SQL function returns the number of rows in a group, including NULLs?",opts:["SUM(*)","COUNT(*)","TOTAL(*)","ROWS(*)"],ans:1,exp:"COUNT(*) counts all rows including those with NULL values. COUNT(column_name) counts only non-NULL values in that column. COUNT(DISTINCT column) counts unique non-NULL values."},
+
+/* Web Tech IRA-1 hard */
+{phase:"IRA-1",sub:"Web Tech",diff:"hard",q:"What is the difference between HTTP GET and POST methods?",opts:["They are identical","GET appends data in the URL (visible, cacheable, limited size); POST sends data in the request body (not visible in URL, not cached, no size limit)","POST is faster than GET","GET is more secure than POST"],ans:1,exp:"GET: data in URL query string (visible in browser history, cacheable, max ~2000 chars) — used for data retrieval. POST: data in request body (not cached, no URL exposure, no practical size limit) — used for form submissions and sensitive data."},
+
+/* Web Tech IRA-2 medium */
+{phase:"IRA-2",sub:"Web Tech",diff:"medium",q:"In JavaScript, what is the purpose of the 'async/await' syntax?",opts:["It runs code synchronously only","It makes asynchronous code (like API calls or file reads) look and behave like synchronous code, improving readability","It stops code execution permanently","It creates multiple threads"],ans:1,exp:"async/await is syntactic sugar over Promises. An async function returns a Promise. 'await' pauses execution inside an async function until the awaited Promise resolves, without blocking the main thread."},
+
+/* Web Tech IRA-2 hard */
+{phase:"IRA-2",sub:"Web Tech",diff:"hard",q:"What is the CSS Box Model?",opts:["A 3D rendering model for CSS animations","The concept that every HTML element is a rectangular box consisting of content, padding, border, and margin layers","A grid layout system","A CSS preprocessor concept"],ans:1,exp:"The CSS Box Model defines how element dimensions are calculated. From inside to outside: Content (actual text/image) → Padding (space inside border) → Border (outline) → Margin (space outside border). box-sizing:border-box includes padding and border in the element's width/height."},
+
+/* Web Tech PRA easy */
+{phase:"PRA",sub:"Web Tech",diff:"easy",q:"What does JSON stand for and what is it used for?",opts:["JavaScript Object Notation — a lightweight data format for exchanging data between a client and server","Java Serialised Object Network — a Java binary format","JavaScript Ordered Nodes — a DOM standard","Just Simple Object Names — a naming convention"],ans:0,exp:"JSON (JavaScript Object Notation) is a lightweight, human-readable data format. It uses key-value pairs and arrays. It is the dominant format for REST APIs, configuration files, and data exchange between web clients and servers."},
+
+/* BizSkills IRA-1 hard */
+{phase:"IRA-1",sub:"BizSkills",diff:"hard",q:"In a high-stakes client meeting, you notice a colleague presenting incorrect data. The professional approach is:",opts:["Stay silent to avoid conflict","Loudly interrupt and correct them immediately","Discreetly pass a note or pause the presentation at an appropriate moment and tactfully correct the data with supporting facts","Undermine them in the Q&A session"],ans:2,exp:"Correcting errors must balance accuracy (critical in client contexts) with professionalism and respect for your colleague. A discreet, fact-based correction preserves relationships while maintaining data integrity — a key TCS professional competency."},
+
+/* BizSkills IRA-2 hard */
+{phase:"IRA-2",sub:"BizSkills",diff:"hard",q:"You are leading a team during the ILP project phase. One member consistently underperforms and misses tasks, affecting the team's delivery. The BEST leadership response is:",opts:["Report them to faculty immediately without speaking to them first","Ignore it and absorb their work yourself","Have a private, structured conversation: acknowledge the issue, understand the root cause, agree on clear expectations, and follow up regularly","Complain about them in the team group chat"],ans:2,exp:"Effective team leadership addresses performance gaps directly but constructively. Understanding root causes (personal difficulties, skill gaps) before escalating shows maturity. Documenting the conversation and following up demonstrates structured leadership — both are PRA evaluation criteria."},
+
+/* BizSkills Diagnostic hard */
+{phase:"Diagnostic",sub:"BizSkills",diff:"hard",q:"Which of the following best demonstrates the ability to give CONSTRUCTIVE feedback to a peer?",opts:["'Your code is always a mess — fix it'","'I noticed three areas in your report that could be improved with clearer section headers and more specific data references — I can show you an example if helpful'","'Your work was okay I guess'","Avoid giving feedback to prevent conflict"],ans:1,exp:"Constructive feedback is specific (three areas), actionable (clearer headers, specific data), non-personal (the work, not the person), and collaborative (offer to help). Vague or harsh feedback damages trust and is explicitly tested in BizSkills assessments."},
+
+/* BizSkills PRA easy */
+{phase:"PRA",sub:"BizSkills",diff:"easy",q:"During your final PRA presentation, what does an evaluator primarily look for in your SPOKEN communication?",opts:["Memorised scripts delivered perfectly","Speed of delivery — faster is better","Clarity, logical structure, confident delivery, appropriate grammar, and the ability to respond to questions","Use of complex vocabulary to demonstrate intelligence"],ans:2,exp:"PRA spoken communication is evaluated on: clarity of expression, logical structure (introduction, body, conclusion), grammar accuracy, eye contact, confident delivery, and handling of questions under pressure. Speed and complexity are not the priority — clarity is."},
+
+/* Python IRA-1 hard */
+{phase:"IRA-1",sub:"Python",diff:"hard",q:"What is a Python decorator?",opts:["A comment style","A function that takes another function as input, adds behaviour, and returns the modified function — used with the @ syntax","A special print statement","A class variable prefix"],ans:1,exp:"A decorator is a higher-order function that wraps another function to add functionality (logging, authentication, timing) without modifying the original. Example: @staticmethod, @classmethod, @property are built-in decorators. Custom decorators use the @decorator_name syntax."},
+
+/* Python PRA easy */
+{phase:"PRA",sub:"Python",diff:"easy",q:"In Python, which built-in function converts a string to an integer?",opts:["toInt()","parseInt()","int()","Integer()"],ans:2,exp:"Python's int() function converts a string (or float) to an integer. Example: int('42') returns 42. int('3.7') raises ValueError — use int(float('3.7')) for that. Similar: float() and str() for conversions."},
+
 ]; /* end DB */
+
+/* ══════════════════════════════════════════
+   DAILY LIMIT CONFIG
+══════════════════════════════════════════ */
+const DAILY_LIMIT = 20;
+const STORAGE_KEY = 'tcs_ilp_daily';
+
+function todayKey() { return new Date().toISOString().slice(0, 10); }
+
+function loadDailyState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    // If stored date is not today, treat as fresh
+    if (s.date !== todayKey()) return null;
+    return s;
+  } catch(e) { return null; }
+}
+
+function saveDailyState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      date: todayKey(),
+      answeredArr: [...answered.entries()], // [[idx, {chosen}], ...]
+      attempted,
+      correct
+    }));
+  } catch(e) {}
+}
 
 /* ══════════════════════════════════════════
    APP STATE
@@ -404,7 +612,24 @@ let activeSub = 'All', activePhase = 'All', activeDiff = 'All';
 let searchQuery = '';
 let currentPage = 1;
 let attempted = 0, correct = 0;
-const answered = new Map(); // cardIndex → true/false
+const answered = new Map(); // cardIndex → {chosen}
+
+// Seeded daily shuffle — same 20 questions visible for the whole day
+function seededShuffle(arr, seed) {
+  const a = [...arr]; let s = seed * 1 || 1;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 16807) % 2147483647;
+    const j = Math.floor(((s - 1) / 2147483646) * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function getDailyIndices() {
+  const seed = todayKey().replace(/-/g, '') * 1;
+  const allIdx = DB.map((_, i) => i);
+  return new Set(seededShuffle(allIdx, seed).slice(0, DAILY_LIMIT));
+}
+const DAILY_INDICES = getDailyIndices(); // Set of DB indices for today
 
 /* ══════════════════════════════════════════
    INIT
@@ -413,7 +638,19 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('statTotal').textContent = DB.length;
   buildSubjectFilters();
   buildMobileSubject();
+
+  // Restore today's saved state
+  const saved = loadDailyState();
+  if (saved) {
+    attempted = saved.attempted || 0;
+    correct = saved.correct || 0;
+    if (Array.isArray(saved.answeredArr)) {
+      saved.answeredArr.forEach(([idx, val]) => answered.set(idx, val));
+    }
+  }
+
   renderAll();
+  updateAccuracy();
   initCharts();
   bindEvents();
 });
@@ -504,8 +741,10 @@ function renderAll() {
     let qText = item.q, codeHtml = '';
     if (hasCode) {
       const parts = item.q.split('\n');
-      qText = parts[0];
-      codeHtml = `<div class="q-code">${parts.slice(1).join('\n').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
+      qText = esc(parts[0]);
+      codeHtml = `<div class="q-code">${parts.slice(1).join('\n').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
+    } else {
+      qText = esc(item.q);
     }
 
     card.innerHTML = `
@@ -519,10 +758,10 @@ function renderAll() {
       <div class="q-options" id="opts-${globalIdx}">
         ${item.opts.map((o,i) => `<div class="q-opt" data-idx="${globalIdx}" data-opt="${i}">
           <span class="ol">${String.fromCharCode(65+i)}</span>
-          <span>${o}</span>
+          <span>${esc(o)}</span>
         </div>`).join('')}
       </div>
-      <div class="q-explain" id="exp-${globalIdx}">💡 ${item.exp}</div>
+      <div class="q-explain" id="exp-${globalIdx}">💡 ${esc(item.exp)}</div>
     `;
     grid.appendChild(card);
 
@@ -531,10 +770,22 @@ function renderAll() {
       const {chosen} = answered.get(globalIdx);
       lockCard(card, globalIdx, item, chosen, false);
     }
+
+    // Lock card if not in today's daily set OR daily limit reached and not yet answered
+    const inDailySet = DAILY_INDICES.has(globalIdx);
+    const alreadyAnswered = answered.has(globalIdx);
+    const limitReached = answered.size >= DAILY_LIMIT;
+    if (!inDailySet || (limitReached && !alreadyAnswered)) {
+      card.querySelectorAll('.q-opt').forEach(o => o.style.pointerEvents = 'none');
+      if (!inDailySet) card.style.opacity = '0.38';
+    }
   });
 
   renderPagination(pages, total);
 }
+
+/* HTML-escape helper — prevents <class 'list'> etc. being parsed as tags */
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 function lockCard(card, globalIdx, item, chosen, animate) {
   const opts = card.querySelectorAll('.q-opt');
@@ -556,6 +807,9 @@ document.getElementById('qGrid').addEventListener('click', e => {
   if (!opt) return;
   const globalIdx = parseInt(opt.dataset.idx);
   if (answered.has(globalIdx)) return;
+  // Enforce daily limit and daily set membership
+  if (!DAILY_INDICES.has(globalIdx)) return;
+  if (answered.size >= DAILY_LIMIT) return;
   const chosen = parseInt(opt.dataset.opt);
   const item = DB[globalIdx];
   const isCorrect = chosen === item.ans;
@@ -564,6 +818,7 @@ document.getElementById('qGrid').addEventListener('click', e => {
   attempted++;
   if (isCorrect) correct++;
   updateAccuracy();
+  saveDailyState();
 
   const card = opt.closest('.q-card');
   lockCard(card, globalIdx, item, chosen, true);
@@ -575,12 +830,28 @@ document.getElementById('qGrid').addEventListener('click', e => {
     spawnFX(opt.getBoundingClientRect(), false);
     showScorePopup(opt.getBoundingClientRect(), '✗');
   }
+
+  // If daily limit just reached, lock all remaining unanswered cards in view
+  if (answered.size >= DAILY_LIMIT) {
+    document.querySelectorAll('.q-card').forEach(c => {
+      const idx = parseInt(c.dataset.idx);
+      if (!answered.has(idx)) c.querySelectorAll('.q-opt').forEach(o => o.style.pointerEvents = 'none');
+    });
+    updateAccuracy(); // refreshes banner
+  }
 });
 
 function updateAccuracy() {
   document.getElementById('statAttempted').textContent = attempted;
   document.getElementById('statAccuracy').textContent = attempted
     ? Math.round((correct / attempted) * 100) + '%' : '—';
+  const done = answered.size;
+  const dailyEl = document.getElementById('statDaily');
+  const orb = document.getElementById('dailyOrb');
+  const banner = document.getElementById('dailyBanner');
+  if (dailyEl) dailyEl.textContent = done + '/' + DAILY_LIMIT;
+  if (orb) orb.classList.toggle('daily-done', done >= DAILY_LIMIT);
+  if (banner) banner.style.display = done >= DAILY_LIMIT ? 'block' : 'none';
 }
 
 /* ══════════════════════════════════════════
@@ -666,6 +937,15 @@ function bindEvents() {
     document.querySelectorAll('#subjectFilters .filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     activeSub = btn.dataset.sub;
+    // Reset phase and difficulty when subject changes
+    activePhase = 'All';
+    activeDiff = 'All';
+    document.querySelectorAll('.ph-chip').forEach(c => c.classList.remove('active'));
+    document.querySelector('.ph-chip[data-ph="All"]').classList.add('active');
+    document.querySelectorAll('#diffFilterRow .filter-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('#diffFilterRow .filter-btn[data-diff="All"]').classList.add('active');
+    document.getElementById('mobPhase').value = 'All';
+    document.getElementById('mobDiff').value = 'All';
     currentPage = 1;
     renderAll();
   });
@@ -701,7 +981,11 @@ function bindEvents() {
 
   // Mobile selects
   document.getElementById('mobSub').addEventListener('change', e => {
-    activeSub = e.target.value; currentPage = 1; renderAll();
+    activeSub = e.target.value;
+    activePhase = 'All'; activeDiff = 'All';
+    document.getElementById('mobPhase').value = 'All';
+    document.getElementById('mobDiff').value = 'All';
+    currentPage = 1; renderAll();
   });
   document.getElementById('mobPhase').addEventListener('change', e => {
     activePhase = e.target.value; currentPage = 1; renderAll();
