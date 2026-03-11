@@ -614,22 +614,7 @@ let currentPage = 1;
 let attempted = 0, correct = 0;
 const answered = new Map(); // cardIndex → {chosen}
 
-// Seeded daily shuffle — same 20 questions visible for the whole day
-function seededShuffle(arr, seed) {
-  const a = [...arr]; let s = seed * 1 || 1;
-  for (let i = a.length - 1; i > 0; i--) {
-    s = (s * 16807) % 2147483647;
-    const j = Math.floor(((s - 1) / 2147483646) * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-function getDailyIndices() {
-  const seed = todayKey().replace(/-/g, '') * 1;
-  const allIdx = DB.map((_, i) => i);
-  return new Set(seededShuffle(allIdx, seed).slice(0, DAILY_LIMIT));
-}
-const DAILY_INDICES = getDailyIndices(); // Set of DB indices for today
+// No pre-seeded set — user can answer any question freely, capped at DAILY_LIMIT total per day
 
 /* ══════════════════════════════════════════
    INIT
@@ -771,13 +756,9 @@ function renderAll() {
       lockCard(card, globalIdx, item, chosen, false);
     }
 
-    // Lock card if not in today's daily set OR daily limit reached and not yet answered
-    const inDailySet = DAILY_INDICES.has(globalIdx);
-    const alreadyAnswered = answered.has(globalIdx);
-    const limitReached = answered.size >= DAILY_LIMIT;
-    if (!inDailySet || (limitReached && !alreadyAnswered)) {
+    // If daily limit already reached and this card not yet answered, disable it
+    if (answered.size >= DAILY_LIMIT && !answered.has(globalIdx)) {
       card.querySelectorAll('.q-opt').forEach(o => o.style.pointerEvents = 'none');
-      if (!inDailySet) card.style.opacity = '0.38';
     }
   });
 
@@ -807,8 +788,7 @@ document.getElementById('qGrid').addEventListener('click', e => {
   if (!opt) return;
   const globalIdx = parseInt(opt.dataset.idx);
   if (answered.has(globalIdx)) return;
-  // Enforce daily limit and daily set membership
-  if (!DAILY_INDICES.has(globalIdx)) return;
+  // Enforce daily limit
   if (answered.size >= DAILY_LIMIT) return;
   const chosen = parseInt(opt.dataset.opt);
   const item = DB[globalIdx];
