@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<meta name="description" content="Explore 15 years of UPSC Prelims questions with interactive trend analytics, subject-wise filtering, and pattern insights. Free, offline, private — no signup needed."/>
+<meta name="description" content="Explore 25 years of UPSC Prelims questions with interactive trend analytics, subject-wise filtering, and pattern insights. Free, offline, private — no signup needed."/>
 <title>UPSC PYQ Explorer — Trend Analytics &amp; Pattern Finder — ReportMedic</title>
 <link rel="icon" href="/favicon.ico" sizes="any"/>
 <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
@@ -217,10 +217,10 @@ body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
   <!-- ── HERO ── -->
   <section class="pyq-hero anim-up">
     <h1>UPSC PYQ <span class="accent">Explorer</span></h1>
-    <p class="tagline">15 years of Prelims questions, searchable and analyzed. Spot patterns, track subject trends, and practice smarter — all in your browser, completely free.</p>
+    <p class="tagline">25 years of Prelims questions, searchable and analyzed. Spot patterns, track subject trends, and practice smarter — all in your browser, completely free.</p>
     <div class="stat-orbs">
       <div class="stat-orb"><span class="val" id="statTotal">0</span><span class="lbl">Total PYQs</span></div>
-      <div class="stat-orb"><span class="val">15</span><span class="lbl">Years</span></div>
+      <div class="stat-orb"><span class="val">15</span><span class="lbl">Years (2011–2025)</span></div>
       <div class="stat-orb"><span class="val">10</span><span class="lbl">Subjects</span></div>
       <div class="stat-orb"><span class="val" id="statAttempted">0</span><span class="lbl">Attempted</span></div>
       <div class="stat-orb"><span class="val" id="statAccuracy">—</span><span class="lbl">Accuracy</span></div>
@@ -2989,7 +2989,7 @@ function drawTrendChart() {
   // Data: count per subject per year
   const data={};
   SUBJECTS.forEach(s=>{data[s]={};YEARS.forEach(y=>data[s][y]=0);});
-  DB.forEach(q=>{if(data[q.sub])data[q.sub][q.y]=(data[q.sub][q.y]||0)+1;});
+  DB.forEach(q=>{if(q.auth===false)return;if(data[q.sub])data[q.sub][q.y]=(data[q.sub][q.y]||0)+1;});
   const maxV = Math.max(...SUBJECTS.map(s=>Math.max(...YEARS.map(y=>data[s][y]||0))),1);
 
   // Grid
@@ -3032,7 +3032,7 @@ function drawHeatmap() {
   const wrap=document.getElementById('chartHeatmap');
   const data={};
   SUBJECTS.forEach(s=>{data[s]={};YEARS.forEach(y=>data[s][y]=0);});
-  DB.forEach(q=>{if(data[q.sub])data[q.sub][q.y]++;});
+  DB.forEach(q=>{if(q.auth===false)return;if(data[q.sub])data[q.sub][q.y]++;});
   const maxV=Math.max(...Object.values(data).flatMap(o=>Object.values(o)),1);
   const revYears=[...YEARS].reverse();
 
@@ -3070,11 +3070,11 @@ function drawDifficultyChart() {
   const plotW=W-pad.l-pad.r,plotH=H-pad.t-pad.b;
   const isMobile=W<500;
 
-  const data={};YEARS.forEach(y=>data[y]={easy:0,medium:0,hard:0});
-  DB.forEach(q=>{if(data[q.y])data[q.y][q.diff]++;});
-  const activeDiffs=['easy','medium','hard'].filter(d=>!hiddenDiffLevels.has(d));
+  const data={};YEARS.forEach(y=>data[y]={easy:0,medium:0,hard:0,unrated:0});
+  DB.forEach(q=>{if(q.auth===false)return;if(data[q.y]){const d=q.diff||'unrated';data[q.y][d]=(data[q.y][d]||0)+1;}});
+  const activeDiffs=['easy','medium','hard','unrated'].filter(d=>!hiddenDiffLevels.has(d));
   const maxV=Math.max(...YEARS.map(y=>activeDiffs.reduce((s,d)=>s+(data[y][d]||0),0)),1);
-  const diffColors={easy:'#34d399',medium:'#fbbf24',hard:'#f87171'};
+  const diffColors={easy:'#34d399',medium:'#fbbf24',hard:'#f87171',unrated:'#94a3b8'};
   const gap=isMobile?1:2;
   const totalBarZone=plotW/YEARS.length;
   const barW=Math.min(isMobile?16:28,totalBarZone-gap*2);
@@ -3119,7 +3119,7 @@ function drawDifficultyChart() {
 
   // Clickable Legend
   const leg=document.getElementById('diffLegend');
-  leg.innerHTML=['easy','medium','hard'].map(d=>`<span class="chart-legend-item${hiddenDiffLevels.has(d)?' muted':''}" data-diff="${d}"><span class="ldot" style="background:${diffColors[d]};border-radius:4px"></span>${d.charAt(0).toUpperCase()+d.slice(1)}</span>`).join('');
+  leg.innerHTML=['easy','medium','hard','unrated'].map(d=>`<span class="chart-legend-item${hiddenDiffLevels.has(d)?' muted':''}" data-diff="${d}"><span class="ldot" style="background:${diffColors[d]};border-radius:4px"></span>${d.charAt(0).toUpperCase()+d.slice(1)}</span>`).join('');
   leg.onclick=function(e){const it=e.target.closest('.chart-legend-item');if(!it)return;const d=it.dataset.diff;if(hiddenDiffLevels.has(d))hiddenDiffLevels.delete(d);else hiddenDiffLevels.add(d);drawDifficultyChart();};
 }
 function handleChartTabClick(e) {
@@ -3145,26 +3145,6 @@ function drawActiveChart() {
   }
 }
 
-/* ── Chart state ── */
-const hiddenTrendSubs = new Set();
-const hiddenHeatmapSubs = new Set();
-const hiddenDiffLevels = new Set();
-
-/* ── Derived constants ── */
-const SUBJECTS = [...new Set(DB.map(q=>q.sub))].sort();
-const YEARS = [...new Set(DB.map(q=>q.y))].sort((a,b)=>a-b);
-const PER_PAGE = 20;
-
-/* ── Bootstrap ── */
-document.addEventListener("DOMContentLoaded", function() {
-  buildFilters();
-  document.getElementById("qGrid").addEventListener("click", handleOptionClick);
-  document.getElementById("chartTabs").addEventListener("click", handleChartTabClick);
-  window.addEventListener("resize", drawActiveChart);
-  animCount(document.getElementById("statTotal"), DB.filter(q=>q.auth!==false).length);
-  render();
-  drawActiveChart();
-});
 DB.push(
 {"y": 2024, "sub": "Reasoning", "auth": true, "q": "A Question is given followed by two Statements I and II. There are three distinct prime numbers whose sum is a prime number. Question: What are those three numbers? Statement-I: Their sum is less than 23. Statement-II: One of the numbers is 5.", "opts": ["Statement-I alone is sufficient to answer the question", "Either Statement alone is sufficient to answer the question", "Both Statements together are sufficient to answer the question", "The Question cannot be answered even with the information in both Statements"], "ans": 0, "exp": "St-I: primes less than 23 are 2,3,5,7,11,13,17,19. Distinct triples with prime sum and total less than 23: only 3+5+11=19 (prime, unique). St-I alone sufficient. St-II: many triples contain 5, not unique alone. Answer: A."},
 {"y": 2024, "sub": "Reasoning", "auth": true, "q": "A Question is given followed by two Statements I and II. Question: Is (x + y) an integer? Statement-I: (2x + y) is an integer. Statement-II: (x + 2y) is an integer.", "opts": ["Statement-I alone is sufficient to answer the question", "Either Statement alone is sufficient to answer the question", "Both Statements together are sufficient to answer the question", "The Question cannot be answered even with the information in both Statements"], "ans": 3, "exp": "St-I: 2x+y integer does not mean x,y are integers (e.g. x=0.5, y=2). St-II: x+2y integer similarly insufficient. Combined: still cannot determine. E.g. x=0.5, y=0.5 gives 2x+y=1.5 (not int); x=0.25, y=0.5 gives 2x+y=1.0, x+2y=1.25 but x+y=0.75 not integer. Answer: D."},
@@ -3254,6 +3234,26 @@ DB.push(
 {"y": 2025, "sub": "Reasoning", "auth": true, "q": "A Question is given followed by two Statements I and II.\nQuestion: In a football match, team P playing against Q was behind by 3 goals with 10 minutes remaining. Does team P win the match?\nStatement I: P scored 3 goals in the remaining time.\nStatement II: P scored 4 goals in the remaining time.\nWhich one of the following is correct?", "opts": ["The Question can be answered by using Statement I alone, but cannot be answered using Statement II alone.", "The Question can be answered by using Statement II alone, but cannot be answered using Statement I alone.", "The Question can be answered by using both the Statements together, but cannot be answered using either Statement alone.", "The Question cannot be answered even by using both the Statements together."], "ans": 1, "exp": "Statement I: P scores 3 goals = equalize. Not a win. Still cannot determine if P wins (tied). Statement II: P scores 4 goals = overturns 3-goal deficit and scores 1 more. P wins. Statement II alone answers the question: Yes, P wins. Answer: B."},
 {"y": 2025, "sub": "Reasoning", "auth": true, "q": "A Question is given followed by two Statements I and II.\nQuestion: Is (p + q)^2 - 4pq, where p, q are natural numbers, positive?\nStatement I: p is not equal to q.\nStatement II: p + q > 4.\nWhich one of the following is correct?", "opts": ["The Question can be answered by using Statement I alone, but cannot be answered using Statement II alone.", "The Question can be answered by using Statement II alone, but cannot be answered using Statement I alone.", "The Question can be answered by using both the Statements together, but cannot be answered using either Statement alone.", "The Question cannot be answered even by using both the Statements together."], "ans": 0, "exp": "(p+q)^2 - 4pq = p^2 + 2pq + q^2 - 4pq = (p-q)^2. This equals zero when p=q, and is positive when p != q. Statement I (p != q) alone is sufficient to conclude (p-q)^2 > 0. Statement II alone is not sufficient (p=q=3 satisfies p+q>4 but gives 0). Answer: A."}
 );
+/* ── Chart state ── */
+const hiddenTrendSubs = new Set();
+const hiddenHeatmapSubs = new Set();
+const hiddenDiffLevels = new Set();
+
+/* ── Derived constants ── */
+const SUBJECTS = [...new Set(DB.map(q=>q.sub))].sort();
+const YEARS = [...new Set(DB.map(q=>q.y))].sort((a,b)=>a-b);
+const PER_PAGE = 20;
+
+/* ── Bootstrap ── */
+document.addEventListener("DOMContentLoaded", function() {
+  buildFilters();
+  document.getElementById("qGrid").addEventListener("click", handleOptionClick);
+  document.getElementById("chartTabs").addEventListener("click", handleChartTabClick);
+  window.addEventListener("resize", drawActiveChart);
+  animCount(document.getElementById("statTotal"), DB.filter(q=>q.auth!==false).length);
+  render();
+  drawActiveChart();
+});
 var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
 (function(){
 var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
@@ -3268,7 +3268,6 @@ s0.parentNode.insertBefore(s1,s0);
 
 </body>
 </html>
-
 
 
 
