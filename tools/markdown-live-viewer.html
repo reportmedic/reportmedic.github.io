@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Markdown Live Viewer — Real-time Preview — ReportMedic</title>
+  <title>Markdown Live Viewer - Real-time Preview - ReportMedic</title>
   <meta name="description" content="Write Markdown and see a live preview instantly. Syntax highlighting, themes, export to HTML/PDF, word count, and more. Runs entirely in your browser." />
   <link rel="icon" href="/favicon.ico" />
   <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png" />
@@ -32,7 +32,7 @@
   margin-top: 14px;
   border: 1px solid var(--border);
   border-radius: 14px;
-  overflow: hidden;
+  overflow: visible;
   background: rgba(255,255,255,.03);
   min-height: 0;
 }
@@ -47,6 +47,8 @@
   border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
   row-gap: 6px;
+  border-radius: 14px 14px 0 0;
+  position: relative;
 }
 .md-toolbar-sep {
   width: 1px;
@@ -94,6 +96,16 @@
   cursor: pointer;
   outline: none;
   height: 30px;
+  width: auto;
+  max-width: 120px;
+  flex-shrink: 0;
+  display: inline-flex;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23aaa'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 22px;
 }
 .md-tb-select:focus { border-color: rgba(110,168,255,.45); }
 
@@ -111,7 +123,88 @@
   border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
 }
-.md-stats span b { color: rgba(238,246,255,.88); font-weight: 700; }
+.md-stats span b { font-weight: 700; }
+.md-stats span:nth-child(1) b { color: #6ee7b7; }
+.md-stats span:nth-child(2) b { color: #93c5fd; }
+.md-stats span:nth-child(3) b { color: #fbbf24; }
+.md-stats span:nth-child(4) b { color: #f9a8d4; }
+.md-stats span:nth-child(5) b { color: #c4b5fd; }
+.md-stats span:nth-child(6) b { color: #fdba74; }
+.md-stats span:nth-child(1) { color: rgba(110,231,183,.7); }
+.md-stats span:nth-child(2) { color: rgba(147,197,253,.7); }
+.md-stats span:nth-child(3) { color: rgba(251,191,36,.7); }
+.md-stats span:nth-child(4) { color: rgba(249,168,212,.7); }
+.md-stats span:nth-child(5) { color: rgba(196,181,253,.7); }
+.md-stats span:nth-child(6) { color: rgba(253,186,116,.7); }
+
+/* ─── Drop zone ─── */
+.md-editor-pane.drag-over {
+  position: relative;
+}
+.md-editor-pane.drag-over::after {
+  content: 'Drop .md file here';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(110,168,255,.12);
+  border: 2px dashed rgba(110,168,255,.5);
+  border-radius: 6px;
+  color: var(--brand);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  z-index: 10;
+  pointer-events: none;
+  backdrop-filter: blur(2px);
+}
+
+/* ─── Preview label row ─── */
+.md-preview-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 6px 14px;
+  background: rgba(0,0,0,.15);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.md-preview-label-text { margin-right: auto; }
+.md-color-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color .15s, transform .15s;
+  flex-shrink: 0;
+}
+.md-color-swatch:hover { transform: scale(1.2); }
+.md-color-swatch.active { border-color: var(--brand); transform: scale(1.15); }
+.md-copy-rich-btn {
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid rgba(110,168,255,.3);
+  background: rgba(110,168,255,.1);
+  color: var(--brand);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s, border-color .15s;
+}
+.md-copy-rich-btn:hover {
+  background: rgba(110,168,255,.2);
+  border-color: rgba(110,168,255,.5);
+}
 
 /* ─── Pane container ─── */
 .md-panes {
@@ -120,6 +213,7 @@
   min-height: 540px;
   height: calc(100vh - 360px);
   max-height: 800px;
+  overflow: hidden;
 }
 .md-panes.mode-editor { grid-template-columns: 1fr 0 0; }
 .md-panes.mode-preview { grid-template-columns: 0 0 1fr; }
@@ -141,6 +235,8 @@
   background: rgba(0,0,0,.15);
   border-bottom: 1px solid var(--border);
   border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
 }
 #mdInput {
   flex: 1;
@@ -189,16 +285,7 @@
   overflow: hidden;
   min-width: 0;
 }
-.md-preview-label {
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: .6px;
-  text-transform: uppercase;
-  color: var(--muted);
-  padding: 6px 14px;
-  background: rgba(0,0,0,.15);
-  border-bottom: 1px solid var(--border);
-}
+/* preview-label rule moved above with color swatches */
 #mdPreview {
   flex: 1;
   padding: 20px 24px;
@@ -347,6 +434,7 @@
   background: rgba(0,0,0,.22);
   border-top: 1px solid var(--border);
   flex-wrap: wrap;
+  border-radius: 0 0 14px 14px;
 }
 
 /* ─── Focus mode overlay ─── */
@@ -408,18 +496,19 @@ body.focus-mode .md-workspace { border-radius: 0; border-left: none; border-righ
 [data-tip]:hover::after {
   content: attr(data-tip);
   position: absolute;
-  bottom: calc(100% + 6px);
+  top: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
   font-size: 11px;
   padding: 4px 8px;
   border-radius: 6px;
-  background: rgba(0,0,0,.85);
+  background: rgba(0,0,0,.92);
   border: 1px solid var(--border);
-  color: rgba(238,246,255,.9);
+  color: rgba(238,246,255,.95);
   pointer-events: none;
-  z-index: 100;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0,0,0,.4);
 }
 
 .rm-kv{display:flex;gap:8px;align-items:baseline;padding:3px 0;}
@@ -533,7 +622,7 @@ body.focus-mode .md-workspace { border-radius: 0; border-left: none; border-righ
 
         <!-- Editor -->
         <div class="md-editor-pane">
-          <div class="md-editor-label">✏ Markdown</div>
+          <div class="md-editor-label">✏ Markdown <span style="margin-left:auto;font-weight:400;opacity:.5;font-size:9.5px;text-transform:none;letter-spacing:0">Drop .md file here or type below</span></div>
           <textarea id="mdInput" spellcheck="false" placeholder="# Hello World
 
 Start typing your Markdown here…
@@ -565,7 +654,16 @@ console.log(greet('World'));
 
         <!-- Preview -->
         <div class="md-preview-pane">
-          <div class="md-preview-label">👁 Preview</div>
+          <div class="md-preview-label">
+            <span class="md-preview-label-text">👁 Preview</span>
+            <span class="md-color-swatch active" data-bg="#0a101c" title="Default dark" style="background:#0a101c; box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);" onclick="setPreviewBg(this,'#0a101c')"></span>
+            <span class="md-color-swatch" data-bg="#ffffff" title="White" style="background:#ffffff; box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);" onclick="setPreviewBg(this,'#ffffff')"></span>
+            <span class="md-color-swatch" data-bg="#1e293b" title="Slate" style="background:#1e293b;" onclick="setPreviewBg(this,'#1e293b')"></span>
+            <span class="md-color-swatch" data-bg="#fefce8" title="Warm cream" style="background:#fefce8; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);" onclick="setPreviewBg(this,'#fefce8')"></span>
+            <span class="md-color-swatch" data-bg="#0f172a" title="Navy" style="background:#0f172a;" onclick="setPreviewBg(this,'#0f172a')"></span>
+            <span class="md-color-swatch" data-bg="#f0fdf4" title="Mint" style="background:#f0fdf4; box-shadow:inset 0 0 0 1px rgba(0,0,0,.1);" onclick="setPreviewBg(this,'#f0fdf4')"></span>
+            <button class="md-copy-rich-btn" onclick="copyRichText()" data-tip="Copy formatted text">📋 Copy Rich Text</button>
+          </div>
           <div id="mdPreview" class="theme-dark">
             <div class="md-empty" id="mdEmpty">
               <div class="md-empty-icon">📝</div>
@@ -1096,6 +1194,85 @@ ${body}
 
   // ── Initial render ──
   doRender();
+
+  // ── Drop zone on editor pane ──
+  const editorPane = document.querySelector('.md-editor-pane');
+  let dragCounter = 0;
+  editorPane.addEventListener('dragenter', e => {
+    e.preventDefault();
+    dragCounter++;
+    editorPane.classList.add('drag-over');
+  });
+  editorPane.addEventListener('dragleave', e => {
+    e.preventDefault();
+    dragCounter--;
+    if (dragCounter <= 0) { dragCounter = 0; editorPane.classList.remove('drag-over'); }
+  });
+  editorPane.addEventListener('dragover', e => { e.preventDefault(); });
+  editorPane.addEventListener('drop', e => {
+    e.preventDefault();
+    dragCounter = 0;
+    editorPane.classList.remove('drag-over');
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!file) return;
+    if (!file.name.match(/\.(md|markdown|txt)$/i)) {
+      setStatus('Only .md, .markdown, or .txt files');
+      return;
+    }
+    const r = new FileReader();
+    r.onload = ev => {
+      input.value = ev.target.result;
+      scheduleRender();
+      setStatus('Dropped: ' + file.name);
+    };
+    r.readAsText(file);
+  });
+
+  // ── Copy Rich Text (formatted) ──
+  window.copyRichText = async () => {
+    const html = preview.innerHTML;
+    if (!html || !html.trim()) { setStatus('Nothing to copy'); return; }
+    try {
+      const blob = new Blob([html], { type: 'text/html' });
+      const textBlob = new Blob([preview.innerText], { type: 'text/plain' });
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/html': blob,
+          'text/plain': textBlob
+        })
+      ]);
+      setStatus('Rich text copied!');
+    } catch(e) {
+      // Fallback
+      try {
+        await navigator.clipboard.writeText(preview.innerText);
+        setStatus('Plain text copied (rich text not supported)');
+      } catch(e2) { setStatus('Copy failed'); }
+    }
+  };
+
+  // ── Preview background color toggle ──
+  window.setPreviewBg = (el, color) => {
+    document.querySelectorAll('.md-color-swatch').forEach(s => s.classList.remove('active'));
+    el.classList.add('active');
+    preview.style.background = color;
+    // auto adjust text color for light backgrounds
+    const isLight = isLightColor(color);
+    if (isLight) {
+      preview.style.color = '#1a1a2e';
+    } else {
+      // Reset to theme default
+      preview.style.color = '';
+    }
+  };
+
+  function isLightColor(hex) {
+    const c = hex.replace('#','');
+    const r = parseInt(c.substr(0,2),16);
+    const g = parseInt(c.substr(2,2),16);
+    const b = parseInt(c.substr(4,2),16);
+    return (r*299 + g*587 + b*114) / 1000 > 150;
+  }
 
 })();
 </script>
