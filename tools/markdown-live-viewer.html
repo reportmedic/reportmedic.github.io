@@ -206,6 +206,64 @@
   border-color: rgba(110,168,255,.5);
 }
 
+/* ─── Toast notification ─── */
+.md-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.md-toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, rgba(30,42,66,.95), rgba(16,24,44,.97));
+  border: 1px solid rgba(110,168,255,.25);
+  box-shadow: 0 8px 28px rgba(0,0,0,.45), 0 0 0 1px rgba(110,168,255,.08);
+  backdrop-filter: blur(14px);
+  pointer-events: auto;
+  animation: toastIn .3s ease forwards;
+  max-width: 340px;
+}
+.md-toast.toast-success { border-color: rgba(110,231,183,.35); }
+.md-toast.toast-success .md-toast-icon { background: rgba(110,231,183,.15); color: #6ee7b7; }
+.md-toast.toast-error { border-color: rgba(255,120,120,.35); }
+.md-toast.toast-error .md-toast-icon { background: rgba(255,120,120,.15); color: #ff7878; }
+.md-toast.toast-info { border-color: rgba(147,197,253,.35); }
+.md-toast.toast-info .md-toast-icon { background: rgba(147,197,253,.15); color: #93c5fd; }
+.md-toast.toast-out { animation: toastOut .3s ease forwards; }
+.md-toast-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  background: rgba(110,168,255,.15);
+  color: var(--brand);
+}
+.md-toast-text { line-height: 1.3; }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(40px) scale(.95); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(0) scale(1); }
+  to   { opacity: 0; transform: translateX(40px) scale(.92); }
+}
+
 /* ─── Pane container ─── */
 .md-panes {
   display: grid;
@@ -688,6 +746,9 @@ console.log(greet('World'));
 
     </div><!-- .md-workspace -->
 
+    <!-- Toast container -->
+    <div class="md-toast-container" id="mdToastContainer"></div>
+
   </div><!-- .panel -->
 
   <div class="footer">© 2026 ReportMedic</div>
@@ -901,6 +962,7 @@ console.log(greet('World'));
     document.getElementById('btnSync').classList.toggle('active', state.syncScroll);
     document.getElementById('statSyncLabel').textContent = state.syncScroll ? 'Sync on' : 'Sync off';
     syncDot.classList.toggle('active', state.syncScroll);
+    setStatus(state.syncScroll ? 'Scroll sync enabled' : 'Scroll sync disabled');
   };
   // default on
   document.getElementById('btnSync').classList.add('active');
@@ -920,13 +982,13 @@ console.log(greet('World'));
   window.setTheme = (t) => {
     state.theme = t;
     preview.className = `theme-${t}`;
-    // swap hljs theme
     const themes = {
       dark: 'github-dark', github: 'github-dark', paper: 'github', solarized: 'a11y-dark', nord: 'nord'
     };
     document.getElementById('hljs-theme').href =
       `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${themes[t] || 'github-dark'}.min.css`;
     doRender();
+    setStatus('Switched to ' + t.charAt(0).toUpperCase() + t.slice(1) + ' theme');
   };
 
   // ── TOC toggle ──
@@ -934,6 +996,7 @@ console.log(greet('World'));
     state.tocOpen = !state.tocOpen;
     tocPanel.classList.toggle('open', state.tocOpen);
     document.getElementById('btnTOC').classList.toggle('active', state.tocOpen);
+    setStatus(state.tocOpen ? 'Table of Contents opened' : 'Table of Contents closed');
   };
 
   // ── Focus mode ──
@@ -941,6 +1004,7 @@ console.log(greet('World'));
     state.focusMode = !state.focusMode;
     document.body.classList.toggle('focus-mode', state.focusMode);
     document.getElementById('btnFocus').classList.toggle('active', state.focusMode);
+    setStatus(state.focusMode ? 'Focus mode on' : 'Focus mode off');
   };
 
   // ── Toolbar helpers ──
@@ -1134,9 +1198,9 @@ ${body}
   };
 
   window.printPdf = () => {
-    // Set preview-only mode temporarily, then print
     const prevMode = state.mode;
     setMode('preview');
+    setStatus('Opening print dialog');
     setTimeout(() => { window.print(); setTimeout(() => setMode(prevMode), 500); }, 150);
   };
 
@@ -1173,12 +1237,63 @@ ${body}
     }
   });
 
-  // ── Status helper ──
+  // ── Status helper + toast ──
   let statusTimer;
+  const toastContainer = document.getElementById('mdToastContainer');
+
+  const toastConfig = {
+    'copied':    { icon: '✓', type: 'success' },
+    'saved':     { icon: '💾', type: 'success' },
+    'exported':  { icon: '⇟', type: 'success' },
+    'opened':    { icon: '📂', type: 'info' },
+    'dropped':   { icon: '📂', type: 'info' },
+    'restored':  { icon: '↺', type: 'info' },
+    'opening':   { icon: '⎙', type: 'info' },
+    'switched':  { icon: '🎨', type: 'info' },
+    'enabled':   { icon: '✓', type: 'success' },
+    'disabled':  { icon: '○', type: 'info' },
+    'focus mode on':  { icon: '⛶', type: 'success' },
+    'focus mode off': { icon: '⛶', type: 'info' },
+    'contents opened': { icon: '≡', type: 'info' },
+    'contents closed': { icon: '≡', type: 'info' },
+    'cleared':   { icon: '✕', type: 'info' },
+    'failed':    { icon: '✗', type: 'error' },
+    'only':      { icon: '⚠', type: 'error' },
+    'nothing':   { icon: '⚠', type: 'error' },
+  };
+
+  function getToastType(msg) {
+    const lower = msg.toLowerCase();
+    for (const [key, cfg] of Object.entries(toastConfig)) {
+      if (lower.includes(key)) return cfg;
+    }
+    return null;
+  }
+
+  function showToast(msg, icon, type) {
+    const toast = document.createElement('div');
+    toast.className = 'md-toast toast-' + type;
+    toast.innerHTML = `<span class="md-toast-icon">${icon}</span><span class="md-toast-text">${msg}</span>`;
+    toastContainer.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('toast-out');
+      setTimeout(() => toast.remove(), 300);
+    }, 2200);
+  }
+
   function setStatus(msg) {
     statusMsg.textContent = msg;
     clearTimeout(statusTimer);
     statusTimer = setTimeout(() => { statusMsg.textContent = 'Ready'; }, 2500);
+
+    // Show toast for user-facing actions (skip silent "Updated")
+    if (msg === 'Updated') return;
+    const cfg = getToastType(msg);
+    if (cfg) {
+      showToast(msg, cfg.icon, cfg.type);
+    } else {
+      showToast(msg, 'ℹ', 'info');
+    }
   }
 
   // ── Auto-save to sessionStorage ──
