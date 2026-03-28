@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="Find and replace text while preserving rich formatting (bold, italic, colors, links, lists). Paste from Word, Google Docs, or any editor - find and replace without losing formatting. Runs locally in your browser."/>
+<title>Find &amp; Replace (Rich Text) - Preserve Formatting - ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+<style>
+  /* Shell */
+  .fr-shell{
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255,255,255,.06);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 24px rgba(0,0,0,.22);
+    overflow: hidden;
+    min-height: 520px;
+  }
+
+  /* Top bar */
+  .fr-topbar{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,.02);
+    flex-shrink: 0;
+  }
+  .fr-topbar-title{
+    font-weight: 800;
+    font-size: 13.5px;
+    opacity: .85;
+    flex: 1;
+  }
+  .fr-icon-btn{
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: rgba(238,246,255,.80);
+    cursor: pointer;
+    font-size: 13px;
+    transition: background .1s, border-color .1s;
+    flex-shrink: 0;
+  }
+  .fr-icon-btn:hover{ background: rgba(255,255,255,.09); border-color: var(--border); }
+
+  /* Find/Replace controls */
+  .fr-controls{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,.18);
+    align-items: flex-end;
+    flex-shrink: 0;
+  }
+  .fr-field{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 160px;
+  }
+  .fr-label{
+    font-size: 11px;
+    font-weight: 700;
+    opacity: .6;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .fr-input{
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    color: var(--text);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+    transition: border-color .14s, box-shadow .14s;
+  }
+  .fr-input:focus{
+    border-color: rgba(110,168,255,.50);
+    box-shadow: 0 0 0 3px rgba(110,168,255,.12);
+  }
+  .fr-opts{
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .fr-opt-label{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    opacity: .78;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .fr-opt-label input{ width: 15px; height: 15px; accent-color: var(--brand); cursor: pointer; }
+  .fr-actions{
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .fr-btn{
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,.04);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .1s, border-color .1s, transform .08s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .fr-btn:hover{ background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.24); transform: translateY(-1px); }
+  .fr-btn.primary{
+    border: none;
+    background: linear-gradient(135deg, var(--brand), var(--brand2));
+    color: #061021;
+  }
+  .fr-btn.primary:hover{ box-shadow: 0 4px 16px rgba(110,168,255,.25); }
+  .fr-btn:disabled{ opacity: .35; cursor: not-allowed; transform: none; }
+
+  /* Match counter badge */
+  .fr-match-badge{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 22px;
+    padding: 0 7px;
+    border-radius: 6px;
+    background: rgba(110,168,255,.12);
+    color: var(--brand);
+    font-size: 11px;
+    font-weight: 800;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    flex-shrink: 0;
+  }
+  .fr-match-badge.has-matches{ background: rgba(110,231,183,.12); color: #6ee7b7; }
+  .fr-match-badge.no-matches{ background: rgba(255,120,120,.10); color: rgba(255,120,120,.8); }
+
+  /* Stats bar */
+  .fr-stats{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 5px 14px;
+    font-size: 11px;
+    color: var(--muted);
+    background: rgba(0,0,0,.12);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+  .fr-stats span b{ font-weight: 700; }
+  .fr-stats span:nth-child(1) b{ color: #6ee7b7; }
+  .fr-stats span:nth-child(2) b{ color: #93c5fd; }
+  .fr-stats span:nth-child(3) b{ color: #fbbf24; }
+  .fr-stats span:nth-child(4) b{ color: #f9a8d4; }
+  .fr-stats span:nth-child(1){ color: rgba(110,231,183,.7); }
+  .fr-stats span:nth-child(2){ color: rgba(147,197,253,.7); }
+  .fr-stats span:nth-child(3){ color: rgba(251,191,36,.7); }
+  .fr-stats span:nth-child(4){ color: rgba(249,168,212,.7); }
+
+  /* Editor area (contenteditable for rich text) */
+  .fr-editor{
+    flex: 1;
+    padding: 18px 18px;
+    outline: none;
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--text);
+    overflow: auto;
+    min-height: 280px;
+  }
+  .fr-editor:empty::before{
+    content: "Paste your formatted text here (from Word, Google Docs, email, etc.)...";
+    color: rgba(255,255,255,.28);
+    pointer-events: none;
+  }
+  .fr-editor img{ max-width: 100%; border-radius: 8px; }
+
+  /* Highlight for found matches */
+  .fr-highlight{
+    background: rgba(110,168,255,.22);
+    border-radius: 3px;
+    padding: 0 1px;
+  }
+  .fr-highlight.fr-active{
+    background: rgba(110,168,255,.45);
+    outline: 2px solid rgba(110,168,255,.55);
+  }
+
+  /* Footer tip */
+  .fr-foot{
+    padding: 8px 14px;
+    border-top: 1px solid var(--border);
+    font-size: 11.5px;
+    color: var(--muted);
+    background: rgba(255,255,255,.02);
+    flex-shrink: 0;
+  }
+
+  /* Fullscreen */
+  .fr-shell.fr-fullscreen{
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10000 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    background: linear-gradient(180deg, rgba(15,26,43,1), rgba(11,18,32,1)) !important;
+    box-shadow: none !important;
+    min-height: 100vh;
+  }
+
+  /* Toast */
+  .fr-toast-container{
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    z-index: 99999; display: flex; flex-direction: column; align-items: center;
+    gap: 10px; pointer-events: none;
+  }
+  .fr-toast{
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 20px; border-radius: 12px;
+    font-family: inherit; font-size: 13.5px; font-weight: 700;
+    pointer-events: auto; max-width: 400px; position: relative; overflow: hidden;
+    box-shadow: 0 10px 36px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.2);
+    animation: frToastIn .35s cubic-bezier(.21,1.02,.73,1) forwards;
+  }
+  .fr-toast.toast-success{
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    border: 1px solid #6ee7b7; color: #065f46;
+  }
+  .fr-toast.toast-success .fr-toast-icon{ background: #10b981; color: #fff; }
+  .fr-toast.toast-info{
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border: 1px solid #93c5fd; color: #1e3a5f;
+  }
+  .fr-toast.toast-info .fr-toast-icon{ background: #3b82f6; color: #fff; }
+  .fr-toast.toast-out{ animation: frToastOut .25s ease forwards; }
+  .fr-toast-icon{
+    width: 28px; height: 28px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .fr-toast-text{ line-height: 1.3; }
+  .fr-toast::before{
+    content: ''; position: absolute; bottom: 0; left: 12px; right: 12px;
+    height: 3px; border-radius: 3px; background: currentColor; opacity: .25;
+    animation: frToastProgress 2.2s linear forwards;
+  }
+  @keyframes frToastProgress{ from{ transform: scaleX(1); transform-origin: left; } to{ transform: scaleX(0); transform-origin: left; } }
+  @keyframes frToastIn{ from{ opacity: 0; transform: translateY(-16px) scale(.92); } to{ opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes frToastOut{ from{ opacity: 1; } to{ opacity: 0; transform: translateY(-12px) scale(.9); } }
+
+  /* Mobile */
+  @media (max-width: 640px){
+    .fr-topbar{ padding: 8px 10px; gap: 6px; }
+    .fr-controls{ padding: 10px 10px; gap: 8px; }
+    .fr-field{ min-width: 120px; }
+    .fr-input{ height: 32px; font-size: 12px; }
+    .fr-btn{ height: 32px; padding: 0 10px; font-size: 11.5px; }
+    .fr-opts{ gap: 10px; }
+    .fr-opt-label{ font-size: 10.5px; }
+    .fr-editor{ padding: 14px 12px; font-size: 14px; min-height: 200px; }
+    .fr-stats{ gap: 10px; padding: 4px 10px; font-size: 10px; }
+    .fr-foot{ font-size: 10.5px; padding: 6px 10px; }
+    .fr-match-badge{ font-size: 10px; height: 20px; min-width: 20px; }
+  }
+  @media (max-width: 400px){
+    .fr-controls{ flex-direction: column; }
+    .fr-field{ min-width: 100%; }
+    .fr-actions{ width: 100%; }
+    .fr-actions .fr-btn{ flex: 1; justify-content: center; }
+    .fr-foot{ display: none; }
+  }
+</style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Find &amp; Replace (Rich Text) <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Paste formatted text from Word, Google Docs, email, or any editor. Find and replace words without losing bold, italic, colors, links, or any formatting. Copy the result as rich text. Runs locally in your browser.</p>
+    <div class="tiny muted" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help &#8594;</a></div>
+
+    <div class="fr-shell" id="frShell">
+
+      <!-- Top bar -->
+      <div class="fr-topbar">
+        <div class="fr-topbar-title">Rich Text Editor</div>
+        <button class="fr-icon-btn" id="frCopyRichBtn" type="button" title="Copy as rich text (formatted)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+        <button class="fr-icon-btn" id="frCopyPlainBtn" type="button" title="Copy as plain text">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </button>
+        <button class="fr-icon-btn" id="frClearBtn" type="button" title="Clear all">&#10005;</button>
+        <button class="fr-icon-btn" id="frFullBtn" type="button" title="Fullscreen">&#10530;</button>
+      </div>
+
+      <!-- Find / Replace controls -->
+      <div class="fr-controls">
+        <div class="fr-field">
+          <div class="fr-label">Find</div>
+          <input class="fr-input" id="frFindInput" type="text" placeholder="Search text..." autocomplete="off" />
+        </div>
+        <div class="fr-field">
+          <div class="fr-label">Replace with</div>
+          <input class="fr-input" id="frReplaceInput" type="text" placeholder="Replacement text..." autocomplete="off" />
+        </div>
+        <div class="fr-opts">
+          <label class="fr-opt-label"><input type="checkbox" id="frMatchCase" /> Match case</label>
+          <label class="fr-opt-label"><input type="checkbox" id="frWholeWord" /> Whole word</label>
+        </div>
+        <div class="fr-actions">
+          <span class="fr-match-badge" id="frMatchBadge">0</span>
+          <button class="fr-btn" id="frPrevBtn" type="button" title="Previous match" disabled>&#9650;</button>
+          <button class="fr-btn" id="frNextBtn" type="button" title="Next match" disabled>&#9660;</button>
+          <button class="fr-btn" id="frReplaceBtn" type="button" disabled>Replace</button>
+          <button class="fr-btn primary" id="frReplaceAllBtn" type="button" disabled>Replace All</button>
+        </div>
+      </div>
+
+      <!-- Stats bar -->
+      <div class="fr-stats" id="frStats">
+        <span><b id="frStatWords">0</b> words</span>
+        <span><b id="frStatChars">0</b> chars</span>
+        <span><b id="frStatLines">0</b> lines</span>
+        <span><b id="frStatReadTime">0</b> min read</span>
+      </div>
+
+      <!-- Rich text editor -->
+      <div class="fr-editor" id="frEditor" contenteditable="true" spellcheck="true"></div>
+
+      <!-- Footer -->
+      <div class="fr-foot">
+        Paste formatted text from Word, Google Docs, or email. Formatting is preserved during find &amp; replace. Use "Copy as rich text" to paste the result back with formatting intact.
+      </div>
+
+    </div>
+
+    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+      <a class="btn" href="/fix-my-report.html">Contact</a>
+    </div>
+
+  </div>
+  <div class="footer">&copy; 2026 ReportMedic</div>
+</div>
+
+<div class="fr-toast-container" id="frToastContainer"></div>
+
+
+<!-- Learn More Modal -->
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Find &amp; Replace (Rich Text)</h2>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">&times;</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this solves</h3>
+      <ul>
+        <li>Most find-and-replace tools strip formatting, forcing you to reformat after</li>
+        <li>This tool preserves bold, italic, underline, colors, links, lists, and all rich text formatting</li>
+        <li>Paste from Word, Google Docs, Outlook, or any rich text source</li>
+      </ul>
+
+      <h3>How to use</h3>
+      <ul>
+        <li>Paste your formatted text into the editor</li>
+        <li>Type your search term and replacement</li>
+        <li>Use Replace (one at a time) or Replace All (all at once)</li>
+        <li>Copy the result as rich text to paste back into your document</li>
+      </ul>
+
+      <h3>Options</h3>
+      <ul>
+        <li>Match case: only find exact case matches</li>
+        <li>Whole word: only match complete words, not partial matches</li>
+      </ul>
+
+      <h3>Privacy</h3>
+      <ul>
+        <li>Everything runs locally in your browser</li>
+        <li>No text is uploaded or stored on any server</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">&copy; 2026 ReportMedic</div>
+  </div>
+</footer>
+
+
+<!-- Learn More Modal Script -->
+<script>
+(function(){
+  function openLM(id){
+    var bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','false');
+    var btn=bd.querySelector('.rm-lm-close');
+    if(btn) btn.focus();
+  }
+  function closeLM(id){
+    var bd=document.getElementById(id);
+    if(!bd) return;
+    bd.setAttribute('aria-hidden','true');
+  }
+  document.addEventListener('click', function(e){
+    var a=e.target.closest('[data-rm-lm-open]');
+    if(a){ e.preventDefault(); openLM(a.getAttribute('data-rm-lm-open')); return; }
+    var close=e.target.closest('[data-rm-lm-close]');
+    if(close){ e.preventDefault(); closeLM(close.getAttribute('data-rm-lm-close')); return; }
+    var bd=e.target.classList && e.target.classList.contains('rm-lm-backdrop') ? e.target : null;
+    if(bd) closeLM(bd.id);
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(function(bd){ bd.setAttribute('aria-hidden','true'); });
+  });
+})();
+</script>
+
+
+<!-- Main Script -->
+<script>
+(function(){
+  var editor       = document.getElementById('frEditor');
+  var shell        = document.getElementById('frShell');
+  var findInput    = document.getElementById('frFindInput');
+  var replaceInput = document.getElementById('frReplaceInput');
+  var matchCase    = document.getElementById('frMatchCase');
+  var wholeWord    = document.getElementById('frWholeWord');
+  var matchBadge   = document.getElementById('frMatchBadge');
+  var prevBtn      = document.getElementById('frPrevBtn');
+  var nextBtn      = document.getElementById('frNextBtn');
+  var replaceBtn   = document.getElementById('frReplaceBtn');
+  var replaceAllBtn= document.getElementById('frReplaceAllBtn');
+  var toastContainer = document.getElementById('frToastContainer');
+
+  var copyRichSvg = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  var checkSvg = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  var copyPlainSvg = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+
+  // State
+  var currentMatches = [];
+  var currentIndex = -1;
+  var savedHTML = '';
+
+  /* ---- Toast ---- */
+  function toast(msg, type){
+    type = type || 'info';
+    var icon = type === 'success' ? '✓' : 'ℹ';
+    var el = document.createElement('div');
+    el.className = 'fr-toast toast-' + type;
+    el.innerHTML = '<span class="fr-toast-icon">' + icon + '</span><span class="fr-toast-text">' + msg + '</span>';
+    toastContainer.appendChild(el);
+    setTimeout(function(){ el.classList.add('toast-out'); setTimeout(function(){ el.remove(); }, 300); }, 2200);
+  }
+
+  /* ---- Stats ---- */
+  function updateStats(){
+    var text = editor.innerText || '';
+    var trimmed = text.trim();
+    var words = trimmed ? trimmed.split(/\s+/).length : 0;
+    var chars = text.length;
+    var lines = trimmed ? trimmed.split(/\n/).length : 0;
+    var readTime = words > 0 ? Math.max(1, Math.ceil(words / 200)) : 0;
+
+    document.getElementById('frStatWords').textContent = words.toLocaleString();
+    document.getElementById('frStatChars').textContent = chars.toLocaleString();
+    document.getElementById('frStatLines').textContent = lines.toLocaleString();
+    document.getElementById('frStatReadTime').textContent = readTime;
+  }
+
+  editor.addEventListener('input', function(){
+    updateStats();
+    // Re-run find if there's a query active
+    if(findInput.value.length > 0) runFind();
+  });
+  updateStats();
+
+  /* ---- Find logic ---- */
+  // Walk all text nodes inside editor
+  function getTextNodes(root){
+    var nodes = [];
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+    var node;
+    while(node = walker.nextNode()){
+      // Skip our own highlight marks
+      if(node.parentNode && node.parentNode.classList && node.parentNode.classList.contains('fr-highlight')) continue;
+      nodes.push(node);
+    }
+    return nodes;
+  }
+
+  function clearHighlights(){
+    var marks = editor.querySelectorAll('.fr-highlight');
+    for(var i = marks.length - 1; i >= 0; i--){
+      var mark = marks[i];
+      var parent = mark.parentNode;
+      while(mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+      parent.removeChild(mark);
+      parent.normalize();
+    }
+  }
+
+  function escapeRegex(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  function runFind(){
+    var query = findInput.value;
+
+    // Remove old highlights first (restore saved HTML if we have it)
+    clearHighlights();
+
+    if(!query){
+      currentMatches = [];
+      currentIndex = -1;
+      updateBadge();
+      updateButtons();
+      return;
+    }
+
+    var flags = 'g';
+    if(!matchCase.checked) flags += 'i';
+    var pattern = escapeRegex(query);
+    if(wholeWord.checked) pattern = '\\b' + pattern + '\\b';
+    var regex = new RegExp(pattern, flags);
+
+    // Get all text nodes and find matches
+    var textNodes = getTextNodes(editor);
+    var matches = [];
+
+    for(var i = 0; i < textNodes.length; i++){
+      var tNode = textNodes[i];
+      var text = tNode.nodeValue;
+      var match;
+      // Reset lastIndex
+      regex.lastIndex = 0;
+      // Collect all matches in this text node with positions
+      var localMatches = [];
+      while((match = regex.exec(text)) !== null){
+        localMatches.push({ start: match.index, end: match.index + match[0].length, text: match[0] });
+      }
+
+      if(localMatches.length === 0) continue;
+
+      // Wrap matches in highlight spans (process from end to start to preserve offsets)
+      for(var j = localMatches.length - 1; j >= 0; j--){
+        var m = localMatches[j];
+        var range = document.createRange();
+        range.setStart(tNode, m.start);
+        range.setEnd(tNode, m.end);
+        var span = document.createElement('span');
+        span.className = 'fr-highlight';
+        range.surroundContents(span);
+        // After surroundContents, tNode may have split; re-get for next iteration
+        // But since we go backwards, earlier text nodes are still intact
+      }
+    }
+
+    // Collect all highlight spans
+    currentMatches = Array.prototype.slice.call(editor.querySelectorAll('.fr-highlight'));
+
+    if(currentMatches.length > 0){
+      currentIndex = 0;
+      setActiveMatch(0);
+    } else {
+      currentIndex = -1;
+    }
+
+    updateBadge();
+    updateButtons();
+  }
+
+  function setActiveMatch(idx){
+    // Remove active from all
+    for(var i = 0; i < currentMatches.length; i++){
+      currentMatches[i].classList.remove('fr-active');
+    }
+    if(idx >= 0 && idx < currentMatches.length){
+      currentMatches[idx].classList.add('fr-active');
+      currentMatches[idx].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }
+
+  function updateBadge(){
+    var count = currentMatches.length;
+    matchBadge.textContent = count;
+    matchBadge.classList.remove('has-matches', 'no-matches');
+    if(findInput.value.length > 0){
+      matchBadge.classList.add(count > 0 ? 'has-matches' : 'no-matches');
+    }
+  }
+
+  function updateButtons(){
+    var hasMatches = currentMatches.length > 0;
+    prevBtn.disabled = !hasMatches;
+    nextBtn.disabled = !hasMatches;
+    replaceBtn.disabled = !hasMatches;
+    replaceAllBtn.disabled = !hasMatches;
+  }
+
+  // Event listeners for find
+  findInput.addEventListener('input', runFind);
+  matchCase.addEventListener('change', runFind);
+  wholeWord.addEventListener('change', runFind);
+
+  // Prev / Next
+  prevBtn.addEventListener('click', function(){
+    if(currentMatches.length === 0) return;
+    currentIndex = (currentIndex - 1 + currentMatches.length) % currentMatches.length;
+    setActiveMatch(currentIndex);
+  });
+  nextBtn.addEventListener('click', function(){
+    if(currentMatches.length === 0) return;
+    currentIndex = (currentIndex + 1) % currentMatches.length;
+    setActiveMatch(currentIndex);
+  });
+
+  /* ---- Replace ---- */
+  function replaceCurrent(){
+    if(currentIndex < 0 || currentIndex >= currentMatches.length) return;
+    var mark = currentMatches[currentIndex];
+    var replacement = replaceInput.value;
+    // Replace the text inside the highlight span, preserving the DOM position
+    mark.textContent = replacement;
+    // Unwrap the span
+    var parent = mark.parentNode;
+    while(mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+    parent.removeChild(mark);
+    parent.normalize();
+
+    // Re-run find to update matches
+    runFind();
+    updateStats();
+    toast('Replaced 1 match', 'success');
+  }
+
+  function replaceAll(){
+    if(currentMatches.length === 0) return;
+    var count = currentMatches.length;
+    var replacement = replaceInput.value;
+
+    // Replace all highlights
+    for(var i = currentMatches.length - 1; i >= 0; i--){
+      var mark = currentMatches[i];
+      mark.textContent = replacement;
+      var parent = mark.parentNode;
+      while(mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+      parent.removeChild(mark);
+      parent.normalize();
+    }
+
+    currentMatches = [];
+    currentIndex = -1;
+    updateBadge();
+    updateButtons();
+    updateStats();
+    // Re-run find to see if there are remaining matches (shouldn't be)
+    runFind();
+    toast('Replaced ' + count + ' match' + (count !== 1 ? 'es' : ''), 'success');
+  }
+
+  replaceBtn.addEventListener('click', replaceCurrent);
+  replaceAllBtn.addEventListener('click', replaceAll);
+
+  /* ---- Copy as rich text ---- */
+  document.getElementById('frCopyRichBtn').addEventListener('click', function(){
+    var html = editor.innerHTML;
+    if(!html || !editor.innerText.trim()){ toast('Nothing to copy', 'info'); return; }
+
+    // Remove any highlight spans before copying
+    var tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    var marks = tempDiv.querySelectorAll('.fr-highlight');
+    for(var i = 0; i < marks.length; i++){
+      var m = marks[i];
+      var p = m.parentNode;
+      while(m.firstChild) p.insertBefore(m.firstChild, m);
+      p.removeChild(m);
+      p.normalize();
+    }
+    var cleanHTML = tempDiv.innerHTML;
+    var plainText = tempDiv.innerText || tempDiv.textContent;
+
+    // Try ClipboardItem API for rich text copy
+    if(navigator.clipboard && typeof ClipboardItem !== 'undefined'){
+      try{
+        var htmlBlob = new Blob([cleanHTML], { type: 'text/html' });
+        var textBlob = new Blob([plainText], { type: 'text/plain' });
+        var item = new ClipboardItem({ 'text/html': htmlBlob, 'text/plain': textBlob });
+        navigator.clipboard.write([item]).then(function(){
+          var btn = document.getElementById('frCopyRichBtn');
+          btn.innerHTML = checkSvg;
+          setTimeout(function(){ btn.innerHTML = copyRichSvg; }, 1200);
+          toast('Copied as rich text', 'success');
+        }).catch(function(){
+          fallbackCopy(plainText);
+        });
+      } catch(e){
+        fallbackCopy(plainText);
+      }
+    } else {
+      fallbackCopy(plainText);
+    }
+  });
+
+  function fallbackCopy(text){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){
+        toast('Copied as plain text (rich text not supported in this browser)', 'info');
+      });
+    } else {
+      var t = document.createElement('textarea');
+      t.value = text;
+      document.body.appendChild(t);
+      t.select();
+      document.execCommand('copy');
+      t.remove();
+      toast('Copied as plain text', 'info');
+    }
+  }
+
+  /* ---- Copy as plain text ---- */
+  document.getElementById('frCopyPlainBtn').addEventListener('click', function(){
+    var text = editor.innerText || '';
+    if(!text.trim()){ toast('Nothing to copy', 'info'); return; }
+    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject())
+      .then(function(){
+        var btn = document.getElementById('frCopyPlainBtn');
+        btn.innerHTML = checkSvg;
+        setTimeout(function(){ btn.innerHTML = copyPlainSvg; }, 1200);
+        toast('Copied as plain text', 'success');
+      })
+      .catch(function(){
+        var t = document.createElement('textarea');
+        t.value = text;
+        document.body.appendChild(t);
+        t.select();
+        document.execCommand('copy');
+        t.remove();
+        toast('Copied as plain text', 'success');
+      });
+  });
+
+  /* ---- Clear ---- */
+  document.getElementById('frClearBtn').addEventListener('click', function(){
+    if(!editor.innerHTML) return;
+    editor.innerHTML = '';
+    findInput.value = '';
+    replaceInput.value = '';
+    currentMatches = [];
+    currentIndex = -1;
+    updateBadge();
+    updateButtons();
+    updateStats();
+    editor.focus();
+    toast('Cleared', 'info');
+  });
+
+  /* ---- Fullscreen ---- */
+  document.getElementById('frFullBtn').addEventListener('click', function(){
+    shell.classList.toggle('fr-fullscreen');
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && shell.classList.contains('fr-fullscreen')){
+      shell.classList.remove('fr-fullscreen');
+    }
+  });
+
+  /* ---- Keyboard shortcuts ---- */
+  document.addEventListener('keydown', function(e){
+    var mod = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? e.metaKey : e.ctrlKey;
+    // Ctrl/Cmd+F focuses find
+    if(mod && e.key.toLowerCase() === 'f' && document.activeElement !== findInput){
+      // Only intercept if editor is focused
+      if(editor.contains(document.activeElement) || document.activeElement === editor){
+        e.preventDefault();
+        findInput.focus();
+        findInput.select();
+      }
+    }
+    // Enter in find field goes to next match
+    if(e.key === 'Enter' && document.activeElement === findInput){
+      e.preventDefault();
+      if(e.shiftKey && currentMatches.length > 0){
+        currentIndex = (currentIndex - 1 + currentMatches.length) % currentMatches.length;
+        setActiveMatch(currentIndex);
+      } else if(currentMatches.length > 0){
+        currentIndex = (currentIndex + 1) % currentMatches.length;
+        setActiveMatch(currentIndex);
+      }
+    }
+    // Enter in replace field does replace
+    if(e.key === 'Enter' && document.activeElement === replaceInput){
+      e.preventDefault();
+      if(e.shiftKey || (mod && e.key === 'Enter')){
+        replaceAll();
+      } else {
+        replaceCurrent();
+      }
+    }
+  });
+
+})();
+</script>
+
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6997965e73d8cb1c357e66ee/1jhs26oms';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+</body>
+</html>
