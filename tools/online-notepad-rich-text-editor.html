@@ -438,25 +438,30 @@
     gap: 8px;
     padding: 10px 16px;
     border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.16);
-    background: rgba(10,16,30,.92);
-    backdrop-filter: blur(10px);
-    color: rgba(238,246,255,.85);
+    border: 1px solid rgba(80,90,110,.6) !important;
+    background: #0f1a2b !important;
+    color: #d8e4f0 !important;
     font-family: inherit;
     font-size: 12.5px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 8px 30px rgba(0,0,0,.4);
+    box-shadow: 0 8px 30px rgba(0,0,0,.5), 0 0 0 1px rgba(0,0,0,.15);
     transition: background .12s, border-color .12s, transform .1s;
     animation: npZenExitIn .3s ease both;
   }
   .npZenExit:hover{
-    background: rgba(255,255,255,.08);
-    border-color: rgba(255,255,255,.28);
+    background: #1a2840 !important;
+    border-color: rgba(110,168,255,.4) !important;
+    color: #fff !important;
     transform: translateY(-1px);
   }
   .npZenExit.is-visible{ display: flex; }
-  .npZenExit .npKbd{ margin-left: 2px; }
+  .npZenExit .npKbd{
+    margin-left: 2px;
+    background: rgba(0,0,0,.35) !important;
+    color: #c0ccdd !important;
+    border-color: rgba(255,255,255,.15) !important;
+  }
   @keyframes npZenExitIn {
     from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
