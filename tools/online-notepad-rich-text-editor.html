@@ -913,8 +913,51 @@
   }
 
   function persist(){
-    localStorage.setItem(LS_KEY, JSON.stringify(state));
+    const json = JSON.stringify(state);
+    try{
+      localStorage.setItem(LS_KEY, json);
+    }catch(e){
+      // Quota exceeded - try to trim old note content to make room
+      if(e.name === "QuotaExceededError" || e.code === 22){
+        console.warn("Storage quota exceeded - attempting cleanup");
+        const trimmed = trimStoragePayload(json);
+        if(trimmed){
+          try{
+            localStorage.setItem(LS_KEY, trimmed);
+            toast("Storage nearly full - some images were removed from old notes");
+            return;
+          }catch(e2){ /* still too big */ }
+        }
+        toast("Storage full - note too large to save. Try removing images or clearing old notes.");
+        setSavedBadge("unsaved");
+      }
+    }
   }
+
+  // Drop images from oldest notes until payload fits
+  function trimStoragePayload(json){
+    // Sort notes oldest-first, strip images from them progressively
+    const sorted = [...state.notes].sort((a,b)=>(a.updated||"").localeCompare(b.updated||""));
+    let trimCount = 0;
+    for(const note of sorted){
+      if(!note.html || !note.html.includes("<img")) continue;
+      // Skip the currently active note
+      if(note.id === state.activeNoteId) continue;
+      note.html = note.html.replace(/<img[^>]*>/gi, "[image removed - storage full]");
+      trimCount++;
+      const attempt = JSON.stringify(state);
+      try{
+        // Test if it fits (5MB typical limit)
+        if(attempt.length < 4.5 * 1024 * 1024) return attempt;
+      }catch(e){}
+    }
+    return trimCount > 0 ? JSON.stringify(state) : null;
+  }
+
+  // Image compression settings (used by insert + pre-save cleanup)
+  const IMG_MAX_W = 1200;
+  const IMG_MAX_H = 1200;
+  const IMG_QUALITY = 0.72;
 
   function plainTextFromHtml(html){
     const d=document.createElement("div");
@@ -1064,6 +1107,8 @@
     const n=getActiveNote();
     if(!n) return;
     n.title = (elTitle.value || "").trim() || "Untitled note";
+    // Compress any oversized data-URI images still in the editor before saving
+    compressEditorImagesSync();
     n.html = elEditor.innerHTML || "";
     n.updated = nowISO();
     sortNotes();
@@ -1071,6 +1116,34 @@
     dirty = false;
     setSavedBadge("saved");
     renderList();
+  }
+
+  // Synchronous pass: downscale any data-URI <img> in the editor DOM
+  // that exceed a sane byte threshold. Uses canvas (sync toDataURL).
+  function compressEditorImagesSync(){
+    const imgs = elEditor.querySelectorAll("img[src^='data:']");
+    imgs.forEach(img=>{
+      const src = img.src;
+      // Only compress if the data URI is > 200 KB
+      if(src.length < 200000) return;
+      try{
+        const c = document.createElement("canvas");
+        let w = img.naturalWidth || 800;
+        let h = img.naturalHeight || 600;
+        if(w > IMG_MAX_W){ h = Math.round(h * (IMG_MAX_W / w)); w = IMG_MAX_W; }
+        if(h > IMG_MAX_H){ w = Math.round(w * (IMG_MAX_H / h)); h = IMG_MAX_H; }
+        c.width = w; c.height = h;
+        const ctx = c.getContext("2d");
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, w, h);
+        const compressed = c.toDataURL("image/jpeg", IMG_QUALITY);
+        // Only replace if actually smaller
+        if(compressed.length < src.length){
+          img.src = compressed;
+        }
+      }catch(e){}
+    });
   }
 
   function newNote(){
@@ -1311,18 +1384,44 @@
   }
 
   // ---- Images ----
-  function insertImageFromFile(file){
+  function compressImageDataURL(dataURL){
+    return new Promise((resolve)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let w = img.naturalWidth;
+        let h = img.naturalHeight;
+        // Downscale if too large
+        if(w > IMG_MAX_W){ h = Math.round(h * (IMG_MAX_W / w)); w = IMG_MAX_W; }
+        if(h > IMG_MAX_H){ w = Math.round(w * (IMG_MAX_H / h)); h = IMG_MAX_H; }
+        const c = document.createElement("canvas");
+        c.width = w; c.height = h;
+        const ctx = c.getContext("2d");
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, w, h);
+        // Use JPEG for smaller base64 (unless PNG with transparency)
+        const compressed = c.toDataURL("image/jpeg", IMG_QUALITY);
+        resolve(compressed);
+      };
+      img.onerror = ()=> resolve(dataURL); // fallback to original
+      img.src = dataURL;
+    });
+  }
+
+  async function insertImageFromFile(file){
     if(!file) return;
-    const reader=new FileReader();
-    reader.onload = ()=>{
-      const src = reader.result;
+    const reader = new FileReader();
+    reader.onload = async ()=>{
+      let src = reader.result;
+      // Compress before inserting to keep localStorage payload small
+      try{ src = await compressImageDataURL(src); }catch(e){}
       focusEditor();
-      const img=document.createElement("img");
+      const img = document.createElement("img");
       img.src = src;
       img.alt = "image";
-      const sel=window.getSelection();
+      const sel = window.getSelection();
       if(sel && sel.rangeCount){
-        const range=sel.getRangeAt(0);
+        const range = sel.getRangeAt(0);
         range.insertNode(img);
         range.setStartAfter(img); range.collapse(true);
         sel.removeAllRanges(); sel.addRange(range);
@@ -1330,6 +1429,7 @@
         elEditor.appendChild(img);
       }
       scheduleSave();
+      if(typeof updateStats === "function") updateStats();
     };
     reader.readAsDataURL(file);
   }
