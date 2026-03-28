@@ -928,35 +928,32 @@
     var html = editor.innerHTML;
 
     if(mode === 'remove-all'){
-      // Step 1: Replace <br> with space
+      // Replace <br> with space
       html = html.replace(/<br\s*\/?>/gi, ' ');
-      // Step 2: Unwrap block-level wrappers (div, p) into inline content with spaces
-      // Close+open boundaries become a space
-      html = html.replace(/<\/(div|p|li)>\s*<\1[^>]*>/gi, ' ');
+      // Close+open block boundaries become a space
+      html = html.replace(/<\/(div|p|li|h[1-6]|blockquote)>\s*<(div|p|li|h[1-6]|blockquote)[^>]*>/gi, ' ');
       // Remove remaining opening/closing block tags
-      html = html.replace(/<\/?(div|p)[^>]*>/gi, ' ');
+      html = html.replace(/<\/?(div|p|h[1-6]|blockquote)[^>]*>/gi, ' ');
       // Collapse whitespace
-      html = html.replace(/(\s| ){2,}/g, ' ');
+      html = html.replace(/(\s|&nbsp;){2,}/g, ' ');
       html = html.trim();
       toast('All line breaks removed', 'success');
 
     } else if(mode === 'preserve-para'){
-      // Preserve paragraph boundaries (double breaks / separate <p> blocks)
-      // but merge lines within the same paragraph
-
-      // Mark true paragraph breaks: </p>...<p>, double <br>, empty <div>
+      // Mark true paragraph breaks: </p>...<p>, double <br>, heading boundaries
       html = html.replace(/<\/p>\s*<p[^>]*>/gi, '{{PARA}}');
+      html = html.replace(/<\/(h[1-6])>\s*/gi, '{{PARA}}');
       html = html.replace(/(<br\s*\/?>)\s*(<br\s*\/?>)/gi, '{{PARA}}');
-      // Treat </div>...<div> as single line breaks (not paragraphs)
+      // Single line breaks (div boundaries) become spaces
       html = html.replace(/<\/div>\s*<div[^>]*>/gi, ' ');
       // Remove remaining <br>
       html = html.replace(/<br\s*\/?>/gi, ' ');
-      // Remove remaining block tags
-      html = html.replace(/<\/?(div|p)[^>]*>/gi, ' ');
+      // Remove all remaining block tags (div, p, headings, blockquote)
+      html = html.replace(/<\/?(div|p|h[1-6]|blockquote)[^>]*>/gi, ' ');
       // Restore paragraph marks as double <br>
       html = html.replace(/\{\{PARA\}\}/g, '<br><br>');
-      // Collapse whitespace (but not across <br>)
-      html = html.replace(/(\s| ){2,}/g, ' ');
+      // Collapse whitespace
+      html = html.replace(/(\s|&nbsp;){2,}/g, ' ');
       html = html.trim();
       toast('Line breaks removed (paragraphs kept)', 'success');
     }
