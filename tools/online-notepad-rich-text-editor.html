@@ -378,26 +378,31 @@
   /* Shell-level zen fullscreen (whole shell including sidebar) */
   .npShell.npShellZen{
     position: fixed !important;
-    inset: 10px !important;
+    inset: 0 !important;
     z-index: 10000 !important;
-    border-radius: 18px !important;
+    border-radius: 0 !important;
     background:
       linear-gradient(180deg, rgba(15,26,43,1), rgba(11,18,32,1)) !important;
-    border: 1px solid rgba(255,255,255,.18) !important;
-    box-shadow: 0 0 0 9999px rgba(0,0,0,.60), 0 20px 60px rgba(0,0,0,.5) !important;
+    border: none !important;
+    box-shadow: none !important;
     max-width: none !important;
     overflow: hidden;
+    gap: 0 !important;
   }
   .npShell.npShellZen > .npLeft{
-    border-radius: 18px 0 0 18px;
+    border-radius: 0;
     min-height: auto;
+    border-right: 1px solid var(--border);
+    border-top: none;
+    border-bottom: none;
+    border-left: none;
+    box-shadow: none;
   }
   .npShell.npShellZen > .npRight{
-    border-radius: 0 18px 18px 0;
+    border-radius: 0;
     min-height: auto;
-  }
-  .npShell.npShellZen.npSidebarHidden > .npRight{
-    border-radius: 18px;
+    border: none;
+    box-shadow: none;
   }
 
   /* Floating exit zen button - always visible in zen */
