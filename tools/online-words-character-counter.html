@@ -103,7 +103,7 @@
   /* Detail cards grid */
   .wc-details{
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     padding: 14px;
     border-top: 1px solid var(--border);
@@ -137,11 +137,12 @@
   .wc-detail-card:nth-child(1) .wc-detail-value{ color: #6ee7b7; }
   .wc-detail-card:nth-child(2) .wc-detail-value{ color: #93c5fd; }
   .wc-detail-card:nth-child(3) .wc-detail-value{ color: #fbbf24; }
-  .wc-detail-card:nth-child(4) .wc-detail-value{ color: #f9a8d4; }
-  .wc-detail-card:nth-child(5) .wc-detail-value{ color: #c4b5fd; }
-  .wc-detail-card:nth-child(6) .wc-detail-value{ color: #fdba74; }
-  .wc-detail-card:nth-child(7) .wc-detail-value{ color: #67e8f9; }
+  .wc-detail-card:nth-child(4) .wc-detail-value{ color: #67e8f9; }
+  .wc-detail-card:nth-child(5) .wc-detail-value{ color: #f9a8d4; }
+  .wc-detail-card:nth-child(6) .wc-detail-value{ color: #c4b5fd; }
+  .wc-detail-card:nth-child(7) .wc-detail-value{ color: #fdba74; }
   .wc-detail-card:nth-child(8) .wc-detail-value{ color: #a3e635; }
+  .wc-detail-card:nth-child(9) .wc-detail-value{ color: #fca5a5; }
 
   /* Footer tips */
   .wc-foot{
@@ -181,7 +182,7 @@
     .wc-stats{ gap: 10px; padding: 5px 10px; font-size: 10.5px; }
     .wc-editor{ padding: 14px 12px; font-size: 14px; min-height: 240px; }
     .wc-details{
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
       padding: 10px;
     }
@@ -190,7 +191,7 @@
     .wc-foot{ font-size: 10.5px; padding: 6px 10px; }
   }
   @media (max-width: 400px){
-    .wc-details{ grid-template-columns: repeat(2, 1fr); }
+    .wc-details{ grid-template-columns: repeat(3, 1fr); }
     .wc-foot{ display: none; }
   }
 </style>
@@ -221,7 +222,9 @@
       <!-- Top bar -->
       <div class="wc-topbar">
         <div class="wc-topbar-title">Text Input</div>
-        <button class="wc-icon-btn" id="wcCopyBtn" type="button" title="Copy text">&#9081;</button>
+        <button class="wc-icon-btn" id="wcCopyBtn" type="button" title="Copy text">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
         <button class="wc-icon-btn" id="wcClearBtn" type="button" title="Clear text">&#10005;</button>
         <button class="wc-icon-btn" id="wcFullBtn" type="button" title="Fullscreen">&#10530;</button>
       </div>
@@ -230,7 +233,7 @@
       <div class="wc-stats" id="wcStats">
         <span><b id="sWords">0</b> words</span>
         <span><b id="sChars">0</b> chars</span>
-        <span><b id="sCharsNoSpace">0</b> no spaces</span>
+        <span><b id="sCharsNoSpace">0</b> spaces</span>
         <span><b id="sSentences">0</b> sentences</span>
         <span><b id="sParagraphs">0</b> paragraphs</span>
         <span><b id="sReadTime">0</b> min read</span>
@@ -251,7 +254,11 @@
         </div>
         <div class="wc-detail-card">
           <div class="wc-detail-value" id="dCharsNoSpace">0</div>
-          <div class="wc-detail-label">Chars (no spaces)</div>
+          <div class="wc-detail-label">Chars excl. spaces</div>
+        </div>
+        <div class="wc-detail-card">
+          <div class="wc-detail-value" id="dSpaces">0</div>
+          <div class="wc-detail-label">Spaces</div>
         </div>
         <div class="wc-detail-card">
           <div class="wc-detail-value" id="dSentences">0</div>
@@ -398,6 +405,7 @@
   const dWords       = document.getElementById('dWords');
   const dChars       = document.getElementById('dChars');
   const dCharsNoSpace= document.getElementById('dCharsNoSpace');
+  const dSpaces      = document.getElementById('dSpaces');
   const dSentences   = document.getElementById('dSentences');
   const dParagraphs  = document.getElementById('dParagraphs');
   const dLines       = document.getElementById('dLines');
@@ -416,6 +424,7 @@
     // Characters
     const chars = text.length;
     const charsNoSpace = text.replace(/\s/g, '').length;
+    const spaces = chars - charsNoSpace;
 
     // Sentences (split on .!? followed by space or end)
     const sentenceMatches = trimmed.match(/[^.!?]*[.!?]+/g);
@@ -435,7 +444,7 @@
     // Update top stats bar
     sWords.textContent       = fmt(words);
     sChars.textContent       = fmt(chars);
-    sCharsNoSpace.textContent= fmt(charsNoSpace);
+    sCharsNoSpace.textContent= fmt(spaces);
     sSentences.textContent   = fmt(sentences);
     sParagraphs.textContent  = fmt(paragraphs);
     sReadTime.textContent    = readTime;
@@ -444,6 +453,7 @@
     dWords.textContent       = fmt(words);
     dChars.textContent       = fmt(chars);
     dCharsNoSpace.textContent= fmt(charsNoSpace);
+    dSpaces.textContent      = fmt(spaces);
     dSentences.textContent   = fmt(sentences);
     dParagraphs.textContent  = fmt(paragraphs);
     dLines.textContent       = fmt(lines);
@@ -464,13 +474,13 @@
   update();
 
   // Copy
+  var copyIcon = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
   document.getElementById('wcCopyBtn').addEventListener('click', function(){
     if(!editor.value){ return; }
     navigator.clipboard.writeText(editor.value).then(function(){
-      // Brief visual feedback
       var btn = document.getElementById('wcCopyBtn');
-      btn.textContent = '\u2713';
-      setTimeout(function(){ btn.innerHTML = '&#9081;'; }, 1000);
+      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+      setTimeout(function(){ btn.innerHTML = copyIcon; }, 1000);
     });
   });
 
