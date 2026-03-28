@@ -1010,23 +1010,21 @@
     <h1>Online Notepad <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
     <p class="sub">Create and search notes on the left. Write on the right with fonts, headings, lists, alignment, links, inline images, and emojis. Everything autosaves locally in your browser.</p>
 
+    <div class="npMobileBackdrop" id="npMobileBackdrop"></div>
     <div class="npShell" id="npShell">
       <!-- Left -->
       <aside class="npLeft" aria-label="Notes list">
         <div class="npLeftTop">
           <div class="npNotebookRow">
   <select class="npSelect npNotebookSel" id="npNotebookSel" aria-label="Notebook"></select>
-  <button class="npIconBtn npTinyIcon" id="npAddNotebookBtn" type="button" title="Add notebook">＋</button>
-  <button class="npIconBtn npTinyIcon" id="npDelNotebookBtn" type="button" title="Delete notebook">🗑</button>
+  <button class="npIconBtn npTinyIcon" id="npAddNotebookBtn" type="button" title="Add notebook">&#xFF0B;</button>
+  <button class="npIconBtn npTinyIcon" id="npDelNotebookBtn" type="button" title="Delete notebook">&#128465;</button>
 </div>
-<button class="npNewBtn" id="npNewBtn" type="button">＋ New Note</button>
-<input class="npSearch" id="npSearch" type="search" placeholder="Search notes…" autocomplete="off"/>
+<button class="npNewBtn" id="npNewBtn" type="button">&#xFF0B; New Note</button>
+<input class="npSearch" id="npSearch" type="search" placeholder="Search notes..." autocomplete="off"/>
         </div>
         <div class="npList" id="npList"></div>
       </aside>
-
-      <!-- Mobile backdrop -->
-      <div class="npMobileBackdrop" id="npMobileBackdrop"></div>
 
       <!-- Right -->
       <section class="npRight" id="npRight" aria-label="Editor">
