@@ -191,7 +191,7 @@
 
     /* ── Status / actions ── */
     .pill{border-radius:6px;}
-    .py-status{display:flex; gap:8px; align-items:center; margin-left:auto; flex-wrap:wrap;}
+    .py-status{display:flex; gap:8px; align-items:center; margin-left:auto; flex-wrap:nowrap; white-space:nowrap;}
     .py-status .pill{font-size:11px; padding:5px 8px;}
 
     .py-runs-pill{
@@ -204,7 +204,7 @@
     .py-actions-top .btn{padding:6px 9px; font-size:12px; border-radius:8px; border:1px solid rgba(255,255,255,.14); flex:0 0 auto; white-space:nowrap;}
     .py-actions-top .btn.primary{border-color: rgba(124,247,212,.28)}
 
-    .py-kbd-hint{font-size:10px; color:rgba(255,255,255,.25); margin-left:2px;}
+    .py-kbd-hint{font-size:10px; color:rgba(255,255,255,.7); margin-left:2px;}
 
     .py-samples-grid{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; margin-top:10px;}
     .py-samples-grid .btn{width:100%;}
@@ -316,8 +316,12 @@ Alice
           </div>
         </div>
       </div>
+          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+  <a class="btn primary" href="/#toolbox" target=_blank rel=noopener>Back to Toolbox</a>
+  <a class="btn" href="/fix-my-report.html" target=_blank rel=noopener>Contact</a>
+</div>
     </div>
-
+<div class="footer">© 2026 ReportMedic</div>
   </div>
 </div>
 
