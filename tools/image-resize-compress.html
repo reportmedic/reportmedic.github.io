@@ -12,6 +12,308 @@
   
   <script defer src="/assets/js/rm-dropzone.js"></script>
   <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+  <style>
+    /* ===== Image Tool - Scoped Styles ===== */
+    .irc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+    @media (max-width: 860px) { .irc-grid { grid-template-columns: 1fr; } }
+
+    .irc-card {
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.22);
+    }
+
+    .irc-card-title { font-weight: 800; margin-bottom: 4px; }
+    .irc-card-sub { font-size: 12.5px; color: var(--muted); opacity: .82; }
+
+    /* Dropzone override for multi-file */
+    .irc-dropzone {
+      border: 2px dashed rgba(255,255,255,.24);
+      border-radius: 14px;
+      padding: 28px 16px;
+      background: rgba(255,255,255,.025);
+      cursor: pointer;
+      user-select: none;
+      text-align: center;
+      transition: border-color .16s ease, background .16s ease, box-shadow .16s ease;
+      position: relative;
+    }
+    .irc-dropzone:hover {
+      border-color: rgba(255,255,255,.40);
+      background: rgba(255,255,255,.04);
+    }
+    .irc-dropzone.is-dragover {
+      border-color: var(--brand);
+      background: rgba(110,168,255,.06);
+      box-shadow: 0 0 0 4px rgba(110,168,255,.10);
+    }
+    .irc-dropzone-icon {
+      width: 48px; height: 48px; margin: 0 auto 10px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.06);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .irc-dropzone-icon svg { opacity: .8; }
+    .irc-dropzone-title { font-weight: 800; letter-spacing: .2px; }
+    .irc-dropzone-or { font-size: 12px; opacity: .6; margin: 4px 0; }
+    .irc-dropzone-browse {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 8px 20px; border-radius: 8px; font-weight: 700; font-size: 13px;
+      background: linear-gradient(135deg, var(--brand), var(--brand2));
+      color: #061021; border: none; cursor: pointer;
+      transition: transform .1s ease, box-shadow .1s ease;
+    }
+    .irc-dropzone-browse:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(110,168,255,.25); }
+    .irc-dropzone-hint { font-size: 11.5px; opacity: .55; margin-top: 8px; }
+    .irc-hidden-file { position: absolute !important; width: 1px !important; height: 1px !important; clip: rect(0,0,0,0) !important; overflow: hidden !important; border: 0 !important; }
+
+    /* Settings grid */
+    .irc-settings { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+    .irc-setting-row {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .irc-setting-label {
+      font-size: 12.5px; font-weight: 600; opacity: .82; min-width: 100px; flex-shrink: 0;
+    }
+    .irc-input {
+      padding: 8px 10px; font-size: 13px; font-family: inherit;
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.16);
+      border-radius: 10px; color: inherit; outline: none; width: 120px;
+      transition: border-color .14s ease, box-shadow .14s ease;
+    }
+    .irc-input:focus {
+      border-color: rgba(110,168,255,.55);
+      box-shadow: 0 0 0 3px rgba(110,168,255,.12);
+    }
+    .irc-select {
+      padding: 8px 10px; font-size: 13px; font-family: inherit;
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.16);
+      border-radius: 10px; color: inherit; outline: none; width: 160px;
+      cursor: pointer;
+      transition: border-color .14s ease, box-shadow .14s ease;
+    }
+    .irc-select:focus {
+      border-color: rgba(110,168,255,.55);
+      box-shadow: 0 0 0 3px rgba(110,168,255,.12);
+    }
+    .irc-select option { background: #152238; color: var(--text); }
+
+    .irc-checkbox-row {
+      display: flex; align-items: center; gap: 8px; font-size: 12.5px; opacity: .82; cursor: pointer;
+    }
+    .irc-checkbox-row input[type="checkbox"] {
+      width: 16px; height: 16px; accent-color: var(--brand); cursor: pointer;
+    }
+
+    /* Quality slider */
+    .irc-range-wrap { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 180px; }
+    .irc-range {
+      -webkit-appearance: none; appearance: none;
+      flex: 1; height: 6px; border-radius: 3px;
+      background: linear-gradient(90deg, var(--brand), var(--brand2));
+      outline: none; cursor: pointer;
+    }
+    .irc-range::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #fff; border: 2px solid var(--brand);
+      box-shadow: 0 2px 8px rgba(0,0,0,.3); cursor: pointer;
+    }
+    .irc-range::-moz-range-thumb {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #fff; border: 2px solid var(--brand);
+      box-shadow: 0 2px 8px rgba(0,0,0,.3); cursor: pointer;
+    }
+    .irc-q-value {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 42px; padding: 4px 8px; border-radius: 8px;
+      background: rgba(255,255,255,.06); border: 1px solid var(--border);
+      font-size: 12px; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    /* Action buttons */
+    .irc-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; align-items: center; }
+    .irc-btn {
+      font-family: inherit; font-size: 13.5px; font-weight: 700;
+      padding: 10px 18px; border-radius: 10px; cursor: pointer;
+      border: 1px solid var(--border); background: rgba(255,255,255,.04);
+      color: var(--text); display: inline-flex; align-items: center; gap: 8px;
+      transition: transform .1s ease, border-color .12s ease, background .12s ease;
+    }
+    .irc-btn:hover:not(:disabled) { border-color: rgba(255,255,255,.30); transform: translateY(-1px); }
+    .irc-btn:disabled { opacity: .35; cursor: not-allowed; }
+    .irc-btn.primary {
+      border: none;
+      background: linear-gradient(135deg, var(--brand), var(--brand2));
+      color: #061021;
+    }
+    .irc-btn.primary:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(110,168,255,.3); }
+    .irc-btn.danger { border-color: rgba(255,80,80,.35); color: rgba(255,120,120,.9); }
+    .irc-btn.danger:hover:not(:disabled) { background: rgba(255,80,80,.08); border-color: rgba(255,80,80,.5); }
+
+    .irc-status-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      font-size: 12px;
+    }
+    .irc-status-pill b { font-weight: 700; }
+    .irc-status-pill .val { opacity: .75; }
+
+    /* Image queue / thumbnails */
+    .irc-queue { margin-top: 14px; }
+    .irc-queue-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .irc-queue-count {
+      font-size: 12px; opacity: .7;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .irc-queue-count .num {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 22px; height: 22px; border-radius: 6px;
+      background: rgba(110,168,255,.15); color: var(--brand);
+      font-weight: 800; font-size: 11px; padding: 0 5px;
+    }
+
+    .irc-queue-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .irc-queue-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: 12px;
+      background: rgba(255,255,255,.035);
+      border: 1px solid rgba(255,255,255,.10);
+      transition: border-color .12s ease, background .12s ease;
+    }
+    .irc-queue-item:hover { border-color: rgba(255,255,255,.20); }
+    .irc-queue-item.is-processing { border-color: rgba(110,168,255,.30); background: rgba(110,168,255,.04); }
+    .irc-queue-item.is-done { border-color: rgba(124,247,212,.25); }
+    .irc-queue-item.is-error { border-color: rgba(255,80,80,.3); }
+
+    .irc-thumb {
+      width: 48px; height: 48px; border-radius: 8px; object-fit: cover;
+      border: 1px solid rgba(255,255,255,.10); flex-shrink: 0;
+      background: rgba(0,0,0,.2);
+    }
+    .irc-item-info { flex: 1; min-width: 0; }
+    .irc-item-name { font-size: 12.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .irc-item-meta { font-size: 11px; opacity: .6; margin-top: 2px; }
+    .irc-item-meta .savings { color: var(--brand2); opacity: 1; font-weight: 600; }
+
+    /* Progress bar */
+    .irc-progress-wrap {
+      margin-top: 6px; height: 4px; border-radius: 2px;
+      background: rgba(255,255,255,.08); overflow: hidden;
+    }
+    .irc-progress-bar {
+      height: 100%; border-radius: 2px; width: 0%;
+      background: linear-gradient(90deg, var(--brand), var(--brand2));
+      transition: width .25s ease;
+    }
+
+    .irc-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .irc-item-btn {
+      width: 30px; height: 30px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04);
+      color: var(--text); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .1s ease, border-color .1s ease;
+    }
+    .irc-item-btn:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.24); }
+    .irc-item-btn.download-btn { color: var(--brand2); }
+    .irc-item-btn.remove-btn { color: rgba(255,120,120,.8); }
+    .irc-item-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+    /* Global progress bar (batch) */
+    .irc-global-progress {
+      margin-top: 12px; padding: 10px 14px; border-radius: 12px;
+      background: rgba(110,168,255,.06); border: 1px solid rgba(110,168,255,.15);
+      display: none;
+    }
+    .irc-global-progress.active { display: block; }
+    .irc-gp-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .irc-gp-label { font-size: 12.5px; font-weight: 700; }
+    .irc-gp-count { font-size: 11.5px; opacity: .7; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .irc-gp-bar-wrap {
+      height: 6px; border-radius: 3px; background: rgba(255,255,255,.08); overflow: hidden;
+    }
+    .irc-gp-bar {
+      height: 100%; border-radius: 3px; width: 0%;
+      background: linear-gradient(90deg, var(--brand), var(--brand2));
+      transition: width .3s ease;
+    }
+
+    /* Preview panel */
+    .irc-preview-card {
+      border: 1px solid rgba(255,255,255,.10); border-radius: 12px; overflow: hidden;
+    }
+    .irc-preview-label {
+      padding: 8px 12px; font-size: 12px; font-weight: 700; opacity: .7;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.02);
+    }
+    .irc-preview-img-wrap {
+      padding: 10px;
+      min-height: 80px;
+      display: flex; align-items: center; justify-content: center;
+      background: repeating-conic-gradient(rgba(255,255,255,.04) 0% 25%, transparent 0% 50%) 0 0 / 16px 16px;
+    }
+    .irc-preview-img-wrap img {
+      max-width: 100%; max-height: 280px; height: auto; border-radius: 4px;
+      display: none;
+    }
+    .irc-preview-empty {
+      font-size: 12px; opacity: .35; padding: 20px 0; text-align: center;
+    }
+    .irc-preview-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    @media (max-width: 560px) { .irc-preview-split { grid-template-columns: 1fr; } }
+
+    /* Details KV rows */
+    .irc-details { margin-top: 10px; }
+    .irc-kv {
+      display: flex; align-items: baseline; gap: 10px;
+      padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.06);
+      font-size: 12.5px;
+    }
+    .irc-kv:last-child { border-bottom: none; }
+    .irc-kv .k { min-width: 120px; opacity: .6; flex-shrink: 0; }
+    .irc-kv .v { font-weight: 600; }
+
+    /* Hint box */
+    .irc-hint {
+      margin-top: 12px; padding: 10px 14px; border-radius: 10px;
+      background: rgba(124,247,212,.04); border: 1px solid rgba(124,247,212,.12);
+      font-size: 12px; opacity: .82; line-height: 1.5;
+    }
+
+    /* Bottom nav */
+    .irc-bottom-nav { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+
+    /* Animations */
+    @keyframes ircFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .irc-queue-item { animation: ircFadeIn .2s ease both; }
+
+    @keyframes ircPulse {
+      0%, 100% { opacity: .6; }
+      50% { opacity: 1; }
+    }
+    .irc-queue-item.is-processing .irc-item-name { animation: ircPulse .8s ease infinite; }
+
+    /* Empty state */
+    .irc-empty-state {
+      text-align: center; padding: 24px 16px;
+      font-size: 12.5px; opacity: .4;
+    }
+    .irc-empty-state svg { margin-bottom: 8px; opacity: .35; }
+  </style>
 </head>
 
 <body class="tools-page">
@@ -32,121 +334,207 @@
   <div class="panel">
     <h1>Image Resize / Compress <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
     <p class="sub">Resize and compress images for email, tickets, and uploads - fast, private, and clean. Runs locally in your browser.</p>
-    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help &#8594;</a></div>
 
     <div class="hr"></div>
 
-    
-<div class="grid2">
-  <div class="card">
-    <div class="row" style="justify-content:space-between">
-      <div>
-        <div style="font-weight:800">Upload Image</div>
-        <div class="tiny muted">Resize + compress (JPG/PNG/WebP)</div>
+    <div class="irc-grid">
+
+      <!-- LEFT COLUMN: Upload + Settings -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+
+        <!-- Upload Card -->
+        <div class="irc-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+            <div>
+              <div class="irc-card-title">Upload Images</div>
+              <div class="irc-card-sub">Resize + compress (JPG/PNG/WebP) - multiple files supported</div>
+            </div>
+            <div class="irc-status-pill">
+              <b>Status:</b> <span class="val" id="statusText">drop or browse</span>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div class="irc-dropzone" id="dropzone">
+              <input class="irc-hidden-file" id="fileInput" type="file" accept="image/jpeg,image/png,image/webp" multiple />
+              <div class="irc-dropzone-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+              <div class="irc-dropzone-title">Drag and drop images</div>
+              <div class="irc-dropzone-or">or</div>
+              <button class="irc-dropzone-browse" id="browseBtn" type="button">Browse files</button>
+              <div class="irc-dropzone-hint">JPG, PNG, or WebP - up to 25 images at once</div>
+            </div>
+          </div>
+
+          <!-- Queue -->
+          <div class="irc-queue" id="queueSection" style="display:none;">
+            <div class="irc-queue-header">
+              <div class="irc-queue-count">
+                <span class="num" id="queueCount">0</span> image(s) queued
+              </div>
+              <button class="irc-item-btn remove-btn" id="clearAllBtn" type="button" title="Clear all">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div class="irc-queue-list" id="queueList"></div>
+
+            <!-- Global progress -->
+            <div class="irc-global-progress" id="globalProgress">
+              <div class="irc-gp-header">
+                <div class="irc-gp-label">Processing batch...</div>
+                <div class="irc-gp-count" id="gpCount">0 / 0</div>
+              </div>
+              <div class="irc-gp-bar-wrap">
+                <div class="irc-gp-bar" id="gpBar"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Card -->
+        <div class="irc-card">
+          <div class="irc-card-title">Settings</div>
+          <div class="irc-card-sub">Applied to all images in the batch</div>
+
+          <div class="irc-settings">
+            <div class="irc-setting-row">
+              <span class="irc-setting-label">Width</span>
+              <input class="irc-input" id="wInput" type="number" min="1" step="1" placeholder="auto" />
+              <span style="font-size:12px; opacity:.5;">px</span>
+            </div>
+
+            <div class="irc-setting-row">
+              <span class="irc-setting-label">Height</span>
+              <input class="irc-input" id="hInput" type="number" min="1" step="1" placeholder="auto" />
+              <span style="font-size:12px; opacity:.5;">px</span>
+            </div>
+
+            <div class="irc-setting-row">
+              <span class="irc-setting-label"></span>
+              <label class="irc-checkbox-row">
+                <input type="checkbox" id="lockAspect" checked />
+                Keep aspect ratio
+              </label>
+            </div>
+
+            <div class="hr" style="margin:6px 0;"></div>
+
+            <div class="irc-setting-row">
+              <span class="irc-setting-label">Output format</span>
+              <select class="irc-select" id="fmtSelect">
+                <option value="keep" selected>Keep original</option>
+                <option value="image/jpeg">JPEG</option>
+                <option value="image/png">PNG</option>
+                <option value="image/webp">WebP</option>
+              </select>
+            </div>
+
+            <div class="irc-setting-row">
+              <span class="irc-setting-label">Quality</span>
+              <div class="irc-range-wrap">
+                <input class="irc-range" id="qRange" type="range" min="0.20" max="1" value="0.85" step="0.05" />
+                <span class="irc-q-value" id="qLabel">0.85</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="irc-actions">
+            <button class="irc-btn primary" id="processBtn" type="button" disabled>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+              Resize / Compress All
+            </button>
+            <button class="irc-btn" id="downloadAllBtn" type="button" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download All
+            </button>
+          </div>
+
+          <div class="irc-hint">
+            For the smallest files, choose WebP or JPEG and reduce quality slightly (0.75 - 0.85). PNG is lossless and ignores the quality slider.
+          </div>
+        </div>
       </div>
-      <span class="pill tiny" id="meta"><b>Image:</b><span class="muted">not loaded</span></span>
-    </div>
 
-    <div style="margin-top:10px">
-      <input id="file" class="input" type="file" accept="image/*" />
-    </div>
+      <!-- RIGHT COLUMN: Preview + Details -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
 
-    <div class="hr"></div>
+        <!-- Preview Card -->
+        <div class="irc-card">
+          <div class="irc-card-title">Preview</div>
+          <div class="irc-card-sub">Select an image from the queue to compare before/after</div>
 
-    <div class="row" style="gap:10px; flex-wrap:wrap">
-      <div class="row" style="gap:10px; align-items:center">
-        <span class="tiny muted" style="min-width:110px">Width</span>
-        <input id="w" class="input" type="number" min="1" step="1" style="max-width:180px" placeholder="px" />
+          <div class="irc-preview-split">
+            <div class="irc-preview-card">
+              <div class="irc-preview-label">Original</div>
+              <div class="irc-preview-img-wrap">
+                <img id="previewOriginal" alt="original preview" />
+                <div class="irc-preview-empty" id="previewEmptyA">No image selected</div>
+              </div>
+            </div>
+            <div class="irc-preview-card">
+              <div class="irc-preview-label">Output</div>
+              <div class="irc-preview-img-wrap">
+                <img id="previewOutput" alt="output preview" />
+                <div class="irc-preview-empty" id="previewEmptyB">Not yet processed</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Details Card -->
+        <div class="irc-card">
+          <div class="irc-card-title">File Details</div>
+          <div class="irc-details" id="detailsPanel">
+            <div class="irc-kv"><div class="k">Name</div><div class="v" style="opacity:.4;">-</div></div>
+            <div class="irc-kv"><div class="k">Original size</div><div class="v" style="opacity:.4;">-</div></div>
+            <div class="irc-kv"><div class="k">Dimensions</div><div class="v" style="opacity:.4;">-</div></div>
+            <div class="irc-kv"><div class="k">Output size</div><div class="v" style="opacity:.4;">-</div></div>
+            <div class="irc-kv"><div class="k">Savings</div><div class="v" style="opacity:.4;">-</div></div>
+          </div>
+        </div>
+
+        <!-- Summary Card (shown after batch) -->
+        <div class="irc-card" id="summaryCard" style="display:none;">
+          <div class="irc-card-title">Batch Summary</div>
+          <div class="irc-details" id="summaryPanel"></div>
+        </div>
       </div>
-      <div class="row" style="gap:10px; align-items:center">
-        <span class="tiny muted" style="min-width:110px">Height</span>
-        <input id="h" class="input" type="number" min="1" step="1" style="max-width:180px" placeholder="px" />
-      </div>
 
-      <label class="row tiny muted" style="gap:8px; align-items:center">
-        <input id="lock" type="checkbox" checked />
-        Keep aspect ratio
-      </label>
     </div>
 
-    <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap">
-      <div class="row" style="gap:10px; align-items:center">
-        <span class="tiny muted" style="min-width:110px">Output format</span>
-        <select id="fmt" class="input" style="max-width:220px">
-          <option value="keep" selected>Keep original</option>
-          <option value="image/jpeg">JPEG</option>
-          <option value="image/png">PNG</option>
-          <option value="image/webp">WebP</option>
-        </select>
-      </div>
-
-      <div class="row" style="gap:10px; align-items:center">
-        <span class="tiny muted" style="min-width:110px">Quality</span>
-        <input id="q" type="range" min="0.2" max="1" value="0.85" step="0.05" style="width:220px" />
-        <span class="pill tiny" id="qLbl"><b>Q:</b><span class="muted">0.85</span></span>
-      </div>
+    <div class="irc-bottom-nav">
+      <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+      <a class="btn" href="/fix-my-report.html">Contact</a>
     </div>
 
-    <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap">
-      <button class="btn primary" id="goBtn" type="button" disabled>Resize / Compress</button>
-      <button class="btn" id="downloadBtn" type="button" disabled>Download</button>
-      <span class="pill tiny" id="status"><b>Status:</b><span class="muted">load an image</span></span>
-    </div>
-
-    <div class="hint tiny muted" style="margin-top:10px">
-      For the smallest files, choose WebP or JPEG and reduce quality slightly (0.75–0.85).
-    </div>
   </div>
-
-  <div class="card">
-    <div style="font-weight:800; margin-bottom:6px">Preview</div>
-    <div class="tiny muted">Before vs after (after appears once you run it).</div>
-
-    <div class="grid2" style="margin-top:10px">
-      <div style="border:1px solid rgba(255,255,255,.10); border-radius:12px; overflow:hidden">
-        <div class="tiny muted" style="padding:10px; border-bottom:1px solid rgba(255,255,255,.10)">Original</div>
-        <div style="padding:10px"><img id="imgA" alt="original preview" style="max-width:100%; height:auto; display:none" /></div>
-      </div>
-      <div style="border:1px solid rgba(255,255,255,.10); border-radius:12px; overflow:hidden">
-        <div class="tiny muted" style="padding:10px; border-bottom:1px solid rgba(255,255,255,.10)">Output</div>
-        <div style="padding:10px"><img id="imgB" alt="output preview" style="max-width:100%; height:auto; display:none" /></div>
-      </div>
-    </div>
-
-    <div class="hr"></div>
-
-    <div style="font-weight:800; margin-bottom:6px">File details</div>
-    <div class="tiny muted" id="details">No file loaded.</div>
-  </div>
-
-  <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
-<a class="btn" href="/fix-my-report.html">Contact</a>
+  <div class="footer">&copy; 2026 ReportMedic</div>
 </div>
 
-  </div>
-  <div class="footer">© 2026 ReportMedic</div>
-</div>
 
-
+<!-- Learn More Modal -->
 <div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="rm-lm-dialog">
     <div class="rm-lm-head">
       <h2 class="rm-lm-title">Image Resize / Compress</h2>
-      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">&times;</button>
     </div>
     <div class="rm-lm-body">
       <ul>
-        <li>Upload a JPG/PNG/WebP image.</li>
-<li>Set new width/height (or keep aspect ratio and change just one).</li>
-<li>Choose output format and quality (JPEG/WebP use quality; PNG is lossless).</li>
-<li>Download the optimized image. Everything runs locally in your browser.</li>
+        <li>Upload one or more JPG/PNG/WebP images (drag-and-drop or browse).</li>
+        <li>Set new width/height (or keep aspect ratio and change just one).</li>
+        <li>Choose output format and quality (JPEG/WebP use quality; PNG is lossless).</li>
+        <li>Process all images in one click, then download individually or as a batch.</li>
+        <li>Everything runs locally in your browser - nothing is uploaded to any server.</li>
       </ul>
-      <div class="hint tiny muted" style="margin-top:10px">If you’re resizing for tickets/email, 1600px wide is usually plenty.
+      <div class="hint tiny muted" style="margin-top:10px">If you're resizing for tickets/email, 1600px wide is usually plenty.</div>
     </div>
   </div>
 </div>
-</div>
 
+<!-- Footer -->
 <footer class="rm-footer">
   <div class="rm-footer-inner">
     <div class="rm-footer-brand">
@@ -159,10 +547,12 @@
       <a href="/docs/">Docs</a>
       <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
     </div>
-    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+    <div class="rm-footer-meta">&copy; 2026 ReportMedic</div>
   </div>
 </footer>
-  
+
+
+<!-- Learn More Modal Script -->
 <script>
 (function(){
   function openLM(id){
@@ -201,174 +591,436 @@
 </script>
 
 
+<!-- Main Application Script -->
 <script>
 (() => {
-  const $ = (id) => document.getElementById(id);
-  let originalFile = null;
-  let originalImg = null;
-  let outBlob = null;
-  let outName = "image";
+  /* ---------- Utility ---------- */
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => document.querySelectorAll(sel);
+  const $id = (id) => document.getElementById(id);
 
-  function setStatus(msg){
-    $("status").innerHTML = "<b>Status:</b><span class='muted'> " + escapeHtml(msg) + "</span>";
+  function escHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'": '&#39;' }[c]));
   }
-  function escapeHtml(s){
-    return String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function fmtBytes(n) {
+    if (!Number.isFinite(n) || n < 0) return '-';
+    const u = ['B', 'KB', 'MB', 'GB'];
+    let i = 0, v = n;
+    while (v > 1024 && i < u.length - 1) { v /= 1024; i++; }
+    return v.toFixed(i === 0 ? 0 : 2) + ' ' + u[i];
   }
-  function fmtBytes(n){
-    if(!Number.isFinite(n)) return "";
-    const u = ["B","KB","MB","GB"];
-    let i=0, v=n;
-    while(v>1024 && i<u.length-1){ v/=1024; i++; }
-    return v.toFixed(i===0?0:2) + " " + u[i];
+  function pct(a, b) {
+    if (!b) return '-';
+    const r = ((1 - a / b) * 100);
+    return (r >= 0 ? '-' : '+') + Math.abs(r).toFixed(1) + '%';
   }
 
-  function updateDetails(){
-    if(!originalFile || !originalImg){
-      $("details").textContent = "No file loaded.";
+  /* ---------- State ---------- */
+  const queue = []; // { id, file, origImg, origUrl, outBlob, outUrl, status:'queued'|'processing'|'done'|'error' }
+  let nextId = 1;
+  let selectedId = null;
+  let isProcessing = false;
+
+  /* ---------- DOM refs ---------- */
+  const dropzone = $id('dropzone');
+  const fileInput = $id('fileInput');
+  const browseBtn = $id('browseBtn');
+  const queueSection = $id('queueSection');
+  const queueList = $id('queueList');
+  const queueCount = $id('queueCount');
+  const clearAllBtn = $id('clearAllBtn');
+  const processBtn = $id('processBtn');
+  const downloadAllBtn = $id('downloadAllBtn');
+  const wInput = $id('wInput');
+  const hInput = $id('hInput');
+  const lockAspect = $id('lockAspect');
+  const fmtSelect = $id('fmtSelect');
+  const qRange = $id('qRange');
+  const qLabel = $id('qLabel');
+  const statusText = $id('statusText');
+  const globalProgress = $id('globalProgress');
+  const gpBar = $id('gpBar');
+  const gpCount = $id('gpCount');
+  const previewOriginal = $id('previewOriginal');
+  const previewOutput = $id('previewOutput');
+  const previewEmptyA = $id('previewEmptyA');
+  const previewEmptyB = $id('previewEmptyB');
+  const detailsPanel = $id('detailsPanel');
+  const summaryCard = $id('summaryCard');
+  const summaryPanel = $id('summaryPanel');
+
+  /* ---------- Quality slider ---------- */
+  qRange.addEventListener('input', () => {
+    qLabel.textContent = Number(qRange.value).toFixed(2);
+  });
+
+  /* ---------- Drag-and-drop ---------- */
+  browseBtn.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
+  dropzone.addEventListener('click', (e) => { if (e.target === dropzone || e.target.closest('.irc-dropzone-icon') || e.target.closest('.irc-dropzone-title') || e.target.closest('.irc-dropzone-or') || e.target.closest('.irc-dropzone-hint')) fileInput.click(); });
+
+  ['dragenter', 'dragover'].forEach(evt => {
+    dropzone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); dropzone.classList.add('is-dragover'); });
+  });
+  ['dragleave', 'drop'].forEach(evt => {
+    dropzone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); dropzone.classList.remove('is-dragover'); });
+  });
+  dropzone.addEventListener('drop', (e) => {
+    const files = [...(e.dataTransfer.files || [])].filter(f => f.type.startsWith('image/'));
+    if (files.length) addFiles(files);
+  });
+
+  fileInput.addEventListener('change', () => {
+    const files = [...(fileInput.files || [])];
+    if (files.length) addFiles(files);
+    fileInput.value = '';
+  });
+
+  /* ---------- Add files to queue ---------- */
+  function addFiles(files) {
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    const valid = files.filter(f => allowed.includes(f.type));
+    if (!valid.length) { setStatus('unsupported format'); return; }
+
+    // Cap at 25
+    const remaining = 25 - queue.length;
+    const toAdd = valid.slice(0, Math.max(0, remaining));
+    if (!toAdd.length) { setStatus('max 25 images reached'); return; }
+
+    toAdd.forEach(file => {
+      const id = nextId++;
+      const url = URL.createObjectURL(file);
+      const item = { id, file, origImg: null, origUrl: url, outBlob: null, outUrl: null, status: 'queued' };
+      queue.push(item);
+
+      // Load image dimensions
+      const img = new Image();
+      img.onload = () => {
+        item.origImg = img;
+        renderQueueItem(item);
+        if (!selectedId) selectItem(id);
+      };
+      img.onerror = () => {
+        item.status = 'error';
+        renderQueueItem(item);
+      };
+      img.src = url;
+    });
+
+    updateUI();
+    setStatus(toAdd.length + ' image(s) added');
+  }
+
+  /* ---------- Render queue ---------- */
+  function updateUI() {
+    queueSection.style.display = queue.length ? '' : 'none';
+    queueCount.textContent = queue.length;
+    processBtn.disabled = !queue.length || isProcessing;
+
+    const doneCount = queue.filter(i => i.status === 'done').length;
+    downloadAllBtn.disabled = doneCount === 0;
+  }
+
+  function renderQueueItem(item) {
+    let el = $id('qi-' + item.id);
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'qi-' + item.id;
+      el.className = 'irc-queue-item';
+      el.addEventListener('click', (e) => {
+        if (e.target.closest('.irc-item-btn')) return;
+        selectItem(item.id);
+      });
+      queueList.appendChild(el);
+    }
+
+    el.classList.toggle('is-processing', item.status === 'processing');
+    el.classList.toggle('is-done', item.status === 'done');
+    el.classList.toggle('is-error', item.status === 'error');
+
+    const savings = item.outBlob ? pct(item.outBlob.size, item.file.size) : '';
+    const metaText = item.origImg
+      ? `${item.origImg.naturalWidth} x ${item.origImg.naturalHeight} - ${fmtBytes(item.file.size)}` + (item.outBlob ? ` &#8594; ${fmtBytes(item.outBlob.size)}` : '')
+      : fmtBytes(item.file.size);
+
+    el.innerHTML = `
+      <img class="irc-thumb" src="${item.origUrl}" alt="" />
+      <div class="irc-item-info">
+        <div class="irc-item-name">${escHtml(item.file.name)}</div>
+        <div class="irc-item-meta">${metaText}${savings ? ' <span class="savings">(' + savings + ')</span>' : ''}</div>
+        ${item.status === 'processing' ? '<div class="irc-progress-wrap"><div class="irc-progress-bar" id="pb-' + item.id + '" style="width:50%"></div></div>' : ''}
+      </div>
+      <div class="irc-item-actions">
+        <button class="irc-item-btn download-btn" title="Download" ${item.status !== 'done' ? 'disabled' : ''} data-dl="${item.id}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+        <button class="irc-item-btn remove-btn" title="Remove" data-rm="${item.id}">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    `;
+  }
+
+  /* ---------- Queue item actions (delegated) ---------- */
+  queueList.addEventListener('click', (e) => {
+    const dlBtn = e.target.closest('[data-dl]');
+    if (dlBtn) {
+      const item = queue.find(i => i.id === +dlBtn.dataset.dl);
+      if (item && item.outBlob) downloadItem(item);
       return;
     }
-    const d = [];
-    d.push(`<div class="rm-kv"><div class="k">Name</div><div class="v">${escapeHtml(originalFile.name)}</div></div>`);
-    d.push(`<div class="rm-kv"><div class="k">Original size</div><div class="v"><b>${fmtBytes(originalFile.size)}</b></div></div>`);
-    d.push(`<div class="rm-kv"><div class="k">Original dimensions</div><div class="v"><b>${originalImg.naturalWidth}</b> × <b>${originalImg.naturalHeight}</b> px</div></div>`);
-    if(outBlob){
-      d.push(`<div class="rm-kv"><div class="k">Output size</div><div class="v"><b>${fmtBytes(outBlob.size)}</b></div></div>`);
+    const rmBtn = e.target.closest('[data-rm]');
+    if (rmBtn) {
+      removeItem(+rmBtn.dataset.rm);
+      return;
     }
-    $("details").innerHTML = d.join("");
-  }
-
-  function syncAspect(changed){
-    if(!originalImg) return;
-    if(!$("lock").checked) return;
-    const ow = originalImg.naturalWidth;
-    const oh = originalImg.naturalHeight;
-    const w = parseInt($("w").value || ow, 10);
-    const h = parseInt($("h").value || oh, 10);
-    if(changed === "w" && w>0){
-      $("h").value = Math.max(1, Math.round(w * (oh/ow)));
-    }
-    if(changed === "h" && h>0){
-      $("w").value = Math.max(1, Math.round(h * (ow/oh)));
-    }
-  }
-
-  $("q").addEventListener("input", () => {
-    $("qLbl").innerHTML = "<b>Q:</b><span class='muted'> " + Number($("q").value).toFixed(2) + "</span>";
   });
 
-  $("w").addEventListener("input", () => syncAspect("w"));
-  $("h").addEventListener("input", () => syncAspect("h"));
+  function removeItem(id) {
+    const idx = queue.findIndex(i => i.id === id);
+    if (idx < 0) return;
+    const item = queue[idx];
+    if (item.origUrl) URL.revokeObjectURL(item.origUrl);
+    if (item.outUrl) URL.revokeObjectURL(item.outUrl);
+    queue.splice(idx, 1);
+    const el = $id('qi-' + id);
+    if (el) el.remove();
+    if (selectedId === id) {
+      selectedId = null;
+      if (queue.length) selectItem(queue[0].id);
+      else resetPreview();
+    }
+    updateUI();
+    setStatus(queue.length ? queue.length + ' image(s)' : 'drop or browse');
+  }
 
-  $("file").addEventListener("change", async (e) => {
-    const f = e.target.files && e.target.files[0];
-    if(!f) return;
-
-    originalFile = f;
-    outBlob = null;
-
-    $("downloadBtn").disabled = true;
-
-    const url = URL.createObjectURL(f);
-    $("imgA").src = url;
-    $("imgA").style.display = "block";
-    $("imgB").style.display = "none";
-    $("imgB").src = "";
-
-    setStatus("loading image…");
-    originalImg = new Image();
-    originalImg.onload = () => {
-      const ow = originalImg.naturalWidth;
-      const oh = originalImg.naturalHeight;
-      $("w").value = ow;
-      $("h").value = oh;
-      outName = (f.name || "image").replace(/\.[a-z0-9]+$/i,"");
-      $("meta").innerHTML = "<b>Image:</b><span class='muted'> " + escapeHtml(f.name) + "</span>";
-      $("goBtn").disabled = false;
-      setStatus("ready");
-      updateDetails();
-    };
-    originalImg.onerror = () => {
-      setStatus("couldn’t load image");
-      $("goBtn").disabled = true;
-      updateDetails();
-    };
-    originalImg.src = url;
+  clearAllBtn.addEventListener('click', () => {
+    while (queue.length) removeItem(queue[0].id);
+    summaryCard.style.display = 'none';
   });
 
-  $("goBtn").addEventListener("click", async () => {
-    if(!originalImg) return;
-    try{
-      setStatus("processing…");
-      $("goBtn").disabled = true;
-      outBlob = null;
+  /* ---------- Select / Preview ---------- */
+  function selectItem(id) {
+    selectedId = id;
+    const item = queue.find(i => i.id === id);
+    if (!item) return;
 
-      const w = Math.max(1, parseInt($("w").value || originalImg.naturalWidth, 10));
-      const h = Math.max(1, parseInt($("h").value || originalImg.naturalHeight, 10));
-      const fmt = $("fmt").value;
-      const q = Number($("q").value);
+    // Highlight
+    $$('.irc-queue-item').forEach(el => el.style.outline = 'none');
+    const el = $id('qi-' + id);
+    if (el) el.style.outline = '2px solid rgba(110,168,255,.45)';
 
-      const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d");
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-      ctx.drawImage(originalImg, 0, 0, w, h);
+    // Preview original
+    previewOriginal.src = item.origUrl;
+    previewOriginal.style.display = 'block';
+    previewEmptyA.style.display = 'none';
 
-      // decide mime type
-      let mime = originalFile.type || "image/png";
-      if(fmt !== "keep") mime = fmt;
+    // Preview output
+    if (item.outUrl) {
+      previewOutput.src = item.outUrl;
+      previewOutput.style.display = 'block';
+      previewEmptyB.style.display = 'none';
+    } else {
+      previewOutput.style.display = 'none';
+      previewOutput.src = '';
+      previewEmptyB.style.display = '';
+      previewEmptyB.textContent = item.status === 'error' ? 'Processing failed' : 'Not yet processed';
+    }
 
-      const blob = await new Promise((resolve) => {
-        if(mime === "image/png"){
-          canvas.toBlob(resolve, "image/png");
-        } else {
-          canvas.toBlob(resolve, mime, q);
-        }
-      });
+    // Details
+    updateDetails(item);
+  }
 
-      if(!blob){
-        setStatus("failed to create image");
-        $("goBtn").disabled = false;
-        return;
+  function resetPreview() {
+    previewOriginal.style.display = 'none'; previewOriginal.src = '';
+    previewOutput.style.display = 'none'; previewOutput.src = '';
+    previewEmptyA.style.display = ''; previewEmptyA.textContent = 'No image selected';
+    previewEmptyB.style.display = ''; previewEmptyB.textContent = 'Not yet processed';
+    detailsPanel.innerHTML = `
+      <div class="irc-kv"><div class="k">Name</div><div class="v" style="opacity:.4;">-</div></div>
+      <div class="irc-kv"><div class="k">Original size</div><div class="v" style="opacity:.4;">-</div></div>
+      <div class="irc-kv"><div class="k">Dimensions</div><div class="v" style="opacity:.4;">-</div></div>
+      <div class="irc-kv"><div class="k">Output size</div><div class="v" style="opacity:.4;">-</div></div>
+      <div class="irc-kv"><div class="k">Savings</div><div class="v" style="opacity:.4;">-</div></div>
+    `;
+  }
+
+  function updateDetails(item) {
+    if (!item) { resetPreview(); return; }
+    const rows = [];
+    rows.push(`<div class="irc-kv"><div class="k">Name</div><div class="v">${escHtml(item.file.name)}</div></div>`);
+    rows.push(`<div class="irc-kv"><div class="k">Original size</div><div class="v">${fmtBytes(item.file.size)}</div></div>`);
+    if (item.origImg) {
+      rows.push(`<div class="irc-kv"><div class="k">Dimensions</div><div class="v">${item.origImg.naturalWidth} x ${item.origImg.naturalHeight} px</div></div>`);
+    }
+    if (item.outBlob) {
+      rows.push(`<div class="irc-kv"><div class="k">Output size</div><div class="v">${fmtBytes(item.outBlob.size)}</div></div>`);
+      const savingsVal = pct(item.outBlob.size, item.file.size);
+      rows.push(`<div class="irc-kv"><div class="k">Savings</div><div class="v" style="color:var(--brand2);">${savingsVal}</div></div>`);
+    } else {
+      rows.push(`<div class="irc-kv"><div class="k">Output size</div><div class="v" style="opacity:.4;">-</div></div>`);
+      rows.push(`<div class="irc-kv"><div class="k">Savings</div><div class="v" style="opacity:.4;">-</div></div>`);
+    }
+    detailsPanel.innerHTML = rows.join('');
+  }
+
+  /* ---------- Process ---------- */
+  processBtn.addEventListener('click', async () => {
+    if (isProcessing || !queue.length) return;
+    isProcessing = true;
+    processBtn.disabled = true;
+    downloadAllBtn.disabled = true;
+    summaryCard.style.display = 'none';
+
+    const total = queue.length;
+    let done = 0;
+    globalProgress.classList.add('active');
+    gpBar.style.width = '0%';
+    gpCount.textContent = `0 / ${total}`;
+
+    for (const item of queue) {
+      if (item.status === 'done') { done++; gpBar.style.width = ((done / total) * 100) + '%'; gpCount.textContent = `${done} / ${total}`; continue; }
+
+      item.status = 'processing';
+      item.outBlob = null;
+      if (item.outUrl) { URL.revokeObjectURL(item.outUrl); item.outUrl = null; }
+      renderQueueItem(item);
+      if (selectedId === item.id) selectItem(item.id);
+      setStatus('processing ' + item.file.name);
+
+      try {
+        await processImage(item);
+        item.status = 'done';
+      } catch (err) {
+        console.error(err);
+        item.status = 'error';
       }
 
-      outBlob = blob;
-
-      const outUrl = URL.createObjectURL(blob);
-      $("imgB").src = outUrl;
-      $("imgB").style.display = "block";
-
-      $("downloadBtn").disabled = false;
-      setStatus("done - ready to download");
-      updateDetails();
-    } catch(err){
-      console.error(err);
-      setStatus("error");
-    } finally {
-      $("goBtn").disabled = false;
+      done++;
+      gpBar.style.width = ((done / total) * 100) + '%';
+      gpCount.textContent = `${done} / ${total}`;
+      renderQueueItem(item);
+      if (selectedId === item.id) selectItem(item.id);
     }
+
+    isProcessing = false;
+    updateUI();
+    showSummary();
+
+    const errorCount = queue.filter(i => i.status === 'error').length;
+    if (errorCount) {
+      setStatus(`done - ${errorCount} error(s)`);
+    } else {
+      setStatus('all done - ready to download');
+    }
+
+    // Fade out global progress after a beat
+    setTimeout(() => { globalProgress.classList.remove('active'); }, 1500);
   });
 
-  $("downloadBtn").addEventListener("click", () => {
-    if(!outBlob) return;
-    const fmt = $("fmt").value === "keep" ? (originalFile.type || "image/png") : $("fmt").value;
-    const ext = (fmt === "image/jpeg") ? "jpg" : (fmt === "image/webp") ? "webp" : "png";
-    const name = outName + "_" + $("w").value + "x" + $("h").value + "." + ext;
+  function processImage(item) {
+    return new Promise((resolve, reject) => {
+      if (!item.origImg) { reject(new Error('image not loaded')); return; }
 
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(outBlob);
+      const ow = item.origImg.naturalWidth;
+      const oh = item.origImg.naturalHeight;
+      let w = parseInt(wInput.value, 10);
+      let h = parseInt(hInput.value, 10);
+
+      // If both empty, keep original
+      if (!w && !h) { w = ow; h = oh; }
+      else if (!w && h) { w = Math.round(h * (ow / oh)); }
+      else if (w && !h) { h = Math.round(w * (oh / ow)); }
+      else if (lockAspect.checked) { h = Math.round(w * (oh / ow)); }
+
+      w = Math.max(1, w);
+      h = Math.max(1, h);
+
+      const fmt = fmtSelect.value;
+      const q = Number(qRange.value);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(item.origImg, 0, 0, w, h);
+
+      let mime = item.file.type || 'image/png';
+      if (fmt !== 'keep') mime = fmt;
+
+      const callback = (blob) => {
+        if (!blob) { reject(new Error('blob creation failed')); return; }
+        item.outBlob = blob;
+        item.outUrl = URL.createObjectURL(blob);
+        resolve();
+      };
+
+      if (mime === 'image/png') {
+        canvas.toBlob(callback, 'image/png');
+      } else {
+        canvas.toBlob(callback, mime, q);
+      }
+    });
+  }
+
+  /* ---------- Download ---------- */
+  function downloadItem(item) {
+    if (!item.outBlob) return;
+    const fmt = fmtSelect.value === 'keep' ? (item.file.type || 'image/png') : fmtSelect.value;
+    const ext = fmt === 'image/jpeg' ? 'jpg' : fmt === 'image/webp' ? 'webp' : 'png';
+    const baseName = (item.file.name || 'image').replace(/\.[a-z0-9]+$/i, '');
+    const name = baseName + '_optimized.' + ext;
+
+    const a = document.createElement('a');
+    a.href = item.outUrl || URL.createObjectURL(item.outBlob);
     a.download = name;
     document.body.appendChild(a);
     a.click();
     a.remove();
-    setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+  }
+
+  downloadAllBtn.addEventListener('click', () => {
+    const doneItems = queue.filter(i => i.status === 'done' && i.outBlob);
+    if (!doneItems.length) return;
+
+    if (doneItems.length === 1) {
+      downloadItem(doneItems[0]);
+      return;
+    }
+
+    // Download each with a small delay to avoid browser blocking
+    doneItems.forEach((item, i) => {
+      setTimeout(() => downloadItem(item), i * 350);
+    });
+    setStatus('downloading ' + doneItems.length + ' files');
   });
+
+  /* ---------- Summary ---------- */
+  function showSummary() {
+    const doneItems = queue.filter(i => i.status === 'done');
+    if (!doneItems.length) return;
+
+    const totalOrig = doneItems.reduce((s, i) => s + i.file.size, 0);
+    const totalOut = doneItems.reduce((s, i) => s + (i.outBlob ? i.outBlob.size : 0), 0);
+    const saved = totalOrig - totalOut;
+
+    summaryPanel.innerHTML = `
+      <div class="irc-kv"><div class="k">Images processed</div><div class="v">${doneItems.length}</div></div>
+      <div class="irc-kv"><div class="k">Total original</div><div class="v">${fmtBytes(totalOrig)}</div></div>
+      <div class="irc-kv"><div class="k">Total output</div><div class="v">${fmtBytes(totalOut)}</div></div>
+      <div class="irc-kv"><div class="k">Total saved</div><div class="v" style="color:var(--brand2);">${fmtBytes(Math.abs(saved))} (${pct(totalOut, totalOrig)})</div></div>
+    `;
+    summaryCard.style.display = '';
+  }
+
+  /* ---------- Status ---------- */
+  function setStatus(msg) {
+    statusText.textContent = msg;
+  }
 
 })();
 </script>
-
 
 
 <!--Start of Tawk.to Script-->
