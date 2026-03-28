@@ -2348,7 +2348,10 @@
       if(npBottomNav) npBottomNav.style.display = "none";
     } else {
       r.classList.remove("npZen","npZen--toolbar","npZen--topbar","npZen--stats","npZen--tips");
-      npShell.classList.remove("npShellZen","npSidebarHidden");
+      npShell.classList.remove("npShellZen");
+      // Keep sidebar state in sync with toggle (it works outside zen too)
+      if(zenHideSidebar.classList.contains("is-on")) npShell.classList.add("npSidebarHidden");
+      else npShell.classList.remove("npSidebarHidden");
       npZenExit.classList.remove("is-visible");
       if(npBottomNav) npBottomNav.style.display = "";
     }
