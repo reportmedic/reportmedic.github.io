@@ -323,6 +323,99 @@
   .npEmojiBtn:hover{ background: rgba(255,255,255,.06); }
   .npHidden{ display:none !important; }
 
+  /* Editor themes */
+  .npEditor.np-theme-dark{
+    background: transparent;
+    color: rgba(238,246,255,.96);
+  }
+  .npEditor.np-theme-midnight{
+    background: rgba(2,6,16,.55);
+    color: rgba(200,215,240,.92);
+  }
+  .npEditor.np-theme-paper{
+    background: rgba(255,252,245,.97);
+    color: #2c2c2c;
+  }
+  .npEditor.np-theme-paper:empty:before{ color: rgba(0,0,0,.3); }
+  .npEditor.np-theme-paper a{ color: #0066cc; }
+  .npEditor.np-theme-sepia{
+    background: rgba(251,241,220,.95);
+    color: #433422;
+  }
+  .npEditor.np-theme-sepia:empty:before{ color: rgba(67,52,34,.3); }
+  .npEditor.np-theme-sepia a{ color: #8b5e34; }
+  .npEditor.np-theme-nord{
+    background: rgba(46,52,64,.95);
+    color: #d8dee9;
+  }
+  .npEditor.np-theme-nord:empty:before{ color: rgba(216,222,233,.3); }
+  .npEditor.np-theme-nord a{ color: #88c0d0; }
+  .npEditor.np-theme-green{
+    background: rgba(18,36,22,.90);
+    color: rgba(160,220,160,.92);
+  }
+  .npEditor.np-theme-green:empty:before{ color: rgba(160,220,160,.3); }
+  .npEditor.np-theme-green a{ color: #6ee7b7; }
+
+  /* Zen mode */
+  .npZen .npToolbar{ display: none !important; }
+  .npZen .npTopBar{ display: none !important; }
+  .npZen .npFoot{ display: none !important; }
+  .npZen .npStats{ display: none !important; }
+  .npZen .npEditor{ padding: 28px 32px; }
+
+  .npZen.npZen--toolbar .npToolbar{ display: flex !important; }
+  .npZen.npZen--topbar .npTopBar{ display: flex !important; }
+  .npZen.npZen--stats .npStats{ display: flex !important; }
+  .npZen.npZen--tips .npFoot{ display: block !important; }
+
+  /* Zen fullscreen: hide sidebar, fill screen */
+  .npShell.npZenShell{
+    grid-template-columns: 1fr !important;
+  }
+  .npShell.npZenShell > .npLeft{ display: none !important; }
+
+  /* Zen panel popover */
+  .npZenPanel{
+    position: fixed;
+    z-index: 10010;
+    background: rgba(10,16,30,.98);
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: 0 14px 50px rgba(0,0,0,.50);
+    min-width: 260px;
+    max-width: 320px;
+    display: none;
+  }
+  .npZenPanel.is-open{ display: block; }
+  .npZenPanel-title{
+    font-weight: 800; font-size: 13px; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .npZenPanel-title svg{ opacity: .6; }
+  .npZenRow{
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 8px; border-radius: 8px; font-size: 12.5px;
+    transition: background .1s;
+  }
+  .npZenRow:hover{ background: rgba(255,255,255,.04); }
+  .npZenRow label{ display: flex; align-items: center; gap: 8px; cursor: pointer; flex:1; }
+  .npZenToggle{
+    position: relative; width: 36px; height: 20px; flex-shrink: 0;
+    background: rgba(255,255,255,.12); border-radius: 10px;
+    cursor: pointer; transition: background .15s;
+    border: none; padding: 0;
+  }
+  .npZenToggle::after{
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: rgba(255,255,255,.7); transition: transform .15s, background .15s;
+  }
+  .npZenToggle.is-on{ background: rgba(110,168,255,.45); }
+  .npZenToggle.is-on::after{ transform: translateX(16px); background: #fff; }
+  .npZenDivider{ height: 1px; background: rgba(255,255,255,.08); margin: 8px 0; }
+
   /* Fullscreen */
   .npFullscreen{
     position: fixed !important;
@@ -641,6 +734,55 @@
             <input id="npImageFile" type="file" accept="image/*" class="npHidden"/>
             <button class="npBtn" id="npEmoji" type="button" title="Emoji">😊</button>
             <button class="npBtn" id="npFormats" type="button" title="Formats menu">Formats ▾</button>
+          </div>
+
+          <div class="npSep"></div>
+
+          <div class="npGroup">
+            <select class="npSelect" id="npThemeSelect" title="Editor background" style="max-width:120px">
+              <option value="dark">Dark</option>
+              <option value="midnight">Midnight</option>
+              <option value="paper">Paper</option>
+              <option value="sepia">Sepia</option>
+              <option value="nord">Nord</option>
+              <option value="green">Green</option>
+            </select>
+            <button class="npBtn" id="npZenBtn" type="button" title="Zen mode">⛶ Zen</button>
+          </div>
+        </div>
+
+        <!-- Zen mode panel -->
+        <div class="npZenPanel" id="npZenPanel">
+          <div class="npZenPanel-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            Zen Mode
+          </div>
+          <div class="npZenRow">
+            <label for="npZenToggleMain">Enable Zen mode</label>
+            <button class="npZenToggle" id="npZenToggleMain" type="button" role="switch" aria-checked="false"></button>
+          </div>
+          <div class="npZenDivider"></div>
+          <div style="font-size:11px; opacity:.5; padding:4px 8px 6px; font-weight:600;">Show in Zen mode:</div>
+          <div class="npZenRow">
+            <label for="npZenShowToolbar">Formatting toolbar</label>
+            <button class="npZenToggle" id="npZenShowToolbar" type="button" role="switch" aria-checked="false"></button>
+          </div>
+          <div class="npZenRow">
+            <label for="npZenShowTopbar">Title bar</label>
+            <button class="npZenToggle" id="npZenShowTopbar" type="button" role="switch" aria-checked="false"></button>
+          </div>
+          <div class="npZenRow">
+            <label for="npZenShowStats">Stats bar</label>
+            <button class="npZenToggle" id="npZenShowStats" type="button" role="switch" aria-checked="false"></button>
+          </div>
+          <div class="npZenRow">
+            <label for="npZenShowTips">Tips footer</label>
+            <button class="npZenToggle" id="npZenShowTips" type="button" role="switch" aria-checked="false"></button>
+          </div>
+          <div class="npZenDivider"></div>
+          <div class="npZenRow">
+            <label for="npZenHideSidebar">Hide sidebar</label>
+            <button class="npZenToggle is-on" id="npZenHideSidebar" type="button" role="switch" aria-checked="true"></button>
           </div>
         </div>
 
@@ -1890,6 +2032,127 @@
   elFull.addEventListener("click", ()=>{
     const full = elRight.classList.toggle("npFullscreen");
     toast(full ? "Fullscreen" : "Exit fullscreen");
+  });
+
+  /* ── Editor Theme ── */
+  const npThemeSelect = $("npThemeSelect");
+  const savedTheme = localStorage.getItem("npEditorTheme") || "dark";
+  npThemeSelect.value = savedTheme;
+  applyEditorTheme(savedTheme);
+
+  npThemeSelect.addEventListener("change", ()=>{
+    applyEditorTheme(npThemeSelect.value);
+    localStorage.setItem("npEditorTheme", npThemeSelect.value);
+    toast("Theme: " + npThemeSelect.value);
+  });
+
+  function applyEditorTheme(t){
+    const cls = elEditor.classList;
+    [...cls].forEach(c=>{ if(c.startsWith("np-theme-")) cls.remove(c); });
+    cls.add("np-theme-" + t);
+  }
+
+  /* ── Zen Mode ── */
+  const npZenBtn = $("npZenBtn");
+  const npZenPanel = $("npZenPanel");
+  const npShell = $("npShell");
+  const zenToggleMain = $("npZenToggleMain");
+  const zenShowToolbar = $("npZenShowToolbar");
+  const zenShowTopbar = $("npZenShowTopbar");
+  const zenShowStats = $("npZenShowStats");
+  const zenShowTips = $("npZenShowTips");
+  const zenHideSidebar = $("npZenHideSidebar");
+  let zenActive = false;
+
+  // Load zen prefs
+  const zenPrefs = JSON.parse(localStorage.getItem("npZenPrefs") || "{}");
+  if(zenPrefs.toolbar) zenShowToolbar.classList.add("is-on");
+  if(zenPrefs.topbar) zenShowTopbar.classList.add("is-on");
+  if(zenPrefs.stats) zenShowStats.classList.add("is-on");
+  if(zenPrefs.tips) zenShowTips.classList.add("is-on");
+  if(zenPrefs.hideSidebar !== false) zenHideSidebar.classList.add("is-on");
+  else zenHideSidebar.classList.remove("is-on");
+
+  npZenBtn.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    npZenPanel.classList.toggle("is-open");
+    // Position near button
+    const r = npZenBtn.getBoundingClientRect();
+    npZenPanel.style.top = (r.bottom + 6) + "px";
+    npZenPanel.style.right = Math.max(12, window.innerWidth - r.right) + "px";
+    npZenPanel.style.left = "auto";
+  });
+
+  document.addEventListener("click", (e)=>{
+    if(!npZenPanel.contains(e.target) && e.target !== npZenBtn && !npZenBtn.contains(e.target)){
+      npZenPanel.classList.remove("is-open");
+    }
+  });
+
+  function toggleZenSwitch(btn){
+    btn.classList.toggle("is-on");
+    btn.setAttribute("aria-checked", btn.classList.contains("is-on"));
+  }
+
+  function saveZenPrefs(){
+    localStorage.setItem("npZenPrefs", JSON.stringify({
+      toolbar: zenShowToolbar.classList.contains("is-on"),
+      topbar: zenShowTopbar.classList.contains("is-on"),
+      stats: zenShowStats.classList.contains("is-on"),
+      tips: zenShowTips.classList.contains("is-on"),
+      hideSidebar: zenHideSidebar.classList.contains("is-on")
+    }));
+  }
+
+  function applyZen(){
+    const r = elRight;
+    if(zenActive){
+      r.classList.add("npZen");
+      if(zenShowToolbar.classList.contains("is-on")) r.classList.add("npZen--toolbar");
+      else r.classList.remove("npZen--toolbar");
+      if(zenShowTopbar.classList.contains("is-on")) r.classList.add("npZen--topbar");
+      else r.classList.remove("npZen--topbar");
+      if(zenShowStats.classList.contains("is-on")) r.classList.add("npZen--stats");
+      else r.classList.remove("npZen--stats");
+      if(zenShowTips.classList.contains("is-on")) r.classList.add("npZen--tips");
+      else r.classList.remove("npZen--tips");
+      if(zenHideSidebar.classList.contains("is-on")) npShell.classList.add("npZenShell");
+      else npShell.classList.remove("npZenShell");
+      // Also go fullscreen
+      if(!r.classList.contains("npFullscreen")) r.classList.add("npFullscreen");
+    } else {
+      r.classList.remove("npZen","npZen--toolbar","npZen--topbar","npZen--stats","npZen--tips","npFullscreen");
+      npShell.classList.remove("npZenShell");
+    }
+    saveZenPrefs();
+  }
+
+  zenToggleMain.addEventListener("click", ()=>{
+    toggleZenSwitch(zenToggleMain);
+    zenActive = zenToggleMain.classList.contains("is-on");
+    applyZen();
+    npZenPanel.classList.remove("is-open");
+    toast(zenActive ? "Zen mode on" : "Zen mode off");
+    if(zenActive) elEditor.focus();
+  });
+
+  [zenShowToolbar, zenShowTopbar, zenShowStats, zenShowTips, zenHideSidebar].forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      toggleZenSwitch(btn);
+      if(zenActive) applyZen();
+      else saveZenPrefs();
+    });
+  });
+
+  // Escape exits zen
+  document.addEventListener("keydown", (e)=>{
+    if(e.key === "Escape" && zenActive){
+      zenActive = false;
+      zenToggleMain.classList.remove("is-on");
+      zenToggleMain.setAttribute("aria-checked","false");
+      applyZen();
+      toast("Zen mode off");
+    }
   });
 
   nbAddBtn.addEventListener("click", addNotebook);
