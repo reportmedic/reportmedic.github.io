@@ -83,6 +83,42 @@
     .irc-btn:disabled { opacity: .35; cursor: not-allowed; }
     .irc-btn.primary { border: none; background: linear-gradient(135deg, var(--brand), var(--brand2)); color: #061021; }
     .irc-btn.primary:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(110,168,255,.3); }
+    .irc-btn.zip {
+      border: 1px solid rgba(124,247,212,.30);
+      background: rgba(124,247,212,.08);
+      color: var(--brand2);
+      gap: 8px;
+    }
+    .irc-btn.zip:hover:not(:disabled) {
+      background: rgba(124,247,212,.14);
+      border-color: rgba(124,247,212,.50);
+      box-shadow: 0 4px 16px rgba(124,247,212,.15);
+      transform: translateY(-1px);
+    }
+    .irc-btn.zip:disabled { opacity: .35; }
+    .irc-btn.zip .irc-zip-badge {
+      font-size: 10px; font-weight: 800; letter-spacing: .3px;
+      padding: 2px 6px; border-radius: 5px;
+      background: rgba(124,247,212,.15); color: var(--brand2);
+      line-height: 1.2;
+    }
+    .irc-btn.zip.is-visible {
+      animation: ircSlideUp .25s ease both;
+    }
+    @keyframes ircSlideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes ircSpin {
+      to { transform: rotate(360deg); }
+    }
+    .irc-btn.zip .irc-spinner {
+      width: 14px; height: 14px; border: 2px solid rgba(124,247,212,.25);
+      border-top-color: var(--brand2); border-radius: 50%;
+      animation: ircSpin .6s linear infinite; display: none;
+    }
+    .irc-btn.zip.is-zipping .irc-spinner { display: inline-block; }
+    .irc-btn.zip.is-zipping svg { display: none; }
 
     .irc-status-pill {
       display: inline-flex; align-items: center; gap: 6px;
@@ -339,9 +375,11 @@
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
               Resize / Compress All
             </button>
-            <button class="irc-btn" id="downloadAllBtn" type="button" disabled style="display:none">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Download All (.zip)
+            <button class="irc-btn zip" id="downloadAllBtn" type="button" disabled style="display:none">
+              <span class="irc-spinner"></span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span class="irc-zip-label">Download All</span>
+              <span class="irc-zip-badge">.ZIP</span>
             </button>
           </div>
 
@@ -622,7 +660,17 @@
     processBtn.disabled = !queue.length || isProcessing;
     const doneCount = queue.filter(i => i.status === 'done').length;
     downloadAllBtn.disabled = doneCount < 2;
+    const wasHidden = downloadAllBtn.style.display === 'none';
     downloadAllBtn.style.display = doneCount >= 2 ? '' : 'none';
+    if (doneCount >= 2 && wasHidden) {
+      downloadAllBtn.classList.remove('is-visible');
+      void downloadAllBtn.offsetWidth; // reflow
+      downloadAllBtn.classList.add('is-visible');
+    }
+    if (doneCount < 2) downloadAllBtn.classList.remove('is-visible');
+    // Update badge count
+    const badge = downloadAllBtn.querySelector('.irc-zip-badge');
+    if (badge) badge.textContent = doneCount >= 2 ? doneCount + ' .ZIP' : '.ZIP';
     previewNav.style.display = queue.length > 1 ? '' : 'none';
     updateNavButtons();
   }
@@ -800,15 +848,14 @@
     downloadAllBtn.disabled = true;
     summaryCard.style.display = 'none';
 
-    const toProcess = queue.filter(i => i.status !== 'done');
     const total = queue.length;
-    let done = queue.length - toProcess.length;
+    let done = 0;
 
     globalProgress.classList.add('active');
-    gpBar.style.width = ((done / total) * 100) + '%';
-    gpCount.textContent = done + ' / ' + total;
+    gpBar.style.width = '0%';
+    gpCount.textContent = '0 / ' + total;
 
-    for (const item of toProcess) {
+    for (const item of queue) {
       item.status = 'processing';
       if (item.outUrl && item.outUrl !== item.origUrl) { URL.revokeObjectURL(item.outUrl); }
       item.outUrl = null;
@@ -965,7 +1012,10 @@
     const doneItems = queue.filter(i => i.status === 'done' && i.outBlob);
     if (doneItems.length < 2) return;
 
+    const zipLabel = downloadAllBtn.querySelector('.irc-zip-label');
     downloadAllBtn.disabled = true;
+    downloadAllBtn.classList.add('is-zipping');
+    if (zipLabel) zipLabel.textContent = 'Zipping...';
     setStatus('zipping ' + doneItems.length + ' images...');
 
     try {
@@ -996,6 +1046,9 @@
       setStatus('zip failed - try downloading individually');
     }
     downloadAllBtn.disabled = false;
+    downloadAllBtn.classList.remove('is-zipping');
+    const zipLabelEnd = downloadAllBtn.querySelector('.irc-zip-label');
+    if (zipLabelEnd) zipLabelEnd.textContent = 'Download All';
   });
 
   /* --- Summary --- */
