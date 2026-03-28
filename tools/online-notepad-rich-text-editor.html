@@ -844,53 +844,58 @@
     .npTopActions{ gap: 4px; }
     .npIconBtn{ width: 30px; height: 30px; font-size: 13px; }
 
-    /* Toolbar: horizontal scroll instead of wrap */
+    /* Toolbar: wrap into rows, not horizontal scroll */
     .npToolbar{
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-      padding: 6px 10px;
-      gap: 3px;
-      row-gap: 3px;
-      scrollbar-width: none;
+      flex-wrap: wrap;
+      overflow: visible;
+      padding: 6px 8px;
+      gap: 2px;
+      row-gap: 4px;
     }
-    .npToolbar::-webkit-scrollbar{ display: none; }
 
     /* Compact toolbar elements */
     .npSelect, .npBtn, .npNum{
       height: 28px;
       font-size: 11px;
-      flex-shrink: 0;
     }
     .npSelect{
-      max-width: 100px;
-      padding: 0 18px 0 6px;
+      max-width: 90px;
+      padding: 0 16px 0 5px;
+      background-position: right 5px center;
     }
     .npBtn{
-      min-width: 28px;
-      padding: 0 6px;
+      min-width: 26px;
+      padding: 0 5px;
     }
     .npMini{
       height: 28px;
-      width: 34px;
+      width: 32px;
       font-size: 11px;
     }
     .npSep{
-      height: 18px;
-      margin: 0 2px;
+      height: 16px;
+      margin: 0 1px;
     }
-    .npGroup{ gap: 2px; }
+    .npGroup{ gap: 1px; }
 
-    /* Hide some toolbar labels on mobile to save space */
+    /* Hide less-essential items on mobile */
+    #npUndo, #npRedo,
+    #npFindBtn, #npUnlink,
+    #npInc, #npDec{ display: none !important; }
+
+    /* Shorten list labels to icons only */
     #npBullets,
-    #npNumbers{ font-size: 0; min-width: 28px; }
+    #npNumbers{ font-size: 0; min-width: 26px; }
     #npBullets::before{ content: '•'; font-size: 11px; }
     #npNumbers::before{ content: '1.'; font-size: 11px; }
 
+    /* Hide "Formats" label, just show icon */
+    #npFormats{ font-size: 0; min-width: 26px; }
+    #npFormats::before{ content: '▾'; font-size: 11px; }
+
     /* Zen button compact */
     .npBtn.npBtn--zen{
-      padding: 0 8px;
+      padding: 0 6px;
       font-size: 11px;
     }
     .npBtn.npBtn--zen svg{ width: 12px; height: 12px; }
@@ -963,11 +968,30 @@
     }
 
     .npToolbar{
-      padding: 5px 8px;
+      padding: 4px 6px;
+      gap: 1px;
+      row-gap: 3px;
     }
 
-    /* Hide less important toolbar items */
+    /* Hide separators and more items */
     .npSep{ display: none; }
+    #npCode, #npAlign, #npImage, #npEmoji{ display: none !important; }
+
+    .npSelect{
+      max-width: 72px;
+      font-size: 10px;
+      height: 26px;
+    }
+    .npBtn{
+      height: 26px;
+      min-width: 24px;
+      font-size: 10px;
+    }
+    .npMini{
+      height: 26px;
+      width: 30px;
+      font-size: 10px;
+    }
 
     .npFoot{ display: none; }
 
