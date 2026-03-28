@@ -64,25 +64,9 @@
   }
   @media (max-width: 640px){ .mc-files{ grid-template-columns: 1fr; gap: 10px; padding: 10px; } }
 
-  .mc-file-slot{
-    padding: 14px;
-    border-radius: 12px;
-    border: 2px dashed rgba(255,255,255,.18);
-    background: rgba(255,255,255,.025);
-    text-align: center;
-    cursor: pointer;
-    transition: border-color .14s, background .14s;
-    position: relative;
-  }
-  .mc-file-slot:hover{ border-color: rgba(255,255,255,.32); background: rgba(255,255,255,.04); }
-  .mc-file-slot.has-file{
-    border-style: solid;
-    border-color: rgba(110,168,255,.30);
-    background: rgba(110,168,255,.04);
-  }
-  .mc-file-slot.has-file.is-second{
-    border-color: rgba(124,247,212,.30);
-    background: rgba(124,247,212,.04);
+  .mc-file-col{
+    display: flex;
+    flex-direction: column;
   }
   .mc-slot-label{
     font-size: 11px;
@@ -90,52 +74,50 @@
     text-transform: uppercase;
     letter-spacing: .5px;
     opacity: .5;
-    margin-bottom: 8px;
   }
-  .mc-slot-icon{
-    width: 40px; height: 40px; margin: 0 auto 8px;
-    border-radius: 12px;
-    background: rgba(255,255,255,.06);
-    display: flex; align-items: center; justify-content: center;
-  }
-  .mc-slot-prompt{ font-weight: 700; font-size: 13px; margin-bottom: 4px; }
-  .mc-slot-hint{ font-size: 11px; opacity: .5; }
-  .mc-slot-info{
+  .mc-file-info{
     margin-top: 8px;
-    font-size: 12px;
-    opacity: .8;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(110,168,255,.06);
+    border: 1px solid rgba(110,168,255,.18);
   }
-  .mc-slot-info b{ font-weight: 800; }
-  .mc-slot-name{
+  .mc-file-info-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .mc-file-info-name{
     font-weight: 700;
     font-size: 12.5px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-top: 6px;
+    flex: 1;
+    min-width: 0;
   }
+  .mc-file-info-meta{
+    font-size: 11.5px;
+    opacity: .7;
+    margin-top: 4px;
+  }
+  .mc-file-info-meta b{ font-weight: 800; }
   .mc-slot-remove{
-    position: absolute;
-    top: 8px;
-    right: 8px;
     width: 24px; height: 24px;
     border-radius: 6px;
     border: 1px solid rgba(255,120,120,.25);
     background: rgba(255,80,80,.08);
     color: rgba(255,120,120,.8);
     cursor: pointer;
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
     font-size: 12px;
+    flex-shrink: 0;
     transition: background .1s;
   }
   .mc-slot-remove:hover{ background: rgba(255,80,80,.15); }
-  .mc-file-slot.has-file .mc-slot-remove{ display: flex; }
-  .mc-file-hidden{
-    position: absolute !important; width: 1px !important; height: 1px !important;
-    clip: rect(0,0,0,0) !important; overflow: hidden !important; border: 0 !important;
-  }
 
   /* Options bar */
   .mc-options{
@@ -357,30 +339,32 @@
       <!-- File slots -->
       <div class="mc-files">
 
-        <div class="mc-file-slot" id="mcSlot1">
-          <button class="mc-slot-remove" id="mcRemove1" type="button" title="Remove">&#10005;</button>
-          <div class="mc-slot-label">File 1 (primary)</div>
-          <div class="mc-slot-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <div class="mc-file-col">
+          <div class="mc-slot-label">File 1 (primary) - header kept from this file</div>
+          <div style="margin-top:6px">
+            <input id="mcInput1" type="file" accept=".csv,.tsv,.txt" />
           </div>
-          <div class="mc-slot-prompt" id="mcPrompt1">Click or drop CSV here</div>
-          <div class="mc-slot-hint" id="mcHint1">Header row will be kept from this file</div>
-          <div class="mc-slot-info" id="mcInfo1"></div>
-          <div class="mc-slot-name" id="mcName1"></div>
-          <input class="mc-file-hidden" id="mcInput1" type="file" accept=".csv,.tsv,.txt" />
+          <div class="mc-file-info" id="mcInfo1" style="display:none">
+            <div class="mc-file-info-row">
+              <span class="mc-file-info-name" id="mcName1"></span>
+              <button class="mc-slot-remove" id="mcRemove1" type="button" title="Remove">&#10005;</button>
+            </div>
+            <div class="mc-file-info-meta" id="mcMeta1"></div>
+          </div>
         </div>
 
-        <div class="mc-file-slot" id="mcSlot2">
-          <button class="mc-slot-remove" id="mcRemove2" type="button" title="Remove">&#10005;</button>
-          <div class="mc-slot-label">File 2 (append)</div>
-          <div class="mc-slot-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <div class="mc-file-col">
+          <div class="mc-slot-label">File 2 (append) - first row skipped by default</div>
+          <div style="margin-top:6px">
+            <input id="mcInput2" type="file" accept=".csv,.tsv,.txt" />
           </div>
-          <div class="mc-slot-prompt" id="mcPrompt2">Click or drop CSV here</div>
-          <div class="mc-slot-hint" id="mcHint2">First row (header) will be skipped</div>
-          <div class="mc-slot-info" id="mcInfo2"></div>
-          <div class="mc-slot-name" id="mcName2"></div>
-          <input class="mc-file-hidden" id="mcInput2" type="file" accept=".csv,.tsv,.txt" />
+          <div class="mc-file-info" id="mcInfo2" style="display:none">
+            <div class="mc-file-info-row">
+              <span class="mc-file-info-name" id="mcName2"></span>
+              <button class="mc-slot-remove" id="mcRemove2" type="button" title="Remove">&#10005;</button>
+            </div>
+            <div class="mc-file-info-meta" id="mcMeta2"></div>
+          </div>
         </div>
 
       </div>
@@ -518,8 +502,6 @@
   var mergedBlob = null;
   var CHUNK = 4 * 1024 * 1024; // 4MB chunks
 
-  var slot1 = document.getElementById('mcSlot1');
-  var slot2 = document.getElementById('mcSlot2');
   var input1 = document.getElementById('mcInput1');
   var input2 = document.getElementById('mcInput2');
   var mergeBtn = document.getElementById('mcMergeBtn');
@@ -553,56 +535,33 @@
     setTimeout(function(){el.classList.add('toast-out');setTimeout(function(){el.remove();},300);},2200);
   }
 
-  // File slot setup
-  function setupSlot(slotEl, inputEl, num){
-    slotEl.addEventListener('click', function(e){
-      if(e.target.closest('.mc-slot-remove')) return;
-      inputEl.click();
-    });
-
-    // Drag and drop
-    ['dragenter','dragover'].forEach(function(evt){
-      slotEl.addEventListener(evt, function(e){ e.preventDefault(); e.stopPropagation(); slotEl.style.borderColor='rgba(110,168,255,.55)'; });
-    });
-    ['dragleave','drop'].forEach(function(evt){
-      slotEl.addEventListener(evt, function(e){ e.preventDefault(); e.stopPropagation(); slotEl.style.borderColor=''; });
-    });
-    slotEl.addEventListener('drop', function(e){
-      var f = e.dataTransfer.files && e.dataTransfer.files[0];
-      if(f) setFile(num, f);
-    });
-
-    inputEl.addEventListener('change', function(){
-      var f = inputEl.files && inputEl.files[0];
-      if(f) setFile(num, f);
-      inputEl.value = '';
-    });
-  }
-  setupSlot(slot1, input1, 1);
-  setupSlot(slot2, input2, 2);
+  // File change listeners (rm-dropzone.js handles the drag-drop UI)
+  input1.addEventListener('change', function(){
+    var f = input1.files && input1.files[0];
+    if(f) setFile(1, f);
+  });
+  input2.addEventListener('change', function(){
+    var f = input2.files && input2.files[0];
+    if(f) setFile(2, f);
+  });
 
   // Remove buttons
-  document.getElementById('mcRemove1').addEventListener('click', function(e){ e.stopPropagation(); clearFile(1); });
-  document.getElementById('mcRemove2').addEventListener('click', function(e){ e.stopPropagation(); clearFile(2); });
+  document.getElementById('mcRemove1').addEventListener('click', function(){ clearFile(1); });
+  document.getElementById('mcRemove2').addEventListener('click', function(){ clearFile(2); });
 
   function setFile(num, f){
     if(num===1){ file1=f; } else { file2=f; }
-    var slot = num===1 ? slot1 : slot2;
-    var prompt = document.getElementById('mcPrompt'+num);
-    var hint = document.getElementById('mcHint'+num);
-    var info = document.getElementById('mcInfo'+num);
-    var name = document.getElementById('mcName'+num);
+    var infoEl = document.getElementById('mcInfo'+num);
+    var nameEl = document.getElementById('mcName'+num);
+    var metaEl = document.getElementById('mcMeta'+num);
 
-    slot.classList.add('has-file');
-    if(num===2) slot.classList.add('is-second');
-    prompt.textContent = 'File loaded';
-    hint.textContent = fmtBytes(f.size);
-    name.textContent = f.name;
-    info.innerHTML = '';
+    nameEl.textContent = f.name;
+    metaEl.innerHTML = fmtBytes(f.size);
+    infoEl.style.display = '';
 
-    // Quick row count (read first few KB to estimate)
+    // Quick row count
     countLinesQuick(f, function(count, exact){
-      info.innerHTML = '<b>~' + fmt(count) + '</b> rows' + (exact ? '' : ' (estimated)');
+      metaEl.innerHTML = fmtBytes(f.size) + ' &middot; <b>~' + fmt(count) + '</b> rows' + (exact ? '' : ' (est.)');
     });
 
     updateButtons();
@@ -612,13 +571,18 @@
   }
 
   function clearFile(num){
-    if(num===1){ file1=null; } else { file2=null; }
-    var slot = num===1 ? slot1 : slot2;
-    slot.classList.remove('has-file','is-second');
-    document.getElementById('mcPrompt'+num).textContent = 'Click or drop CSV here';
-    document.getElementById('mcHint'+num).textContent = num===1 ? 'Header row will be kept from this file' : 'First row (header) will be skipped';
-    document.getElementById('mcInfo'+num).innerHTML = '';
+    if(num===1){ file1=null; input1.value=''; } else { file2=null; input2.value=''; }
+    document.getElementById('mcInfo'+num).style.display = 'none';
     document.getElementById('mcName'+num).textContent = '';
+    document.getElementById('mcMeta'+num).innerHTML = '';
+    // Reset the rm-dropzone selected text
+    var dz = document.getElementById('mcInput'+num).closest('.rm-dropzone') ||
+             document.getElementById('mcInput'+num).previousElementSibling;
+    if(dz){
+      var sel = dz.querySelector('.rm-dz-selected');
+      if(sel) sel.textContent = 'No file selected';
+      dz.classList.remove('has-file');
+    }
     updateButtons();
     resultEl.classList.remove('is-visible');
     mergedBlob = null;
