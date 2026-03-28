@@ -976,7 +976,7 @@
           Tips: paste images directly • <span class="npKbd">⌘/Ctrl</span>+<span class="npKbd">B</span> bold • <span class="npKbd">⌘/Ctrl</span>+<span class="npKbd">K</span> link • notes stay on this device (local storage).
         </div>
       </section>
-    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+    <div id="npBottomNav" style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
   <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
   <a class="btn" href="/fix-my-report.html">Contact</a>
 </div>
@@ -2320,6 +2320,8 @@
     }));
   }
 
+  const npBottomNav = $("npBottomNav");
+
   function applyZen(){
     const r = elRight;
     npZenBtn.classList.toggle("on", zenActive);
@@ -2333,16 +2335,17 @@
       else r.classList.remove("npZen--stats");
       if(zenShowTips.classList.contains("is-on")) r.classList.add("npZen--tips");
       else r.classList.remove("npZen--tips");
-      // Fullscreen the shell (not just the editor) so sidebar toggle works
       npShell.classList.add("npShellZen");
       if(zenHideSidebar.classList.contains("is-on")) npShell.classList.add("npSidebarHidden");
       else npShell.classList.remove("npSidebarHidden");
-      // Show floating exit button
       npZenExit.classList.add("is-visible");
+      // Hide page elements underneath
+      if(npBottomNav) npBottomNav.style.display = "none";
     } else {
       r.classList.remove("npZen","npZen--toolbar","npZen--topbar","npZen--stats","npZen--tips");
       npShell.classList.remove("npShellZen","npSidebarHidden");
       npZenExit.classList.remove("is-visible");
+      if(npBottomNav) npBottomNav.style.display = "";
     }
     saveZenPrefs();
   }
