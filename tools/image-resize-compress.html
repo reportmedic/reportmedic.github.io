@@ -12,6 +12,7 @@
   
   <script defer src="/assets/js/rm-dropzone.js"></script>
   <script defer src="/assets/js/rm-tools-drawer.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <style>
     .irc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
@@ -338,9 +339,9 @@
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
               Resize / Compress All
             </button>
-            <button class="irc-btn" id="downloadAllBtn" type="button" disabled>
+            <button class="irc-btn" id="downloadAllBtn" type="button" disabled style="display:none">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Download All
+              Download All (.zip)
             </button>
           </div>
 
@@ -619,7 +620,9 @@
     queueSection.style.display = queue.length ? '' : 'none';
     queueCount.textContent = queue.length;
     processBtn.disabled = !queue.length || isProcessing;
-    downloadAllBtn.disabled = !queue.some(i => i.status === 'done');
+    const doneCount = queue.filter(i => i.status === 'done').length;
+    downloadAllBtn.disabled = doneCount < 2;
+    downloadAllBtn.style.display = doneCount >= 2 ? '' : 'none';
     previewNav.style.display = queue.length > 1 ? '' : 'none';
     updateNavButtons();
   }
@@ -958,12 +961,41 @@
     a.remove();
   }
 
-  downloadAllBtn.addEventListener('click', () => {
+  downloadAllBtn.addEventListener('click', async () => {
     const doneItems = queue.filter(i => i.status === 'done' && i.outBlob);
-    if (!doneItems.length) return;
-    if (doneItems.length === 1) { downloadItem(doneItems[0]); return; }
-    doneItems.forEach((item, i) => { setTimeout(() => downloadItem(item), i * 350); });
-    setStatus('downloading ' + doneItems.length + ' files');
+    if (doneItems.length < 2) return;
+
+    downloadAllBtn.disabled = true;
+    setStatus('zipping ' + doneItems.length + ' images...');
+
+    try {
+      const zip = new JSZip();
+      doneItems.forEach(item => {
+        let ext;
+        if (item.outExt) {
+          ext = item.outExt;
+        } else {
+          const fmt = fmtSelect.value === 'keep' ? (item.file.type || 'image/png') : fmtSelect.value;
+          ext = fmt === 'image/jpeg' ? 'jpg' : fmt === 'image/webp' ? 'webp' : 'png';
+        }
+        const baseName = (item.file.name || 'image').replace(/\.[a-z0-9]+$/i, '');
+        zip.file(baseName + '_optimized.' + ext, item.outBlob);
+      });
+
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'images_optimized.zip';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      setStatus('zip downloaded - ' + doneItems.length + ' images');
+    } catch (err) {
+      console.error(err);
+      setStatus('zip failed - try downloading individually');
+    }
+    downloadAllBtn.disabled = false;
   });
 
   /* --- Summary --- */
