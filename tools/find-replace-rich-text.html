@@ -927,47 +927,78 @@
     clearHighlights();
     var html = editor.innerHTML;
 
-    if(mode === 'remove-all'){
-      // Replace <br> with space
-      html = html.replace(/<br\s*\/?>/gi, ' ');
-      // Close+open div/p boundaries become a space (NOT headings)
-      html = html.replace(/<\/(div|p|li)>\s*<(div|p|li)[^>]*>/gi, ' ');
-      // Remove remaining div/p tags only
-      html = html.replace(/<\/?(div|p)[^>]*>/gi, ' ');
-      // Ensure headings stay on their own lines: add <br> around heading tags
-      html = html.replace(/(<\/h[1-6]>)\s*/gi, '$1<br>');
-      html = html.replace(/\s*(<h[1-6][^>]*>)/gi, '<br>$1');
-      // Collapse whitespace
-      html = html.replace(/(\s|&nbsp;){2,}/g, ' ');
-      // Clean up any <br> right at start
-      html = html.replace(/^\s*<br>\s*/i, '');
-      html = html.trim();
-      toast('All line breaks removed', 'success');
+    // DOM-based approach: process child elements of the editor directly
+    // This avoids regex issues where stripping div/p leaves text in heading context
 
-    } else if(mode === 'preserve-para'){
-      // Paragraph boundaries: </p>...<p> and double <br>
-      html = html.replace(/<\/p>\s*<p[^>]*>/gi, '{{PARA}}');
-      html = html.replace(/(<br\s*\/?>)\s*(<br\s*\/?>)/gi, '{{PARA}}');
-      // Single line breaks (div boundaries) become spaces
-      html = html.replace(/<\/div>\s*<div[^>]*>/gi, ' ');
-      // Remove remaining <br>
-      html = html.replace(/<br\s*\/?>/gi, ' ');
-      // Remove div/p tags only (preserve h1-h6, blockquote)
-      html = html.replace(/<\/?(div|p)[^>]*>/gi, ' ');
-      // Ensure headings stay on their own lines
-      html = html.replace(/(<\/h[1-6]>)\s*/gi, '$1<br>');
-      html = html.replace(/\s*(<h[1-6][^>]*>)/gi, '<br>$1');
-      // Restore paragraph marks as double <br>
-      html = html.replace(/\{\{PARA\}\}/g, '<br><br>');
-      // Collapse whitespace
-      html = html.replace(/(\s|&nbsp;){2,}/g, ' ');
-      // Clean up leading <br>
-      html = html.replace(/^\s*<br>\s*/i, '');
-      html = html.trim();
-      toast('Line breaks removed (paragraphs kept)', 'success');
-    }
+    // Collect top-level child nodes into groups: headings vs non-heading blocks
+    var children = Array.from(editor.childNodes);
+    var groups = []; // each: { type: 'heading'|'block', nodes: [...] }
 
-    editor.innerHTML = html;
+    children.forEach(function(node){
+      var tag = node.nodeName ? node.nodeName.toUpperCase() : '';
+      var isHeading = /^H[1-6]$/.test(tag);
+      var isBlock = /^(DIV|P|LI|BLOCKQUOTE)$/.test(tag);
+
+      if(isHeading){
+        groups.push({ type: 'heading', nodes: [node] });
+      } else if(isBlock || node.nodeType === 3 || node.nodeName === 'BR' || node.nodeType === 1){
+        // Non-heading content: group consecutive ones together
+        var last = groups.length ? groups[groups.length - 1] : null;
+        if(last && last.type === 'block'){
+          last.nodes.push(node);
+        } else {
+          groups.push({ type: 'block', nodes: [node] });
+        }
+      }
+    });
+
+    // Now rebuild the editor content
+    editor.innerHTML = '';
+
+    groups.forEach(function(g){
+      if(g.type === 'heading'){
+        // Keep headings as-is
+        g.nodes.forEach(function(n){ editor.appendChild(n); });
+      } else {
+        // Merge non-heading nodes
+        if(mode === 'remove-all'){
+          // Merge all into a single <div>, joining with spaces
+          var div = document.createElement('div');
+          g.nodes.forEach(function(n, idx){
+            if(n.nodeName === 'BR') return; // skip <br>
+            if(n.nodeType === 3){
+              // Text node
+              var text = n.textContent.replace(/\s+/g, ' ');
+              if(text.trim()) div.appendChild(document.createTextNode(text));
+            } else {
+              // Element (div, p, etc) - take its inner content
+              if(idx > 0 && div.childNodes.length > 0){
+                div.appendChild(document.createTextNode(' '));
+              }
+              while(n.firstChild) div.appendChild(n.firstChild);
+            }
+          });
+          if(div.childNodes.length > 0) editor.appendChild(div);
+        } else {
+          // preserve-para: keep each block node as a separate line
+          g.nodes.forEach(function(n){
+            if(n.nodeName === 'BR') return;
+            if(n.nodeType === 3){
+              var text = n.textContent.trim();
+              if(text){
+                var div = document.createElement('div');
+                div.textContent = text;
+                editor.appendChild(div);
+              }
+            } else {
+              editor.appendChild(n);
+            }
+          });
+        }
+      }
+    });
+
+    toast(mode === 'remove-all' ? 'All line breaks removed' : 'Line breaks removed (paragraphs kept)', 'success');
     updateStats();
     runFind();
     // Reset radio back to "keep"
