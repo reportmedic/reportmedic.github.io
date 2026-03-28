@@ -369,11 +369,46 @@
   .npZen.npZen--stats .npStats{ display: flex !important; }
   .npZen.npZen--tips .npFoot{ display: block !important; }
 
-  /* Zen fullscreen: hide sidebar, fill screen */
-  .npShell.npZenShell{
+  /* Sidebar hide - works both in and outside zen */
+  .npShell.npSidebarHidden{
     grid-template-columns: 1fr !important;
   }
-  .npShell.npZenShell > .npLeft{ display: none !important; }
+  .npShell.npSidebarHidden > .npLeft{ display: none !important; }
+
+  /* Floating exit zen button - always visible in zen */
+  .npZenExit{
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10050;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.16);
+    background: rgba(10,16,30,.92);
+    backdrop-filter: blur(10px);
+    color: rgba(238,246,255,.85);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 30px rgba(0,0,0,.4);
+    transition: background .12s, border-color .12s, transform .1s;
+    animation: npZenExitIn .3s ease both;
+  }
+  .npZenExit:hover{
+    background: rgba(255,255,255,.08);
+    border-color: rgba(255,255,255,.28);
+    transform: translateY(-1px);
+  }
+  .npZenExit.is-visible{ display: flex; }
+  .npZenExit .npKbd{ margin-left: 2px; }
+  @keyframes npZenExitIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 
   /* Zen panel - centered overlay, always visible */
   .npZenOverlay{
@@ -896,6 +931,10 @@
 </div>
 
 <div class="npToastContainer" id="npToastContainer"></div>
+
+<button class="npZenExit" id="npZenExit" type="button" title="Exit Zen mode">
+  ⛶ Exit Zen <span class="npKbd">Esc</span>
+</button>
 
 <footer class="rm-footer">
   <div class="rm-footer-inner">
@@ -2174,6 +2213,7 @@
   const npZenBtn = $("npZenBtn");
   const npZenOverlay = $("npZenOverlay");
   const npShell = $("npShell");
+  const npZenExit = $("npZenExit");
   const zenToggleMain = $("npZenToggleMain");
   const zenShowToolbar = $("npZenShowToolbar");
   const zenShowTopbar = $("npZenShowTopbar");
@@ -2199,6 +2239,15 @@
   // Close overlay on backdrop click
   npZenOverlay.addEventListener("click", (e)=>{
     if(e.target === npZenOverlay) npZenOverlay.classList.remove("is-open");
+  });
+
+  // Floating exit button
+  npZenExit.addEventListener("click", ()=>{
+    zenActive = false;
+    zenToggleMain.classList.remove("is-on");
+    zenToggleMain.setAttribute("aria-checked","false");
+    applyZen();
+    toast("Zen mode off");
   });
 
   function toggleZenSwitch(btn){
@@ -2228,13 +2277,16 @@
       else r.classList.remove("npZen--stats");
       if(zenShowTips.classList.contains("is-on")) r.classList.add("npZen--tips");
       else r.classList.remove("npZen--tips");
-      if(zenHideSidebar.classList.contains("is-on")) npShell.classList.add("npZenShell");
-      else npShell.classList.remove("npZenShell");
+      if(zenHideSidebar.classList.contains("is-on")) npShell.classList.add("npSidebarHidden");
+      else npShell.classList.remove("npSidebarHidden");
       // Also go fullscreen
       if(!r.classList.contains("npFullscreen")) r.classList.add("npFullscreen");
+      // Show floating exit button
+      npZenExit.classList.add("is-visible");
     } else {
       r.classList.remove("npZen","npZen--toolbar","npZen--topbar","npZen--stats","npZen--tips","npFullscreen");
-      npShell.classList.remove("npZenShell");
+      npShell.classList.remove("npSidebarHidden");
+      npZenExit.classList.remove("is-visible");
     }
     saveZenPrefs();
   }
@@ -2248,12 +2300,23 @@
     if(zenActive) elEditor.focus();
   });
 
-  [zenShowToolbar, zenShowTopbar, zenShowStats, zenShowTips, zenHideSidebar].forEach(btn=>{
+  [zenShowToolbar, zenShowTopbar, zenShowStats, zenShowTips].forEach(btn=>{
     btn.addEventListener("click", ()=>{
       toggleZenSwitch(btn);
       if(zenActive) applyZen();
       else saveZenPrefs();
     });
+  });
+
+  // Sidebar toggle works in AND outside zen mode
+  zenHideSidebar.addEventListener("click", ()=>{
+    toggleZenSwitch(zenHideSidebar);
+    if(zenHideSidebar.classList.contains("is-on")){
+      npShell.classList.add("npSidebarHidden");
+    } else {
+      npShell.classList.remove("npSidebarHidden");
+    }
+    saveZenPrefs();
   });
 
   // Escape: close zen overlay first, then exit zen mode
