@@ -200,6 +200,33 @@
     }
     .py-runs-pill b{color:rgba(124,247,212,.85);}
 
+    /* ── Dynamic pill states ── */
+    .py-status .pill{transition: background .25s, border-color .25s, color .25s;}
+
+    .py-pill-starting{background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.10);}
+    .py-pill-starting b{color:rgba(255,255,255,.45);}
+
+    .py-pill-loading{background:rgba(130,170,255,.08); border:1px solid rgba(130,170,255,.22);}
+    .py-pill-loading b{color:rgba(130,170,255,.85);}
+
+    .py-pill-ready{background:rgba(124,247,212,.08); border:1px solid rgba(124,247,212,.22);}
+    .py-pill-ready b{color:rgba(124,247,212,.85);}
+
+    .py-pill-error{background:rgba(255,138,128,.10); border:1px solid rgba(255,138,128,.25);}
+    .py-pill-error b{color:rgba(255,138,128,.9);}
+
+    .py-pill-idle{background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.10);}
+    .py-pill-idle b{color:rgba(255,255,255,.45);}
+
+    .py-pill-running{background:rgba(255,203,107,.10); border:1px solid rgba(255,203,107,.25);}
+    .py-pill-running b{color:rgba(255,203,107,.9);}
+
+    .py-pill-done{background:rgba(124,247,212,.08); border:1px solid rgba(124,247,212,.22);}
+    .py-pill-done b{color:rgba(124,247,212,.85);}
+
+    .py-pill-stopped{background:rgba(255,138,128,.08); border:1px solid rgba(255,138,128,.20);}
+    .py-pill-stopped b{color:rgba(255,138,128,.8);}
+
     .py-actions-top{display:flex; gap:6px; flex-wrap:nowrap; align-items:center; justify-content:flex-end; white-space:nowrap; flex:0 0 auto; margin-left:auto;}
     .py-actions-top .btn{padding:6px 9px; font-size:12px; border-radius:8px; border:1px solid rgba(255,255,255,.14); flex:0 0 auto; white-space:nowrap;}
     .py-actions-top .btn.primary{border-color: rgba(124,247,212,.28)}
@@ -254,8 +281,8 @@
             </div>
             <div class="py-status">
               <span class="pill tiny py-runs-pill" id="runCountPill"><b>Runs:</b> <span class="muted" id="runCountVal">0</span></span>
-              <span class="pill tiny" id="enginePill"><b>Engine:</b> <span class="muted">starting</span></span>
-              <span class="pill tiny" id="runPill"><b>Run:</b> <span class="muted">idle</span></span>
+              <span class="pill tiny py-pill-starting" id="enginePill"><b>Engine:</b> <span>starting</span></span>
+              <span class="pill tiny py-pill-idle" id="runPill"><b>Run:</b> <span>idle</span></span>
             </div>
           </div>
 
@@ -316,13 +343,14 @@ Alice
           </div>
         </div>
       </div>
+
+    </div>
           <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
   <a class="btn primary" href="/#toolbox" target=_blank rel=noopener>Back to Toolbox</a>
   <a class="btn" href="/fix-my-report.html" target=_blank rel=noopener>Contact</a>
 </div>
-    </div>
-<div class="footer">© 2026 ReportMedic</div>
   </div>
+  <div class="footer">© 2026 ReportMedic</div>
 </div>
 
 <footer class="rm-footer">
@@ -413,11 +441,26 @@ Alice
   function escHtml(s){
     return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
+  // ── Pill state helpers ──
+  const PILL_CLASSES = ["py-pill-starting","py-pill-loading","py-pill-ready","py-pill-error","py-pill-idle","py-pill-running","py-pill-done","py-pill-stopped"];
+  function setPillState(el, cls){
+    PILL_CLASSES.forEach(c => el.classList.remove(c));
+    if(cls) el.classList.add(cls);
+  }
+
   function setEngineState(text){
-    enginePill.innerHTML = "<b>Engine:</b> <span class=\"muted\">"+escHtml(text)+"</span>";
+    enginePill.innerHTML = "<b>Engine:</b> <span>"+escHtml(text)+"</span>";
+    const map = {starting:"py-pill-starting", loading:"py-pill-loading", ready:"py-pill-ready", error:"py-pill-error"};
+    setPillState(enginePill, map[text] || "py-pill-starting");
   }
   function setRunState(text){
-    runPill.innerHTML = "<b>Run:</b> <span class=\"muted\">"+escHtml(text)+"</span>";
+    runPill.innerHTML = "<b>Run:</b> <span>"+escHtml(text)+"</span>";
+    let cls = "py-pill-idle";
+    if(text === "running") cls = "py-pill-running";
+    else if(text === "stopped") cls = "py-pill-stopped";
+    else if(text === "idle") cls = "py-pill-idle";
+    else if(text.includes("ms")) cls = "py-pill-done";
+    setPillState(runPill, cls);
   }
 
   // ── Output (with classes for coloring) ──
