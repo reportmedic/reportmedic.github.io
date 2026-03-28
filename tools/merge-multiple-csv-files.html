@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="Merge multiple large CSV files into one by appending rows. No file limit. Handles huge files that crash Excel or Google Sheets. Streaming, nothing uploaded. Runs locally in your browser."/>
+<title>Merge Multiple CSV Files - Append Unlimited CSVs - ReportMedic</title>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+
+<script defer src="/assets/js/rm-dropzone.js"></script>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+<style>
+  .mm-shell{
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255,255,255,.06);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 24px rgba(0,0,0,.22);
+    overflow: hidden;
+  }
+
+  .mm-topbar{
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,.02);
+    flex-shrink: 0;
+  }
+  .mm-topbar-title{ font-weight: 800; font-size: 13.5px; opacity: .85; flex: 1; }
+  .mm-icon-btn{
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; border: 1px solid transparent; background: transparent;
+    color: rgba(238,246,255,.80); cursor: pointer; font-size: 13px;
+    transition: background .1s, border-color .1s; flex-shrink: 0;
+  }
+  .mm-icon-btn:hover{ background: rgba(255,255,255,.09); border-color: var(--border); }
+
+  /* Upload area */
+  .mm-upload{ padding: 14px; }
+
+  /* File queue */
+  .mm-queue{ padding: 0 14px 14px; }
+  .mm-queue-header{
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .mm-queue-count{ font-size: 12px; opacity: .7; display: inline-flex; align-items: center; gap: 6px; }
+  .mm-queue-count .num{
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 22px; height: 22px; border-radius: 6px;
+    background: rgba(110,168,255,.15); color: var(--brand);
+    font-weight: 800; font-size: 11px; padding: 0 5px;
+  }
+  .mm-queue-total{ font-size: 12px; opacity: .55; }
+
+  .mm-queue-list{
+    display: flex; flex-direction: column; gap: 6px;
+    max-height: 320px; overflow-y: auto;
+  }
+  .mm-queue-item{
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 10px;
+    background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.10);
+    animation: mmFadeIn .2s ease both;
+    font-size: 12.5px;
+  }
+  .mm-queue-item:first-child{
+    border-color: rgba(110,168,255,.25);
+    background: rgba(110,168,255,.04);
+  }
+  @keyframes mmFadeIn{ from{ opacity:0; transform:translateY(4px); } to{ opacity:1; transform:translateY(0); } }
+
+  .mm-item-num{
+    width: 22px; height: 22px; border-radius: 6px;
+    background: rgba(255,255,255,.06);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800; opacity: .5; flex-shrink: 0;
+  }
+  .mm-queue-item:first-child .mm-item-num{
+    background: rgba(110,168,255,.15); color: var(--brand); opacity: 1;
+  }
+  .mm-item-name{
+    flex: 1; min-width: 0;
+    font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .mm-item-meta{ opacity: .55; white-space: nowrap; font-size: 11px; }
+  .mm-item-rows{ opacity: .55; white-space: nowrap; font-size: 11px; }
+  .mm-item-badge{
+    font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .4px;
+    padding: 2px 6px; border-radius: 4px;
+    background: rgba(110,168,255,.12); color: var(--brand);
+    flex-shrink: 0;
+  }
+  .mm-item-remove{
+    width: 24px; height: 24px; border-radius: 6px;
+    border: 1px solid rgba(255,120,120,.20); background: rgba(255,80,80,.06);
+    color: rgba(255,120,120,.7); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; flex-shrink: 0; transition: background .1s;
+  }
+  .mm-item-remove:hover{ background: rgba(255,80,80,.14); }
+  .mm-item-grip{
+    cursor: grab; opacity: .3; font-size: 14px; flex-shrink: 0; user-select: none;
+  }
+  .mm-item-grip:active{ cursor: grabbing; }
+
+  /* Options */
+  .mm-options{
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 14px;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,.12);
+    flex-wrap: wrap; flex-shrink: 0; font-size: 12px;
+  }
+  .mm-opt-label{
+    display: flex; align-items: center; gap: 6px;
+    cursor: pointer; opacity: .82; white-space: nowrap;
+  }
+  .mm-opt-label input{ width: 15px; height: 15px; accent-color: var(--brand); cursor: pointer; }
+
+  /* Action bar */
+  .mm-action-bar{
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px; flex-wrap: wrap;
+  }
+  .mm-btn{
+    height: 38px; padding: 0 20px; border-radius: 10px;
+    border: 1px solid var(--border); background: rgba(255,255,255,.04);
+    color: var(--text); font-family: inherit; font-size: 13px; font-weight: 700;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    transition: background .1s, border-color .1s, transform .08s;
+  }
+  .mm-btn:hover{ background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.24); transform: translateY(-1px); }
+  .mm-btn.primary{
+    border: none; background: linear-gradient(135deg, var(--brand), var(--brand2)); color: #061021;
+  }
+  .mm-btn.primary:hover{ box-shadow: 0 4px 16px rgba(110,168,255,.25); }
+  .mm-btn:disabled{ opacity: .35; cursor: not-allowed; transform: none; }
+
+  /* Progress */
+  .mm-progress{ padding: 0 14px 14px; display: none; }
+  .mm-progress.is-active{ display: block; }
+  .mm-progress-label{
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; margin-bottom: 6px;
+  }
+  .mm-progress-label .msg{ font-weight: 700; }
+  .mm-progress-label .pct{ opacity: .6; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+  .mm-progress-bar-wrap{ height: 8px; border-radius: 4px; background: rgba(255,255,255,.08); overflow: hidden; }
+  .mm-progress-bar{
+    height: 100%; border-radius: 4px; width: 0%;
+    background: linear-gradient(90deg, var(--brand), var(--brand2)); transition: width .2s ease;
+  }
+
+  /* Result */
+  .mm-result{
+    margin: 0 14px 14px; padding: 14px; border-radius: 12px;
+    background: rgba(124,247,212,.06); border: 1px solid rgba(124,247,212,.18); display: none;
+  }
+  .mm-result.is-visible{ display: block; }
+  .mm-result-title{ font-weight: 800; font-size: 14px; margin-bottom: 8px; color: var(--brand2); }
+  .mm-result-grid{
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px; margin-bottom: 12px;
+  }
+  .mm-result-stat{
+    padding: 10px; border-radius: 10px;
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06); text-align: center;
+  }
+  .mm-result-stat .val{ font-size: 20px; font-weight: 900; letter-spacing: -.5px; }
+  .mm-result-stat:nth-child(1) .val{ color: #6ee7b7; }
+  .mm-result-stat:nth-child(2) .val{ color: #93c5fd; }
+  .mm-result-stat:nth-child(3) .val{ color: #fbbf24; }
+  .mm-result-stat:nth-child(4) .val{ color: #f9a8d4; }
+  .mm-result-stat .lbl{ font-size: 10.5px; opacity: .6; font-weight: 600; margin-top: 2px; }
+  .mm-result-actions{ display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .mm-foot{
+    padding: 8px 14px; border-top: 1px solid var(--border);
+    font-size: 11.5px; color: var(--muted); background: rgba(255,255,255,.02); flex-shrink: 0;
+  }
+
+  /* Toast */
+  .mm-toast-container{
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    z-index: 99999; display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none;
+  }
+  .mm-toast{
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 20px; border-radius: 12px;
+    font-family: inherit; font-size: 13.5px; font-weight: 700;
+    pointer-events: auto; max-width: 400px; position: relative; overflow: hidden;
+    box-shadow: 0 10px 36px rgba(0,0,0,.35); animation: mmTIn .35s cubic-bezier(.21,1.02,.73,1) forwards;
+  }
+  .mm-toast.toast-success{ background: linear-gradient(135deg,#ecfdf5,#d1fae5); border: 1px solid #6ee7b7; color: #065f46; }
+  .mm-toast.toast-info{ background: linear-gradient(135deg,#eff6ff,#dbeafe); border: 1px solid #93c5fd; color: #1e3a5f; }
+  .mm-toast.toast-warn{ background: linear-gradient(135deg,#fffbeb,#fef3c7); border: 1px solid #fbbf24; color: #78350f; }
+  .mm-toast.toast-out{ animation: mmTOut .25s ease forwards; }
+  .mm-toast-icon{
+    width: 28px; height: 28px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
+  }
+  .mm-toast.toast-success .mm-toast-icon{ background: #10b981; color: #fff; }
+  .mm-toast.toast-info .mm-toast-icon{ background: #3b82f6; color: #fff; }
+  .mm-toast::before{
+    content: ''; position: absolute; bottom: 0; left: 12px; right: 12px;
+    height: 3px; border-radius: 3px; background: currentColor; opacity: .25;
+    animation: mmProg 2.2s linear forwards;
+  }
+  @keyframes mmProg{ from{ transform:scaleX(1); transform-origin:left; } to{ transform:scaleX(0); transform-origin:left; } }
+  @keyframes mmTIn{ from{ opacity:0; transform:translateY(-16px) scale(.92); } to{ opacity:1; transform:translateY(0) scale(1); } }
+  @keyframes mmTOut{ from{ opacity:1; } to{ opacity:0; transform:translateY(-12px) scale(.9); } }
+
+  @media (max-width: 640px){
+    .mm-upload{ padding: 10px; }
+    .mm-queue{ padding: 0 10px 10px; }
+    .mm-action-bar{ padding: 10px; }
+    .mm-btn{ height: 36px; padding: 0 14px; font-size: 12px; }
+    .mm-result-grid{ grid-template-columns: repeat(2, 1fr); }
+    .mm-item-meta, .mm-item-rows{ display: none; }
+    .mm-foot{ display: none; }
+  }
+</style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Merge Multiple CSV Files <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">Append any number of large CSV files into one. Drop them all at once or add one by one. Handles massive files that crash Excel or Google Sheets. Streamed locally in your browser.</p>
+    <div class="tiny muted" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help &#8594;</a></div>
+
+    <div class="mm-shell" id="mmShell">
+
+      <div class="mm-topbar">
+        <div class="mm-topbar-title">Drop or browse CSV files</div>
+        <button class="mm-icon-btn" id="mmResetBtn" type="button" title="Clear all">&#10005;</button>
+      </div>
+
+      <!-- Single dropzone for all files -->
+      <div class="mm-upload">
+        <input id="mmFileInput" type="file" accept=".csv,.tsv,.txt" multiple />
+      </div>
+
+      <!-- File queue -->
+      <div class="mm-queue" id="mmQueueSection" style="display:none">
+        <div class="mm-queue-header">
+          <div class="mm-queue-count">
+            <span class="num" id="mmCount">0</span> files queued
+          </div>
+          <div class="mm-queue-total" id="mmTotalSize"></div>
+        </div>
+        <div class="mm-queue-list" id="mmQueueList"></div>
+      </div>
+
+      <!-- Options -->
+      <div class="mm-options">
+        <label class="mm-opt-label"><input type="checkbox" id="mmSkipHeaders" checked /> Skip header row from all files except the first</label>
+      </div>
+
+      <!-- Actions -->
+      <div class="mm-action-bar">
+        <button class="mm-btn primary" id="mmMergeBtn" type="button" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>
+          Merge All Files
+        </button>
+        <button class="mm-btn" id="mmAddMoreBtn" type="button">+ Add More</button>
+      </div>
+
+      <!-- Progress -->
+      <div class="mm-progress" id="mmProgress">
+        <div class="mm-progress-label">
+          <span class="msg" id="mmProgressMsg">Merging...</span>
+          <span class="pct" id="mmProgressPct">0%</span>
+        </div>
+        <div class="mm-progress-bar-wrap"><div class="mm-progress-bar" id="mmProgressBar"></div></div>
+      </div>
+
+      <!-- Result -->
+      <div class="mm-result" id="mmResult">
+        <div class="mm-result-title">Merge Complete</div>
+        <div class="mm-result-grid">
+          <div class="mm-result-stat"><div class="val" id="mmResFiles">0</div><div class="lbl">Files Merged</div></div>
+          <div class="mm-result-stat"><div class="val" id="mmResRows">0</div><div class="lbl">Total Rows</div></div>
+          <div class="mm-result-stat"><div class="val" id="mmResSize">0</div><div class="lbl">Output Size</div></div>
+          <div class="mm-result-stat"><div class="val" id="mmResTime">0</div><div class="lbl">Time (sec)</div></div>
+        </div>
+        <div class="mm-result-actions">
+          <button class="mm-btn primary" id="mmDownloadBtn" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download Merged CSV
+          </button>
+        </div>
+      </div>
+
+      <div class="mm-foot">
+        Files are processed in streaming chunks. Even 500MB+ CSVs work. First file's header is kept; subsequent headers are skipped. Drag to reorder. Nothing leaves your browser.
+      </div>
+
+    </div>
+
+    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+      <a class="btn" href="/fix-my-report.html">Contact</a>
+    </div>
+  </div>
+  <div class="footer">&copy; 2026 ReportMedic</div>
+</div>
+
+<div class="mm-toast-container" id="mmToastContainer"></div>
+
+<!-- Learn More Modal -->
+<div class="rm-lm-backdrop" id="rmLM" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Merge Multiple CSV Files</h2>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">&times;</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this solves</h3>
+      <ul>
+        <li>Merging any number of huge CSV files that crash Excel or Google Sheets</li>
+        <li>Simple row append: File 1 rows, then File 2 rows, then File 3, etc.</li>
+        <li>Header row is kept from the first file; skipped from all others by default</li>
+      </ul>
+      <h3>How to use</h3>
+      <ul>
+        <li>Drop all your CSV files at once, or browse and add more</li>
+        <li>Drag to reorder files in the queue</li>
+        <li>Click "Merge All Files" to combine them</li>
+        <li>Download the merged output as a single CSV</li>
+      </ul>
+      <h3>Privacy</h3>
+      <ul>
+        <li>Everything runs locally using the File API and streaming chunks</li>
+        <li>No data is uploaded to any server</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">&copy; 2026 ReportMedic</div>
+  </div>
+</footer>
+
+<!-- Modal script -->
+<script>
+(function(){
+  function openLM(id){var b=document.getElementById(id);if(!b)return;b.setAttribute('aria-hidden','false');var c=b.querySelector('.rm-lm-close');if(c)c.focus();}
+  function closeLM(id){var b=document.getElementById(id);if(!b)return;b.setAttribute('aria-hidden','true');}
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('[data-rm-lm-open]');if(a){e.preventDefault();openLM(a.getAttribute('data-rm-lm-open'));return;}
+    var c=e.target.closest('[data-rm-lm-close]');if(c){e.preventDefault();closeLM(c.getAttribute('data-rm-lm-close'));return;}
+    var b=e.target.classList&&e.target.classList.contains('rm-lm-backdrop')?e.target:null;if(b)closeLM(b.id);
+  });
+  document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;document.querySelectorAll('.rm-lm-backdrop[aria-hidden="false"]').forEach(function(b){b.setAttribute('aria-hidden','true');});});
+})();
+</script>
+
+<!-- Main script -->
+<script>
+(function(){
+  var CHUNK = 4*1024*1024;
+  var queue = []; // { id, file, rows: null|number, exact: bool }
+  var nextId = 1;
+  var mergedBlob = null;
+
+  var fileInput   = document.getElementById('mmFileInput');
+  var queueSection= document.getElementById('mmQueueSection');
+  var queueList   = document.getElementById('mmQueueList');
+  var countEl     = document.getElementById('mmCount');
+  var totalSizeEl = document.getElementById('mmTotalSize');
+  var mergeBtn    = document.getElementById('mmMergeBtn');
+  var addMoreBtn  = document.getElementById('mmAddMoreBtn');
+  var resetBtn    = document.getElementById('mmResetBtn');
+  var downloadBtn = document.getElementById('mmDownloadBtn');
+  var skipHeaders = document.getElementById('mmSkipHeaders');
+  var progressEl  = document.getElementById('mmProgress');
+  var progressBar = document.getElementById('mmProgressBar');
+  var progressMsg = document.getElementById('mmProgressMsg');
+  var progressPct = document.getElementById('mmProgressPct');
+  var resultEl    = document.getElementById('mmResult');
+  var toastBox    = document.getElementById('mmToastContainer');
+
+  function fmt(n){ return n.toLocaleString(); }
+  function fmtBytes(n){
+    if(!Number.isFinite(n)||n<0)return '-';
+    var u=['B','KB','MB','GB'];var i=0;var v=n;
+    while(v>1024&&i<u.length-1){v/=1024;i++;}
+    return v.toFixed(i===0?0:2)+' '+u[i];
+  }
+  function toast(msg,type){
+    type=type||'info';
+    var icon=type==='success'?'&#10003;':'&#8505;';
+    var el=document.createElement('div');
+    el.className='mm-toast toast-'+type;
+    el.innerHTML='<span class="mm-toast-icon">'+icon+'</span><span>'+msg+'</span>';
+    toastBox.appendChild(el);
+    setTimeout(function(){el.classList.add('toast-out');setTimeout(function(){el.remove();},300);},2200);
+  }
+
+  /* --- File input (rm-dropzone handles UI) --- */
+  fileInput.addEventListener('change', function(){
+    var files = Array.prototype.slice.call(fileInput.files || []);
+    if(files.length) addFiles(files);
+    fileInput.value = '';
+  });
+
+  addMoreBtn.addEventListener('click', function(){ fileInput.click(); });
+
+  function addFiles(files){
+    var added = 0;
+    for(var i = 0; i < files.length; i++){
+      var f = files[i];
+      var item = { id: nextId++, file: f, rows: null, exact: false };
+      queue.push(item);
+      added++;
+      estimateRows(item);
+    }
+    renderQueue();
+    toast(added + ' file(s) added', 'info');
+  }
+
+  function estimateRows(item){
+    var f = item.file;
+    var sampleSize = Math.min(f.size, 512*1024);
+    var reader = new FileReader();
+    reader.onload = function(){
+      var text = reader.result;
+      var lines = text.split('\n').length;
+      if(sampleSize >= f.size){
+        item.rows = lines;
+        item.exact = true;
+      } else {
+        item.rows = Math.round(lines * (f.size / sampleSize));
+        item.exact = false;
+      }
+      renderQueue();
+    };
+    reader.readAsText(f.slice(0, sampleSize));
+  }
+
+  function removeItem(id){
+    queue = queue.filter(function(i){ return i.id !== id; });
+    renderQueue();
+    resultEl.classList.remove('is-visible');
+    mergedBlob = null;
+  }
+
+  /* --- Render queue --- */
+  function renderQueue(){
+    queueSection.style.display = queue.length ? '' : 'none';
+    countEl.textContent = queue.length;
+    mergeBtn.disabled = queue.length < 2;
+
+    var totalBytes = 0;
+    for(var i = 0; i < queue.length; i++) totalBytes += queue[i].file.size;
+    totalSizeEl.textContent = 'Total: ' + fmtBytes(totalBytes);
+
+    queueList.innerHTML = '';
+    for(var i = 0; i < queue.length; i++){
+      var item = queue[i];
+      var el = document.createElement('div');
+      el.className = 'mm-queue-item';
+      el.draggable = true;
+      el.dataset.id = item.id;
+
+      var rowsText = item.rows !== null
+        ? ('~' + fmt(item.rows) + ' rows' + (item.exact ? '' : ' est.'))
+        : 'counting...';
+
+      el.innerHTML =
+        '<span class="mm-item-grip" title="Drag to reorder">&#9776;</span>' +
+        '<span class="mm-item-num">' + (i+1) + '</span>' +
+        (i === 0 ? '<span class="mm-item-badge">header</span>' : '') +
+        '<span class="mm-item-name">' + escHtml(item.file.name) + '</span>' +
+        '<span class="mm-item-meta">' + fmtBytes(item.file.size) + '</span>' +
+        '<span class="mm-item-rows">' + rowsText + '</span>' +
+        '<button class="mm-item-remove" data-rm="' + item.id + '" title="Remove">&#10005;</button>';
+
+      queueList.appendChild(el);
+    }
+  }
+
+  function escHtml(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+  /* --- Queue actions (delegated) --- */
+  queueList.addEventListener('click', function(e){
+    var rm = e.target.closest('[data-rm]');
+    if(rm) removeItem(+rm.dataset.rm);
+  });
+
+  /* --- Drag to reorder --- */
+  var dragId = null;
+  queueList.addEventListener('dragstart', function(e){
+    var item = e.target.closest('.mm-queue-item');
+    if(!item) return;
+    dragId = +item.dataset.id;
+    e.dataTransfer.effectAllowed = 'move';
+    item.style.opacity = '.4';
+  });
+  queueList.addEventListener('dragend', function(e){
+    var item = e.target.closest('.mm-queue-item');
+    if(item) item.style.opacity = '';
+    dragId = null;
+  });
+  queueList.addEventListener('dragover', function(e){
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  });
+  queueList.addEventListener('drop', function(e){
+    e.preventDefault();
+    if(dragId === null) return;
+    var target = e.target.closest('.mm-queue-item');
+    if(!target) return;
+    var targetId = +target.dataset.id;
+    if(dragId === targetId) return;
+
+    var fromIdx = -1, toIdx = -1;
+    for(var i = 0; i < queue.length; i++){
+      if(queue[i].id === dragId) fromIdx = i;
+      if(queue[i].id === targetId) toIdx = i;
+    }
+    if(fromIdx < 0 || toIdx < 0) return;
+
+    var moved = queue.splice(fromIdx, 1)[0];
+    queue.splice(toIdx, 0, moved);
+    renderQueue();
+    toast('Reordered', 'info');
+  });
+
+  /* --- Reset --- */
+  resetBtn.addEventListener('click', function(){
+    queue = [];
+    mergedBlob = null;
+    renderQueue();
+    resultEl.classList.remove('is-visible');
+    progressEl.classList.remove('is-active');
+  });
+
+  /* --- Merge (streaming) --- */
+  mergeBtn.addEventListener('click', function(){
+    if(queue.length < 2) return;
+    mergeBtn.disabled = true;
+    resultEl.classList.remove('is-visible');
+    mergedBlob = null;
+
+    progressEl.classList.add('is-active');
+    progressBar.style.width = '0%';
+    progressMsg.textContent = 'Starting...';
+    progressPct.textContent = '0%';
+
+    var totalSize = 0;
+    for(var i = 0; i < queue.length; i++) totalSize += queue[i].file.size;
+
+    var processed = 0;
+    var chunks = [];
+    var totalRows = 0;
+    var headersSkipped = 0;
+    var startTime = performance.now();
+    var fileIndex = 0;
+
+    function processNextFile(){
+      if(fileIndex >= queue.length){
+        finishMerge();
+        return;
+      }
+
+      var item = queue[fileIndex];
+      var skipFirst = (fileIndex > 0 && skipHeaders.checked);
+      progressMsg.textContent = 'Reading file ' + (fileIndex+1) + '/' + queue.length + ': ' + item.file.name;
+
+      readChunked(item.file, skipFirst, function(text){
+        chunks.push(text);
+        // Count rows
+        for(var i = 0; i < text.length; i++){
+          if(text.charCodeAt(i) === 10) totalRows++;
+        }
+      }, function(remainder){
+        if(remainder && remainder.trim()){
+          chunks.push(remainder);
+          totalRows++;
+        }
+
+        // Ensure file ends with newline
+        var last = chunks.length ? chunks[chunks.length-1] : '';
+        if(last.length > 0 && last.charCodeAt(last.length-1) !== 10){
+          chunks.push('\n');
+        }
+
+        if(skipFirst) headersSkipped++;
+
+        fileIndex++;
+        processNextFile();
+      });
+    }
+
+    function readChunked(file, skipFirstLine, onChunk, onDone){
+      var offset = 0;
+      var firstChunk = true;
+      var leftover = '';
+
+      function readNext(){
+        if(offset >= file.size){ onDone(leftover); return; }
+        var end = Math.min(offset + CHUNK, file.size);
+        var slice = file.slice(offset, end);
+        var reader = new FileReader();
+        reader.onload = function(){
+          var text = leftover + reader.result;
+          leftover = '';
+
+          if(end < file.size){
+            var lastNL = text.lastIndexOf('\n');
+            if(lastNL >= 0){
+              leftover = text.substring(lastNL + 1);
+              text = text.substring(0, lastNL + 1);
+            } else {
+              leftover = text;
+              offset = end;
+              setTimeout(readNext, 0);
+              return;
+            }
+          }
+
+          if(firstChunk && skipFirstLine){
+            var nlIdx = text.indexOf('\n');
+            if(nlIdx >= 0) text = text.substring(nlIdx + 1);
+            firstChunk = false;
+          } else {
+            firstChunk = false;
+          }
+
+          onChunk(text);
+          processed += (end - offset);
+          offset = end;
+
+          var pct = Math.min(99, Math.round((processed / totalSize) * 100));
+          progressBar.style.width = pct + '%';
+          progressPct.textContent = pct + '%';
+
+          setTimeout(readNext, 0);
+        };
+        reader.readAsText(slice);
+      }
+      readNext();
+    }
+
+    function finishMerge(){
+      progressBar.style.width = '100%';
+      progressPct.textContent = '100%';
+      progressMsg.textContent = 'Building output...';
+
+      setTimeout(function(){
+        mergedBlob = new Blob(chunks, { type: 'text/csv;charset=utf-8' });
+        chunks = [];
+
+        var elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+
+        document.getElementById('mmResFiles').textContent = queue.length;
+        document.getElementById('mmResRows').textContent = fmt(totalRows);
+        document.getElementById('mmResSize').textContent = fmtBytes(mergedBlob.size);
+        document.getElementById('mmResTime').textContent = elapsed + 's';
+
+        resultEl.classList.add('is-visible');
+        progressEl.classList.remove('is-active');
+        mergeBtn.disabled = false;
+        toast('Merged ' + queue.length + ' files - ' + fmt(totalRows) + ' rows', 'success');
+      }, 50);
+    }
+
+    processNextFile();
+  });
+
+  /* --- Download --- */
+  downloadBtn.addEventListener('click', function(){
+    if(!mergedBlob) return;
+    var name = 'merged_' + queue.length + '_files';
+    if(queue.length && queue[0].file.name) name = queue[0].file.name.replace(/\.[^.]+$/, '') + '_merged';
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(mergedBlob);
+    a.download = name + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+    toast('Download started', 'success');
+  });
+
+})();
+</script>
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6997965e73d8cb1c357e66ee/1jhs26oms';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+</body>
+</html>
