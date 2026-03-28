@@ -925,80 +925,107 @@
     if(mode === 'keep') return;
 
     clearHighlights();
-    var html = editor.innerHTML;
 
-    // DOM-based approach: process child elements of the editor directly
-    // This avoids regex issues where stripping div/p leaves text in heading context
+    // Collect top-level children into an array (snapshot, since childNodes is live)
+    var nodes = [];
+    var child = editor.firstChild;
+    while(child){ nodes.push(child); child = child.nextSibling; }
 
-    // Collect top-level child nodes into groups: headings vs non-heading blocks
-    var children = Array.from(editor.childNodes);
-    var groups = []; // each: { type: 'heading'|'block', nodes: [...] }
+    if(nodes.length === 0) return;
 
-    children.forEach(function(node){
-      var tag = node.nodeName ? node.nodeName.toUpperCase() : '';
-      var isHeading = /^H[1-6]$/.test(tag);
-      var isBlock = /^(DIV|P|LI|BLOCKQUOTE)$/.test(tag);
+    // Helper: is this node a heading?
+    function isHeading(n){ return n.nodeType === 1 && /^H[1-6]$/i.test(n.nodeName); }
+    // Helper: is this node an empty block or bare <br>?
+    function isEmpty(n){
+      if(n.nodeName === 'BR') return true;
+      if(n.nodeType === 3 && !n.textContent.trim()) return true;
+      if(n.nodeType === 1 && !n.textContent.trim() && !n.querySelector('img')) return true;
+      return false;
+    }
 
-      if(isHeading){
-        groups.push({ type: 'heading', nodes: [node] });
-      } else if(isBlock || node.nodeType === 3 || node.nodeName === 'BR' || node.nodeType === 1){
-        // Non-heading content: group consecutive ones together
-        var last = groups.length ? groups[groups.length - 1] : null;
-        if(last && last.type === 'block'){
-          last.nodes.push(node);
-        } else {
-          groups.push({ type: 'block', nodes: [node] });
+    if(mode === 'remove-all'){
+      // Strategy: merge all consecutive non-heading, non-empty elements into one <div>
+      var fragment = document.createDocumentFragment();
+      var mergeBin = null; // accumulator div for merging
+
+      function flushBin(){
+        if(mergeBin && mergeBin.childNodes.length > 0){
+          fragment.appendChild(mergeBin);
         }
+        mergeBin = null;
       }
-    });
 
-    // Now rebuild the editor content
-    editor.innerHTML = '';
-
-    groups.forEach(function(g){
-      if(g.type === 'heading'){
-        // Keep headings as-is
-        g.nodes.forEach(function(n){ editor.appendChild(n); });
-      } else {
-        // Merge non-heading nodes
-        if(mode === 'remove-all'){
-          // Merge all into a single <div>, joining with spaces
-          var div = document.createElement('div');
-          g.nodes.forEach(function(n, idx){
-            if(n.nodeName === 'BR') return; // skip <br>
-            if(n.nodeType === 3){
-              // Text node
-              var text = n.textContent.replace(/\s+/g, ' ');
-              if(text.trim()) div.appendChild(document.createTextNode(text));
-            } else {
-              // Element (div, p, etc) - take its inner content
-              if(idx > 0 && div.childNodes.length > 0){
-                div.appendChild(document.createTextNode(' '));
-              }
-              while(n.firstChild) div.appendChild(n.firstChild);
-            }
-          });
-          if(div.childNodes.length > 0) editor.appendChild(div);
+      nodes.forEach(function(n){
+        if(isHeading(n)){
+          flushBin();
+          fragment.appendChild(n.cloneNode(true));
+        } else if(isEmpty(n)){
+          // skip empty nodes / bare <br>
         } else {
-          // preserve-para: keep each block node as a separate line
-          g.nodes.forEach(function(n){
-            if(n.nodeName === 'BR') return;
-            if(n.nodeType === 3){
-              var text = n.textContent.trim();
-              if(text){
-                var div = document.createElement('div');
-                div.textContent = text;
-                editor.appendChild(div);
-              }
-            } else {
-              editor.appendChild(n);
-            }
-          });
+          // Non-heading content block: merge its children into the bin
+          if(!mergeBin) mergeBin = document.createElement('div');
+          // Add a space separator if bin already has content
+          if(mergeBin.childNodes.length > 0){
+            mergeBin.appendChild(document.createTextNode(' '));
+          }
+          // Move inner content (preserves formatting like bold, links)
+          if(n.nodeType === 3){
+            var txt = n.textContent.replace(/\s+/g, ' ').trim();
+            if(txt) mergeBin.appendChild(document.createTextNode(txt));
+          } else {
+            // Clone children to avoid moving issues
+            var kids = Array.from(n.childNodes);
+            kids.forEach(function(k){ mergeBin.appendChild(k.cloneNode(true)); });
+          }
         }
-      }
-    });
+      });
+      flushBin();
 
-    toast(mode === 'remove-all' ? 'All line breaks removed' : 'Line breaks removed (paragraphs kept)', 'success');
+      editor.innerHTML = '';
+      editor.appendChild(fragment);
+      toast('All line breaks removed', 'success');
+
+    } else if(mode === 'preserve-para'){
+      // Strategy: merge lines separated by single line breaks (adjacent divs)
+      // but keep gaps where there's an empty line (empty div, bare br, blank text)
+      var fragment = document.createDocumentFragment();
+      var mergeBin = null;
+
+      function flushBin2(){
+        if(mergeBin && mergeBin.childNodes.length > 0){
+          fragment.appendChild(mergeBin);
+        }
+        mergeBin = null;
+      }
+
+      nodes.forEach(function(n){
+        if(isHeading(n)){
+          flushBin2();
+          fragment.appendChild(n.cloneNode(true));
+        } else if(isEmpty(n)){
+          // Empty line = paragraph boundary. Flush current merge bin.
+          flushBin2();
+        } else {
+          // Non-heading content: merge into current bin
+          if(!mergeBin) mergeBin = document.createElement('div');
+          if(mergeBin.childNodes.length > 0){
+            mergeBin.appendChild(document.createTextNode(' '));
+          }
+          if(n.nodeType === 3){
+            var txt = n.textContent.replace(/\s+/g, ' ').trim();
+            if(txt) mergeBin.appendChild(document.createTextNode(txt));
+          } else {
+            var kids = Array.from(n.childNodes);
+            kids.forEach(function(k){ mergeBin.appendChild(k.cloneNode(true)); });
+          }
+        }
+      });
+      flushBin2();
+
+      editor.innerHTML = '';
+      editor.appendChild(fragment);
+      toast('Line breaks removed (paragraphs kept)', 'success');
+    }
     updateStats();
     runFind();
     // Reset radio back to "keep"
