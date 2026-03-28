@@ -941,17 +941,26 @@
       bin = null;
     };
 
-    var addToBin = function(node){
+    var addToBin = function(node, isRecursive){
       if(!bin) bin = document.createElement('div');
-      if(bin.childNodes.length > 0) bin.appendChild(document.createTextNode(' '));
+      // Add space separator (but not on recursive entry - caller already added one)
+      if(!isRecursive && bin.childNodes.length > 0) bin.appendChild(document.createTextNode(' '));
       if(node.nodeType === 3){
         var t = node.textContent.replace(/\s+/g, ' ').trim();
         if(t) bin.appendChild(document.createTextNode(t));
       } else {
-        // Clone all children (preserves bold, links, etc.)
+        // Process children, recursively flattening nested div/p blocks
         var kids = node.childNodes;
         for(var j = 0; j < kids.length; j++){
-          bin.appendChild(kids[j].cloneNode(true));
+          var k = kids[j];
+          if(k.nodeName === 'BR') continue;
+          var kTag = (k.nodeName || '').toUpperCase();
+          if(k.nodeType === 1 && /^(DIV|P)$/.test(kTag)){
+            if(bin.childNodes.length > 0) bin.appendChild(document.createTextNode(' '));
+            addToBin(k, true);
+          } else {
+            bin.appendChild(k.cloneNode(true));
+          }
         }
       }
     };
@@ -989,6 +998,16 @@
 
     editor.innerHTML = '';
     editor.appendChild(frag);
+
+    // Final cleanup: remove any stray <br> inside non-heading result divs
+    if(mode === 'remove-all'){
+      var resultDivs = editor.querySelectorAll('div, p');
+      for(var d = 0; d < resultDivs.length; d++){
+        var brs = resultDivs[d].querySelectorAll('br');
+        for(var b = brs.length - 1; b >= 0; b--) brs[b].remove();
+      }
+    }
+
     toast(mode === 'remove-all' ? 'All line breaks removed' : 'Line breaks removed (paragraphs kept)', 'success');
     updateStats();
     runFind();
