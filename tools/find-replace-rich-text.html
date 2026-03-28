@@ -195,27 +195,66 @@
     outline: none;
     font-size: 14.5px;
     line-height: 1.7;
-    color: var(--text);
+    color: #1a1a1a;
+    background: rgba(255,252,248,.97);
     overflow: auto;
     min-height: 280px;
   }
   .fr-editor:empty::before{
     content: "Paste your formatted text here (from Word, Google Docs, email, etc.)...";
-    color: rgba(255,255,255,.28);
+    color: rgba(0,0,0,.30);
     pointer-events: none;
   }
+  .fr-editor a{ color: #1a56db; }
   .fr-editor img{ max-width: 100%; border-radius: 8px; }
 
-  /* Highlight for found matches */
+  /* Highlight for found matches - needs strong contrast on light bg */
   .fr-highlight{
-    background: rgba(110,168,255,.22);
+    background: rgba(255,200,50,.45);
     border-radius: 3px;
     padding: 0 1px;
   }
   .fr-highlight.fr-active{
-    background: rgba(110,168,255,.45);
-    outline: 2px solid rgba(110,168,255,.55);
+    background: rgba(255,140,0,.55);
+    outline: 2px solid rgba(255,140,0,.7);
   }
+
+  /* Line break tool bar */
+  .fr-linebreak-bar{
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 7px 14px;
+    font-size: 11.5px;
+    color: var(--muted);
+    background: rgba(0,0,0,.10);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+  .fr-lb-title{
+    font-weight: 700;
+    font-size: 11px;
+    opacity: .6;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    flex-shrink: 0;
+  }
+  .fr-linebreak-bar input[type="radio"]{
+    width: 14px; height: 14px; accent-color: var(--brand); cursor: pointer;
+  }
+
+  /* Regex error */
+  .fr-regex-error{
+    font-size: 11px;
+    color: rgba(255,120,120,.9);
+    padding: 4px 14px;
+    background: rgba(255,80,80,.06);
+    border-bottom: 1px solid rgba(255,80,80,.12);
+    display: none;
+    flex-shrink: 0;
+  }
+  .fr-regex-error.is-visible{ display: block; }
 
   /* Footer tip */
   .fr-foot{
@@ -292,12 +331,15 @@
     .fr-stats{ gap: 10px; padding: 4px 10px; font-size: 10px; }
     .fr-foot{ font-size: 10.5px; padding: 6px 10px; }
     .fr-match-badge{ font-size: 10px; height: 20px; min-width: 20px; }
+    .fr-linebreak-bar{ gap: 8px; padding: 6px 10px; font-size: 10.5px; }
   }
   @media (max-width: 400px){
     .fr-controls{ flex-direction: column; }
     .fr-field{ min-width: 100%; }
     .fr-actions{ width: 100%; }
     .fr-actions .fr-btn{ flex: 1; justify-content: center; }
+    .fr-linebreak-bar{ flex-direction: column; align-items: flex-start; gap: 6px; }
+    .fr-linebreak-bar .fr-btn{ width: 100%; justify-content: center; }
     .fr-foot{ display: none; }
   }
 </style>
@@ -351,6 +393,7 @@
         <div class="fr-opts">
           <label class="fr-opt-label"><input type="checkbox" id="frMatchCase" /> Match case</label>
           <label class="fr-opt-label"><input type="checkbox" id="frWholeWord" /> Whole word</label>
+          <label class="fr-opt-label"><input type="checkbox" id="frUseRegex" /> Regex</label>
         </div>
         <div class="fr-actions">
           <span class="fr-match-badge" id="frMatchBadge">0</span>
@@ -360,6 +403,18 @@
           <button class="fr-btn primary" id="frReplaceAllBtn" type="button" disabled>Replace All</button>
         </div>
       </div>
+
+      <!-- Line breaks tool -->
+      <div class="fr-linebreak-bar" id="frLinebreakBar">
+        <span class="fr-lb-title">Line breaks:</span>
+        <label class="fr-opt-label"><input type="radio" name="frLineBreak" value="keep" checked /> Keep as-is</label>
+        <label class="fr-opt-label"><input type="radio" name="frLineBreak" value="remove-all" /> Remove all</label>
+        <label class="fr-opt-label"><input type="radio" name="frLineBreak" value="preserve-para" /> Remove (keep paragraphs)</label>
+        <button class="fr-btn" id="frApplyLineBreak" type="button" style="margin-left:auto;">Apply</button>
+      </div>
+
+      <!-- Regex error -->
+      <div class="fr-regex-error" id="frRegexError"></div>
 
       <!-- Stats bar -->
       <div class="fr-stats" id="frStats">
@@ -418,6 +473,13 @@
       <ul>
         <li>Match case: only find exact case matches</li>
         <li>Whole word: only match complete words, not partial matches</li>
+        <li>Regex: use regular expressions for advanced pattern matching (e.g. \d+ for numbers)</li>
+      </ul>
+
+      <h3>Line breaks</h3>
+      <ul>
+        <li>Remove all: strips every line break for a single continuous block</li>
+        <li>Remove (keep paragraphs): removes single line breaks but preserves paragraph spacing</li>
       </ul>
 
       <h3>Privacy</h3>
@@ -487,6 +549,8 @@
   var replaceInput = document.getElementById('frReplaceInput');
   var matchCase    = document.getElementById('frMatchCase');
   var wholeWord    = document.getElementById('frWholeWord');
+  var useRegex     = document.getElementById('frUseRegex');
+  var regexError   = document.getElementById('frRegexError');
   var matchBadge   = document.getElementById('frMatchBadge');
   var prevBtn      = document.getElementById('frPrevBtn');
   var nextBtn      = document.getElementById('frNextBtn');
@@ -565,8 +629,10 @@
 
   function runFind(){
     var query = findInput.value;
+    regexError.classList.remove('is-visible');
+    regexError.textContent = '';
 
-    // Remove old highlights first (restore saved HTML if we have it)
+    // Remove old highlights first
     clearHighlights();
 
     if(!query){
@@ -579,23 +645,47 @@
 
     var flags = 'g';
     if(!matchCase.checked) flags += 'i';
-    var pattern = escapeRegex(query);
-    if(wholeWord.checked) pattern = '\\b' + pattern + '\\b';
-    var regex = new RegExp(pattern, flags);
+    var pattern;
+    var regex;
+
+    try {
+      if(useRegex.checked){
+        pattern = query;
+      } else {
+        pattern = escapeRegex(query);
+        if(wholeWord.checked) pattern = '\\b' + pattern + '\\b';
+      }
+      regex = new RegExp(pattern, flags);
+
+      // Safety: bail on zero-length matches to avoid infinite loops
+      if(regex.test('') && !query){
+        currentMatches = [];
+        currentIndex = -1;
+        updateBadge();
+        updateButtons();
+        return;
+      }
+    } catch(e) {
+      regexError.textContent = 'Invalid regex: ' + e.message;
+      regexError.classList.add('is-visible');
+      currentMatches = [];
+      currentIndex = -1;
+      updateBadge();
+      updateButtons();
+      return;
+    }
 
     // Get all text nodes and find matches
     var textNodes = getTextNodes(editor);
-    var matches = [];
 
     for(var i = 0; i < textNodes.length; i++){
       var tNode = textNodes[i];
       var text = tNode.nodeValue;
-      var match;
-      // Reset lastIndex
       regex.lastIndex = 0;
-      // Collect all matches in this text node with positions
       var localMatches = [];
+      var match;
       while((match = regex.exec(text)) !== null){
+        if(match[0].length === 0){ regex.lastIndex++; continue; } // prevent infinite loop on zero-width
         localMatches.push({ start: match.index, end: match.index + match[0].length, text: match[0] });
       }
 
@@ -610,8 +700,6 @@
         var span = document.createElement('span');
         span.className = 'fr-highlight';
         range.surroundContents(span);
-        // After surroundContents, tNode may have split; re-get for next iteration
-        // But since we go backwards, earlier text nodes are still intact
       }
     }
 
@@ -661,6 +749,12 @@
   findInput.addEventListener('input', runFind);
   matchCase.addEventListener('change', runFind);
   wholeWord.addEventListener('change', runFind);
+  useRegex.addEventListener('change', function(){
+    // Disable whole word when regex is on (regex user controls their own boundaries)
+    wholeWord.disabled = useRegex.checked;
+    if(useRegex.checked) wholeWord.checked = false;
+    runFind();
+  });
 
   // Prev / Next
   prevBtn.addEventListener('click', function(){
@@ -823,6 +917,39 @@
     if(e.key === 'Escape' && shell.classList.contains('fr-fullscreen')){
       shell.classList.remove('fr-fullscreen');
     }
+  });
+
+  /* ---- Line break tool ---- */
+  document.getElementById('frApplyLineBreak').addEventListener('click', function(){
+    var mode = document.querySelector('input[name="frLineBreak"]:checked').value;
+    if(mode === 'keep') return;
+
+    clearHighlights();
+    var html = editor.innerHTML;
+
+    if(mode === 'remove-all'){
+      // Replace <br>, <br/>, and closing block tags followed by opening ones with a space
+      html = html.replace(/<br\s*\/?>/gi, ' ');
+      // Collapse multiple spaces
+      html = html.replace(/\s{2,}/g, ' ');
+      toast('All line breaks removed', 'success');
+    } else if(mode === 'preserve-para'){
+      // Replace single <br> (not double) with space. Keep <p>, <div> boundaries.
+      // First, mark double <br><br> as paragraph breaks
+      html = html.replace(/(<br\s*\/?>)\s*(<br\s*\/?>)/gi, '{{PARA}}');
+      // Remove remaining single <br>
+      html = html.replace(/<br\s*\/?>/gi, ' ');
+      // Restore paragraph breaks
+      html = html.replace(/\{\{PARA\}\}/g, '<br><br>');
+      html = html.replace(/\s{2,}/g, ' ');
+      toast('Line breaks removed (paragraphs kept)', 'success');
+    }
+
+    editor.innerHTML = html;
+    updateStats();
+    runFind();
+    // Reset radio back to "keep"
+    document.querySelector('input[name="frLineBreak"][value="keep"]').checked = true;
   });
 
   /* ---- Keyboard shortcuts ---- */
