@@ -919,21 +919,19 @@
       padding: 8px 10px;
     }
 
-    /* Zen shell on mobile: true fullscreen */
+    /* Zen shell on mobile: always hide sidebar, editor fills screen */
     .npShell.npShellZen{
       inset: 0 !important;
       border-radius: 0 !important;
       gap: 0 !important;
+      grid-template-columns: 1fr !important;
     }
     .npShell.npShellZen > .npLeft{
-      border-radius: 0;
-      position: relative;
-      transform: none;
-      max-width: none;
-      width: auto;
+      display: none !important;
     }
     .npShell.npShellZen > .npRight{
       border-radius: 0;
+      border: none;
     }
 
     /* Zen exit button: smaller on mobile */
