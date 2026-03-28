@@ -928,20 +928,36 @@
     var html = editor.innerHTML;
 
     if(mode === 'remove-all'){
-      // Replace <br>, <br/>, and closing block tags followed by opening ones with a space
+      // Step 1: Replace <br> with space
       html = html.replace(/<br\s*\/?>/gi, ' ');
-      // Collapse multiple spaces
-      html = html.replace(/\s{2,}/g, ' ');
+      // Step 2: Unwrap block-level wrappers (div, p) into inline content with spaces
+      // Close+open boundaries become a space
+      html = html.replace(/<\/(div|p|li)>\s*<\1[^>]*>/gi, ' ');
+      // Remove remaining opening/closing block tags
+      html = html.replace(/<\/?(div|p)[^>]*>/gi, ' ');
+      // Collapse whitespace
+      html = html.replace(/(\s| ){2,}/g, ' ');
+      html = html.trim();
       toast('All line breaks removed', 'success');
+
     } else if(mode === 'preserve-para'){
-      // Replace single <br> (not double) with space. Keep <p>, <div> boundaries.
-      // First, mark double <br><br> as paragraph breaks
+      // Preserve paragraph boundaries (double breaks / separate <p> blocks)
+      // but merge lines within the same paragraph
+
+      // Mark true paragraph breaks: </p>...<p>, double <br>, empty <div>
+      html = html.replace(/<\/p>\s*<p[^>]*>/gi, '{{PARA}}');
       html = html.replace(/(<br\s*\/?>)\s*(<br\s*\/?>)/gi, '{{PARA}}');
-      // Remove remaining single <br>
+      // Treat </div>...<div> as single line breaks (not paragraphs)
+      html = html.replace(/<\/div>\s*<div[^>]*>/gi, ' ');
+      // Remove remaining <br>
       html = html.replace(/<br\s*\/?>/gi, ' ');
-      // Restore paragraph breaks
+      // Remove remaining block tags
+      html = html.replace(/<\/?(div|p)[^>]*>/gi, ' ');
+      // Restore paragraph marks as double <br>
       html = html.replace(/\{\{PARA\}\}/g, '<br><br>');
-      html = html.replace(/\s{2,}/g, ' ');
+      // Collapse whitespace (but not across <br>)
+      html = html.replace(/(\s| ){2,}/g, ' ');
+      html = html.trim();
       toast('Line breaks removed (paragraphs kept)', 'success');
     }
 
