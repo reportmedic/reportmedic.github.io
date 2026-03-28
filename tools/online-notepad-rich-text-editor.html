@@ -375,6 +375,31 @@
   }
   .npShell.npSidebarHidden > .npLeft{ display: none !important; }
 
+  /* Shell-level zen fullscreen (whole shell including sidebar) */
+  .npShell.npShellZen{
+    position: fixed !important;
+    inset: 10px !important;
+    z-index: 10000 !important;
+    border-radius: 18px !important;
+    background:
+      linear-gradient(180deg, rgba(15,26,43,1), rgba(11,18,32,1)) !important;
+    border: 1px solid rgba(255,255,255,.18) !important;
+    box-shadow: 0 0 0 9999px rgba(0,0,0,.60), 0 20px 60px rgba(0,0,0,.5) !important;
+    max-width: none !important;
+    overflow: hidden;
+  }
+  .npShell.npShellZen > .npLeft{
+    border-radius: 18px 0 0 18px;
+    min-height: auto;
+  }
+  .npShell.npShellZen > .npRight{
+    border-radius: 0 18px 18px 0;
+    min-height: auto;
+  }
+  .npShell.npShellZen.npSidebarHidden > .npRight{
+    border-radius: 18px;
+  }
+
   /* Floating exit zen button - always visible in zen */
   .npZenExit{
     position: fixed;
@@ -864,7 +889,10 @@
               <option value="nord">Nord</option>
               <option value="green">Green</option>
             </select>
-            <button class="npBtn" id="npZenBtn" type="button" title="Zen mode">⛶ Zen</button>
+            <button class="npBtn" id="npZenBtn" type="button" title="Zen mode - distraction-free writing">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+              Zen
+            </button>
           </div>
         </div>
 
@@ -2267,6 +2295,7 @@
 
   function applyZen(){
     const r = elRight;
+    npZenBtn.classList.toggle("on", zenActive);
     if(zenActive){
       r.classList.add("npZen");
       if(zenShowToolbar.classList.contains("is-on")) r.classList.add("npZen--toolbar");
@@ -2277,15 +2306,15 @@
       else r.classList.remove("npZen--stats");
       if(zenShowTips.classList.contains("is-on")) r.classList.add("npZen--tips");
       else r.classList.remove("npZen--tips");
+      // Fullscreen the shell (not just the editor) so sidebar toggle works
+      npShell.classList.add("npShellZen");
       if(zenHideSidebar.classList.contains("is-on")) npShell.classList.add("npSidebarHidden");
       else npShell.classList.remove("npSidebarHidden");
-      // Also go fullscreen
-      if(!r.classList.contains("npFullscreen")) r.classList.add("npFullscreen");
       // Show floating exit button
       npZenExit.classList.add("is-visible");
     } else {
-      r.classList.remove("npZen","npZen--toolbar","npZen--topbar","npZen--stats","npZen--tips","npFullscreen");
-      npShell.classList.remove("npSidebarHidden");
+      r.classList.remove("npZen","npZen--toolbar","npZen--topbar","npZen--stats","npZen--tips");
+      npShell.classList.remove("npShellZen","npSidebarHidden");
       npZenExit.classList.remove("is-visible");
     }
     saveZenPrefs();
@@ -2311,12 +2340,16 @@
   // Sidebar toggle works in AND outside zen mode
   zenHideSidebar.addEventListener("click", ()=>{
     toggleZenSwitch(zenHideSidebar);
-    if(zenHideSidebar.classList.contains("is-on")){
-      npShell.classList.add("npSidebarHidden");
+    if(zenActive){
+      applyZen();
     } else {
-      npShell.classList.remove("npSidebarHidden");
+      if(zenHideSidebar.classList.contains("is-on")){
+        npShell.classList.add("npSidebarHidden");
+      } else {
+        npShell.classList.remove("npSidebarHidden");
+      }
+      saveZenPrefs();
     }
-    saveZenPrefs();
   });
 
   // Escape: close zen overlay first, then exit zen mode
