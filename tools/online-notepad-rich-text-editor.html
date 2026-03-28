@@ -123,16 +123,17 @@
   .npTitleInput:focus{ background: rgba(255,255,255,.04); }
   .npTopActions{ display:flex; gap:8px; }
   .npIconBtn{
-    width:34px;height:34px;
+    width:32px;height:32px;
     display:flex;align-items:center;justify-content:center;
-    border-radius:10px;
-    border:1px solid var(--border);
-    background: rgba(255,255,255,.02);
-    color: var(--text);
+    border-radius:8px;
+    border:1px solid transparent;
+    background: transparent;
+    color: rgba(238,246,255,.80);
     cursor:pointer;
     font-size: 14px;
+    transition: background .1s, border-color .1s;
   }
-  .npIconBtn:hover{ background: rgba(255,255,255,.05); }
+  .npIconBtn:hover{ background: rgba(255,255,255,.09); border-color: var(--border); }
   .npSaved{ font-size:12px; color: var(--muted); margin-left:8px; white-space:nowrap;}
   @media (max-width: 900px){ .npSaved{ display:none; } }
 
@@ -143,58 +144,81 @@
     z-index: 10;
     display:flex;
     flex-wrap:wrap;
-    gap:8px;
+    gap:4px;
+    row-gap:6px;
     align-items:center;
-    padding:10px 12px;
+    padding:8px 12px;
     border-bottom:1px solid var(--border);
-    background: rgba(10,16,30,.92);
+    background: rgba(0,0,0,.25);
     backdrop-filter: blur(10px);
+    border-radius: 0;
   }
-  .npGroup{ display:flex; gap:6px; align-items:center; }
+  .npGroup{ display:flex; gap:3px; align-items:center; }
   .npSelect, .npBtn, .npNum{
-    height:34px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,.02);
-    color: var(--text);
-    font-size: 13px;
+    height:30px;
+    border-radius: 7px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: rgba(238,246,255,.80);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    transition: background .1s, border-color .1s, color .1s;
   }
   .npSelect{
-    padding: 0 10px;
+    padding: 0 22px 0 8px;
     cursor:pointer;
-    max-width: 220px;
+    max-width: 200px;
+    border-color: var(--border);
+    background: rgba(255,255,255,.06);
+    font-weight: 600;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23aaa'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    outline: none;
   }
+  .npSelect:focus{ border-color: rgba(110,168,255,.45); }
   .npBtn{
-    padding: 0 10px;
+    padding: 0 8px;
     cursor:pointer;
-    min-width: 34px;
-    display:flex;align-items:center;justify-content:center;
-    gap:6px;
+    min-width: 30px;
+    display:inline-flex;align-items:center;justify-content:center;
+    gap:4px;
+    white-space: nowrap;
   }
-  .npBtn:hover{ background: rgba(255,255,255,.05); }
+  .npBtn:hover{
+    background: rgba(255,255,255,.09);
+    border-color: var(--border);
+    color: rgba(238,246,255,1);
+  }
   .npBtn.on{
-    background: rgba(110,168,255,.18);
+    background: rgba(110,168,255,.14);
     border-color: rgba(110,168,255,.35);
+    color: var(--brand);
   }
   .npSep{
-    width:1px;height:26px;background: rgba(255,255,255,.10);
-    margin: 0 2px;
+    width:1px;height:22px;background: var(--border);
+    margin: 0 4px;
+    flex-shrink: 0;
   }
   .npColor{
-    width:34px; height:34px;
+    width:30px; height:30px;
     padding:0;
-    border-radius:10px;
-    border:1px solid var(--border);
-    background: rgba(255,255,255,.02);
+    border-radius:7px;
+    border:1px solid transparent;
+    background: transparent;
     cursor:pointer;
   }
   .npMini{
-    height:34px;
-    width:42px;
+    height:30px;
+    width:38px;
     text-align:center;
-    border-radius:10px;border:1px solid var(--border);
-    background: rgba(255,255,255,.02);color:var(--text);
-    font-size: 13px;
+    border-radius:7px;border:1px solid var(--border);
+    background: rgba(255,255,255,.06);color:var(--text);
+    font-size: 12px;
+    font-weight: 600;
     outline:none;
   }
 
@@ -217,6 +241,31 @@
     border-radius: 12px;
     border: 1px solid rgba(255,255,255,.10);
   }
+  /* Stats bar */
+  .npStats{
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 5px 14px;
+    font-size: 11px;
+    color: var(--muted);
+    background: rgba(0,0,0,.18);
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+  .npStats span b { font-weight: 700; }
+  .npStats span:nth-child(1) b { color: #6ee7b7; }
+  .npStats span:nth-child(2) b { color: #93c5fd; }
+  .npStats span:nth-child(3) b { color: #fbbf24; }
+  .npStats span:nth-child(4) b { color: #f9a8d4; }
+  .npStats span:nth-child(5) b { color: #c4b5fd; }
+  .npStats span:nth-child(1) { color: rgba(110,231,183,.7); }
+  .npStats span:nth-child(2) { color: rgba(147,197,253,.7); }
+  .npStats span:nth-child(3) { color: rgba(251,191,36,.7); }
+  .npStats span:nth-child(4) { color: rgba(249,168,212,.7); }
+  .npStats span:nth-child(5) { color: rgba(196,181,253,.7); }
+
   .npFoot{
     padding:10px 12px;
     border-top:1px solid var(--border);
@@ -280,6 +329,10 @@
     inset: 10px !important;
     z-index: 10000 !important;
     border-radius: 18px !important;
+    background:
+      linear-gradient(180deg, rgba(15,26,43,1), rgba(11,18,32,1)) !important;
+    border-color: rgba(255,255,255,.18) !important;
+    box-shadow: 0 0 0 9999px rgba(0,0,0,.60), 0 20px 60px rgba(0,0,0,.5) !important;
   }
   .npFullscreen .npEditor{ padding: 18px 18px; }
 
@@ -301,14 +354,14 @@
 
   /* Color buttons with icons */
   .npBtnIcon{
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     display: inline-block;
   }
   .npSwatch{
-    width: 14px;
-    height: 14px;
-    border-radius: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
     border: 1px solid rgba(255,255,255,.16);
     background: rgba(255,255,255,.18);
   }
@@ -593,6 +646,14 @@
 
         <div class="npEditorWrap">
           <div class="npEditor" id="npEditor" contenteditable="true" spellcheck="true"></div>
+        </div>
+
+        <div class="npStats" id="npStats">
+          <span><b id="npStatWords">0</b> words</span>
+          <span><b id="npStatChars">0</b> chars</span>
+          <span><b id="npStatLines">0</b> lines</span>
+          <span><b id="npStatReadTime">0</b> min read</span>
+          <span><b id="npStatImages">0</b> images</span>
         </div>
 
         <div class="npFoot">
@@ -996,7 +1057,7 @@
     setSavedBadge("saved");
     persist();
     renderList();
-    setTimeout(()=>elEditor.focus(), 0);
+    setTimeout(()=>{ elEditor.focus(); if(typeof updateStats==="function") updateStats(); }, 0);
   }
 
   function saveActive(){
@@ -1037,6 +1098,7 @@
       elTitle.value="";
       elEditor.innerHTML="";
       setSavedBadge("saved");
+      if(typeof updateStats==="function") updateStats();
     }
   }
 
@@ -1682,6 +1744,23 @@
 
   // ---- Wiring ----
   elEditor.addEventListener("input", scheduleSave);
+  elEditor.addEventListener("input", updateStats);
+
+  function updateStats(){
+    const text = elEditor.innerText || "";
+    const trimmed = text.trim();
+    const words = trimmed ? trimmed.split(/\s+/).length : 0;
+    const chars = text.length;
+    const lines = trimmed ? trimmed.split(/\n/).length : 0;
+    const readTime = Math.max(1, Math.ceil(words / 200));
+    const images = elEditor.querySelectorAll("img").length;
+    document.getElementById("npStatWords").textContent = words.toLocaleString();
+    document.getElementById("npStatChars").textContent = chars.toLocaleString();
+    document.getElementById("npStatLines").textContent = lines.toLocaleString();
+    document.getElementById("npStatReadTime").textContent = readTime;
+    document.getElementById("npStatImages").textContent = images;
+  }
+  updateStats();
   elTitle.addEventListener("input", scheduleSave);
 
   document.addEventListener("keydown", (e)=>{
