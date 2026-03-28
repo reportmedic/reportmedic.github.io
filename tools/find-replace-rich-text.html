@@ -930,12 +930,17 @@
     if(mode === 'remove-all'){
       // Replace <br> with space
       html = html.replace(/<br\s*\/?>/gi, ' ');
-      // Close+open div/p boundaries become a space (NOT headings - those stay)
+      // Close+open div/p boundaries become a space (NOT headings)
       html = html.replace(/<\/(div|p|li)>\s*<(div|p|li)[^>]*>/gi, ' ');
-      // Remove remaining div/p tags only (preserve h1-h6, blockquote)
+      // Remove remaining div/p tags only
       html = html.replace(/<\/?(div|p)[^>]*>/gi, ' ');
+      // Ensure headings stay on their own lines: add <br> around heading tags
+      html = html.replace(/(<\/h[1-6]>)\s*/gi, '$1<br>');
+      html = html.replace(/\s*(<h[1-6][^>]*>)/gi, '<br>$1');
       // Collapse whitespace
       html = html.replace(/(\s|&nbsp;){2,}/g, ' ');
+      // Clean up any <br> right at start
+      html = html.replace(/^\s*<br>\s*/i, '');
       html = html.trim();
       toast('All line breaks removed', 'success');
 
@@ -949,10 +954,15 @@
       html = html.replace(/<br\s*\/?>/gi, ' ');
       // Remove div/p tags only (preserve h1-h6, blockquote)
       html = html.replace(/<\/?(div|p)[^>]*>/gi, ' ');
+      // Ensure headings stay on their own lines
+      html = html.replace(/(<\/h[1-6]>)\s*/gi, '$1<br>');
+      html = html.replace(/\s*(<h[1-6][^>]*>)/gi, '<br>$1');
       // Restore paragraph marks as double <br>
       html = html.replace(/\{\{PARA\}\}/g, '<br><br>');
       // Collapse whitespace
       html = html.replace(/(\s|&nbsp;){2,}/g, ' ');
+      // Clean up leading <br>
+      html = html.replace(/^\s*<br>\s*/i, '');
       html = html.trim();
       toast('Line breaks removed (paragraphs kept)', 'success');
     }
