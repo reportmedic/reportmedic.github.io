@@ -1,10 +1,10 @@
 /* ReportMedic — All Tools drawer (v2)
-   Injected on every tool page. Grouped by category, searchable, 60 tools.
+   Injected on every tool page. Grouped by category, searchable, 70 tools.
    Auto-marks the current page as active in the list. */
 (function(){
 
   /* ─────────────────────────────────────────
-     TOOL REGISTRY  (60 tools, matches index.html)
+     TOOL REGISTRY  (70 tools, matches index.html)
   ───────────────────────────────────────── */
   const tools = [
     // ── Compare
@@ -17,6 +17,9 @@
     { id:"clean-dirty-data-file-online",             name:"Data Cleaner",                 icon:"✦",  cat:["Clean"],               desc:"Trim, normalize, dedupe, fix dates, and standardize formats automatically." },
     { id:"mask-sensitive-data-before-sharing",       name:"PII Masker",                   icon:"◎",  cat:["Clean","Export"],      desc:"Detect and mask sensitive fields (emails, phones, IDs) for safe sharing." },
     { id:"fix-export-formatting-errors",             name:"Export Fixer",                 icon:"⇣",  cat:["Clean","Export"],      desc:"Repair export formatting issues and generate clean, consistent outputs." },
+    { id:"find-replace-rich-text",                   name:"Find & Replace (Rich Text)",   icon:"⟳",  cat:["Clean","Export"],      desc:"Find and replace text while preserving formatting in rich-text documents." },
+    { id:"merge-csv-files",                          name:"Merge CSV Files",              icon:"⊕",  cat:["Clean"],               desc:"Append and merge large CSV files locally in your browser." },
+    { id:"merge-multiple-csv-files",                 name:"Merge Multiple CSV Files",     icon:"⊞",  cat:["Clean"],               desc:"Append unlimited CSV files into a single merged output locally." },
 
     // ── Validate
     { id:"validate-data-schema-and-columns",         name:"Schema Validator",             icon:"⊢",  cat:["Validate"],            desc:"Validate required fields, data types, ranges, and null rules against a schema." },
@@ -39,8 +42,14 @@
     { id:"usa-datasets",                             name:"USA Datasets",                 icon:"🇺🇸", cat:["Analyze"],             desc:"Browse 100 ready-to-use USA datasets across demographics, economy, health, housing, energy and more." },
     { id:"employee-datasets",                        name:"Employee Datasets",            icon:"👥",  cat:["Analyze"],             desc:"Download 8 realistic employee datasets spanning USA, India, EU, UK, Australia, LATAM, Africa and China — 40K+ records each." },
     { id:"duplicate-scanner",                        name:"Duplicate File Scanner",       icon:"⧉",  cat:["Analyze","Clean"],     desc:"Compare two folders, find duplicate files in the second based on the first, and move them into an organized duplicate directory." },
-    { id:"upsc-pyq-explorer",                        name:"UPSC PYQ Explorer",            icon:"📜",  cat:["Analyze"],             desc:"Explore 4,447+ UPSC CSAT Paper 2 previous year questions (2000–2025) — search, filter, and practice offline." },
-    { id:"upsc-prelims-daily-practice",              name:"UPSC Daily Practice",          icon:"🎯",  cat:["Analyze"],             desc:"Free UPSC Prelims MCQ practice with daily challenges, subject drills, and performance analytics — all offline." },
+    { id:"online-words-character-counter",           name:"Word & Character Counter",     icon:"🔤", cat:["Analyze"],             desc:"Count words, characters, sentences, and paragraphs in any text instantly." },
+    { id:"upsc-pyq-explorer",                        name:"UPSC PYQ Explorer",            icon:"📜",  cat:["Analyze"],             desc:"Explore UPSC CSAT Paper 2 previous year questions across multiple years and subjects - search, filter, and practice offline." },
+    { id:"upsc-prelims-daily-practice",              name:"UPSC Daily Practice",          icon:"🎯",  cat:["Analyze"],             desc:"Free UPSC Prelims MCQ practice with daily challenges, subject drills, and performance analytics - all offline." },
+    { id:"cat-previous-year-question-papers",        name:"CAT PYQ Explorer",             icon:"📜",  cat:["Analyze"],             desc:"Explore CAT previous year questions across multiple years and sections - search, filter, and practice offline." },
+    { id:"cat-daily-practice-questions",             name:"CAT Daily Practice",           icon:"🎯",  cat:["Analyze"],             desc:"Free CAT MCQ practice with daily challenges, section-wise drills, and performance analytics - all offline." },
+    { id:"tcs-nqt-preparation-guide",                name:"TCS NQT Preparation Guide",    icon:"💼",  cat:["Analyze"],             desc:"Comprehensive TCS NQT preparation guide with topic-wise practice, strategies, and performance tracking." },
+    { id:"tcs-ilp-preparation-guide",                name:"TCS ILP Preparation Guide",    icon:"💼",  cat:["Analyze"],             desc:"Complete TCS ILP preparation guide covering all modules with practice questions and strategies." },
+    { id:"gaokao-previous-year-question-papers",     name:"Gaokao PYQ Explorer",          icon:"📜",  cat:["Analyze"],             desc:"Explore Gaokao previous year questions across multiple years and subjects - search, filter, and practice offline." },
 
     // ── Convert
     { id:"markdown-to-html",                         name:"Markdown → HTML",              icon:"⌁",  cat:["Convert"],             desc:"Convert Markdown into clean, preview-ready HTML." },
@@ -51,6 +60,7 @@
     { id:"pdf-to-word-docx",                         name:"PDF to Word (DOCX)",           icon:"W",  cat:["Convert","Export"],    desc:"Convert a PDF into an editable Word .docx by extracting text locally." },
     { id:"pdf-to-markdown",                          name:"PDF → Markdown",               icon:"⌁",  cat:["Convert","Export"],    desc:"Convert a PDF into editable Markdown. Extracts selectable text locally." },
     { id:"heic-heif-to-jpg-png",                     name:"HEIC → JPG/PNG",               icon:"⧉",  cat:["Convert","Export"],    desc:"Convert iPhone HEIC photos to JPG/PNG in batch with ZIP download." },
+    { id:"markdown-live-viewer",                     name:"Markdown Live Viewer",         icon:"👁",  cat:["Convert"],             desc:"Write Markdown and see a real-time formatted preview side by side." },
 
     // ── Export / PDF
     { id:"compress-pdf-reduce-file-size",            name:"Compress PDF",                 icon:"🗜", cat:["Export"],              desc:"Compress a PDF to reduce file size for email and upload portals." },
