@@ -17,29 +17,194 @@
     .py-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
     @media (max-width: 980px){ .py-grid{grid-template-columns:1fr; } }
 
-    .py-editor, .py-stdin, .py-out{
-      width:100%;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 13px;
-      line-height: 1.45;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      color: inherit;
-      padding: 12px;
-      outline: none;
+    /* ── Code Editor ── */
+    .py-ce{
+      position:relative;
+      display:flex;
+      min-height:420px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(10,12,20,.6);
+      margin-top:10px;
+      overflow:hidden;
+      resize:vertical;
+      transition: border-color .2s;
     }
-    .py-editor{min-height: 420px; resize: vertical; margin-top:10px;}
-    .py-stdin{min-height: 120px; resize: vertical; margin-top:10px;}
-    .py-out{min-height: 420px; overflow:auto; white-space: pre-wrap; word-break: break-word; margin:10px 0 0;}
+    .py-ce:focus-within{
+      border-color:rgba(124,247,212,.35);
+      box-shadow:0 0 0 1px rgba(124,247,212,.08);
+    }
+    .py-ce-lines{
+      flex:0 0 40px;
+      padding:12px 6px 12px 0;
+      text-align:right;
+      font:13px/1.45 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      color:rgba(255,255,255,.2);
+      border-right:1px solid rgba(255,255,255,.07);
+      overflow:hidden;
+      user-select:none;
+      pointer-events:none;
+    }
+    .py-ce-lines div{padding:0 4px;}
+    .py-ce-area{
+      flex:1;
+      position:relative;
+      overflow:hidden;
+    }
+    .py-ce-pre,
+    .py-ce-ta{
+      position:absolute;
+      top:0;left:0;right:0;bottom:0;
+      margin:0;
+      padding:12px;
+      font:13px/1.45 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      white-space:pre-wrap;
+      word-wrap:break-word;
+      tab-size:4;
+      -moz-tab-size:4;
+      letter-spacing:0;
+      overflow:auto;
+      box-sizing:border-box;
+    }
+    .py-ce-pre{
+      pointer-events:none;
+      z-index:0;
+      color:#cbd5e1;
+    }
+    .py-ce-ta{
+      z-index:1;
+      background:transparent;
+      color:transparent;
+      caret-color:#e2e8f0;
+      -webkit-text-fill-color:transparent;
+      border:none;
+      outline:none;
+      resize:none;
+    }
 
+    /* ── Syntax colors ── */
+    .py-hl-kw{color:#c792ea;}
+    .py-hl-bi{color:#82aaff;}
+    .py-hl-str{color:#c3e88d;}
+    .py-hl-cm{color:#546e7a; font-style:italic;}
+    .py-hl-num{color:#f78c6c;}
+    .py-hl-dec{color:#ffcb6b;}
+    .py-hl-op{color:#89ddff;}
+    .py-hl-self{color:#ff5370; font-style:italic;}
+
+    /* ── Stdin ── */
+    .py-stdin{
+      width:100%;
+      font:13px/1.45 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+      color:inherit;
+      padding:12px;
+      outline:none;
+      min-height:120px;
+      resize:vertical;
+      margin-top:10px;
+    }
+
+    /* ── Output ── */
+    .py-out-wrap{
+      position:relative;
+      margin:10px 0 0;
+      min-height:420px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(10,12,20,.6);
+      overflow:hidden;
+    }
+    .py-out{
+      width:100%;
+      min-height:420px;
+      overflow:auto;
+      white-space:pre-wrap;
+      word-break:break-word;
+      padding:12px;
+      font:13px/1.45 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      color:#cbd5e1;
+      margin:0;
+    }
+    .py-out .py-run-marker{color:rgba(124,247,212,.6);}
+    .py-out .py-err{color:#ff8a80;}
+    .py-out .py-result{color:#82aaff;}
+
+    /* ── Run animation overlay ── */
+    .py-anim{
+      position:absolute;
+      inset:0;
+      z-index:5;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:16px;
+      background:rgba(10,12,20,.88);
+      backdrop-filter:blur(4px);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .15s;
+    }
+    .py-anim.active{opacity:1;pointer-events:auto;}
+    .py-anim-bar-track{
+      width:200px;
+      height:4px;
+      border-radius:4px;
+      background:rgba(255,255,255,.08);
+      overflow:hidden;
+    }
+    .py-anim-bar{
+      height:100%;
+      width:0%;
+      border-radius:4px;
+      background:linear-gradient(90deg, #7cf7d4, #82aaff, #c792ea);
+      background-size:200% 100%;
+      animation:pyBarFill 700ms cubic-bezier(.4,0,.2,1) forwards, pyBarShimmer 1s linear infinite;
+    }
+    @keyframes pyBarFill{
+      0%{width:0%}
+      60%{width:85%}
+      100%{width:100%}
+    }
+    @keyframes pyBarShimmer{
+      0%{background-position:200% 0}
+      100%{background-position:-200% 0}
+    }
+    .py-anim-msg{
+      font-size:13px;
+      color:rgba(255,255,255,.5);
+      letter-spacing:.01em;
+      min-height:20px;
+      transition:opacity .12s;
+    }
+    .py-anim-icon{
+      width:28px;height:28px;
+      border:2px solid rgba(124,247,212,.4);
+      border-top-color:transparent;
+      border-radius:50%;
+      animation:pySpinner .7s linear infinite;
+    }
+    @keyframes pySpinner{to{transform:rotate(360deg)}}
+
+    /* ── Status / actions ── */
     .pill{border-radius:6px;}
-    .py-status{display:flex; gap:8px; align-items:center; margin-left:auto;}
+    .py-status{display:flex; gap:8px; align-items:center; margin-left:auto; flex-wrap:wrap;}
     .py-status .pill{font-size:11px; padding:5px 8px;}
+
+    .py-runs-pill{
+      background:rgba(124,247,212,.08);
+      border:1px solid rgba(124,247,212,.18);
+    }
+    .py-runs-pill b{color:rgba(124,247,212,.85);}
 
     .py-actions-top{display:flex; gap:6px; flex-wrap:nowrap; align-items:center; justify-content:flex-end; white-space:nowrap; flex:0 0 auto; margin-left:auto;}
     .py-actions-top .btn{padding:6px 9px; font-size:12px; border-radius:8px; border:1px solid rgba(255,255,255,.14); flex:0 0 auto; white-space:nowrap;}
     .py-actions-top .btn.primary{border-color: rgba(124,247,212,.28)}
+
+    .py-kbd-hint{font-size:10px; color:rgba(255,255,255,.25); margin-left:2px;}
 
     .py-samples-grid{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; margin-top:10px;}
     .py-samples-grid .btn{width:100%;}
@@ -47,6 +212,13 @@
     /* ── Learn-more modal: 80% height, scrollable body ── */
     .rm-lm-dialog{max-height:80vh !important;display:flex !important;flex-direction:column !important;overflow:hidden !important;}
     .rm-lm-body{overflow-y:auto !important;flex:1 !important;}
+
+    /* ── Run button pulse when engine ready ── */
+    @keyframes pyReadyPulse{
+      0%,100%{box-shadow:0 0 0 0 rgba(124,247,212,.25)}
+      50%{box-shadow:0 0 0 6px rgba(124,247,212,0)}
+    }
+    .py-run-ready{animation:pyReadyPulse 1.5s ease 1;}
   </style>
 </head>
 
@@ -68,7 +240,7 @@
   <div class="panel">
     <h1>Python Code Runner <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
     <p class="sub">Run Python locally in your browser for quick data checks, math, text transforms, and mini scripts. Great for validating report logic before you ship a spreadsheet or dashboard.</p>
-    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help →</a></div>
+    <div class="tiny muted" id="humanFallback" style="margin-top:10px"><a href="/fix-my-report.html">Need a second set of eyes? Get human help &rarr;</a></div>
 
     <div class="hr"></div>
 
@@ -81,12 +253,20 @@
               <div class="tiny muted">Autosaves in your browser</div>
             </div>
             <div class="py-status">
+              <span class="pill tiny py-runs-pill" id="runCountPill"><b>Runs:</b> <span class="muted" id="runCountVal">0</span></span>
               <span class="pill tiny" id="enginePill"><b>Engine:</b> <span class="muted">starting</span></span>
               <span class="pill tiny" id="runPill"><b>Run:</b> <span class="muted">idle</span></span>
             </div>
           </div>
 
-          <textarea id="code" class="py-editor" spellcheck="false"></textarea>
+          <!-- Code editor with syntax highlighting + line numbers -->
+          <div class="py-ce" id="codeEditor">
+            <div class="py-ce-lines" id="lineNums"></div>
+            <div class="py-ce-area">
+              <pre class="py-ce-pre" aria-hidden="true"><code id="hlCode"></code></pre>
+              <textarea class="py-ce-ta" id="code" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+            </div>
+          </div>
 
         </div>
 
@@ -97,14 +277,21 @@
               <div class="tiny muted">stdout and errors</div>
             </div>
             <div class="py-actions-top" aria-label="Run controls">
-              <button class="btn primary" id="runBtn" type="button">Run</button>
+              <button class="btn primary" id="runBtn" type="button">Run <span class="py-kbd-hint" id="kbdHint"></span></button>
               <button class="btn" id="stopBtn" type="button" disabled>Stop</button>
               <button class="btn" id="clearBtn" type="button">Clear</button>
               <button class="btn" id="shareBtn" type="button">Share</button>
             </div>
           </div>
 
-          <pre id="out" class="py-out"></pre>
+          <div class="py-out-wrap">
+            <pre id="out" class="py-out"></pre>
+            <div class="py-anim" id="runAnim">
+              <div class="py-anim-icon"></div>
+              <div class="py-anim-bar-track"><div class="py-anim-bar" id="animBar"></div></div>
+              <div class="py-anim-msg" id="animMsg">Warming up...</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -146,7 +333,7 @@ Alice
       <a href="/docs/">Docs</a>
       <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
     </div>
-    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+    <div class="rm-footer-meta">&copy; 2026 ReportMedic</div>
   </div>
 </footer>
 
@@ -155,7 +342,7 @@ Alice
   <div class="rm-lm-dialog">
     <div class="rm-lm-head">
       <h2 class="rm-lm-title">Python Code Runner</h2>
-      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">×</button>
+      <button class="rm-lm-close" type="button" aria-label="Close" data-rm-lm-close="rmLM">&times;</button>
     </div>
     <div class="rm-lm-body">
       <h3>Best for</h3>
@@ -170,6 +357,14 @@ Alice
         <li>Python executes inside your browser via WebAssembly</li>
         <li>Nothing is uploaded, your code and data stay local</li>
         <li>Use stdin to simulate input() calls line by line</li>
+      </ul>
+
+      <h3>Keyboard shortcuts</h3>
+      <ul>
+        <li><b>Ctrl+Enter</b> (or Cmd+Enter on Mac) to run your code</li>
+        <li><b>Tab</b> inserts 4 spaces (standard Python indent)</li>
+        <li><b>Shift+Tab</b> removes indent from current line</li>
+        <li>Quotes and brackets auto-pair as you type</li>
       </ul>
 
       <h3>Share links</h3>
@@ -191,6 +386,8 @@ Alice
   const $ = (sel, root=document)=>root.querySelector(sel);
   const out = $("#out");
   const codeEl = $("#code");
+  const hlCode = $("#hlCode");
+  const lineNums = $("#lineNums");
   const stdinEl = $("#stdin");
   const runBtn = $("#runBtn");
   const stopBtn = $("#stopBtn");
@@ -198,29 +395,311 @@ Alice
   const shareBtn = $("#shareBtn");
   const enginePill = $("#enginePill");
   const runPill = $("#runPill");
+  const runAnim = $("#runAnim");
+  const animMsg = $("#animMsg");
+  const animBar = $("#animBar");
+  const runCountVal = $("#runCountVal");
+  const kbdHint = $("#kbdHint");
 
+  // Show keyboard hint
+  const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform || "");
+  kbdHint.textContent = isMac ? "\u2318\u23CE" : "Ctrl\u23CE";
+
+  // ── Helpers ──
+  function escHtml(s){
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
   function setEngineState(text){
-    enginePill.innerHTML = "<b>Engine:</b> <span class=\"muted\">"+escapeHtml(text)+"</span>";
+    enginePill.innerHTML = "<b>Engine:</b> <span class=\"muted\">"+escHtml(text)+"</span>";
   }
   function setRunState(text){
-    runPill.innerHTML = "<b>Run:</b> <span class=\"muted\">"+escapeHtml(text)+"</span>";
+    runPill.innerHTML = "<b>Run:</b> <span class=\"muted\">"+escHtml(text)+"</span>";
   }
 
-  function escapeHtml(s){
-    return String(s).replace(/[&<>]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;" }[c]));
-  }
-  function append(text){
-    out.textContent += text;
+  // ── Output (with classes for coloring) ──
+  function appendSpan(text, cls){
+    const span = document.createElement("span");
+    if(cls) span.className = cls;
+    span.textContent = text;
+    out.appendChild(span);
     out.scrollTop = out.scrollHeight;
   }
-  function appendLine(text){
-    append(text + "\n");
-  }
-  function clearOut(){
-    out.textContent = "";
+  function appendOut(text){ appendSpan(text, ""); }
+  function appendErr(text){ appendSpan(text, "py-err"); }
+  function appendResult(text){ appendSpan(text, "py-result"); }
+  function appendMarker(text){ appendSpan(text, "py-run-marker"); }
+  function clearOut(){ out.textContent = ""; }
+
+  // ── Run counter (persisted) ──
+  const LS_RUNS = "rm_python_runner_runs_v1";
+  let totalRuns = 0;
+  try{ totalRuns = parseInt(localStorage.getItem(LS_RUNS)||"0",10)||0; }catch(_){}
+  runCountVal.textContent = totalRuns;
+  function bumpRunCount(){
+    totalRuns++;
+    runCountVal.textContent = totalRuns;
+    try{ localStorage.setItem(LS_RUNS, String(totalRuns)); }catch(_){}
   }
 
-  // Learn more modal (same behavior as other tools)
+  // ── Run animation ──
+  const RUN_MSGS = [
+    "Warming up the interpreter...",
+    "Crunching your code...",
+    "Parsing brilliance...",
+    "Running the numbers...",
+    "Almost there...",
+    "Executing logic...",
+    "Compiling thoughts...",
+    "Processing output..."
+  ];
+  let animTimer = null;
+  let animMsgIdx = 0;
+  let animBuffer = [];
+  let animDone = false;
+  let animStartTime = 0;
+  const ANIM_MIN_MS = 650;
+
+  function startAnim(){
+    animBuffer = [];
+    animDone = false;
+    animMsgIdx = Math.floor(Math.random()*RUN_MSGS.length);
+    animMsg.textContent = RUN_MSGS[animMsgIdx];
+    animBar.style.animation = "none";
+    void animBar.offsetWidth;
+    animBar.style.animation = "";
+    runAnim.classList.add("active");
+    animStartTime = Date.now();
+    animTimer = setInterval(()=>{
+      animMsgIdx = (animMsgIdx+1) % RUN_MSGS.length;
+      animMsg.style.opacity = "0";
+      setTimeout(()=>{
+        animMsg.textContent = RUN_MSGS[animMsgIdx];
+        animMsg.style.opacity = "1";
+      }, 100);
+    }, 220);
+  }
+  function endAnim(){
+    animDone = true;
+    const elapsed = Date.now() - animStartTime;
+    const remaining = Math.max(0, ANIM_MIN_MS - elapsed);
+    setTimeout(()=>{
+      clearInterval(animTimer);
+      animTimer = null;
+      runAnim.classList.remove("active");
+      flushAnimBuffer();
+    }, remaining);
+  }
+  function flushAnimBuffer(){
+    animBuffer.forEach(item=>{
+      if(item.type === "stdout") appendOut(item.text);
+      else if(item.type === "stderr") appendErr(item.text);
+      else if(item.type === "result"){ appendOut("\n"); appendResult(item.text+"\n"); }
+      else if(item.type === "error"){ appendOut("\n"); appendErr(item.text+"\n"); }
+    });
+    animBuffer = [];
+  }
+  function bufferOrAppend(type, text){
+    if(runAnim.classList.contains("active")){
+      animBuffer.push({type, text});
+    }else{
+      if(type === "stdout") appendOut(text);
+      else if(type === "stderr") appendErr(text);
+      else if(type === "result"){ appendOut("\n"); appendResult(text+"\n"); }
+      else if(type === "error"){ appendOut("\n"); appendErr(text+"\n"); }
+    }
+  }
+
+  // ── Syntax highlighting ──
+  const PY_KW = new Set(["False","None","True","and","as","assert","async","await","break","class","continue","def","del","elif","else","except","finally","for","from","global","if","import","in","is","lambda","nonlocal","not","or","pass","raise","return","try","while","with","yield"]);
+  const PY_BI = new Set(["print","len","range","int","float","str","list","dict","tuple","set","type","isinstance","hasattr","getattr","setattr","enumerate","zip","map","filter","sorted","reversed","any","all","min","max","sum","abs","round","open","input","super","property","staticmethod","classmethod","bool","bytes","bytearray","memoryview","complex","frozenset","object","repr","format","id","hash","hex","oct","bin","ord","chr","dir","vars","globals","locals","callable","iter","next","slice","Exception","ValueError","TypeError","KeyError","IndexError","AttributeError","RuntimeError","StopIteration","FileNotFoundError","IOError","OSError","ImportError","NameError","ZeroDivisionError","EOFError","NotImplementedError"]);
+
+  function highlightPython(code){
+    const out = [];
+    let i = 0;
+    const len = code.length;
+    while(i < len){
+      // Triple-quoted strings
+      if((code[i]==='"'&&code[i+1]==='"'&&code[i+2]==='"')||(code[i]==="'"&&code[i+1]==="'"&&code[i+2]==="'")){
+        const q3 = code.slice(i,i+3);
+        let j = i+3;
+        while(j<len){
+          if(code[j]==='\\'){ j+=2; continue; }
+          if(code.slice(j,j+3)===q3){ j+=3; break; }
+          j++;
+        }
+        out.push('<span class="py-hl-str">'+escHtml(code.slice(i,j))+'</span>');
+        i=j; continue;
+      }
+      // Single/double strings
+      if(code[i]==='"'||code[i]==="'"){
+        const q = code[i];
+        let j = i+1;
+        while(j<len && code[j]!==q && code[j]!=='\n'){
+          if(code[j]==='\\') j++;
+          j++;
+        }
+        if(j<len && code[j]===q) j++;
+        out.push('<span class="py-hl-str">'+escHtml(code.slice(i,j))+'</span>');
+        i=j; continue;
+      }
+      // Comments
+      if(code[i]==='#'){
+        let j=i;
+        while(j<len && code[j]!=='\n') j++;
+        out.push('<span class="py-hl-cm">'+escHtml(code.slice(i,j))+'</span>');
+        i=j; continue;
+      }
+      // Decorators
+      if(code[i]==='@' && (i===0||code[i-1]==='\n'||code[i-1]===' ')){
+        let j=i+1;
+        while(j<len && /[\w.]/.test(code[j])) j++;
+        out.push('<span class="py-hl-dec">'+escHtml(code.slice(i,j))+'</span>');
+        i=j; continue;
+      }
+      // Numbers
+      if(/\d/.test(code[i]) && (i===0||/[^a-zA-Z_]/.test(code[i-1]))){
+        let j=i;
+        if(code[j]==='0'&&(code[j+1]==='x'||code[j+1]==='X'||code[j+1]==='o'||code[j+1]==='O'||code[j+1]==='b'||code[j+1]==='B')) j+=2;
+        while(j<len && /[\d._a-fA-F]/.test(code[j])) j++;
+        if(j<len && (code[j]==='e'||code[j]==='E')){ j++; if(j<len&&(code[j]==='+'||code[j]==='-')) j++; while(j<len&&/\d/.test(code[j])) j++; }
+        out.push('<span class="py-hl-num">'+escHtml(code.slice(i,j))+'</span>');
+        i=j; continue;
+      }
+      // Words
+      if(/[a-zA-Z_]/.test(code[i])){
+        let j=i;
+        while(j<len && /\w/.test(code[j])) j++;
+        const w = code.slice(i,j);
+        if(w==='self'||w==='cls') out.push('<span class="py-hl-self">'+escHtml(w)+'</span>');
+        else if(PY_KW.has(w)) out.push('<span class="py-hl-kw">'+escHtml(w)+'</span>');
+        else if(PY_BI.has(w)) out.push('<span class="py-hl-bi">'+escHtml(w)+'</span>');
+        else out.push(escHtml(w));
+        i=j; continue;
+      }
+      // Operators
+      if("=+-*/<>!&|%^~:".includes(code[i])){
+        out.push('<span class="py-hl-op">'+escHtml(code[i])+'</span>');
+        i++; continue;
+      }
+      // Everything else (whitespace, parens, etc.)
+      out.push(escHtml(code[i]));
+      i++;
+    }
+    return out.join("");
+  }
+
+  function updateHighlight(){
+    const val = codeEl.value;
+    hlCode.innerHTML = highlightPython(val) + "\n";
+  }
+
+  // ── Line numbers ──
+  let prevLineCount = 0;
+  function updateLineNums(){
+    const count = (codeEl.value.match(/\n/g)||[]).length + 1;
+    if(count === prevLineCount) return;
+    prevLineCount = count;
+    let html = "";
+    for(let n=1; n<=count; n++) html += "<div>"+n+"</div>";
+    lineNums.innerHTML = html;
+  }
+
+  // ── Scroll sync ──
+  const ceArea = $(".py-ce-area");
+  const cePre = $(".py-ce-pre");
+  codeEl.addEventListener("scroll", ()=>{
+    cePre.scrollTop = codeEl.scrollTop;
+    cePre.scrollLeft = codeEl.scrollLeft;
+    lineNums.scrollTop = codeEl.scrollTop;
+  });
+
+  // ── Editor input handler ──
+  function onEditorChange(){
+    updateHighlight();
+    updateLineNums();
+    persist();
+  }
+  codeEl.addEventListener("input", onEditorChange);
+
+  // ── Tab key inserts spaces ──
+  codeEl.addEventListener("keydown", function(e){
+    // Tab / Shift+Tab
+    if(e.key === "Tab"){
+      e.preventDefault();
+      const start = this.selectionStart;
+      const end = this.selectionEnd;
+      const val = this.value;
+
+      if(e.shiftKey){
+        // Dedent current line
+        const lineStart = val.lastIndexOf("\n", start-1)+1;
+        const lineText = val.slice(lineStart);
+        const spaces = lineText.match(/^ {1,4}/);
+        if(spaces){
+          const rm = spaces[0].length;
+          this.value = val.slice(0,lineStart) + val.slice(lineStart+rm);
+          this.selectionStart = this.selectionEnd = Math.max(lineStart, start-rm);
+        }
+      }else{
+        // Insert 4 spaces
+        this.value = val.slice(0,start) + "    " + val.slice(end);
+        this.selectionStart = this.selectionEnd = start+4;
+      }
+      onEditorChange();
+      return;
+    }
+
+    // Ctrl+Enter / Cmd+Enter to run
+    if(e.key === "Enter" && (e.ctrlKey || e.metaKey)){
+      e.preventDefault();
+      runBtn.click();
+      return;
+    }
+
+    // Auto-pair
+    const pairs = {'"':'"', "'":"'", '(':')', '[':']', '{':'}'};
+    const closers = new Set(['"',"'",")","]","}"]);
+    const start = this.selectionStart;
+    const end = this.selectionEnd;
+    const val = this.value;
+    const nextChar = val[end];
+
+    // If typing a closing char that's already next, skip it
+    if(closers.has(e.key) && nextChar === e.key && start === end){
+      e.preventDefault();
+      this.selectionStart = this.selectionEnd = start+1;
+      return;
+    }
+
+    // Auto-insert closing pair
+    if(pairs[e.key]){
+      // Don't pair quotes if inside a word
+      if((e.key === '"' || e.key === "'") && start>0 && /\w/.test(val[start-1])) return;
+      e.preventDefault();
+      const close = pairs[e.key];
+      const selected = val.slice(start, end);
+      this.value = val.slice(0,start) + e.key + selected + close + val.slice(end);
+      this.selectionStart = start+1;
+      this.selectionEnd = start+1+selected.length;
+      onEditorChange();
+      return;
+    }
+
+    // Backspace: delete empty pair
+    if(e.key === "Backspace" && start === end && start > 0){
+      const prev = val[start-1];
+      const next = val[start];
+      if(pairs[prev] && pairs[prev] === next){
+        e.preventDefault();
+        this.value = val.slice(0,start-1) + val.slice(start+1);
+        this.selectionStart = this.selectionEnd = start-1;
+        onEditorChange();
+        return;
+      }
+    }
+  });
+
+  // ── Learn more modal ──
   function openLM(id){ const bd=document.getElementById(id); if(!bd) return; bd.setAttribute("aria-hidden","false"); document.body.classList.add("rm-modal-open"); }
   function closeLM(id){ const bd=document.getElementById(id); if(!bd) return; bd.setAttribute("aria-hidden","true"); document.body.classList.remove("rm-modal-open"); }
 
@@ -238,7 +717,7 @@ Alice
     document.body.classList.remove("rm-modal-open");
   });
 
-  // Samples
+  // ── Samples ──
   const samples = {
     hello: `print("Hello from ReportMedic Python!")\nimport sys\nprint(sys.version)`,
     math: `import math\nnums = [3, 7, 21, 42]\nprint("sum:", sum(nums))\nprint("mean:", sum(nums)/len(nums))\nprint("sqrt(2):", math.sqrt(2))`,
@@ -248,11 +727,11 @@ Alice
   document.querySelectorAll("[data-sample]").forEach(btn => {
     btn.addEventListener("click", () => {
       const k = btn.getAttribute("data-sample");
-      if(samples[k]){ codeEl.value = samples[k]; persist(); }
+      if(samples[k]){ codeEl.value = samples[k]; onEditorChange(); }
     });
   });
 
-  // Persist editor content
+  // ── Persist editor content ──
   const LS_CODE = "rm_python_runner_code_v1";
   const LS_STDIN = "rm_python_runner_stdin_v1";
 
@@ -262,7 +741,6 @@ Alice
       localStorage.setItem(LS_STDIN, stdinEl.value || "");
     }catch(_){}
   }
-  codeEl.addEventListener("input", persist);
   stdinEl.addEventListener("input", persist);
 
   function loadFromStorage(){
@@ -274,7 +752,7 @@ Alice
     }catch(_){}
   }
 
-  // Share link (encodes editor only)
+  // ── Share link ──
   function toB64Url(str){
     const bytes = new TextEncoder().encode(str);
     let bin = "";
@@ -303,18 +781,18 @@ Alice
     u.searchParams.set("code", toB64Url(codeEl.value || ""));
     try{
       await navigator.clipboard.writeText(u.toString());
-      appendLine("");
-      appendLine("[share link copied]");
+      appendOut("\n");
+      appendMarker("[share link copied]\n");
     }catch(_){
-      appendLine("");
-      appendLine("[share link ready]");
-      appendLine(u.toString());
+      appendOut("\n");
+      appendMarker("[share link ready]\n");
+      appendOut(u.toString()+"\n");
     }
   });
 
   clearBtn.addEventListener("click", clearOut);
 
-  // Worker-based Python runtime (Stop = restart worker)
+  // ── Worker-based Python runtime ──
   const PYODIDE_BASE = "https://cdn.jsdelivr.net/pyodide/v0.25.1/full/";
   let worker = null;
   let busy = false;
@@ -407,24 +885,26 @@ builtins.input = _rm_input
       const msg = e.data || {};
       if(msg.type === "status"){
         setEngineState(msg.text || "");
+        if(msg.text === "ready"){
+          runBtn.classList.add("py-run-ready");
+          setTimeout(()=>runBtn.classList.remove("py-run-ready"), 1600);
+        }
         return;
       }
       if(msg.type === "stdout"){
-        append(msg.text || "");
+        bufferOrAppend("stdout", msg.text || "");
         return;
       }
       if(msg.type === "stderr"){
-        append(msg.text || "");
+        bufferOrAppend("stderr", msg.text || "");
         return;
       }
       if(msg.type === "result"){
-        appendLine("");
-        appendLine(String(msg.text || ""));
+        bufferOrAppend("result", String(msg.text || ""));
         return;
       }
       if(msg.type === "error"){
-        appendLine("");
-        appendLine(String(msg.text || ""));
+        bufferOrAppend("error", String(msg.text || ""));
         return;
       }
       if(msg.type === "run"){
@@ -438,6 +918,7 @@ builtins.input = _rm_input
           stopBtn.disabled = true;
           runBtn.disabled = false;
           setRunState((msg.ms || 0) + " ms");
+          endAnim();
         }
       }
     };
@@ -453,28 +934,34 @@ builtins.input = _rm_input
     stopBtn.disabled = true;
     runBtn.disabled = false;
     setRunState("stopped");
+    clearInterval(animTimer);
+    runAnim.classList.remove("active");
+    animBuffer = [];
     ensureWorker();
   }
 
   stopBtn.addEventListener("click", () => {
-    appendLine("");
-    appendLine("[stopped]");
+    appendOut("\n");
+    appendErr("[stopped]\n");
     stopWorker();
   });
 
   runBtn.addEventListener("click", () => {
     ensureWorker();
-    appendLine("");
-    appendLine(">>> running");
+    clearOut();
+    appendMarker(">>> running\n");
+    bumpRunCount();
+    startAnim();
     worker.postMessage({type:"run", code: codeEl.value || "", stdin: stdinEl.value || ""});
   });
 
-  // Boot
+  // ── Boot ──
   applyShareParam();
   loadFromStorage();
   if(!codeEl.value){
     codeEl.value = samples.hello;
   }
+  onEditorChange();
   ensureWorker();
   setRunState("idle");
 
