@@ -242,7 +242,7 @@ Alice
   const samples = {
     hello: `print("Hello from ReportMedic Python!")\nimport sys\nprint(sys.version)`,
     math: `import math\nnums = [3, 7, 21, 42]\nprint("sum:", sum(nums))\nprint("mean:", sum(nums)/len(nums))\nprint("sqrt(2):", math.sqrt(2))`,
-    text: `s = "  ReportMedic   fixes   messy   exports\nwith    fast   tools  " \nwords = s.split()\nprint("words:", words)\nprint("clean:", " ".join(words))`,
+    text: `s = """  ReportMedic   fixes   messy   exports\nwith    fast   tools  """\nwords = s.split()\nprint("words:", words)\nprint("clean:", " ".join(words))`,
     csv: `import csv, io\nraw = """name,amount\nAlice,120\nBob,80\n"""\nf = io.StringIO(raw)\nr = list(csv.DictReader(f))\nprint(r)\nprint("total:", sum(int(x["amount"]) for x in r))`
   };
   document.querySelectorAll("[data-sample]").forEach(btn => {
