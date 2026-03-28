@@ -930,26 +930,25 @@
     if(mode === 'remove-all'){
       // Replace <br> with space
       html = html.replace(/<br\s*\/?>/gi, ' ');
-      // Close+open block boundaries become a space
-      html = html.replace(/<\/(div|p|li|h[1-6]|blockquote)>\s*<(div|p|li|h[1-6]|blockquote)[^>]*>/gi, ' ');
-      // Remove remaining opening/closing block tags
-      html = html.replace(/<\/?(div|p|h[1-6]|blockquote)[^>]*>/gi, ' ');
+      // Close+open div/p boundaries become a space (NOT headings - those stay)
+      html = html.replace(/<\/(div|p|li)>\s*<(div|p|li)[^>]*>/gi, ' ');
+      // Remove remaining div/p tags only (preserve h1-h6, blockquote)
+      html = html.replace(/<\/?(div|p)[^>]*>/gi, ' ');
       // Collapse whitespace
       html = html.replace(/(\s|&nbsp;){2,}/g, ' ');
       html = html.trim();
       toast('All line breaks removed', 'success');
 
     } else if(mode === 'preserve-para'){
-      // Mark true paragraph breaks: </p>...<p>, double <br>, heading boundaries
+      // Paragraph boundaries: </p>...<p> and double <br>
       html = html.replace(/<\/p>\s*<p[^>]*>/gi, '{{PARA}}');
-      html = html.replace(/<\/(h[1-6])>\s*/gi, '{{PARA}}');
       html = html.replace(/(<br\s*\/?>)\s*(<br\s*\/?>)/gi, '{{PARA}}');
       // Single line breaks (div boundaries) become spaces
       html = html.replace(/<\/div>\s*<div[^>]*>/gi, ' ');
       // Remove remaining <br>
       html = html.replace(/<br\s*\/?>/gi, ' ');
-      // Remove all remaining block tags (div, p, headings, blockquote)
-      html = html.replace(/<\/?(div|p|h[1-6]|blockquote)[^>]*>/gi, ' ');
+      // Remove div/p tags only (preserve h1-h6, blockquote)
+      html = html.replace(/<\/?(div|p)[^>]*>/gi, ' ');
       // Restore paragraph marks as double <br>
       html = html.replace(/\{\{PARA\}\}/g, '<br><br>');
       // Collapse whitespace
