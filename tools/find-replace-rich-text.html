@@ -926,109 +926,72 @@
 
     clearHighlights();
 
-    // Collect top-level children into an array (snapshot, since childNodes is live)
+    // Snapshot all top-level child nodes
     var nodes = [];
-    var child = editor.firstChild;
-    while(child){ nodes.push(child); child = child.nextSibling; }
-
+    var c = editor.firstChild;
+    while(c){ nodes.push(c); c = c.nextSibling; }
     if(nodes.length === 0) return;
 
-    // Helper: is this node a heading?
-    function isHeading(n){ return n.nodeType === 1 && /^H[1-6]$/i.test(n.nodeName); }
-    // Helper: is this node an empty block or bare <br>?
-    function isEmpty(n){
-      if(n.nodeName === 'BR') return true;
-      if(n.nodeType === 3 && !n.textContent.trim()) return true;
-      if(n.nodeType === 1 && !n.textContent.trim() && !n.querySelector('img')) return true;
-      return false;
-    }
+    // Build output in a fragment
+    var frag = document.createDocumentFragment();
+    var bin = null; // current merge <div>
 
-    if(mode === 'remove-all'){
-      // Strategy: merge all consecutive non-heading, non-empty elements into one <div>
-      var fragment = document.createDocumentFragment();
-      var mergeBin = null; // accumulator div for merging
+    var flush = function(){
+      if(bin && bin.childNodes.length > 0) frag.appendChild(bin);
+      bin = null;
+    };
 
-      function flushBin(){
-        if(mergeBin && mergeBin.childNodes.length > 0){
-          fragment.appendChild(mergeBin);
+    var addToBin = function(node){
+      if(!bin) bin = document.createElement('div');
+      if(bin.childNodes.length > 0) bin.appendChild(document.createTextNode(' '));
+      if(node.nodeType === 3){
+        var t = node.textContent.replace(/\s+/g, ' ').trim();
+        if(t) bin.appendChild(document.createTextNode(t));
+      } else {
+        // Clone all children (preserves bold, links, etc.)
+        var kids = node.childNodes;
+        for(var j = 0; j < kids.length; j++){
+          bin.appendChild(kids[j].cloneNode(true));
         }
-        mergeBin = null;
+      }
+    };
+
+    for(var i = 0; i < nodes.length; i++){
+      var n = nodes[i];
+      var tag = (n.nodeName || '').toUpperCase();
+
+      // Headings always stay as separate blocks
+      if(n.nodeType === 1 && /^H[1-6]$/.test(tag)){
+        flush();
+        frag.appendChild(n.cloneNode(true));
+        continue;
       }
 
-      nodes.forEach(function(n){
-        if(isHeading(n)){
-          flushBin();
-          fragment.appendChild(n.cloneNode(true));
-        } else if(isEmpty(n)){
-          // skip empty nodes / bare <br>
+      // Check if this node is "empty" (br, blank text, empty div)
+      var nodeIsEmpty = false;
+      if(tag === 'BR') nodeIsEmpty = true;
+      else if(n.nodeType === 3 && !n.textContent.trim()) nodeIsEmpty = true;
+      else if(n.nodeType === 1 && !n.textContent.trim() && !n.querySelector('img')) nodeIsEmpty = true;
+
+      if(mode === 'remove-all'){
+        // Skip empties, merge everything else
+        if(!nodeIsEmpty) addToBin(n);
+      } else {
+        // preserve-para: empties act as paragraph boundaries
+        if(nodeIsEmpty){
+          flush();
         } else {
-          // Non-heading content block: merge its children into the bin
-          if(!mergeBin) mergeBin = document.createElement('div');
-          // Add a space separator if bin already has content
-          if(mergeBin.childNodes.length > 0){
-            mergeBin.appendChild(document.createTextNode(' '));
-          }
-          // Move inner content (preserves formatting like bold, links)
-          if(n.nodeType === 3){
-            var txt = n.textContent.replace(/\s+/g, ' ').trim();
-            if(txt) mergeBin.appendChild(document.createTextNode(txt));
-          } else {
-            // Clone children to avoid moving issues
-            var kids = Array.from(n.childNodes);
-            kids.forEach(function(k){ mergeBin.appendChild(k.cloneNode(true)); });
-          }
+          addToBin(n);
         }
-      });
-      flushBin();
-
-      editor.innerHTML = '';
-      editor.appendChild(fragment);
-      toast('All line breaks removed', 'success');
-
-    } else if(mode === 'preserve-para'){
-      // Strategy: merge lines separated by single line breaks (adjacent divs)
-      // but keep gaps where there's an empty line (empty div, bare br, blank text)
-      var fragment = document.createDocumentFragment();
-      var mergeBin = null;
-
-      function flushBin2(){
-        if(mergeBin && mergeBin.childNodes.length > 0){
-          fragment.appendChild(mergeBin);
-        }
-        mergeBin = null;
       }
-
-      nodes.forEach(function(n){
-        if(isHeading(n)){
-          flushBin2();
-          fragment.appendChild(n.cloneNode(true));
-        } else if(isEmpty(n)){
-          // Empty line = paragraph boundary. Flush current merge bin.
-          flushBin2();
-        } else {
-          // Non-heading content: merge into current bin
-          if(!mergeBin) mergeBin = document.createElement('div');
-          if(mergeBin.childNodes.length > 0){
-            mergeBin.appendChild(document.createTextNode(' '));
-          }
-          if(n.nodeType === 3){
-            var txt = n.textContent.replace(/\s+/g, ' ').trim();
-            if(txt) mergeBin.appendChild(document.createTextNode(txt));
-          } else {
-            var kids = Array.from(n.childNodes);
-            kids.forEach(function(k){ mergeBin.appendChild(k.cloneNode(true)); });
-          }
-        }
-      });
-      flushBin2();
-
-      editor.innerHTML = '';
-      editor.appendChild(fragment);
-      toast('Line breaks removed (paragraphs kept)', 'success');
     }
+    flush();
+
+    editor.innerHTML = '';
+    editor.appendChild(frag);
+    toast(mode === 'remove-all' ? 'All line breaks removed' : 'Line breaks removed (paragraphs kept)', 'success');
     updateStats();
     runFind();
-    // Reset radio back to "keep"
     document.querySelector('input[name="frLineBreak"][value="keep"]').checked = true;
   });
 
