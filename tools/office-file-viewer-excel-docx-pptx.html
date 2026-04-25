@@ -1428,11 +1428,18 @@
     if(handled) e.preventDefault();
   });
 
-  // Browser fullscreen change: close overlay if user exits via Esc
+  // Browser fullscreen change: when the user exits OS fullscreen via Esc,
+  // the browser intercepts the Esc keydown so our keyboard handler never
+  // sees it. This listener catches that case and closes the in-page
+  // overlay as well, so one Esc press is enough to exit Present mode.
   document.addEventListener('fullscreenchange', ()=>{
     if(!document.fullscreenElement && presentOpen){
-      // Keep overlay open as in-page fullscreen, since some users prefer it
-      // (do nothing). They can press Exit / Esc to fully close.
+      closePresent();
+    }
+  });
+  document.addEventListener('webkitfullscreenchange', ()=>{
+    if(!document.webkitFullscreenElement && presentOpen){
+      closePresent();
     }
   });
 
