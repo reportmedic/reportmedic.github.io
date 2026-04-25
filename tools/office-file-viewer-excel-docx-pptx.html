@@ -785,23 +785,24 @@
 
       // Emit one <text> per visual line, with multiple <tspan> children for
       // each run. Each tspan re-anchors to the running x so styling changes
-      // don't break the flow.
+      // don't break the flow. Use SVG presentation attributes (not CSS px)
+      // so the values are interpreted in user units in every renderer.
       const tspans = [];
       let runX = xStart;
       for(const r of line.runs){
         if(r.linebreak) continue;
         const fontFamily = (r.font ? r.font + ',' : '') + 'Calibri,Segoe UI,Helvetica,Arial,sans-serif';
-        const styleParts = [];
-        styleParts.push(`font-family:${fontFamily}`);
-        styleParts.push(`font-size:${r.sz}px`);
-        if(r.bold) styleParts.push('font-weight:700');
-        if(r.italic) styleParts.push('font-style:italic');
-        if(r.underline) styleParts.push('text-decoration:underline');
-        const styleAttr = styleParts.join(';').replace(/'/g, '&apos;');
-        tspans.push(
-          `<tspan x="${Math.round(runX)}" y="${Math.round(baselineY)}" `+
-          `fill="${r.color}" style='${styleAttr}'>${escapeHtml(r.text)}</tspan>`
-        );
+        const attrs = [
+          `x="${Math.round(runX)}"`,
+          `y="${Math.round(baselineY)}"`,
+          `fill="${r.color}"`,
+          `font-size="${r.sz}"`,
+          `font-family="${escapeHtml(fontFamily)}"`
+        ];
+        if(r.bold) attrs.push('font-weight="700"');
+        if(r.italic) attrs.push('font-style="italic"');
+        if(r.underline) attrs.push('text-decoration="underline"');
+        tspans.push(`<tspan ${attrs.join(' ')}>${escapeHtml(r.text)}</tspan>`);
         runX += approxRunWidth(r.text, r.sz, r.bold);
       }
       if(tspans.length){
