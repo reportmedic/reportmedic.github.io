@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta name="description" content="Open PPTX file online free in your browser. View PowerPoint slides with full formatting, no signup, no upload, no Microsoft PowerPoint needed. Files stay 100% private on your device."/>
+<title>PPTX Viewer Online Free - Open PPTX File in Browser, No Sign Up</title>
+<link href="https://reportmedic.org/tools/pptx-viewer.html" rel="canonical"/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "Free PPTX Viewer",
+      "url": "https://reportmedic.org/tools/pptx-viewer.html",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Any",
+      "browserRequirements": "Modern web browser with JavaScript enabled",
+      "description": "Open and view .pptx PowerPoint files online free in your browser. No signup, no upload, no Microsoft PowerPoint needed. Files stay 100% private on your device.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "ReportMedic",
+        "url": "https://reportmedic.org/"
+      },
+      "featureList": [
+        "Open .pptx files in any modern browser",
+        "No signup or account required",
+        "No upload, files stay on your device",
+        "Full screen presentation mode",
+        "Keyboard navigation: arrow keys, Page Up/Down, Space, Home/End, F, Esc",
+        "Slide thumbnails with click-to-jump",
+        "Also opens .xlsx and .docx files",
+        "Works on Windows, Mac, Linux, ChromeOS, iOS, Android"
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is this PPTX viewer really free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The viewer is free to use with no signup, no credit card, no daily upload limit, and no watermark."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need PowerPoint or Microsoft Office to open a PPTX file here?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. The viewer opens .pptx files directly in your browser using JavaScript. You do not need PowerPoint, Microsoft 365, Office for the web, LibreOffice, or any other application installed."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my PPTX file uploaded to a server?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. The file stays on your device. The viewer reads it in your browser's memory and renders the slides locally. Nothing is sent to ReportMedic or any third party."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does it work on Mac, Linux, ChromeOS, or mobile?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Any modern browser on any operating system works, including macOS, Linux, ChromeOS, iPhone, iPad, and Android."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I present a PPTX in full screen from the browser?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Click Present or press F to enter a full screen presentation overlay with keyboard navigation. Use arrow keys, Page Up/Down, or Space to advance, and Esc to exit."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What file extensions are supported?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The viewer is built for .pptx PowerPoint files (Office 2007 and later). It also opens .xlsx and .xlsm Excel spreadsheets and .docx Word documents in the same tool."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
+<link href="/assets/css/styles.css" rel="stylesheet"/>
+<!-- Carlito is metric-compatible with Calibri: same exact glyph advance
+     widths, so PowerPoint slides authored in Calibri wrap at identical
+     points when rendered in this viewer regardless of host OS. -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Carlito:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet"/>
+<style>
+  .rm-tabs{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+  .rm-tabs .btn{border:1px solid rgba(255,255,255,.14)}
+  .rm-tabs .btn.is-active{outline:2px solid rgba(124,247,212,.35)}
+  .rm-hidden{display:none !important}
+  .rm-view{max-height:70vh; overflow:auto; border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:12px; background:rgba(255,255,255,.03)}
+  .rm-table{border-collapse:collapse; width:100%; font-size:13px}
+  .rm-table th,.rm-table td{border:1px solid rgba(255,255,255,.12); padding:6px 8px; vertical-align:top}
+  .rm-table th{position:sticky; top:0; background:rgba(10,16,24,.92); backdrop-filter: blur(6px)}
+  .rm-doc p{margin:0 0 10px}
+  .rm-doc h1,.rm-doc h2,.rm-doc h3{margin:14px 0 10px}
+
+  /* === PPTX deck === */
+  .rm-deck{
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .rm-deck-controls{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    padding:8px; border:1px solid rgba(255,255,255,.12);
+    border-radius:12px; background:rgba(0,0,0,.18);
+  }
+  .rm-deck-controls .rm-spacer{flex:1}
+  .rm-deck-counter{font-variant-numeric:tabular-nums; font-weight:700; min-width:64px; text-align:center}
+  .rm-stage-wrap{
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:14px;
+    background:#0a0f1a;
+    padding:10px;
+    overflow:hidden;
+  }
+  .rm-stage{
+    width:100%;
+    aspect-ratio: 16 / 9;
+    background:#fff;
+    border-radius:8px;
+    overflow:hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+    position:relative;
+  }
+  .rm-stage svg{width:100%; height:100%; display:block}
+  .rm-thumbs{
+    display:flex; gap:8px; overflow-x:auto; padding:6px 2px;
+    scrollbar-width: thin;
+  }
+  .rm-thumb{
+    flex:0 0 auto;
+    width:140px; aspect-ratio: 16 / 9;
+    border:2px solid transparent;
+    border-radius:6px;
+    overflow:hidden;
+    background:#fff;
+    cursor:pointer;
+    position:relative;
+  }
+  .rm-thumb.is-active{border-color: var(--brand2, #7cf7d4); box-shadow:0 0 0 2px rgba(124,247,212,.25)}
+  .rm-thumb svg{width:100%; height:100%; display:block; pointer-events:none}
+  .rm-thumb-label{
+    position:absolute; left:4px; bottom:3px;
+    font-size:10px; padding:1px 5px; border-radius:8px;
+    background:rgba(0,0,0,.55); color:#fff; font-weight:700;
+  }
+
+  /* Presentation (fullscreen) overlay */
+  .rm-present{
+    position:fixed; inset:0; z-index:99998;
+    background:#000;
+    display:none;
+    align-items:center; justify-content:center;
+    padding:0;
+  }
+  .rm-present.is-open{display:flex}
+  .rm-present-stage{
+    width:min(100vw, calc(100vh * 16 / 9));
+    height:min(100vh, calc(100vw * 9 / 16));
+    background:#fff;
+    overflow:hidden;
+    box-shadow: 0 0 60px rgba(255,255,255,.05);
+  }
+  .rm-present-stage svg{width:100%; height:100%; display:block}
+  .rm-present-bar{
+    position:absolute; left:50%; bottom:18px; transform:translateX(-50%);
+    display:flex; gap:8px; align-items:center;
+    background:rgba(20,25,35,.85);
+    padding:8px 12px; border-radius:999px;
+    border:1px solid rgba(255,255,255,.15);
+    color:#fff; font-size:13px;
+    backdrop-filter: blur(8px);
+  }
+  .rm-present-bar button{
+    background:rgba(255,255,255,.08); color:#fff;
+    border:1px solid rgba(255,255,255,.18);
+    padding:6px 10px; border-radius:8px;
+    cursor:pointer; font-weight:700;
+    font-family:inherit; font-size:13px;
+  }
+  .rm-present-bar button:hover{background:rgba(255,255,255,.16)}
+  .rm-present-counter{font-variant-numeric:tabular-nums; min-width:60px; text-align:center}
+
+  :root{
+    --lm-radius: 18px;
+    --lm-border: rgba(255,255,255,.14);
+    --lm-text: rgba(240,246,255,.92);
+    --lm-muted: rgba(240,246,255,.68);
+  }
+
+  .rm-lm-link{
+    font-size:.82rem;
+    margin-left:.55rem;
+    text-decoration:underline;
+    text-underline-offset:3px;
+    opacity:.85;
+    white-space:nowrap;
+  }
+  .rm-lm-link:hover{opacity:1;}
+
+  .rm-lm-backdrop{
+    position:fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    z-index:9999;
+
+    background:
+      radial-gradient(1200px 600px at 20% 10%, rgba(120,170,255,.18), transparent 60%),
+      radial-gradient(900px 500px at 85% 20%, rgba(0,220,255,.10), transparent 55%),
+      rgba(2,6,23,.72);
+    backdrop-filter: blur(4px) saturate(1.2);
+    -webkit-backdrop-filter: blur(4px) saturate(1.2);
+  }
+  .rm-lm-backdrop[aria-hidden="false"]{display:flex;}
+
+  .rm-lm-dialog{
+    width:min(640px, 100%);
+    border-radius: var(--lm-radius);
+    overflow:hidden;
+
+    background: rgba(10, 14, 25, .3);
+    border: 1px solid var(--lm-border);
+    backdrop-filter: blur(14px) saturate(1.15);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    box-shadow: 0 20px 60px rgba(0,0,0,.45);
+
+    transform: translateY(10px) scale(.985);
+    opacity: 0;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+  .rm-lm-backdrop[aria-hidden="false"] .rm-lm-dialog{
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  .rm-lm-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.18);
+  }
+  .rm-lm-title{
+    margin:0;
+    font-size:1rem;
+    font-weight:800;
+    letter-spacing:-.01em;
+    color: var(--lm-text);
+  }
+  .rm-lm-close{
+    width:34px;
+    height:34px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    color: var(--lm-text);
+    cursor:pointer;
+    font-size:18px;
+    line-height:1;
+    display:grid;
+    place-items:center;
+  }
+  .rm-lm-close:hover{background: rgba(255,255,255,.10);}
+  .rm-lm-close:active{transform: translateY(1px);}
+
+  .rm-lm-body{
+    padding: 14px 16px 16px;
+    font-size:.95rem;
+    line-height:1.55;
+    color: var(--lm-muted);
+  }
+  .rm-lm-body h3{
+    margin:12px 0 6px;
+    font-size:.92rem;
+    font-weight:700;
+    color: var(--lm-text);
+    letter-spacing:-.01em;
+  }
+  .rm-lm-body ul{margin:6px 0 10px 18px;}
+  .rm-lm-body li{margin:5px 0;}
+  .rm-lm-body p{margin:.55rem 0;}
+</style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Free PPTX Viewer - Open PPTX File Online in Your Browser <a class="rm-lm-link" data-rm-lm-open="rmLM" href="#">Learn more</a></h1>
+    <p class="sub">Open and view <b>.pptx</b> PowerPoint presentations directly in your browser with full slide rendering, presentation mode, and keyboard navigation. No signup, no upload, no Microsoft PowerPoint needed. Files stay 100% private on your device. Also opens <b>.xlsx</b> and <b>.docx</b> in the same tool.</p>
+    <div class="hr"></div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between; align-items:flex-start">
+        <div>
+          <div style="font-weight:700">Open a PPTX file</div>
+          <div class="tiny muted">Drag and drop a .pptx file, or click to choose. Also accepts .xlsx and .docx.</div>
+        </div>
+        <span class="pill tiny" id="meta"><b>FILE:</b><span class="muted">not loaded</span></span>
+      </div>
+      <div style="margin-top:10px">
+        <input class="input" id="file" type="file" accept=".pptx,.xlsx,.xlsm,.docx"/>
+      </div>
+
+      <div class="rm-tabs">
+        <button class="btn is-active" type="button" id="tabPptx">PowerPoint (PPTX)</button>
+        <button class="btn" type="button" id="tabXlsx">Excel (XLSX)</button>
+        <button class="btn" type="button" id="tabDocx">Word (DOCX)</button>
+      </div>
+
+      <div class="row" style="margin-top:12px; gap:10px; flex-wrap:wrap">
+        <button class="btn" id="clear" type="button">Clear</button>
+        <span class="tiny muted" id="status"></span>
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:12px">
+      <div class="card">
+        <div style="font-weight:700">Preview</div>
+        <div class="tiny muted" style="margin-top:4px">Excel: first 200 rows per sheet. Word: clean HTML preview. PowerPoint: slide deck with prev / next and full screen Present mode.</div>
+        <div class="hr2"></div>
+
+        <div id="paneXlsx">
+          <div class="row" style="gap:10px; flex-wrap:wrap; align-items:center">
+            <label class="tiny muted">Sheet</label>
+            <select class="input" id="sheetSel" style="width:auto; min-width:220px"></select>
+          </div>
+          <div class="hr2"></div>
+          <div id="xlsxView" class="rm-view"></div>
+        </div>
+
+        <div id="paneDocx" class="rm-hidden">
+          <div id="docxView" class="rm-view rm-doc"></div>
+        </div>
+
+        <div id="panePptx" class="rm-hidden">
+          <div id="pptxView"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:700">Notes</div>
+        <div class="tiny muted" style="margin-top:6px">
+          This viewer renders directly in your browser. Files never leave your device.
+        </div>
+        <div class="hr2"></div>
+        <ul class="tiny muted" style="margin:0; padding-left:18px">
+          <li><b>XLSX</b>: rendered as a table view (no formulas recalculated).</li>
+          <li><b>DOCX</b>: layout is best-effort (headings, paragraphs, lists, images).</li>
+          <li><b>PPTX</b>: slides render with positioned text, shapes, images, and a full screen Present mode. Use arrow keys, Space, or Page Up / Down to navigate.</li>
+        </ul>
+      </div>
+    </div>
+<div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+<a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+<a class="btn" href="/fix-my-report.html">Contact</a>
+</div>
+
+    <div class="hr"></div>
+
+    <h2>About this Free PPTX Viewer</h2>
+    <p>This free PPTX viewer opens PowerPoint presentations directly in your browser without installing Microsoft PowerPoint, Office, or any desktop software. The .pptx file you choose stays on your device the entire time. Nothing is uploaded to a server, nothing is stored anywhere, and no account or signup is required to view the file. Slides render with positioned text, shapes, embedded images, and the original layout, plus a full screen Present mode for walking through the deck the way PowerPoint shows it.</p>
+
+    <h3>Why people use this PPTX viewer online</h3>
+    <ul>
+      <li><b>Open .pptx without PowerPoint.</b> View PowerPoint files in any modern browser on Windows, Mac, Linux, ChromeOS, iPhone, iPad, or Android. No Microsoft 365 subscription, no LibreOffice install, no Google Slides upload needed.</li>
+      <li><b>No upload, fully private.</b> The PPTX file never leaves your computer. There is no daily limit, no file size cap from a server, and no expiration on the link because there is no link.</li>
+      <li><b>No sign up.</b> Open the page, choose a .pptx file, and the slides render. No registration, no email, no credit card.</li>
+      <li><b>Real presentation mode.</b> Click Present or press F to enter full screen with keyboard navigation. Use arrow keys, Page Up / Down, Space, or Home / End to move through the deck.</li>
+      <li><b>Bonus formats.</b> Same tool also opens .xlsx Excel spreadsheets and .docx Word documents, so it covers the most common Office files in one place.</li>
+    </ul>
+
+    <h3>How to view a PPTX file in your browser</h3>
+    <ol>
+      <li>Drag your .pptx file onto the upload box at the top of this page, or click the input to select a file from your computer.</li>
+      <li>The slide deck renders automatically with previous / next buttons, a thumbnail filmstrip, and a slide counter.</li>
+      <li>Click <b>Present</b> or press <b>F</b> to enter full screen presentation mode with keyboard navigation.</li>
+      <li>Press <b>Esc</b> to exit, or click <b>Exit</b> in the presentation overlay.</li>
+    </ol>
+
+    <h3>Frequently asked questions</h3>
+
+    <h4>Is this PPTX viewer really free?</h4>
+    <p>Yes. The viewer is free to use with no signup, no credit card, no daily upload limit, and no watermark. The page is part of ReportMedic's free toolbox.</p>
+
+    <h4>Do I need PowerPoint or Microsoft Office to open a PPTX file here?</h4>
+    <p>No. The viewer opens .pptx files directly in your browser using JavaScript. You do not need PowerPoint, Microsoft 365, Office for the web, LibreOffice, or any other application installed.</p>
+
+    <h4>Is my PPTX file uploaded to a server?</h4>
+    <p>No. The file stays on your device. The viewer reads it in your browser's memory and renders the slides locally. Nothing is sent to ReportMedic or any third party. When you close the page, the file is no longer in memory.</p>
+
+    <h4>Does it work on Mac, Linux, ChromeOS, or mobile?</h4>
+    <p>Yes. Any modern browser on any operating system works, including macOS, Linux, ChromeOS, iPhone, iPad, and Android. The tool is purely client-side so there is no platform dependency.</p>
+
+    <h4>What file extensions are supported?</h4>
+    <p>The viewer is built for .pptx PowerPoint files (Office 2007 and later). It also opens .xlsx and .xlsm Excel spreadsheets and .docx Word documents in the same tool.</p>
+
+    <h4>Can I present a PPTX in full screen from the browser?</h4>
+    <p>Yes. Click the Present button or press F to enter a full screen presentation overlay with keyboard navigation. Use the arrow keys, Page Up / Down, or Space to advance through the slides, and Esc to exit.</p>
+
+    <h4>Is there a file size limit?</h4>
+    <p>The tool runs entirely in your browser, so the practical limit depends on your device's available memory. Most decks under a few hundred megabytes open without issue.</p>
+
+    <h4>How is this different from Google Slides or PowerPoint Online?</h4>
+    <p>Google Slides and PowerPoint Online require you to upload your file to their servers and create or sign in with a Google or Microsoft account. This viewer requires neither. The .pptx file stays on your device and you can view it without any account or upload step.</p>
+<div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+<a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+<a class="btn" href="/fix-my-report.html">Contact</a>
+</div>
+  </div>
+  <div class="footer">© 2026 ReportMedic</div>
+</div>
+
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
+<div aria-hidden="true" aria-label="PPTX Viewer details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Free PPTX Viewer</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Open .pptx PowerPoint files instantly in any modern browser</li>
+        <li>View slide content with positioned text, shapes, and embedded images</li>
+        <li>Stay private since the file never leaves your device</li>
+        <li>Present a deck full screen with keyboard navigation</li>
+        <li>Bonus: opens .xlsx Excel and .docx Word files in the same tool</li>
+      </ul>
+      <h3>How to view a PPTX file</h3>
+      <ul>
+        <li>Drag a .pptx file onto the upload area, or click to choose</li>
+        <li>Slides render automatically with prev / next controls and a thumbnail strip</li>
+        <li>Click <b>Present</b> or press <b>F</b> for full screen presentation</li>
+        <li>Arrow keys, Page Up / Down, Space, or Home / End to navigate</li>
+        <li>Press <b>Esc</b> to exit Present mode</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Fullscreen presentation overlay -->
+<div class="rm-present" id="rmPresent" aria-hidden="true">
+  <div class="rm-present-stage" id="rmPresentStage"></div>
+  <div class="rm-present-bar">
+    <button id="rmPrevP" type="button" aria-label="Previous slide">&laquo; Prev</button>
+    <span class="rm-present-counter" id="rmCounterP">0 / 0</span>
+    <button id="rmNextP" type="button" aria-label="Next slide">Next &raquo;</button>
+    <button id="rmExitP" type="button" aria-label="Exit presentation">Exit</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  const $ = (id)=>document.getElementById(id);
+  const meta=$('meta');
+  const status=$('status');
+  const file=$('file');
+
+  const panes = { xlsx:$('paneXlsx'), docx:$('paneDocx'), pptx:$('panePptx') };
+  const tabs = { xlsx:$('tabXlsx'), docx:$('tabDocx'), pptx:$('tabPptx') };
+
+  function setTab(which){
+    Object.keys(tabs).forEach(k=>tabs[k].classList.toggle('is-active', k===which));
+    Object.keys(panes).forEach(k=>panes[k].classList.toggle('rm-hidden', k!==which));
+  }
+  tabs.xlsx.onclick=()=>setTab('xlsx');
+  tabs.docx.onclick=()=>setTab('docx');
+  tabs.pptx.onclick=()=>setTab('pptx');
+
+  function setStatus(msg, cls){
+    status.className = 'tiny muted ' + (cls||'');
+    status.textContent = msg || '';
+  }
+
+  function setMeta(name){
+    meta.innerHTML = '<b>FILE:</b><span class="muted"> ' + (name||'not loaded') + '</span>';
+  }
+
+  function clearAll(){
+    file.value='';
+    $('sheetSel').innerHTML='';
+    $('xlsxView').innerHTML='';
+    $('docxView').innerHTML='';
+    $('pptxView').innerHTML='';
+    setStatus('', '');
+    setMeta(null);
+    setTab('pptx');
+    deck.slides = [];
+    deck.index = 0;
+  }
+  $('clear').onclick=clearAll;
+
+  function escapeHtml(s){
+    return String(s??'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+  function escapeAttr(s){ return escapeHtml(s); }
+
+  // --- XLSX ---
+  function renderSheet(wb, sheetName){
+    const ws = wb.Sheets[sheetName];
+    if(!ws){ $('xlsxView').textContent='Sheet not found.'; return; }
+
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:A1');
+    const maxRows = Math.min(range.e.r, 199);
+    const maxCols = Math.min(range.e.c, 49);
+
+    let html = '<table class="rm-table"><thead><tr>';
+    for(let c=0;c<=maxCols;c++){ html += '<th>' + escapeHtml(XLSX.utils.encode_col(c)) + '</th>'; }
+    html += '</tr></thead><tbody>';
+
+    for(let r=0;r<=maxRows;r++){
+      html += '<tr>';
+      for(let c=0;c<=maxCols;c++){
+        const addr = XLSX.utils.encode_cell({r,c});
+        const cell = ws[addr];
+        const v = cell ? (cell.w ?? cell.v ?? '') : '';
+        html += '<td>' + escapeHtml(v) + '</td>';
+      }
+      html += '</tr>';
+    }
+
+    html += '</tbody></table>';
+    if(range.e.r > 199) html += '<div class="tiny muted" style="margin-top:10px">Showing first 200 rows (to keep the page fast).</div>';
+    $('xlsxView').innerHTML = html;
+  }
+
+  async function handleXlsx(buf){
+    const wb = XLSX.read(buf, {type:'array'});
+    const names = wb.SheetNames || [];
+    const sel = $('sheetSel');
+    sel.innerHTML='';
+    names.forEach(n=>{
+      const o=document.createElement('option');
+      o.value=n; o.textContent=n; sel.appendChild(o);
+    });
+    if(!names.length){ $('xlsxView').textContent='No sheets found.'; return; }
+    sel.onchange=()=>renderSheet(wb, sel.value);
+    renderSheet(wb, names[0]);
+  }
+
+  // --- DOCX ---
+  async function handleDocx(buf){
+    const res = await mammoth.convertToHtml({arrayBuffer: buf}, {styleMap: []});
+    $('docxView').innerHTML = res.value || '<div class="tiny muted">No content.</div>';
+    if(res.messages && res.messages.length){
+      const warn = res.messages.slice(0,5).map(m=>escapeHtml(m.message)).join('<br>');
+      $('docxView').innerHTML += '<div class="tiny muted" style="margin-top:12px">Preview notes:<br>'+warn+'</div>';
+    }
+  }
+
+  // ============================================================
+  // === PPTX renderer: real slides via SVG + presentation mode ===
+  // ============================================================
+  const NS_A = 'http://schemas.openxmlformats.org/drawingml/2006/main';
+  const NS_P = 'http://schemas.openxmlformats.org/presentationml/2006/main';
+  const NS_R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+
+  // Default slide size if presentation.xml is missing the value
+  const DEFAULT_W = 9144000;  // 10in
+  const DEFAULT_H = 6858000;  // 7.5in
+
+  // Theme colour fallbacks (used when slide references schemeClr without theme)
+  const SCHEME_FALLBACK = {
+    bg1:'FFFFFF', bg2:'E7E6E6', lt1:'FFFFFF', lt2:'E7E6E6',
+    tx1:'000000', tx2:'44546A', dk1:'000000', dk2:'44546A',
+    accent1:'4472C4', accent2:'ED7D31', accent3:'A5A5A5',
+    accent4:'FFC000', accent5:'5B9BD5', accent6:'70AD47',
+    hlink:'0563C1', folHlink:'954F72',
+    phClr:'4472C4'
+  };
+
+  function childByName(parent, ns, name){
+    if(!parent) return null;
+    for(const c of parent.children){
+      if(c.namespaceURI===ns && c.localName===name) return c;
+    }
+    return null;
+  }
+  function childrenByName(parent, ns, name){
+    const out=[];
+    if(!parent) return out;
+    for(const c of parent.children){
+      if(c.namespaceURI===ns && c.localName===name) out.push(c);
+    }
+    return out;
+  }
+  function descendantsByName(parent, ns, name){
+    if(!parent) return [];
+    return Array.from(parent.getElementsByTagNameNS(ns, name));
+  }
+
+  function getXfrm(spPr){
+    const xfrm = childByName(spPr, NS_A, 'xfrm');
+    if(!xfrm) return null;
+    const off = childByName(xfrm, NS_A, 'off');
+    const ext = childByName(xfrm, NS_A, 'ext');
+    if(!off || !ext) return null;
+    return {
+      x: parseInt(off.getAttribute('x')||'0', 10),
+      y: parseInt(off.getAttribute('y')||'0', 10),
+      cx: parseInt(ext.getAttribute('cx')||'0', 10),
+      cy: parseInt(ext.getAttribute('cy')||'0', 10),
+      rot: parseInt(xfrm.getAttribute('rot')||'0', 10) / 60000,
+      flipH: xfrm.getAttribute('flipH')==='1',
+      flipV: xfrm.getAttribute('flipV')==='1',
+      chOffX: 0, chOffY: 0, chExtX: 0, chExtY: 0,
+      hasChildXfrm: false
+    };
+  }
+  function getGroupXfrm(spPr){
+    const x = getXfrm(spPr);
+    if(!x) return null;
+    const xfrm = childByName(spPr, NS_A, 'xfrm');
+    const chOff = childByName(xfrm, NS_A, 'chOff');
+    const chExt = childByName(xfrm, NS_A, 'chExt');
+    if(chOff && chExt){
+      x.chOffX = parseInt(chOff.getAttribute('x')||'0', 10);
+      x.chOffY = parseInt(chOff.getAttribute('y')||'0', 10);
+      x.chExtX = parseInt(chExt.getAttribute('cx')||'0', 10);
+      x.chExtY = parseInt(chExt.getAttribute('cy')||'0', 10);
+      x.hasChildXfrm = true;
+    }
+    return x;
+  }
+
+  function resolveColor(fillEl){
+    if(!fillEl) return null;
+    // a:solidFill > a:srgbClr | a:schemeClr | a:sysClr
+    const srgb = childByName(fillEl, NS_A, 'srgbClr');
+    if(srgb) return '#' + srgb.getAttribute('val');
+    const scheme = childByName(fillEl, NS_A, 'schemeClr');
+    if(scheme){
+      const v = scheme.getAttribute('val');
+      const hex = SCHEME_FALLBACK[v] || '000000';
+      return '#' + hex;
+    }
+    const sys = childByName(fillEl, NS_A, 'sysClr');
+    if(sys) return '#' + (sys.getAttribute('lastClr') || '000000');
+    return null;
+  }
+
+  function getSolidFill(spPr){
+    const sf = childByName(spPr, NS_A, 'solidFill');
+    if(sf) return resolveColor(sf);
+    // Gradient: pick first stop colour as a reasonable fallback
+    const grad = childByName(spPr, NS_A, 'gradFill');
+    if(grad){
+      const stops = descendantsByName(grad, NS_A, 'gs');
+      if(stops.length){
+        const first = stops[0];
+        return resolveColor(first);
+      }
+    }
+    return null;
+  }
+
+  function getLine(spPr){
+    const ln = childByName(spPr, NS_A, 'ln');
+    if(!ln) return null;
+    const noFill = childByName(ln, NS_A, 'noFill');
+    if(noFill) return { w:0, color:null, none:true };
+    const wAttr = ln.getAttribute('w');
+    const sf = childByName(ln, NS_A, 'solidFill');
+    const color = sf ? resolveColor(sf) : null;
+    // An empty <a:ln/> with no width attribute and no solidFill means "no
+    // explicit border on this shape" (the default in PowerPoint is no
+    // border for programmatically-generated shapes), so don't paint one.
+    if(!wAttr && !color) return { w:0, color:null, none:true };
+    const w = wAttr ? parseInt(wAttr, 10) : 9525;
+    return { w, color: color || '#000000', none:false };
+  }
+
+  function getPresetGeom(spPr){
+    const pg = childByName(spPr, NS_A, 'prstGeom');
+    if(!pg) return null;
+    return pg.getAttribute('prst') || 'rect';
+  }
+
+  // Convert PPTX EMU sz to CSS px (in user units that match SVG viewBox)
+  // sz attr is in 100ths of a point, 1pt = 12700 EMU.
+  function szToEmu(sz){ return Math.round(parseInt(sz,10) * 127); }
+
+  // Default placeholder font sizes (EMU)
+  function defaultPhSize(phType){
+    const pt = (
+      phType==='title' || phType==='ctrTitle' ? 36 :
+      phType==='subTitle' ? 24 :
+      phType==='ftr' || phType==='dt' || phType==='sldNum' ? 12 :
+      18
+    );
+    return pt * 12700;
+  }
+
+  function alignToCss(algn){
+    return ({l:'left', ctr:'center', r:'right', just:'justify', dist:'justify'})[algn] || 'left';
+  }
+  function anchorToFlex(anchor){
+    return ({t:'flex-start', ctr:'center', b:'flex-end'})[anchor] || 'flex-start';
+  }
+
+  // EMU-to-pixel scale: 9525 EMU = 1 CSS px at 96 DPI. We scale every
+  // coordinate as we emit it so the SVG comes out in a normal pixel range
+  // (small numbers that browsers always handle the same way), with no
+  // viewBox transforms or surprising px-vs-user-unit interpretation.
+  const EMU_PER_PX = 9525;
+  function px(v){ return Math.round((Number(v) || 0) * 100 / EMU_PER_PX) / 100; }
+
+  // Real text width measurement using the browser's canvas API. Falls back
+  // to a per-character estimation only when canvas is unavailable (e.g.
+  // server-side test runs). The browser path is byte-accurate for whatever
+  // font the page actually renders with, which is what we need for wrapping.
+  let _measureCtx = null;
+  let _measureCtxTried = false;
+  function getMeasureCtx(){
+    if(_measureCtxTried) return _measureCtx;
+    _measureCtxTried = true;
+    try{
+      if(typeof document !== 'undefined'){
+        const c = document.createElement('canvas');
+        _measureCtx = c.getContext('2d');
+      }
+    }catch(e){ _measureCtx = null; }
+    return _measureCtx;
+  }
+
+  // Measure the rendered width of a text run, returned in EMU units so it
+  // composes with the rest of the renderer's coordinate math. Caller passes
+  // EMU font size and the run's font/bold/italic so the canvas font string
+  // matches what the SVG <tspan> will end up rendering.
+  function approxRunWidth(text, szEmu, bold, italic, fontName){
+    if(!text) return 0;
+    const ctx = getMeasureCtx();
+    if(ctx){
+      const szPx = szEmu / EMU_PER_PX;
+      const family = (fontName ? fontName + ',' : '') + 'Calibri,Carlito,Segoe UI,Helvetica,Arial,sans-serif';
+      const style = italic ? 'italic ' : '';
+      const weight = bold ? '700 ' : '400 ';
+      ctx.font = style + weight + szPx + 'px ' + family;
+      const wPx = ctx.measureText(text).width;
+      return wPx * EMU_PER_PX;
+    }
+    // Fallback estimation (Node test sandbox): tuned for Calibri proportions.
+    let w = 0;
+    for(let i=0;i<text.length;i++){
+      const ch = text.charCodeAt(i);
+      if(ch===32 || ch===46 || ch===44 || ch===59 || ch===58 || ch===33 || ch===39 || ch===96 || ch===124 || ch===108 || ch===105 || ch===116 || ch===102 || ch===106){
+        w += szEmu * (bold ? 0.30 : 0.28);
+      } else if(ch===87 || ch===77 || ch===109 || ch===119){
+        w += szEmu * (bold ? 0.82 : 0.78);
+      } else {
+        w += szEmu * (bold ? 0.50 : 0.48);
+      }
+    }
+    return w;
+  }
+  // Kept for older callers; no longer used in width math directly.
+  function approxCharWidth(sz, bold){
+    return sz * (bold ? 0.50 : 0.48);
+  }
+
+  // Collect runs from a paragraph element into normalized records.
+  function collectRuns(p, phType){
+    const runs = [];
+    for(const node of p.children){
+      if(node.namespaceURI !== NS_A) continue;
+      if(node.localName === 'r' || node.localName === 'fld'){
+        const rPr = childByName(node, NS_A, 'rPr');
+        const tEl = childByName(node, NS_A, 't');
+        const text = tEl ? tEl.textContent : '';
+        if(!text) continue;
+        let bold = false, italic=false, underline=false;
+        let sz = defaultPhSize(phType);
+        let color = '#000000';
+        let font = 'Calibri';
+        if(rPr){
+          if(rPr.getAttribute('b')==='1') bold=true;
+          if(rPr.getAttribute('i')==='1') italic=true;
+          const u = rPr.getAttribute('u');
+          if(u && u!=='none') underline=true;
+          const szAttr = rPr.getAttribute('sz');
+          if(szAttr) sz = szToEmu(szAttr);
+          const sf = childByName(rPr, NS_A, 'solidFill');
+          if(sf){
+            const c = resolveColor(sf);
+            if(c) color = c;
+          }
+          const latin = childByName(rPr, NS_A, 'latin');
+          if(latin && latin.getAttribute('typeface')) font = latin.getAttribute('typeface');
+        }
+        runs.push({ text, sz, color, bold, italic, underline, font });
+      } else if(node.localName === 'br'){
+        runs.push({ linebreak:true });
+      }
+    }
+    return runs;
+  }
+
+  // Greedy word wrap. Splits run list into visual lines that fit within maxWidth.
+  function wrapRuns(runs, maxWidth){
+    if(!runs.length) return [[]];
+    const lines = [];
+    let cur = [];
+    let curW = 0;
+    const flushLine = () => { lines.push(cur); cur = []; curW = 0; };
+    for(const run of runs){
+      if(run.linebreak){ flushLine(); continue; }
+      // Tokenize into words while preserving spaces between them.
+      const tokens = run.text.split(/(\s+)/);
+      for(const tok of tokens){
+        if(!tok) continue;
+        const tokW = approxRunWidth(tok, run.sz, run.bold, run.italic, run.font);
+        // If a leading space and we're at line start, drop it.
+        if(/^\s+$/.test(tok) && curW === 0) continue;
+        // No slack: with Carlito loaded as the Calibri metric-compatible
+        // substitute, canvas measurement matches the SVG glyph rendering
+        // exactly, so any token whose addition would push the running
+        // line past the available width must wrap. Slack here only causes
+        // visual overflow at the right edge of the frame.
+        if(curW > 0 && curW + tokW > maxWidth && !/^\s+$/.test(tok)){
+          flushLine();
+        }
+        if(curW === 0 && /^\s+$/.test(tok)) continue;
+        // Append token to current line, attaching to last run if same style.
+        const last = cur[cur.length-1];
+        if(last && !last.linebreak && last.font===run.font && last.sz===run.sz
+            && last.color===run.color && last.bold===run.bold
+            && last.italic===run.italic && last.underline===run.underline){
+          last.text += tok;
+        } else {
+          cur.push({...run, text: tok});
+        }
+        curW += tokW;
+      }
+    }
+    flushLine();
+    if(!lines.length) lines.push([]);
+    return lines;
+  }
+
+  // Render a text body element (<p:txBody>) directly as SVG <text> elements
+  // positioned within the shape's transform box. Returns an SVG fragment.
+  function renderTextBody(txBody, phType, xfrm){
+    if(!txBody || !xfrm) return '';
+    const bodyPr = childByName(txBody, NS_A, 'bodyPr');
+    const anchor = bodyPr ? (bodyPr.getAttribute('anchor') || 't') : 't';
+    const lIns = bodyPr && bodyPr.getAttribute('lIns')!==null ? parseInt(bodyPr.getAttribute('lIns'),10) : 91440;
+    const tIns = bodyPr && bodyPr.getAttribute('tIns')!==null ? parseInt(bodyPr.getAttribute('tIns'),10) : 45720;
+    const rIns = bodyPr && bodyPr.getAttribute('rIns')!==null ? parseInt(bodyPr.getAttribute('rIns'),10) : 91440;
+    const bIns = bodyPr && bodyPr.getAttribute('bIns')!==null ? parseInt(bodyPr.getAttribute('bIns'),10) : 45720;
+    const wrap = bodyPr ? (bodyPr.getAttribute('wrap') !== 'none') : true;
+
+    const innerX = xfrm.x + lIns;
+    const innerY = xfrm.y + tIns;
+    const innerW = Math.max(xfrm.cx - lIns - rIns, 1);
+    const innerH = Math.max(xfrm.cy - tIns - bIns, 1);
+
+    const paragraphs = childrenByName(txBody, NS_A, 'p');
+    if(!paragraphs.length) return '';
+
+    // Build a flat list of visual lines across all paragraphs.
+    // Each entry: { runs, algn, indent, lineHeight, maxSize, isEmpty }
+    const visualLines = [];
+    for(const p of paragraphs){
+      const pPr = childByName(p, NS_A, 'pPr');
+      const algn = pPr ? (pPr.getAttribute('algn') || 'l') : 'l';
+      const lvl = pPr ? parseInt(pPr.getAttribute('lvl')||'0', 10) : 0;
+      const indent = lvl * 365760; // ~0.4in per level
+      const runs = collectRuns(p, phType);
+
+      if(!runs.length){
+        // Empty paragraph still occupies a line of default size
+        const sz = defaultPhSize(phType);
+        visualLines.push({ runs:[], algn, indent, lineHeight: sz * 1.0, maxSize: sz, isEmpty:true });
+        continue;
+      }
+      // Heuristic: if the frame height is barely larger than the largest
+      // font in this paragraph, the frame was sized for single-line content
+      // (PowerPoint's default for label shapes like "Manual review time"
+      // sized to cy=274320 EMU around a 14pt run). In that case, skip the
+      // word-wrap entirely so the text never breaks even if the canvas
+      // measurement disagrees with the actual rendering by a few pixels.
+      let maxRunSz = 0;
+      for(const r of runs){ if(r.sz && r.sz > maxRunSz) maxRunSz = r.sz; }
+      if(!maxRunSz) maxRunSz = defaultPhSize(phType);
+      const looksSingleLine = innerH < maxRunSz * 1.6;
+
+      const availW = (wrap && !looksSingleLine) ? Math.max(innerW - indent, 1) : Number.MAX_SAFE_INTEGER;
+      const wrapped = wrapRuns(runs, availW);
+      for(const line of wrapped){
+        let maxSz = 0;
+        for(const r of line){ if(!r.linebreak && r.sz > maxSz) maxSz = r.sz; }
+        if(!maxSz) maxSz = defaultPhSize(phType);
+        visualLines.push({ runs: line, algn, indent, lineHeight: maxSz * 1.0, maxSize: maxSz, isEmpty: line.length===0 });
+      }
+    }
+    if(!visualLines.length) return '';
+
+    // Total text block height
+    let totalH = 0;
+    for(const ln of visualLines) totalH += ln.lineHeight;
+
+    // Compute starting Y based on anchor
+    let cursorY;
+    if(anchor === 'ctr') cursorY = innerY + Math.max(0, (innerH - totalH) / 2);
+    else if(anchor === 'b') cursorY = innerY + Math.max(0, innerH - totalH);
+    else cursorY = innerY;
+
+    const parts = [];
+    for(const line of visualLines){
+      // Move cursor down by full line height; baseline sits at cap-height of
+      // the em box (PowerPoint and most fonts: ~0.80 of em from top).
+      const baselineY = cursorY + line.maxSize * 0.80;
+      cursorY += line.lineHeight;
+      if(line.isEmpty) continue;
+
+      // Compute total width of this visual line for alignment
+      let lineW = 0;
+      for(const r of line.runs){
+        if(r.linebreak) continue;
+        lineW += approxRunWidth(r.text, r.sz, r.bold, r.italic, r.font);
+      }
+
+      let xStart;
+      if(line.algn === 'ctr'){
+        xStart = innerX + line.indent + Math.max(0, (innerW - line.indent - lineW) / 2);
+      } else if(line.algn === 'r'){
+        xStart = innerX + Math.max(line.indent, innerW - lineW);
+      } else {
+        xStart = innerX + line.indent;
+      }
+
+      // Emit one <text> per visual line, with multiple <tspan> children for
+      // each run. All coordinates and font sizes are scaled from EMU to
+      // CSS pixels at emit time so the final SVG is in a normal pixel range.
+      const tspans = [];
+      let runX = xStart;
+      for(const r of line.runs){
+        if(r.linebreak) continue;
+        const fontFamily = (r.font ? r.font + ',' : '') + 'Calibri,Carlito,Segoe UI,Helvetica,Arial,sans-serif';
+        const attrs = [
+          `x="${px(runX)}"`,
+          `y="${px(baselineY)}"`,
+          `fill="${r.color}"`,
+          `font-size="${px(r.sz)}"`,
+          `font-family="${escapeHtml(fontFamily)}"`
+        ];
+        if(r.bold) attrs.push('font-weight="700"');
+        if(r.italic) attrs.push('font-style="italic"');
+        if(r.underline) attrs.push('text-decoration="underline"');
+        tspans.push(`<tspan ${attrs.join(' ')}>${escapeHtml(r.text)}</tspan>`);
+        runX += approxRunWidth(r.text, r.sz, r.bold, r.italic, r.font);
+      }
+      if(tspans.length){
+        parts.push(`<text>${tspans.join('')}</text>`);
+      }
+    }
+
+    return parts.join('');
+  }
+
+  // Default placeholder positions used when neither the slide nor any layout/master
+  // supplies an explicit xfrm. Sized for a 10in x 7.5in slide.
+  const PH_DEFAULT_XFRM = {
+    title:    { x: 457200,  y: 274320,  cx: 8229600, cy: 1143000 },
+    ctrTitle: { x: 685800,  y: 2130425, cx: 7772400, cy: 1470025 },
+    subTitle: { x: 1371600, y: 3886200, cx: 6400800, cy: 1752600 },
+    body:     { x: 457200,  y: 1600200, cx: 8229600, cy: 4525963 },
+    ftr:      { x: 3008313, y: 6356350, cx: 3127375, cy: 365125  },
+    dt:       { x: 457200,  y: 6356350, cx: 2133600, cy: 365125  },
+    sldNum:   { x: 6553200, y: 6356350, cx: 2133600, cy: 365125  }
+  };
+
+  function findPhMatch(records, type, idx){
+    if(!records || !records.length) return null;
+    if(type !== null && idx !== null){
+      const r = records.find(x => x.type===type && x.idx===idx);
+      if(r) return r;
+    }
+    if(type !== null){
+      const r = records.find(x => x.type===type);
+      if(r) return r;
+    }
+    if(idx !== null){
+      const r = records.find(x => x.idx===idx);
+      if(r) return r;
+    }
+    return null;
+  }
+
+  // Render a shape (<p:sp> or <p:cxnSp>) into an SVG fragment.
+  // `placeholders` is an array of { type, idx, xfrm } records gathered from
+  // the slide's layout chain (layout -> master) and used to fill in missing
+  // positions on placeholder shapes (title, body, etc.) that inherit them.
+  function renderShape(sp, placeholders){
+    const nvSpPr = childByName(sp, NS_P, 'nvSpPr') || childByName(sp, NS_P, 'nvCxnSpPr');
+    const nvPr = nvSpPr ? childByName(nvSpPr, NS_P, 'nvPr') : null;
+    const ph = nvPr ? childByName(nvPr, NS_P, 'ph') : null;
+    const phType = ph ? (ph.getAttribute('type') || 'body') : null;
+    const phIdxAttr = ph ? ph.getAttribute('idx') : null;
+    const phIdx = phIdxAttr !== null && phIdxAttr !== '' ? parseInt(phIdxAttr, 10) : null;
+
+    const spPr = childByName(sp, NS_P, 'spPr');
+    const txBody = childByName(sp, NS_P, 'txBody');
+    if(!spPr) return '';
+
+    let xfrm = getXfrm(spPr);
+    if(!xfrm){
+      // Walk the layout / master placeholder chain to inherit a position.
+      if(ph){
+        const match = findPhMatch(placeholders, phType, phIdx);
+        if(match && match.xfrm){
+          xfrm = Object.assign({}, match.xfrm);
+        } else if(phType && PH_DEFAULT_XFRM[phType]){
+          xfrm = Object.assign({ rot: 0, flipH: false, flipV: false }, PH_DEFAULT_XFRM[phType]);
+        }
+      }
+    }
+    if(!xfrm) return '';
+
+    const fill = getSolidFill(spPr);
+    const line = getLine(spPr);
+    const prst = getPresetGeom(spPr) || 'rect';
+    const fillStr = fill ? `fill="${fill}"` : 'fill="none"';
+    const strokeStr = (line && !line.none && line.color)
+      ? `stroke="${line.color}" stroke-width="${px(Math.max(line.w, 6350))}"`
+      : 'stroke="none"';
+
+    const isCxn = sp.localName === 'cxnSp';
+
+    // Build a transform if rotation or flip is set. We rotate around shape centre.
+    const cxC = xfrm.x + xfrm.cx/2;
+    const cyC = xfrm.y + xfrm.cy/2;
+    const transforms = [];
+    if(xfrm.rot){
+      transforms.push(`rotate(${xfrm.rot} ${px(cxC)} ${px(cyC)})`);
+    }
+    if(xfrm.flipH || xfrm.flipV){
+      const sx = xfrm.flipH ? -1 : 1;
+      const sy = xfrm.flipV ? -1 : 1;
+      transforms.push(`translate(${px(cxC)} ${px(cyC)}) scale(${sx} ${sy}) translate(${px(-cxC)} ${px(-cyC)})`);
+    }
+    const transformAttr = transforms.length ? ` transform="${transforms.join(' ')}"` : '';
+
+    let shapeSvg = '';
+
+    if(isCxn || prst==='line' || prst==='straightConnector1'){
+      // Render as a line from one corner to opposite, accounting for flips
+      const x1 = xfrm.x, y1 = xfrm.y;
+      const x2 = xfrm.x + xfrm.cx, y2 = xfrm.y + xfrm.cy;
+      const lineColor = (line && !line.none && line.color) ? line.color : '#000000';
+      const lineW = Math.max((line && line.w) || 9525, 6350);
+      shapeSvg = `<line x1="${px(x1)}" y1="${px(y1)}" x2="${px(x2)}" y2="${px(y2)}" stroke="${lineColor}" stroke-width="${px(lineW)}"${transformAttr}/>`;
+    } else if(prst==='ellipse' || prst==='oval' || prst==='circle'){
+      const rx = xfrm.cx/2, ry = xfrm.cy/2;
+      shapeSvg = `<ellipse cx="${px(cxC)}" cy="${px(cyC)}" rx="${px(rx)}" ry="${px(ry)}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    } else if(prst==='triangle'){
+      const x = xfrm.x, y = xfrm.y, w = xfrm.cx, h = xfrm.cy;
+      const pts = `${px(x+w/2)},${px(y)} ${px(x+w)},${px(y+h)} ${px(x)},${px(y+h)}`;
+      shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    } else if(prst==='diamond'){
+      const x = xfrm.x, y = xfrm.y, w = xfrm.cx, h = xfrm.cy;
+      const pts = `${px(x+w/2)},${px(y)} ${px(x+w)},${px(y+h/2)} ${px(x+w/2)},${px(y+h)} ${px(x)},${px(y+h/2)}`;
+      shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    } else if(prst==='rightArrow'){
+      const x = xfrm.x, y = xfrm.y, w = xfrm.cx, h = xfrm.cy;
+      const head = w*0.35, body = h*0.5;
+      const top = y + (h-body)/2, bot = top + body;
+      const pts = `${px(x)},${px(top)} ${px(x+w-head)},${px(top)} ${px(x+w-head)},${px(y)} ${px(x+w)},${px(y+h/2)} ${px(x+w-head)},${px(y+h)} ${px(x+w-head)},${px(bot)} ${px(x)},${px(bot)}`;
+      shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    } else if(prst==='leftArrow'){
+      const x = xfrm.x, y = xfrm.y, w = xfrm.cx, h = xfrm.cy;
+      const head = w*0.35, body = h*0.5;
+      const top = y + (h-body)/2, bot = top + body;
+      const pts = `${px(x+w)},${px(top)} ${px(x+head)},${px(top)} ${px(x+head)},${px(y)} ${px(x)},${px(y+h/2)} ${px(x+head)},${px(y+h)} ${px(x+head)},${px(bot)} ${px(x+w)},${px(bot)}`;
+      shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    } else if(prst==='downArrow'){
+      const x = xfrm.x, y = xfrm.y, w = xfrm.cx, h = xfrm.cy;
+      const head = h*0.35, body = w*0.5;
+      const left = x + (w-body)/2, right = left + body;
+      const pts = `${px(left)},${px(y)} ${px(right)},${px(y)} ${px(right)},${px(y+h-head)} ${px(x+w)},${px(y+h-head)} ${px(x+w/2)},${px(y+h)} ${px(x)},${px(y+h-head)} ${px(left)},${px(y+h-head)}`;
+      shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    } else if(prst==='upArrow'){
+      const x = xfrm.x, y = xfrm.y, w = xfrm.cx, h = xfrm.cy;
+      const head = h*0.35, body = w*0.5;
+      const left = x + (w-body)/2, right = left + body;
+      const pts = `${px(left)},${px(y+h)} ${px(right)},${px(y+h)} ${px(right)},${px(y+head)} ${px(x+w)},${px(y+head)} ${px(x+w/2)},${px(y)} ${px(x)},${px(y+head)} ${px(left)},${px(y+head)}`;
+      shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    } else if(prst==='roundRect' || prst==='round1Rect' || prst==='round2SameRect' || prst==='round2DiagRect'){
+      const r = Math.min(xfrm.cx, xfrm.cy) * 0.12;
+      shapeSvg = `<rect x="${px(xfrm.x)}" y="${px(xfrm.y)}" width="${px(xfrm.cx)}" height="${px(xfrm.cy)}" rx="${px(r)}" ry="${px(r)}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    } else {
+      // Default rectangle for unknown preset (covers rect and many others reasonably)
+      shapeSvg = `<rect x="${px(xfrm.x)}" y="${px(xfrm.y)}" width="${px(xfrm.cx)}" height="${px(xfrm.cy)}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    }
+
+    // Native SVG <text> overlay (no foreignObject - more reliable across browsers)
+    let textSvg = '';
+    if(txBody){
+      const inner = renderTextBody(txBody, phType, xfrm);
+      if(inner){
+        textSvg = transformAttr
+          ? `<g${transformAttr}>${inner}</g>`
+          : inner;
+      }
+    }
+
+    return shapeSvg + textSvg;
+  }
+
+  // Render a picture (<p:pic>)
+  function renderPicture(pic, mediaUrls){
+    const blipFill = childByName(pic, NS_P, 'blipFill');
+    const blip = blipFill ? childByName(blipFill, NS_A, 'blip') : null;
+    const rEmbed = blip ? blip.getAttributeNS(NS_R, 'embed') : null;
+    const spPr = childByName(pic, NS_P, 'spPr');
+    if(!spPr) return '';
+    const xfrm = getXfrm(spPr);
+    if(!xfrm) return '';
+
+    const cxC = xfrm.x + xfrm.cx/2;
+    const cyC = xfrm.y + xfrm.cy/2;
+    const transforms = [];
+    if(xfrm.rot) transforms.push(`rotate(${xfrm.rot} ${px(cxC)} ${px(cyC)})`);
+    if(xfrm.flipH || xfrm.flipV){
+      const sx = xfrm.flipH ? -1 : 1, sy = xfrm.flipV ? -1 : 1;
+      transforms.push(`translate(${px(cxC)} ${px(cyC)}) scale(${sx} ${sy}) translate(${px(-cxC)} ${px(-cyC)})`);
+    }
+    const transformAttr = transforms.length ? ` transform="${transforms.join(' ')}"` : '';
+
+    if(rEmbed && mediaUrls[rEmbed]){
+      return `<image href="${mediaUrls[rEmbed]}" x="${px(xfrm.x)}" y="${px(xfrm.y)}" width="${px(xfrm.cx)}" height="${px(xfrm.cy)}" preserveAspectRatio="xMidYMid meet"${transformAttr}/>`;
+    }
+    // Fallback: draw a placeholder rectangle
+    return `<rect x="${px(xfrm.x)}" y="${px(xfrm.y)}" width="${px(xfrm.cx)}" height="${px(xfrm.cy)}" fill="#E7E6E6" stroke="#9CA3AF" stroke-width="${px(6350)}"${transformAttr}/>`;
+  }
+
+  // Render a group <p:grpSp>: we apply a transform that maps the child coordinate
+  // system (chOff/chExt) onto the group's outer xfrm box.
+  function renderGroup(grp, mediaUrls, placeholders){
+    const grpSpPr = childByName(grp, NS_P, 'grpSpPr');
+    if(!grpSpPr) return '';
+    const xfrm = getGroupXfrm(grpSpPr);
+    if(!xfrm) return walkSpTreeChildren(grp, mediaUrls, placeholders);
+
+    // Group transforms operate on already-scaled child coords. We scale the
+    // outer translate but leave chOff in EMU because children scale themselves.
+    let transform = '';
+    if(xfrm.hasChildXfrm && xfrm.chExtX > 0 && xfrm.chExtY > 0){
+      const sx = xfrm.cx / xfrm.chExtX;
+      const sy = xfrm.cy / xfrm.chExtY;
+      transform = `translate(${px(xfrm.x)} ${px(xfrm.y)}) scale(${sx} ${sy}) translate(${px(-xfrm.chOffX)} ${px(-xfrm.chOffY)})`;
+    } else {
+      transform = `translate(${px(xfrm.x)} ${px(xfrm.y)})`;
+    }
+
+    return `<g transform="${transform}">` + walkSpTreeChildren(grp, mediaUrls, placeholders) + `</g>`;
+  }
+
+  // Walk the children of a spTree or grpSp and emit SVG fragments
+  function walkSpTreeChildren(parent, mediaUrls, placeholders){
+    const parts = [];
+    for(const child of parent.children){
+      if(child.namespaceURI !== NS_P) continue;
+      const tag = child.localName;
+      if(tag==='sp' || tag==='cxnSp'){
+        parts.push(renderShape(child, placeholders));
+      } else if(tag==='pic'){
+        parts.push(renderPicture(child, mediaUrls));
+      } else if(tag==='grpSp'){
+        parts.push(renderGroup(child, mediaUrls, placeholders));
+      }
+    }
+    return parts.join('');
+  }
+
+  // Resolve a relative media path against the slide path (e.g. ../media/image1.png)
+  function resolvePath(basePath, target){
+    // basePath is like ppt/slides/slide1.xml
+    const baseParts = basePath.split('/').slice(0, -1); // ppt/slides
+    const tgtParts = target.split('/');
+    const stack = baseParts.slice();
+    for(const part of tgtParts){
+      if(part==='..'){ stack.pop(); }
+      else if(part==='.' || part===''){ /* skip */ }
+      else { stack.push(part); }
+    }
+    return stack.join('/');
+  }
+
+  function mimeFor(path){
+    const p = path.toLowerCase();
+    if(p.endsWith('.png')) return 'image/png';
+    if(p.endsWith('.jpg') || p.endsWith('.jpeg')) return 'image/jpeg';
+    if(p.endsWith('.gif')) return 'image/gif';
+    if(p.endsWith('.bmp')) return 'image/bmp';
+    if(p.endsWith('.svg')) return 'image/svg+xml';
+    if(p.endsWith('.webp')) return 'image/webp';
+    if(p.endsWith('.tif') || p.endsWith('.tiff')) return 'image/tiff';
+    if(p.endsWith('.emf')) return 'image/emf';
+    if(p.endsWith('.wmf')) return 'image/wmf';
+    return 'application/octet-stream';
+  }
+
+  async function buildMediaUrls(zip, slidePath){
+    const out = {};
+    const relsPath = slidePath.replace('/slides/', '/slides/_rels/') + '.rels';
+    const relsFile = zip.file(relsPath);
+    if(!relsFile) return out;
+    const xml = await relsFile.async('text');
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    const rels = doc.getElementsByTagName('Relationship');
+    for(const rel of rels){
+      const type = rel.getAttribute('Type') || '';
+      if(!type.endsWith('/image')) continue;
+      const id = rel.getAttribute('Id');
+      const target = rel.getAttribute('Target');
+      if(!id || !target) continue;
+      const abs = resolvePath(slidePath, target);
+      const mediaFile = zip.file(abs);
+      if(!mediaFile) continue;
+      const bytes = await mediaFile.async('uint8array');
+      // Build a base64 data URL
+      let bin = '';
+      for(let i=0; i<bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      const b64 = btoa(bin);
+      out[id] = `data:${mimeFor(abs)};base64,${b64}`;
+    }
+    return out;
+  }
+
+  async function getSlideBackground(zip, slidePath){
+    // Slide-level background only. (Layout/master inheritance is approximated as white.)
+    try{
+      const xml = await zip.file(slidePath).async('text');
+      const doc = new DOMParser().parseFromString(xml, 'application/xml');
+      const cSld = doc.getElementsByTagNameNS(NS_P, 'cSld')[0];
+      if(!cSld) return '#FFFFFF';
+      const bg = childByName(cSld, NS_P, 'bg');
+      if(!bg) return '#FFFFFF';
+      const bgPr = childByName(bg, NS_P, 'bgPr');
+      if(bgPr){
+        const c = getSolidFill(bgPr);
+        if(c) return c;
+      }
+      return '#FFFFFF';
+    }catch{ return '#FFFFFF'; }
+  }
+
+  async function findRelTarget(zip, relsPath, typeEnding){
+    const f = zip.file(relsPath);
+    if(!f) return null;
+    const xml = await f.async('text');
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    for(const r of doc.getElementsByTagName('Relationship')){
+      const t = r.getAttribute('Type') || '';
+      if(t.endsWith(typeEnding)){
+        return r.getAttribute('Target');
+      }
+    }
+    return null;
+  }
+
+  // Read placeholder records (with positions) from a layout or master XML file.
+  async function readPlaceholdersFromXmlPath(zip, xmlPath){
+    const out = [];
+    const f = zip.file(xmlPath);
+    if(!f) return out;
+    const xml = await f.async('text');
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    const cSld = doc.getElementsByTagNameNS(NS_P, 'cSld')[0];
+    const spTree = cSld ? childByName(cSld, NS_P, 'spTree') : null;
+    if(!spTree) return out;
+    for(const sp of childrenByName(spTree, NS_P, 'sp')){
+      const nvSpPr = childByName(sp, NS_P, 'nvSpPr');
+      if(!nvSpPr) continue;
+      const nvPr = childByName(nvSpPr, NS_P, 'nvPr');
+      if(!nvPr) continue;
+      const ph = childByName(nvPr, NS_P, 'ph');
+      if(!ph) continue;
+      const type = ph.getAttribute('type');
+      const idxAttr = ph.getAttribute('idx');
+      const idx = idxAttr !== null && idxAttr !== '' ? parseInt(idxAttr, 10) : null;
+      const spPr = childByName(sp, NS_P, 'spPr');
+      const xfrm = spPr ? getXfrm(spPr) : null;
+      if(!xfrm) continue;
+      out.push({ type: type || null, idx: idx, xfrm });
+    }
+    return out;
+  }
+
+  // Walk the slide -> layout -> master chain and return all placeholder records
+  // with positions. Layout records come first (they take priority).
+  async function loadPlaceholders(zip, slidePath){
+    const all = [];
+    const slideRelsPath = slidePath.replace('/slides/', '/slides/_rels/') + '.rels';
+    const layoutTarget = await findRelTarget(zip, slideRelsPath, '/slideLayout');
+    if(!layoutTarget) return all;
+    const layoutPath = resolvePath(slidePath, layoutTarget);
+
+    const layoutRecs = await readPlaceholdersFromXmlPath(zip, layoutPath);
+    all.push(...layoutRecs);
+
+    const layoutRelsPath = layoutPath.replace('/slideLayouts/', '/slideLayouts/_rels/') + '.rels';
+    const masterTarget = await findRelTarget(zip, layoutRelsPath, '/slideMaster');
+    if(masterTarget){
+      const masterPath = resolvePath(layoutPath, masterTarget);
+      const masterRecs = await readPlaceholdersFromXmlPath(zip, masterPath);
+      all.push(...masterRecs);
+    }
+    return all;
+  }
+
+  async function renderSlideToSvg(zip, slidePath, slideW, slideH){
+    const xml = await zip.file(slidePath).async('text');
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    const mediaUrls = await buildMediaUrls(zip, slidePath);
+    const bg = await getSlideBackground(zip, slidePath);
+    const placeholders = await loadPlaceholders(zip, slidePath);
+
+    const cSld = doc.getElementsByTagNameNS(NS_P, 'cSld')[0];
+    const spTree = cSld ? childByName(cSld, NS_P, 'spTree') : null;
+
+    // viewBox is in CSS-pixel-equivalent units (EMU / 9525). All coordinate
+    // emitters call px() at emission time so every value in the output is
+    // already in this same pixel range. No transform group, no surprises.
+    const vbW = px(slideW);
+    const vbH = px(slideH);
+
+    const parts = [];
+    parts.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vbW} ${vbH}" preserveAspectRatio="xMidYMid meet">`);
+    parts.push(`<rect x="0" y="0" width="${vbW}" height="${vbH}" fill="${bg}"/>`);
+    if(spTree){
+      parts.push(walkSpTreeChildren(spTree, mediaUrls, placeholders));
+    }
+    parts.push(`</svg>`);
+    return parts.join('');
+  }
+
+  async function loadPresentationMeta(zip){
+    let slideW = DEFAULT_W, slideH = DEFAULT_H;
+    let ordered = [];
+
+    const presFile = zip.file('ppt/presentation.xml');
+    const presRelsFile = zip.file('ppt/_rels/presentation.xml.rels');
+
+    if(presFile){
+      try{
+        const xml = await presFile.async('text');
+        const doc = new DOMParser().parseFromString(xml, 'application/xml');
+        const sldSz = doc.getElementsByTagNameNS(NS_P, 'sldSz')[0];
+        if(sldSz){
+          slideW = parseInt(sldSz.getAttribute('cx')||DEFAULT_W, 10);
+          slideH = parseInt(sldSz.getAttribute('cy')||DEFAULT_H, 10);
+        }
+        if(presRelsFile){
+          const relsXml = await presRelsFile.async('text');
+          const relsDoc = new DOMParser().parseFromString(relsXml, 'application/xml');
+          const map = {};
+          for(const r of relsDoc.getElementsByTagName('Relationship')){
+            map[r.getAttribute('Id')] = r.getAttribute('Target');
+          }
+          const sldIds = doc.getElementsByTagNameNS(NS_P, 'sldId');
+          for(const sld of sldIds){
+            const rid = sld.getAttributeNS(NS_R, 'id');
+            const target = map[rid];
+            if(target){
+              ordered.push(resolvePath('ppt/presentation.xml', target));
+            }
+          }
+        }
+      }catch(_){ /* fall through */ }
+    }
+
+    if(!ordered.length){
+      ordered = Object.keys(zip.files)
+        .filter(p=>/^ppt\/slides\/slide\d+\.xml$/.test(p))
+        .sort((a,b)=>{
+          const na = parseInt(a.match(/slide(\d+)\.xml/)[1],10);
+          const nb = parseInt(b.match(/slide(\d+)\.xml/)[1],10);
+          return na-nb;
+        });
+    }
+
+    return { slideW, slideH, slidePaths: ordered };
+  }
+
+  // === Deck state and UI ===
+  const deck = { slides: [], index: 0, slideW: DEFAULT_W, slideH: DEFAULT_H };
+
+  function renderDeckUI(){
+    const total = deck.slides.length;
+    const view = $('pptxView');
+    if(!total){
+      view.innerHTML = '<div class="tiny muted">No slides found.</div>';
+      return;
+    }
+    view.innerHTML = `
+      <div class="rm-deck">
+        <div class="rm-deck-controls">
+          <button class="btn" type="button" id="rmFirst">&laquo;&laquo;</button>
+          <button class="btn" type="button" id="rmPrev">&laquo; Prev</button>
+          <span class="rm-deck-counter" id="rmCounter">1 / ${total}</span>
+          <button class="btn" type="button" id="rmNext">Next &raquo;</button>
+          <button class="btn" type="button" id="rmLast">&raquo;&raquo;</button>
+          <span class="rm-spacer"></span>
+          <button class="btn primary" type="button" id="rmPresentBtn">▶ Present</button>
+        </div>
+        <div class="rm-stage-wrap">
+          <div class="rm-stage" id="rmStage"></div>
+        </div>
+        <div class="rm-thumbs" id="rmThumbs"></div>
+      </div>
+    `;
+
+    // Wire up
+    $('rmFirst').onclick = ()=>goTo(0);
+    $('rmPrev').onclick  = ()=>goTo(deck.index-1);
+    $('rmNext').onclick  = ()=>goTo(deck.index+1);
+    $('rmLast').onclick  = ()=>goTo(total-1);
+    $('rmPresentBtn').onclick = openPresent;
+
+    // Build thumbs
+    const thumbs = $('rmThumbs');
+    for(let i=0;i<total;i++){
+      const t = document.createElement('button');
+      t.className = 'rm-thumb' + (i===deck.index ? ' is-active' : '');
+      t.dataset.idx = String(i);
+      t.type = 'button';
+      t.innerHTML = deck.slides[i] + `<span class="rm-thumb-label">${i+1}</span>`;
+      t.addEventListener('click', ()=>goTo(i));
+      thumbs.appendChild(t);
+    }
+
+    goTo(0);
+  }
+
+  function goTo(i){
+    if(!deck.slides.length) return;
+    if(i<0) i=0;
+    if(i>=deck.slides.length) i=deck.slides.length-1;
+    deck.index = i;
+    const stage = $('rmStage');
+    if(stage) stage.innerHTML = deck.slides[i];
+    const counter = $('rmCounter');
+    if(counter) counter.textContent = `${i+1} / ${deck.slides.length}`;
+    // Highlight thumbnail
+    const thumbs = document.querySelectorAll('.rm-thumb');
+    thumbs.forEach((el, idx)=> el.classList.toggle('is-active', idx===i));
+    // Sync presentation overlay if open
+    if(presentOpen){
+      const ps = $('rmPresentStage');
+      if(ps) ps.innerHTML = deck.slides[i];
+      const c2 = $('rmCounterP');
+      if(c2) c2.textContent = `${i+1} / ${deck.slides.length}`;
+    }
+    // Scroll active thumb into view
+    const active = document.querySelector('.rm-thumb.is-active');
+    if(active && active.scrollIntoView) active.scrollIntoView({block:'nearest', inline:'center', behavior:'smooth'});
+  }
+
+  // === Fullscreen presentation overlay ===
+  let presentOpen = false;
+  function openPresent(){
+    if(!deck.slides.length) return;
+    const overlay = $('rmPresent');
+    overlay.classList.add('is-open');
+    overlay.setAttribute('aria-hidden','false');
+    presentOpen = true;
+    const ps = $('rmPresentStage');
+    ps.innerHTML = deck.slides[deck.index];
+    $('rmCounterP').textContent = `${deck.index+1} / ${deck.slides.length}`;
+    // Try real OS fullscreen
+    try{
+      if(overlay.requestFullscreen) overlay.requestFullscreen().catch(()=>{});
+      else if(overlay.webkitRequestFullscreen) overlay.webkitRequestFullscreen();
+    }catch(_){ /* ignore */ }
+  }
+  function closePresent(){
+    const overlay = $('rmPresent');
+    overlay.classList.remove('is-open');
+    overlay.setAttribute('aria-hidden','true');
+    presentOpen = false;
+    try{
+      if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+    }catch(_){ /* ignore */ }
+  }
+  $('rmPrevP').onclick = ()=>goTo(deck.index-1);
+  $('rmNextP').onclick = ()=>goTo(deck.index+1);
+  $('rmExitP').onclick = closePresent;
+
+  // Keyboard shortcuts (deck only when PPTX tab active or in present mode)
+  document.addEventListener('keydown', (e)=>{
+    if(!deck.slides.length) return;
+    const pptxActive = !panes.pptx.classList.contains('rm-hidden');
+    if(!pptxActive && !presentOpen) return;
+    // Avoid stealing keys while typing
+    const tag = (e.target && e.target.tagName) || '';
+    if(/INPUT|TEXTAREA|SELECT/.test(tag) && !presentOpen) return;
+    let handled = true;
+    if(e.key==='ArrowRight' || e.key==='PageDown' || e.key===' ' || e.key==='Spacebar'){
+      goTo(deck.index+1);
+    } else if(e.key==='ArrowLeft' || e.key==='PageUp'){
+      goTo(deck.index-1);
+    } else if(e.key==='Home'){
+      goTo(0);
+    } else if(e.key==='End'){
+      goTo(deck.slides.length-1);
+    } else if(e.key==='Escape' && presentOpen){
+      closePresent();
+    } else if((e.key==='f' || e.key==='F') && !presentOpen && pptxActive){
+      openPresent();
+    } else {
+      handled = false;
+    }
+    if(handled) e.preventDefault();
+  });
+
+  // Browser fullscreen change: when the user exits OS fullscreen via Esc,
+  // the browser intercepts the Esc keydown so our keyboard handler never
+  // sees it. This listener catches that case and closes the in-page
+  // overlay as well, so one Esc press is enough to exit Present mode.
+  document.addEventListener('fullscreenchange', ()=>{
+    if(!document.fullscreenElement && presentOpen){
+      closePresent();
+    }
+  });
+  document.addEventListener('webkitfullscreenchange', ()=>{
+    if(!document.webkitFullscreenElement && presentOpen){
+      closePresent();
+    }
+  });
+
+  async function handlePptx(buf){
+    const zip = await JSZip.loadAsync(buf);
+    const meta = await loadPresentationMeta(zip);
+    deck.slideW = meta.slideW;
+    deck.slideH = meta.slideH;
+    deck.slides = [];
+    deck.index = 0;
+
+    if(!meta.slidePaths.length){
+      $('pptxView').innerHTML = '<div class="tiny muted">No slides found in this PPTX.</div>';
+      return;
+    }
+
+    // Wait for Carlito (the Calibri-metric-compatible web font) to load
+    // before any canvas measurement runs, so wrap math reflects the actual
+    // rendered glyph widths from the first slide on, not whatever fallback
+    // happened to be active when the user uploaded the file.
+    if(typeof document !== 'undefined' && document.fonts && document.fonts.load){
+      try{
+        await Promise.all([
+          document.fonts.load('400 14px Carlito'),
+          document.fonts.load('700 14px Carlito'),
+          document.fonts.load('italic 400 14px Carlito'),
+          document.fonts.load('italic 700 14px Carlito')
+        ]);
+      }catch(e){ /* fonts not ready, fall back to system font */ }
+    }
+
+    // Render slides sequentially to keep memory predictable
+    for(const sp of meta.slidePaths){
+      try{
+        const svg = await renderSlideToSvg(zip, sp, meta.slideW, meta.slideH);
+        deck.slides.push(svg);
+      }catch(err){
+        const vbW = (meta.slideW / 9525).toFixed(2);
+        const vbH = (meta.slideH / 9525).toFixed(2);
+        deck.slides.push(
+          `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vbW} ${vbH}">`+
+          `<rect width="100%" height="100%" fill="#fff"/>`+
+          `<text x="50%" y="50%" text-anchor="middle" font-size="20" fill="#888">`+
+            escapeHtml('Could not render this slide')+
+          `</text></svg>`
+        );
+      }
+    }
+
+    renderDeckUI();
+  }
+
+  async function handleFile(f){
+    if(!f){ clearAll(); return; }
+    setMeta(f.name);
+    setStatus('Loading…','');
+
+    const buf = await f.arrayBuffer();
+    const name = (f.name||'').toLowerCase();
+
+    try{
+      if(name.endsWith('.xlsx') || name.endsWith('.xlsm')){
+        setTab('xlsx');
+        await handleXlsx(buf);
+      } else if(name.endsWith('.docx')){
+        setTab('docx');
+        await handleDocx(buf);
+      } else if(name.endsWith('.pptx')){
+        setTab('pptx');
+        setStatus('Rendering slides…','');
+        await handlePptx(buf);
+      } else {
+        setStatus('Unsupported file type.','rm-warn');
+        return;
+      }
+      setStatus('Ready.','rm-good');
+    } catch(err){
+      setStatus('Could not preview this file. ' + (err && err.message ? err.message : String(err)), 'rm-bad');
+    }
+  }
+
+  file.addEventListener('change', ()=>handleFile(file.files && file.files[0]));
+})();
+</script>
+
+<script>
+  // Learn more modal
+  (function(){
+    function openLM(id){ var el=document.getElementById(id); if(!el) return; el.setAttribute('aria-hidden','false'); }
+    function closeLM(id){ var el=document.getElementById(id); if(!el) return; el.setAttribute('aria-hidden','true'); }
+    document.addEventListener('click', function(e){
+      var a=e.target.closest('[data-rm-lm-open]');
+      if(a){ e.preventDefault(); openLM(a.getAttribute('data-rm-lm-open')); return; }
+      var c=e.target.closest('[data-rm-lm-close]');
+      if(c){ e.preventDefault(); closeLM(c.getAttribute('data-rm-lm-close')); return; }
+      var bd=(e.target.classList && e.target.classList.contains('rm-lm-backdrop'))?e.target:null;
+      if(bd){ e.preventDefault(); closeLM(bd.id); }
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Escape'){
+        var open=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        if(open) open.setAttribute('aria-hidden','true');
+      }
+    });
+  })();
+</script>
+<script src="/assets/js/rm-dropzone.js"></script>
+<script src="/assets/js/rm-tools-drawer.js"></script>
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6997965e73d8cb1c357e66ee/1jhs26oms';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+</body>
+</html>
