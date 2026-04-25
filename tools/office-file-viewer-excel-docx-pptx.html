@@ -985,6 +985,18 @@
       const top = y + (h-body)/2, bot = top + body;
       const pts = `${px(x+w)},${px(top)} ${px(x+head)},${px(top)} ${px(x+head)},${px(y)} ${px(x)},${px(y+h/2)} ${px(x+head)},${px(y+h)} ${px(x+head)},${px(bot)} ${px(x+w)},${px(bot)}`;
       shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    } else if(prst==='downArrow'){
+      const x = xfrm.x, y = xfrm.y, w = xfrm.cx, h = xfrm.cy;
+      const head = h*0.35, body = w*0.5;
+      const left = x + (w-body)/2, right = left + body;
+      const pts = `${px(left)},${px(y)} ${px(right)},${px(y)} ${px(right)},${px(y+h-head)} ${px(x+w)},${px(y+h-head)} ${px(x+w/2)},${px(y+h)} ${px(x)},${px(y+h-head)} ${px(left)},${px(y+h-head)}`;
+      shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    } else if(prst==='upArrow'){
+      const x = xfrm.x, y = xfrm.y, w = xfrm.cx, h = xfrm.cy;
+      const head = h*0.35, body = w*0.5;
+      const left = x + (w-body)/2, right = left + body;
+      const pts = `${px(left)},${px(y+h)} ${px(right)},${px(y+h)} ${px(right)},${px(y+head)} ${px(x+w)},${px(y+head)} ${px(x+w/2)},${px(y)} ${px(x)},${px(y+head)} ${px(left)},${px(y+head)}`;
+      shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
     } else if(prst==='roundRect' || prst==='round1Rect' || prst==='round2SameRect' || prst==='round2DiagRect'){
       const r = Math.min(xfrm.cx, xfrm.cy) * 0.12;
       shapeSvg = `<rect x="${px(xfrm.x)}" y="${px(xfrm.y)}" width="${px(xfrm.cx)}" height="${px(xfrm.cy)}" rx="${px(r)}" ry="${px(r)}" ${fillStr} ${strokeStr}${transformAttr}/>`;
