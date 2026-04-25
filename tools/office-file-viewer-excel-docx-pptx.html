@@ -605,6 +605,13 @@
     return ({t:'flex-start', ctr:'center', b:'flex-end'})[anchor] || 'flex-start';
   }
 
+  // EMU-to-pixel scale: 9525 EMU = 1 CSS px at 96 DPI. We scale every
+  // coordinate as we emit it so the SVG comes out in a normal pixel range
+  // (small numbers that browsers always handle the same way), with no
+  // viewBox transforms or surprising px-vs-user-unit interpretation.
+  const EMU_PER_PX = 9525;
+  function px(v){ return Math.round((Number(v) || 0) * 100 / EMU_PER_PX) / 100; }
+
   // Approximate width of a single character at the given EMU font size.
   // SVG <text> doesn't auto-wrap, so we estimate widths and wrap manually.
   // Calibrated against Calibri / Segoe UI proportional fonts which render
@@ -784,19 +791,18 @@
       }
 
       // Emit one <text> per visual line, with multiple <tspan> children for
-      // each run. Each tspan re-anchors to the running x so styling changes
-      // don't break the flow. Use SVG presentation attributes (not CSS px)
-      // so the values are interpreted in user units in every renderer.
+      // each run. All coordinates and font sizes are scaled from EMU to
+      // CSS pixels at emit time so the final SVG is in a normal pixel range.
       const tspans = [];
       let runX = xStart;
       for(const r of line.runs){
         if(r.linebreak) continue;
         const fontFamily = (r.font ? r.font + ',' : '') + 'Calibri,Segoe UI,Helvetica,Arial,sans-serif';
         const attrs = [
-          `x="${Math.round(runX)}"`,
-          `y="${Math.round(baselineY)}"`,
+          `x="${px(runX)}"`,
+          `y="${px(baselineY)}"`,
           `fill="${r.color}"`,
-          `font-size="${r.sz}"`,
+          `font-size="${px(r.sz)}"`,
           `font-family="${escapeHtml(fontFamily)}"`
         ];
         if(r.bold) attrs.push('font-weight="700"');
@@ -877,7 +883,7 @@
     const prst = getPresetGeom(spPr) || 'rect';
     const fillStr = fill ? `fill="${fill}"` : 'fill="none"';
     const strokeStr = (line && !line.none && line.color)
-      ? `stroke="${line.color}" stroke-width="${Math.max(line.w, 6350)}"`
+      ? `stroke="${line.color}" stroke-width="${px(Math.max(line.w, 6350))}"`
       : 'stroke="none"';
 
     const isCxn = sp.localName === 'cxnSp';
@@ -887,12 +893,12 @@
     const cyC = xfrm.y + xfrm.cy/2;
     const transforms = [];
     if(xfrm.rot){
-      transforms.push(`rotate(${xfrm.rot} ${cxC} ${cyC})`);
+      transforms.push(`rotate(${xfrm.rot} ${px(cxC)} ${px(cyC)})`);
     }
     if(xfrm.flipH || xfrm.flipV){
       const sx = xfrm.flipH ? -1 : 1;
       const sy = xfrm.flipV ? -1 : 1;
-      transforms.push(`translate(${cxC} ${cyC}) scale(${sx} ${sy}) translate(${-cxC} ${-cyC})`);
+      transforms.push(`translate(${px(cxC)} ${px(cyC)}) scale(${sx} ${sy}) translate(${px(-cxC)} ${px(-cyC)})`);
     }
     const transformAttr = transforms.length ? ` transform="${transforms.join(' ')}"` : '';
 
@@ -904,36 +910,36 @@
       const x2 = xfrm.x + xfrm.cx, y2 = xfrm.y + xfrm.cy;
       const lineColor = (line && !line.none && line.color) ? line.color : '#000000';
       const lineW = Math.max((line && line.w) || 9525, 6350);
-      shapeSvg = `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${lineColor}" stroke-width="${lineW}"${transformAttr}/>`;
+      shapeSvg = `<line x1="${px(x1)}" y1="${px(y1)}" x2="${px(x2)}" y2="${px(y2)}" stroke="${lineColor}" stroke-width="${px(lineW)}"${transformAttr}/>`;
     } else if(prst==='ellipse' || prst==='oval' || prst==='circle'){
       const rx = xfrm.cx/2, ry = xfrm.cy/2;
-      shapeSvg = `<ellipse cx="${cxC}" cy="${cyC}" rx="${rx}" ry="${ry}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+      shapeSvg = `<ellipse cx="${px(cxC)}" cy="${px(cyC)}" rx="${px(rx)}" ry="${px(ry)}" ${fillStr} ${strokeStr}${transformAttr}/>`;
     } else if(prst==='triangle'){
       const x = xfrm.x, y = xfrm.y, w = xfrm.cx, h = xfrm.cy;
-      const pts = `${x+w/2},${y} ${x+w},${y+h} ${x},${y+h}`;
+      const pts = `${px(x+w/2)},${px(y)} ${px(x+w)},${px(y+h)} ${px(x)},${px(y+h)}`;
       shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
     } else if(prst==='diamond'){
       const x = xfrm.x, y = xfrm.y, w = xfrm.cx, h = xfrm.cy;
-      const pts = `${x+w/2},${y} ${x+w},${y+h/2} ${x+w/2},${y+h} ${x},${y+h/2}`;
+      const pts = `${px(x+w/2)},${px(y)} ${px(x+w)},${px(y+h/2)} ${px(x+w/2)},${px(y+h)} ${px(x)},${px(y+h/2)}`;
       shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
     } else if(prst==='rightArrow'){
       const x = xfrm.x, y = xfrm.y, w = xfrm.cx, h = xfrm.cy;
       const head = w*0.35, body = h*0.5;
       const top = y + (h-body)/2, bot = top + body;
-      const pts = `${x},${top} ${x+w-head},${top} ${x+w-head},${y} ${x+w},${y+h/2} ${x+w-head},${y+h} ${x+w-head},${bot} ${x},${bot}`;
+      const pts = `${px(x)},${px(top)} ${px(x+w-head)},${px(top)} ${px(x+w-head)},${px(y)} ${px(x+w)},${px(y+h/2)} ${px(x+w-head)},${px(y+h)} ${px(x+w-head)},${px(bot)} ${px(x)},${px(bot)}`;
       shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
     } else if(prst==='leftArrow'){
       const x = xfrm.x, y = xfrm.y, w = xfrm.cx, h = xfrm.cy;
       const head = w*0.35, body = h*0.5;
       const top = y + (h-body)/2, bot = top + body;
-      const pts = `${x+w},${top} ${x+head},${top} ${x+head},${y} ${x},${y+h/2} ${x+head},${y+h} ${x+head},${bot} ${x+w},${bot}`;
+      const pts = `${px(x+w)},${px(top)} ${px(x+head)},${px(top)} ${px(x+head)},${px(y)} ${px(x)},${px(y+h/2)} ${px(x+head)},${px(y+h)} ${px(x+head)},${px(bot)} ${px(x+w)},${px(bot)}`;
       shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
     } else if(prst==='roundRect' || prst==='round1Rect' || prst==='round2SameRect' || prst==='round2DiagRect'){
       const r = Math.min(xfrm.cx, xfrm.cy) * 0.12;
-      shapeSvg = `<rect x="${xfrm.x}" y="${xfrm.y}" width="${xfrm.cx}" height="${xfrm.cy}" rx="${r}" ry="${r}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+      shapeSvg = `<rect x="${px(xfrm.x)}" y="${px(xfrm.y)}" width="${px(xfrm.cx)}" height="${px(xfrm.cy)}" rx="${px(r)}" ry="${px(r)}" ${fillStr} ${strokeStr}${transformAttr}/>`;
     } else {
       // Default rectangle for unknown preset (covers rect and many others reasonably)
-      shapeSvg = `<rect x="${xfrm.x}" y="${xfrm.y}" width="${xfrm.cx}" height="${xfrm.cy}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+      shapeSvg = `<rect x="${px(xfrm.x)}" y="${px(xfrm.y)}" width="${px(xfrm.cx)}" height="${px(xfrm.cy)}" ${fillStr} ${strokeStr}${transformAttr}/>`;
     }
 
     // Native SVG <text> overlay (no foreignObject - more reliable across browsers)
@@ -963,18 +969,18 @@
     const cxC = xfrm.x + xfrm.cx/2;
     const cyC = xfrm.y + xfrm.cy/2;
     const transforms = [];
-    if(xfrm.rot) transforms.push(`rotate(${xfrm.rot} ${cxC} ${cyC})`);
+    if(xfrm.rot) transforms.push(`rotate(${xfrm.rot} ${px(cxC)} ${px(cyC)})`);
     if(xfrm.flipH || xfrm.flipV){
       const sx = xfrm.flipH ? -1 : 1, sy = xfrm.flipV ? -1 : 1;
-      transforms.push(`translate(${cxC} ${cyC}) scale(${sx} ${sy}) translate(${-cxC} ${-cyC})`);
+      transforms.push(`translate(${px(cxC)} ${px(cyC)}) scale(${sx} ${sy}) translate(${px(-cxC)} ${px(-cyC)})`);
     }
     const transformAttr = transforms.length ? ` transform="${transforms.join(' ')}"` : '';
 
     if(rEmbed && mediaUrls[rEmbed]){
-      return `<image href="${mediaUrls[rEmbed]}" x="${xfrm.x}" y="${xfrm.y}" width="${xfrm.cx}" height="${xfrm.cy}" preserveAspectRatio="xMidYMid meet"${transformAttr}/>`;
+      return `<image href="${mediaUrls[rEmbed]}" x="${px(xfrm.x)}" y="${px(xfrm.y)}" width="${px(xfrm.cx)}" height="${px(xfrm.cy)}" preserveAspectRatio="xMidYMid meet"${transformAttr}/>`;
     }
     // Fallback: draw a placeholder rectangle
-    return `<rect x="${xfrm.x}" y="${xfrm.y}" width="${xfrm.cx}" height="${xfrm.cy}" fill="#E7E6E6" stroke="#9CA3AF" stroke-width="6350"${transformAttr}/>`;
+    return `<rect x="${px(xfrm.x)}" y="${px(xfrm.y)}" width="${px(xfrm.cx)}" height="${px(xfrm.cy)}" fill="#E7E6E6" stroke="#9CA3AF" stroke-width="${px(6350)}"${transformAttr}/>`;
   }
 
   // Render a group <p:grpSp>: we apply a transform that maps the child coordinate
@@ -983,15 +989,17 @@
     const grpSpPr = childByName(grp, NS_P, 'grpSpPr');
     if(!grpSpPr) return '';
     const xfrm = getGroupXfrm(grpSpPr);
-    if(!xfrm) return walkSpTreeChildren(grp, mediaUrls, placeholders); // no transform, just emit children
+    if(!xfrm) return walkSpTreeChildren(grp, mediaUrls, placeholders);
 
+    // Group transforms operate on already-scaled child coords. We scale the
+    // outer translate but leave chOff in EMU because children scale themselves.
     let transform = '';
     if(xfrm.hasChildXfrm && xfrm.chExtX > 0 && xfrm.chExtY > 0){
       const sx = xfrm.cx / xfrm.chExtX;
       const sy = xfrm.cy / xfrm.chExtY;
-      transform = `translate(${xfrm.x} ${xfrm.y}) scale(${sx} ${sy}) translate(${-xfrm.chOffX} ${-xfrm.chOffY})`;
+      transform = `translate(${px(xfrm.x)} ${px(xfrm.y)}) scale(${sx} ${sy}) translate(${px(-xfrm.chOffX)} ${px(-xfrm.chOffY)})`;
     } else {
-      transform = `translate(${xfrm.x} ${xfrm.y})`;
+      transform = `translate(${px(xfrm.x)} ${px(xfrm.y)})`;
     }
 
     return `<g transform="${transform}">` + walkSpTreeChildren(grp, mediaUrls, placeholders) + `</g>`;
@@ -1161,24 +1169,18 @@
     const cSld = doc.getElementsByTagNameNS(NS_P, 'cSld')[0];
     const spTree = cSld ? childByName(cSld, NS_P, 'spTree') : null;
 
-    // Browsers render SVG most reliably when the viewBox is in a normal
-    // pixel range, not millions of EMU. We scale the whole canvas to a
-    // 96-DPI grid (1 px = 9525 EMU) by dividing the viewBox dimensions
-    // and wrapping all EMU-based content in an inverse-scale group, so
-    // every coordinate emitter elsewhere can stay in EMU unchanged.
-    const SCALE = 9525;
-    const vbW = (slideW / SCALE).toFixed(2);
-    const vbH = (slideH / SCALE).toFixed(2);
-    const inv = (1 / SCALE).toFixed(8);
+    // viewBox is in CSS-pixel-equivalent units (EMU / 9525). All coordinate
+    // emitters call px() at emission time so every value in the output is
+    // already in this same pixel range. No transform group, no surprises.
+    const vbW = px(slideW);
+    const vbH = px(slideH);
 
     const parts = [];
     parts.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vbW} ${vbH}" preserveAspectRatio="xMidYMid meet">`);
     parts.push(`<rect x="0" y="0" width="${vbW}" height="${vbH}" fill="${bg}"/>`);
-    parts.push(`<g transform="scale(${inv})">`);
     if(spTree){
       parts.push(walkSpTreeChildren(spTree, mediaUrls, placeholders));
     }
-    parts.push(`</g>`);
     parts.push(`</svg>`);
     return parts.join('');
   }
