@@ -9,6 +9,12 @@
 <link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
 <link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
 <link href="/assets/css/styles.css" rel="stylesheet"/>
+<!-- Carlito is metric-compatible with Calibri: same exact glyph advance
+     widths, so PowerPoint slides authored in Calibri wrap at identical
+     points when rendered in this viewer regardless of host OS. -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Carlito:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet"/>
 <style>
   .rm-tabs{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
   .rm-tabs .btn{border:1px solid rgba(255,255,255,.14)}
@@ -639,7 +645,7 @@
     const ctx = getMeasureCtx();
     if(ctx){
       const szPx = szEmu / EMU_PER_PX;
-      const family = (fontName ? fontName + ',' : '') + 'Calibri,Segoe UI,Helvetica,Arial,sans-serif';
+      const family = (fontName ? fontName + ',' : '') + 'Calibri,Carlito,Segoe UI,Helvetica,Arial,sans-serif';
       const style = italic ? 'italic ' : '';
       const weight = bold ? '700 ' : '400 ';
       ctx.font = style + weight + szPx + 'px ' + family;
@@ -718,13 +724,11 @@
         const tokW = approxRunWidth(tok, run.sz, run.bold, run.italic, run.font);
         // If a leading space and we're at line start, drop it.
         if(/^\s+$/.test(tok) && curW === 0) continue;
-        // 10% slack absorbs the difference between Calibri (which PowerPoint
-        // uses) and whatever fallback font the browser actually paints with
-        // (Helvetica, Liberation Sans, system-ui, etc.) which can be 5-12%
-        // wider per character. Without this slack, body paragraphs wrap
-        // one or two words earlier than PowerPoint does, adding an extra
-        // line that the original layout never anticipated.
-        if(curW > 0 && curW + tokW > maxWidth * 1.10 && !/^\s+$/.test(tok)){
+        // 4% slack absorbs sub-pixel rounding between canvas measurement
+        // and the SVG glyph rendering pipeline. With Carlito loaded as the
+        // Calibri-metric-compatible substitute, advance widths are accurate
+        // to the original deck, so we don't need much margin.
+        if(curW > 0 && curW + tokW > maxWidth * 1.04 && !/^\s+$/.test(tok)){
           flushLine();
         }
         if(curW === 0 && /^\s+$/.test(tok)) continue;
@@ -844,7 +848,7 @@
       let runX = xStart;
       for(const r of line.runs){
         if(r.linebreak) continue;
-        const fontFamily = (r.font ? r.font + ',' : '') + 'Calibri,Segoe UI,Helvetica,Arial,sans-serif';
+        const fontFamily = (r.font ? r.font + ',' : '') + 'Calibri,Carlito,Segoe UI,Helvetica,Arial,sans-serif';
         const attrs = [
           `x="${px(runX)}"`,
           `y="${px(baselineY)}"`,
@@ -1431,6 +1435,21 @@
     if(!meta.slidePaths.length){
       $('pptxView').innerHTML = '<div class="tiny muted">No slides found in this PPTX.</div>';
       return;
+    }
+
+    // Wait for Carlito (the Calibri-metric-compatible web font) to load
+    // before any canvas measurement runs, so wrap math reflects the actual
+    // rendered glyph widths from the first slide on, not whatever fallback
+    // happened to be active when the user uploaded the file.
+    if(typeof document !== 'undefined' && document.fonts && document.fonts.load){
+      try{
+        await Promise.all([
+          document.fonts.load('400 14px Carlito'),
+          document.fonts.load('700 14px Carlito'),
+          document.fonts.load('italic 400 14px Carlito'),
+          document.fonts.load('italic 700 14px Carlito')
+        ]);
+      }catch(e){ /* fonts not ready, fall back to system font */ }
     }
 
     // Render slides sequentially to keep memory predictable
