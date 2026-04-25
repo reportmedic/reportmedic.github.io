@@ -1161,12 +1161,24 @@
     const cSld = doc.getElementsByTagNameNS(NS_P, 'cSld')[0];
     const spTree = cSld ? childByName(cSld, NS_P, 'spTree') : null;
 
+    // Browsers render SVG most reliably when the viewBox is in a normal
+    // pixel range, not millions of EMU. We scale the whole canvas to a
+    // 96-DPI grid (1 px = 9525 EMU) by dividing the viewBox dimensions
+    // and wrapping all EMU-based content in an inverse-scale group, so
+    // every coordinate emitter elsewhere can stay in EMU unchanged.
+    const SCALE = 9525;
+    const vbW = (slideW / SCALE).toFixed(2);
+    const vbH = (slideH / SCALE).toFixed(2);
+    const inv = (1 / SCALE).toFixed(8);
+
     const parts = [];
-    parts.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${slideW} ${slideH}" preserveAspectRatio="xMidYMid meet">`);
-    parts.push(`<rect x="0" y="0" width="${slideW}" height="${slideH}" fill="${bg}"/>`);
+    parts.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vbW} ${vbH}" preserveAspectRatio="xMidYMid meet">`);
+    parts.push(`<rect x="0" y="0" width="${vbW}" height="${vbH}" fill="${bg}"/>`);
+    parts.push(`<g transform="scale(${inv})">`);
     if(spTree){
       parts.push(walkSpTreeChildren(spTree, mediaUrls, placeholders));
     }
+    parts.push(`</g>`);
     parts.push(`</svg>`);
     return parts.join('');
   }
@@ -1378,10 +1390,12 @@
         const svg = await renderSlideToSvg(zip, sp, meta.slideW, meta.slideH);
         deck.slides.push(svg);
       }catch(err){
+        const vbW = (meta.slideW / 9525).toFixed(2);
+        const vbH = (meta.slideH / 9525).toFixed(2);
         deck.slides.push(
-          `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${meta.slideW} ${meta.slideH}">`+
+          `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vbW} ${vbH}">`+
           `<rect width="100%" height="100%" fill="#fff"/>`+
-          `<text x="50%" y="50%" text-anchor="middle" font-size="200000" fill="#888">`+
+          `<text x="50%" y="50%" text-anchor="middle" font-size="20" fill="#888">`+
             escapeHtml('Could not render this slide')+
           `</text></svg>`
         );
