@@ -718,10 +718,13 @@
         const tokW = approxRunWidth(tok, run.sz, run.bold, run.italic, run.font);
         // If a leading space and we're at line start, drop it.
         if(/^\s+$/.test(tok) && curW === 0) continue;
-        // 3% slack absorbs sub-pixel disagreement between canvas measurement
-        // and the actual SVG glyph rendering, so a token that fits visually
-        // doesn't get pushed to a new line over a rounding error.
-        if(curW > 0 && curW + tokW > maxWidth * 1.03 && !/^\s+$/.test(tok)){
+        // 10% slack absorbs the difference between Calibri (which PowerPoint
+        // uses) and whatever fallback font the browser actually paints with
+        // (Helvetica, Liberation Sans, system-ui, etc.) which can be 5-12%
+        // wider per character. Without this slack, body paragraphs wrap
+        // one or two words earlier than PowerPoint does, adding an extra
+        // line that the original layout never anticipated.
+        if(curW > 0 && curW + tokW > maxWidth * 1.10 && !/^\s+$/.test(tok)){
           flushLine();
         }
         if(curW === 0 && /^\s+$/.test(tok)) continue;
