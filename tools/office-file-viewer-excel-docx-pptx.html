@@ -614,21 +614,22 @@
 
   // Approximate width of a single character at the given EMU font size.
   // SVG <text> doesn't auto-wrap, so we estimate widths and wrap manually.
-  // Calibrated against Calibri / Segoe UI proportional fonts which render
-  // at about 0.48 ex-width per em for an average char; bold is ~6% wider.
+  // Calibrated against actual Calibri advance widths: average lowercase
+  // letter advance is ~0.45 of em for both regular and bold (bold strokes
+  // are thicker but advance widths are nearly identical in Calibri).
   function approxCharWidth(sz, bold){
-    return sz * (bold ? 0.52 : 0.48);
+    return sz * (bold ? 0.47 : 0.45);
   }
   function approxRunWidth(text, sz, bold){
     let w = 0;
     for(let i=0;i<text.length;i++){
       const ch = text.charCodeAt(i);
-      // Narrow chars: i l . , ; : ! ' ` | space
-      if(ch===32 || ch===46 || ch===44 || ch===59 || ch===58 || ch===33 || ch===39 || ch===96 || ch===124 || ch===108 || ch===105){
-        w += sz * (bold ? 0.30 : 0.26);
+      // Narrow chars: i l . , ; : ! ' ` | space t f j
+      if(ch===32 || ch===46 || ch===44 || ch===59 || ch===58 || ch===33 || ch===39 || ch===96 || ch===124 || ch===108 || ch===105 || ch===116 || ch===102 || ch===106){
+        w += sz * (bold ? 0.27 : 0.25);
       } else if(ch===87 || ch===77 || ch===109 || ch===119){
         // Wide chars W M m w
-        w += sz * (bold ? 0.82 : 0.76);
+        w += sz * (bold ? 0.78 : 0.74);
       } else {
         w += approxCharWidth(sz, bold);
       }
@@ -743,7 +744,7 @@
       if(!runs.length){
         // Empty paragraph still occupies a line of default size
         const sz = defaultPhSize(phType);
-        visualLines.push({ runs:[], algn, indent, lineHeight: sz * 1.2, maxSize: sz, isEmpty:true });
+        visualLines.push({ runs:[], algn, indent, lineHeight: sz * 1.0, maxSize: sz, isEmpty:true });
         continue;
       }
       const availW = wrap ? Math.max(innerW - indent, 1) : Number.MAX_SAFE_INTEGER;
@@ -752,7 +753,7 @@
         let maxSz = 0;
         for(const r of line){ if(!r.linebreak && r.sz > maxSz) maxSz = r.sz; }
         if(!maxSz) maxSz = defaultPhSize(phType);
-        visualLines.push({ runs: line, algn, indent, lineHeight: maxSz * 1.2, maxSize: maxSz, isEmpty: line.length===0 });
+        visualLines.push({ runs: line, algn, indent, lineHeight: maxSz * 1.0, maxSize: maxSz, isEmpty: line.length===0 });
       }
     }
     if(!visualLines.length) return '';
@@ -769,8 +770,9 @@
 
     const parts = [];
     for(const line of visualLines){
-      // Move cursor down by full line height; baseline sits ~0.85 down the line box
-      const baselineY = cursorY + line.maxSize * 0.95;
+      // Move cursor down by full line height; baseline sits at cap-height of
+      // the em box (PowerPoint and most fonts: ~0.80 of em from top).
+      const baselineY = cursorY + line.maxSize * 0.80;
       cursorY += line.lineHeight;
       if(line.isEmpty) continue;
 
