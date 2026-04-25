@@ -76,6 +76,36 @@
     font-size:10px; padding:1px 5px; border-radius:8px;
     background:rgba(0,0,0,.55); color:#fff; font-weight:700;
   }
+  /* Drag-to-reorder + delete on thumbnails. The whole thumbnail is
+     draggable; the small × button in the top-right deletes that slide
+     from the deck. Both operations mutate deck.slides plus the parallel
+     deck.slidePaths array, then re-render. */
+  .rm-thumb{user-select:none;}
+  .rm-thumb.is-dragging{opacity:.35;}
+  .rm-thumb.is-drop-target{outline:2px dashed var(--brand2, #7cf7d4); outline-offset:2px;}
+  .rm-thumb-del{
+    position:absolute; top:3px; right:3px;
+    width:20px; height:20px; padding:0; border:0;
+    border-radius:50%;
+    background:rgba(180,30,50,.92); color:#fff;
+    font-size:13px; line-height:1; font-weight:700;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    opacity:0; transition:opacity .12s ease;
+  }
+  .rm-thumb:hover .rm-thumb-del{opacity:1;}
+  .rm-thumb-del:hover{background:rgb(220,38,60);}
+  .rm-deck-controls .rm-edit-group{
+    display:flex; gap:6px; align-items:center;
+    padding-left:10px; border-left:1px solid rgba(255,255,255,.12);
+    margin-left:4px;
+  }
+  .rm-dirty-pill{
+    font-size:.78rem; font-weight:700; padding:2px 8px; border-radius:999px;
+    background:rgba(255,193,7,.18); color:#ffd54f;
+    border:1px solid rgba(255,193,7,.35);
+    display:none;
+  }
+  .rm-dirty-pill.is-on{display:inline-block;}
 
   /* Presentation (fullscreen) overlay */
   .rm-present{
@@ -399,6 +429,11 @@
     setMeta(null);
     setTab('xlsx');
     deck.slides = [];
+    deck.slidePaths = [];
+    deck.rIdByPath = {};
+    deck.zip = null;
+    deck.fileName = 'presentation.pptx';
+    deck.dirty = false;
     deck.index = 0;
   }
   $('clear').onclick=clearAll;
@@ -1252,6 +1287,7 @@
   async function loadPresentationMeta(zip){
     let slideW = DEFAULT_W, slideH = DEFAULT_H;
     let ordered = [];
+    const rIdByPath = {};
 
     const presFile = zip.file('ppt/presentation.xml');
     const presRelsFile = zip.file('ppt/_rels/presentation.xml.rels');
@@ -1277,7 +1313,9 @@
             const rid = sld.getAttributeNS(NS_R, 'id');
             const target = map[rid];
             if(target){
-              ordered.push(resolvePath('ppt/presentation.xml', target));
+              const path = resolvePath('ppt/presentation.xml', target);
+              ordered.push(path);
+              rIdByPath[path] = rid;
             }
           }
         }
@@ -1294,11 +1332,27 @@
         });
     }
 
-    return { slideW, slideH, slidePaths: ordered };
+    return { slideW, slideH, slidePaths: ordered, rIdByPath };
   }
 
   // === Deck state and UI ===
-  const deck = { slides: [], index: 0, slideW: DEFAULT_W, slideH: DEFAULT_H };
+  // For Level 2 editing (reorder/delete + export to .pptx), we keep the
+  // original JSZip instance, the original slide paths in zip-relative form,
+  // and a parallel array indexing into them. deck.slides[i] (rendered SVG)
+  // and deck.slidePaths[i] (e.g. "ppt/slides/slide6.xml") stay in lock-step
+  // through every reorder and delete, so the export step just needs to
+  // rewrite presentation.xml's sldIdLst in deck.slidePaths order.
+  const deck = {
+    slides: [],
+    slidePaths: [],
+    rIdByPath: {},     // "ppt/slides/slide6.xml" -> "rId8" (from presentation rels)
+    zip: null,
+    fileName: 'presentation.pptx',
+    dirty: false,
+    index: 0,
+    slideW: DEFAULT_W,
+    slideH: DEFAULT_H
+  };
 
   function renderDeckUI(){
     const total = deck.slides.length;
@@ -1316,10 +1370,19 @@
           <button class="btn" type="button" id="rmNext">Next &raquo;</button>
           <button class="btn" type="button" id="rmLast">&raquo;&raquo;</button>
           <span class="rm-spacer"></span>
+          <span class="rm-dirty-pill" id="rmDirty" title="You have unsaved edits to slide order or count">edited</span>
+          <div class="rm-edit-group">
+            <button class="btn" type="button" id="rmReset" title="Discard edits and restore original deck order">Reset</button>
+            <button class="btn primary" type="button" id="rmExport" title="Download a new .pptx with your reordered/deleted slides">⬇ Download .pptx</button>
+          </div>
+          <span class="rm-spacer"></span>
           <button class="btn primary" type="button" id="rmPresentBtn">▶ Present</button>
         </div>
         <div class="rm-stage-wrap">
           <div class="rm-stage" id="rmStage"></div>
+        </div>
+        <div class="tiny muted" style="margin:6px 2px 4px; padding:0 2px;">
+          Drag thumbnails to reorder. Hover a thumbnail and click × to delete. Then click Download .pptx.
         </div>
         <div class="rm-thumbs" id="rmThumbs"></div>
       </div>
@@ -1331,20 +1394,280 @@
     $('rmNext').onclick  = ()=>goTo(deck.index+1);
     $('rmLast').onclick  = ()=>goTo(total-1);
     $('rmPresentBtn').onclick = openPresent;
+    $('rmReset').onclick = onResetClick;
+    $('rmExport').onclick = onExportClick;
 
-    // Build thumbs
+    rebuildThumbs();
+    refreshDirtyUI();
+    goTo(Math.min(deck.index, deck.slides.length-1));
+  }
+
+  // Build the thumbnail strip from deck.slides + deck.slidePaths. Called
+  // on initial render and after every reorder/delete so DOM stays in sync.
+  function rebuildThumbs(){
     const thumbs = $('rmThumbs');
-    for(let i=0;i<total;i++){
-      const t = document.createElement('button');
+    if(!thumbs) return;
+    thumbs.innerHTML = '';
+    for(let i=0;i<deck.slides.length;i++){
+      const t = document.createElement('div');
       t.className = 'rm-thumb' + (i===deck.index ? ' is-active' : '');
       t.dataset.idx = String(i);
-      t.type = 'button';
-      t.innerHTML = deck.slides[i] + `<span class="rm-thumb-label">${i+1}</span>`;
-      t.addEventListener('click', ()=>goTo(i));
+      t.setAttribute('draggable','true');
+      t.innerHTML =
+        deck.slides[i] +
+        `<span class="rm-thumb-label">${i+1}</span>` +
+        `<button class="rm-thumb-del" type="button" title="Delete this slide" aria-label="Delete slide ${i+1}">×</button>`;
+      t.addEventListener('click', (e)=>{
+        if(e.target && e.target.classList.contains('rm-thumb-del')) return;
+        goTo(i);
+      });
+      const delBtn = t.querySelector('.rm-thumb-del');
+      delBtn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        onDeleteSlide(i);
+      });
+      // Drag to reorder
+      t.addEventListener('dragstart', (e)=>{
+        t.classList.add('is-dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', String(i));
+      });
+      t.addEventListener('dragend', ()=>{
+        t.classList.remove('is-dragging');
+        for(const el of thumbs.querySelectorAll('.rm-thumb.is-drop-target')){
+          el.classList.remove('is-drop-target');
+        }
+      });
+      t.addEventListener('dragover', (e)=>{
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        t.classList.add('is-drop-target');
+      });
+      t.addEventListener('dragleave', ()=>{
+        t.classList.remove('is-drop-target');
+      });
+      t.addEventListener('drop', (e)=>{
+        e.preventDefault();
+        const fromStr = e.dataTransfer.getData('text/plain');
+        const from = parseInt(fromStr, 10);
+        const to = parseInt(t.dataset.idx, 10);
+        if(Number.isFinite(from) && Number.isFinite(to) && from !== to){
+          onReorderSlide(from, to);
+        }
+      });
       thumbs.appendChild(t);
     }
+  }
 
-    goTo(0);
+  function refreshDirtyUI(){
+    const pill = $('rmDirty');
+    if(pill) pill.classList.toggle('is-on', !!deck.dirty);
+    const exp = $('rmExport');
+    if(exp) exp.disabled = false;
+  }
+
+  function markDirty(){
+    deck.dirty = true;
+    refreshDirtyUI();
+  }
+
+  function onDeleteSlide(i){
+    if(deck.slides.length <= 1){
+      setStatus('A presentation must have at least one slide.', 'rm-warn');
+      return;
+    }
+    if(!confirm(`Delete slide ${i+1}? This affects only the download. The original file on disk is untouched until you save.`)){
+      return;
+    }
+    deck.slides.splice(i, 1);
+    deck.slidePaths.splice(i, 1);
+    if(deck.index >= deck.slides.length) deck.index = deck.slides.length - 1;
+    markDirty();
+    rebuildThumbs();
+    goTo(deck.index);
+    updateCounter();
+  }
+
+  function onReorderSlide(from, to){
+    if(from < 0 || to < 0 || from >= deck.slides.length || to >= deck.slides.length) return;
+    const [movedSvg]  = deck.slides.splice(from, 1);
+    const [movedPath] = deck.slidePaths.splice(from, 1);
+    deck.slides.splice(to, 0, movedSvg);
+    deck.slidePaths.splice(to, 0, movedPath);
+    // Keep current view on the slide the user just moved
+    deck.index = to;
+    markDirty();
+    rebuildThumbs();
+    goTo(deck.index);
+    updateCounter();
+  }
+
+  function updateCounter(){
+    const c = $('rmCounter');
+    if(c) c.textContent = `${deck.index+1} / ${deck.slides.length}`;
+  }
+
+  async function onResetClick(){
+    if(!deck.dirty) return;
+    if(!confirm('Discard your edits and restore the original slide order?')) return;
+    if(!deck.zip) return;
+    setStatus('Restoring original order…','');
+    try{
+      const meta = await loadPresentationMeta(deck.zip);
+      deck.slidePaths = meta.slidePaths.slice();
+      deck.rIdByPath = meta.rIdByPath || {};
+      // Re-render slides in original order
+      deck.slides = [];
+      for(const sp of meta.slidePaths){
+        try{
+          const svg = await renderSlideToSvg(deck.zip, sp, meta.slideW, meta.slideH);
+          deck.slides.push(svg);
+        }catch(_){
+          deck.slides.push('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+        }
+      }
+      deck.dirty = false;
+      deck.index = 0;
+      renderDeckUI();
+      setStatus('Restored.','rm-good');
+    }catch(err){
+      setStatus('Could not restore: ' + (err && err.message || err), 'rm-bad');
+    }
+  }
+
+  // === Level 2: Export modified .pptx ===
+  // The slide files inside ppt/slides/ keep their original paths and rIds.
+  // We rewrite three files to express the user's edits:
+  //   1. ppt/presentation.xml        -> reorder/remove <p:sldId> entries in <p:sldIdLst>
+  //   2. ppt/_rels/presentation.xml.rels -> drop relationships for deleted slides
+  //   3. [Content_Types].xml         -> drop Override entries for deleted slide parts
+  // PowerPoint determines slide order from sldIdLst order, not filename, so
+  // no slide file needs to be renamed.
+  async function onExportClick(){
+    if(!deck.zip){
+      setStatus('No deck loaded to export.','rm-warn');
+      return;
+    }
+    setStatus('Building modified .pptx…','');
+    try{
+      // Snapshot the surviving paths and the rIds they keep.
+      const keptPaths = deck.slidePaths.slice();
+      const keptRIds = new Set();
+      for(const p of keptPaths){
+        const rid = deck.rIdByPath[p];
+        if(rid) keptRIds.add(rid);
+      }
+
+      // Clone the zip so user can re-export multiple times without state damage.
+      const newZip = await deck.zip.generateAsync({type:'arraybuffer'}).then(ab=>JSZip.loadAsync(ab));
+
+      // (1) Rewrite ppt/presentation.xml: reorder sldId entries to match keptPaths order.
+      const presFile = newZip.file('ppt/presentation.xml');
+      const presRelsFile = newZip.file('ppt/_rels/presentation.xml.rels');
+      if(!presFile || !presRelsFile) throw new Error('Presentation parts missing in zip.');
+
+      const presXml = await presFile.async('text');
+      const presDoc = new DOMParser().parseFromString(presXml, 'application/xml');
+      const sldIdLst = presDoc.getElementsByTagNameNS(NS_P, 'sldIdLst')[0];
+      if(!sldIdLst) throw new Error('No sldIdLst found in presentation.xml.');
+
+      // Build map of existing rId -> sldId element (so we can preserve original
+      // id attributes), then clear the list and re-insert in keptPaths order.
+      const existingByRid = {};
+      const existingChildren = Array.from(sldIdLst.getElementsByTagNameNS(NS_P, 'sldId'));
+      for(const el of existingChildren){
+        const rid = el.getAttributeNS(NS_R, 'id');
+        if(rid) existingByRid[rid] = el;
+        sldIdLst.removeChild(el);
+      }
+      // Re-append in user's chosen order.
+      for(const path of keptPaths){
+        const rid = deck.rIdByPath[path];
+        if(!rid) continue;
+        const node = existingByRid[rid];
+        if(node) sldIdLst.appendChild(node);
+      }
+      const newPresXml = serializeXml(presDoc);
+      newZip.file('ppt/presentation.xml', newPresXml);
+
+      // (2) Rewrite ppt/_rels/presentation.xml.rels: drop relationships pointing
+      //     to deleted slides. Keep all non-slide rels (slide masters, theme,
+      //     notesMaster, etc) untouched.
+      const relsXml = await presRelsFile.async('text');
+      const relsDoc = new DOMParser().parseFromString(relsXml, 'application/xml');
+      const relRoot = relsDoc.documentElement;
+      const SLIDE_REL_TYPE = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide';
+      const relsToRemove = [];
+      for(const rel of Array.from(relRoot.getElementsByTagName('Relationship'))){
+        if(rel.getAttribute('Type') === SLIDE_REL_TYPE){
+          const id = rel.getAttribute('Id');
+          if(!keptRIds.has(id)) relsToRemove.push(rel);
+        }
+      }
+      for(const r of relsToRemove) relRoot.removeChild(r);
+      newZip.file('ppt/_rels/presentation.xml.rels', serializeXml(relsDoc));
+
+      // (3) Rewrite [Content_Types].xml: drop Override entries for deleted slide parts.
+      const ctFile = newZip.file('[Content_Types].xml');
+      if(ctFile){
+        const ctXml = await ctFile.async('text');
+        const ctDoc = new DOMParser().parseFromString(ctXml, 'application/xml');
+        const ctRoot = ctDoc.documentElement;
+        // Build set of kept slide PartNames (PartName uses leading "/")
+        const keptParts = new Set(keptPaths.map(p=>'/'+p));
+        const overridesToRemove = [];
+        for(const ov of Array.from(ctRoot.getElementsByTagName('Override'))){
+          const ct = ov.getAttribute('ContentType') || '';
+          // Only touch Override entries for slide parts; leave masters/themes alone.
+          if(ct === 'application/vnd.openxmlformats-officedocument.presentationml.slide+xml'){
+            const part = ov.getAttribute('PartName');
+            if(!keptParts.has(part)) overridesToRemove.push(ov);
+          }
+        }
+        for(const ov of overridesToRemove) ctRoot.removeChild(ov);
+        newZip.file('[Content_Types].xml', serializeXml(ctDoc));
+      }
+
+      // (4) Remove the deleted slide files themselves and their per-slide rels
+      //     so the output zip stays clean. PowerPoint tolerates orphan files
+      //     but cleaner output keeps file size down and avoids validator noise.
+      const survivingPathsSet = new Set(keptPaths);
+      for(const path of Object.keys(newZip.files)){
+        if(/^ppt\/slides\/slide\d+\.xml$/.test(path) && !survivingPathsSet.has(path)){
+          newZip.remove(path);
+          newZip.remove('ppt/slides/_rels/' + path.split('/').pop() + '.rels');
+        }
+      }
+
+      const blob = await newZip.generateAsync({
+        type:'blob',
+        mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        compression:'DEFLATE',
+        compressionOptions:{level:6}
+      });
+      const baseName = (deck.fileName||'presentation.pptx').replace(/\.pptx$/i,'') + '-edited.pptx';
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = baseName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url), 4000);
+      setStatus('Downloaded ' + baseName, 'rm-good');
+    }catch(err){
+      setStatus('Export failed: ' + (err && err.message || err), 'rm-bad');
+    }
+  }
+
+  function serializeXml(doc){
+    let s = new XMLSerializer().serializeToString(doc);
+    // Strip any existing XML declaration and any leading whitespace/BOM,
+    // then prepend a canonical UTF-8 declaration. PowerPoint and Keynote
+    // both accept any well-formed declaration, but writing it consistently
+    // makes diffs and validators happy.
+    s = s.replace(/^\uFEFF/, '').replace(/^\s*<\?xml[^?]*\?>\s*/, '');
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + s;
   }
 
   function goTo(i){
@@ -1443,12 +1766,17 @@
     }
   });
 
-  async function handlePptx(buf){
+  async function handlePptx(buf, fileName){
     const zip = await JSZip.loadAsync(buf);
     const meta = await loadPresentationMeta(zip);
     deck.slideW = meta.slideW;
     deck.slideH = meta.slideH;
     deck.slides = [];
+    deck.slidePaths = meta.slidePaths.slice();
+    deck.rIdByPath = meta.rIdByPath || {};
+    deck.zip = zip;
+    deck.fileName = fileName || 'presentation.pptx';
+    deck.dirty = false;
     deck.index = 0;
 
     if(!meta.slidePaths.length){
@@ -1510,7 +1838,7 @@
       } else if(name.endsWith('.pptx')){
         setTab('pptx');
         setStatus('Rendering slides…','');
-        await handlePptx(buf);
+        await handlePptx(buf, f.name);
       } else {
         setStatus('Unsupported file type.','rm-warn');
         return;
