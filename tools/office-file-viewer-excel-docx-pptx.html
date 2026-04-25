@@ -724,11 +724,12 @@
         const tokW = approxRunWidth(tok, run.sz, run.bold, run.italic, run.font);
         // If a leading space and we're at line start, drop it.
         if(/^\s+$/.test(tok) && curW === 0) continue;
-        // 4% slack absorbs sub-pixel rounding between canvas measurement
-        // and the SVG glyph rendering pipeline. With Carlito loaded as the
-        // Calibri-metric-compatible substitute, advance widths are accurate
-        // to the original deck, so we don't need much margin.
-        if(curW > 0 && curW + tokW > maxWidth * 1.04 && !/^\s+$/.test(tok)){
+        // No slack: with Carlito loaded as the Calibri metric-compatible
+        // substitute, canvas measurement matches the SVG glyph rendering
+        // exactly, so any token whose addition would push the running
+        // line past the available width must wrap. Slack here only causes
+        // visual overflow at the right edge of the frame.
+        if(curW > 0 && curW + tokW > maxWidth && !/^\s+$/.test(tok)){
           flushLine();
         }
         if(curW === 0 && /^\s+$/.test(tok)) continue;
