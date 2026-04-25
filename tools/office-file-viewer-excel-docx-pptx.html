@@ -718,7 +718,10 @@
         const tokW = approxRunWidth(tok, run.sz, run.bold, run.italic, run.font);
         // If a leading space and we're at line start, drop it.
         if(/^\s+$/.test(tok) && curW === 0) continue;
-        if(curW > 0 && curW + tokW > maxWidth && !/^\s+$/.test(tok)){
+        // 3% slack absorbs sub-pixel disagreement between canvas measurement
+        // and the actual SVG glyph rendering, so a token that fits visually
+        // doesn't get pushed to a new line over a rounding error.
+        if(curW > 0 && curW + tokW > maxWidth * 1.03 && !/^\s+$/.test(tok)){
           flushLine();
         }
         if(curW === 0 && /^\s+$/.test(tok)) continue;
@@ -775,7 +778,18 @@
         visualLines.push({ runs:[], algn, indent, lineHeight: sz * 1.0, maxSize: sz, isEmpty:true });
         continue;
       }
-      const availW = wrap ? Math.max(innerW - indent, 1) : Number.MAX_SAFE_INTEGER;
+      // Heuristic: if the frame height is barely larger than the largest
+      // font in this paragraph, the frame was sized for single-line content
+      // (PowerPoint's default for label shapes like "Manual review time"
+      // sized to cy=274320 EMU around a 14pt run). In that case, skip the
+      // word-wrap entirely so the text never breaks even if the canvas
+      // measurement disagrees with the actual rendering by a few pixels.
+      let maxRunSz = 0;
+      for(const r of runs){ if(r.sz && r.sz > maxRunSz) maxRunSz = r.sz; }
+      if(!maxRunSz) maxRunSz = defaultPhSize(phType);
+      const looksSingleLine = innerH < maxRunSz * 1.6;
+
+      const availW = (wrap && !looksSingleLine) ? Math.max(innerW - indent, 1) : Number.MAX_SAFE_INTEGER;
       const wrapped = wrapRuns(runs, availW);
       for(const line of wrapped){
         let maxSz = 0;
