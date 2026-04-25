@@ -612,29 +612,57 @@
   const EMU_PER_PX = 9525;
   function px(v){ return Math.round((Number(v) || 0) * 100 / EMU_PER_PX) / 100; }
 
-  // Approximate width of a single character at the given EMU font size.
-  // SVG <text> doesn't auto-wrap, so we estimate widths and wrap manually.
-  // Calibrated against actual Calibri advance widths: average lowercase
-  // letter advance is ~0.45 of em for both regular and bold (bold strokes
-  // are thicker but advance widths are nearly identical in Calibri).
-  function approxCharWidth(sz, bold){
-    return sz * (bold ? 0.47 : 0.45);
+  // Real text width measurement using the browser's canvas API. Falls back
+  // to a per-character estimation only when canvas is unavailable (e.g.
+  // server-side test runs). The browser path is byte-accurate for whatever
+  // font the page actually renders with, which is what we need for wrapping.
+  let _measureCtx = null;
+  let _measureCtxTried = false;
+  function getMeasureCtx(){
+    if(_measureCtxTried) return _measureCtx;
+    _measureCtxTried = true;
+    try{
+      if(typeof document !== 'undefined'){
+        const c = document.createElement('canvas');
+        _measureCtx = c.getContext('2d');
+      }
+    }catch(e){ _measureCtx = null; }
+    return _measureCtx;
   }
-  function approxRunWidth(text, sz, bold){
+
+  // Measure the rendered width of a text run, returned in EMU units so it
+  // composes with the rest of the renderer's coordinate math. Caller passes
+  // EMU font size and the run's font/bold/italic so the canvas font string
+  // matches what the SVG <tspan> will end up rendering.
+  function approxRunWidth(text, szEmu, bold, italic, fontName){
+    if(!text) return 0;
+    const ctx = getMeasureCtx();
+    if(ctx){
+      const szPx = szEmu / EMU_PER_PX;
+      const family = (fontName ? fontName + ',' : '') + 'Calibri,Segoe UI,Helvetica,Arial,sans-serif';
+      const style = italic ? 'italic ' : '';
+      const weight = bold ? '700 ' : '400 ';
+      ctx.font = style + weight + szPx + 'px ' + family;
+      const wPx = ctx.measureText(text).width;
+      return wPx * EMU_PER_PX;
+    }
+    // Fallback estimation (Node test sandbox): tuned for Calibri proportions.
     let w = 0;
     for(let i=0;i<text.length;i++){
       const ch = text.charCodeAt(i);
-      // Narrow chars: i l . , ; : ! ' ` | space t f j
       if(ch===32 || ch===46 || ch===44 || ch===59 || ch===58 || ch===33 || ch===39 || ch===96 || ch===124 || ch===108 || ch===105 || ch===116 || ch===102 || ch===106){
-        w += sz * (bold ? 0.27 : 0.25);
+        w += szEmu * (bold ? 0.30 : 0.28);
       } else if(ch===87 || ch===77 || ch===109 || ch===119){
-        // Wide chars W M m w
-        w += sz * (bold ? 0.78 : 0.74);
+        w += szEmu * (bold ? 0.82 : 0.78);
       } else {
-        w += approxCharWidth(sz, bold);
+        w += szEmu * (bold ? 0.50 : 0.48);
       }
     }
     return w;
+  }
+  // Kept for older callers; no longer used in width math directly.
+  function approxCharWidth(sz, bold){
+    return sz * (bold ? 0.50 : 0.48);
   }
 
   // Collect runs from a paragraph element into normalized records.
@@ -687,7 +715,7 @@
       const tokens = run.text.split(/(\s+)/);
       for(const tok of tokens){
         if(!tok) continue;
-        const tokW = approxRunWidth(tok, run.sz, run.bold);
+        const tokW = approxRunWidth(tok, run.sz, run.bold, run.italic, run.font);
         // If a leading space and we're at line start, drop it.
         if(/^\s+$/.test(tok) && curW === 0) continue;
         if(curW > 0 && curW + tokW > maxWidth && !/^\s+$/.test(tok)){
@@ -780,7 +808,7 @@
       let lineW = 0;
       for(const r of line.runs){
         if(r.linebreak) continue;
-        lineW += approxRunWidth(r.text, r.sz, r.bold);
+        lineW += approxRunWidth(r.text, r.sz, r.bold, r.italic, r.font);
       }
 
       let xStart;
@@ -811,7 +839,7 @@
         if(r.italic) attrs.push('font-style="italic"');
         if(r.underline) attrs.push('text-decoration="underline"');
         tspans.push(`<tspan ${attrs.join(' ')}>${escapeHtml(r.text)}</tspan>`);
-        runX += approxRunWidth(r.text, r.sz, r.bold);
+        runX += approxRunWidth(r.text, r.sz, r.bold, r.italic, r.font);
       }
       if(tspans.length){
         parts.push(`<text>${tspans.join('')}</text>`);
