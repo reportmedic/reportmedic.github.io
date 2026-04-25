@@ -1316,7 +1316,7 @@
           <button class="btn" type="button" id="rmNext">Next &raquo;</button>
           <button class="btn" type="button" id="rmLast">&raquo;&raquo;</button>
           <span class="rm-spacer"></span>
-          <button class="btn primary" type="button" id="rmPresent">▶ Present</button>
+          <button class="btn primary" type="button" id="rmPresentBtn">▶ Present</button>
         </div>
         <div class="rm-stage-wrap">
           <div class="rm-stage" id="rmStage"></div>
@@ -1330,7 +1330,7 @@
     $('rmPrev').onclick  = ()=>goTo(deck.index-1);
     $('rmNext').onclick  = ()=>goTo(deck.index+1);
     $('rmLast').onclick  = ()=>goTo(total-1);
-    $('rmPresent').onclick = openPresent;
+    $('rmPresentBtn').onclick = openPresent;
 
     // Build thumbs
     const thumbs = $('rmThumbs');
@@ -1360,7 +1360,6 @@
     const thumbs = document.querySelectorAll('.rm-thumb');
     thumbs.forEach((el, idx)=> el.classList.toggle('is-active', idx===i));
     // Sync presentation overlay if open
-    if($('rmPresent') && $('rmPresent').dataset && $('rmPresent').dataset.dummy){ /* no-op */ }
     if(presentOpen){
       const ps = $('rmPresentStage');
       if(ps) ps.innerHTML = deck.slides[i];
