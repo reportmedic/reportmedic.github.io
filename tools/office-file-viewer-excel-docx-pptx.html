@@ -564,13 +564,16 @@
   function getLine(spPr){
     const ln = childByName(spPr, NS_A, 'ln');
     if(!ln) return null;
-    const wAttr = ln.getAttribute('w');
-    const w = wAttr ? parseInt(wAttr, 10) : 9525; // default ~1pt
-    let color = null;
-    const sf = childByName(ln, NS_A, 'solidFill');
-    if(sf) color = resolveColor(sf);
     const noFill = childByName(ln, NS_A, 'noFill');
     if(noFill) return { w:0, color:null, none:true };
+    const wAttr = ln.getAttribute('w');
+    const sf = childByName(ln, NS_A, 'solidFill');
+    const color = sf ? resolveColor(sf) : null;
+    // An empty <a:ln/> with no width attribute and no solidFill means "no
+    // explicit border on this shape" (the default in PowerPoint is no
+    // border for programmatically-generated shapes), so don't paint one.
+    if(!wAttr && !color) return { w:0, color:null, none:true };
+    const w = wAttr ? parseInt(wAttr, 10) : 9525;
     return { w, color: color || '#000000', none:false };
   }
 
@@ -602,9 +605,108 @@
     return ({t:'flex-start', ctr:'center', b:'flex-end'})[anchor] || 'flex-start';
   }
 
-  // Render a text body element (<p:txBody>) into HTML for foreignObject
-  function renderTextBody(txBody, phType){
-    if(!txBody) return '';
+  // Approximate width of a single character at the given EMU font size.
+  // SVG <text> doesn't auto-wrap, so we estimate widths and wrap manually.
+  // Calibrated against Calibri / Segoe UI proportional fonts which render
+  // at about 0.48 ex-width per em for an average char; bold is ~6% wider.
+  function approxCharWidth(sz, bold){
+    return sz * (bold ? 0.52 : 0.48);
+  }
+  function approxRunWidth(text, sz, bold){
+    let w = 0;
+    for(let i=0;i<text.length;i++){
+      const ch = text.charCodeAt(i);
+      // Narrow chars: i l . , ; : ! ' ` | space
+      if(ch===32 || ch===46 || ch===44 || ch===59 || ch===58 || ch===33 || ch===39 || ch===96 || ch===124 || ch===108 || ch===105){
+        w += sz * (bold ? 0.30 : 0.26);
+      } else if(ch===87 || ch===77 || ch===109 || ch===119){
+        // Wide chars W M m w
+        w += sz * (bold ? 0.82 : 0.76);
+      } else {
+        w += approxCharWidth(sz, bold);
+      }
+    }
+    return w;
+  }
+
+  // Collect runs from a paragraph element into normalized records.
+  function collectRuns(p, phType){
+    const runs = [];
+    for(const node of p.children){
+      if(node.namespaceURI !== NS_A) continue;
+      if(node.localName === 'r' || node.localName === 'fld'){
+        const rPr = childByName(node, NS_A, 'rPr');
+        const tEl = childByName(node, NS_A, 't');
+        const text = tEl ? tEl.textContent : '';
+        if(!text) continue;
+        let bold = false, italic=false, underline=false;
+        let sz = defaultPhSize(phType);
+        let color = '#000000';
+        let font = 'Calibri';
+        if(rPr){
+          if(rPr.getAttribute('b')==='1') bold=true;
+          if(rPr.getAttribute('i')==='1') italic=true;
+          const u = rPr.getAttribute('u');
+          if(u && u!=='none') underline=true;
+          const szAttr = rPr.getAttribute('sz');
+          if(szAttr) sz = szToEmu(szAttr);
+          const sf = childByName(rPr, NS_A, 'solidFill');
+          if(sf){
+            const c = resolveColor(sf);
+            if(c) color = c;
+          }
+          const latin = childByName(rPr, NS_A, 'latin');
+          if(latin && latin.getAttribute('typeface')) font = latin.getAttribute('typeface');
+        }
+        runs.push({ text, sz, color, bold, italic, underline, font });
+      } else if(node.localName === 'br'){
+        runs.push({ linebreak:true });
+      }
+    }
+    return runs;
+  }
+
+  // Greedy word wrap. Splits run list into visual lines that fit within maxWidth.
+  function wrapRuns(runs, maxWidth){
+    if(!runs.length) return [[]];
+    const lines = [];
+    let cur = [];
+    let curW = 0;
+    const flushLine = () => { lines.push(cur); cur = []; curW = 0; };
+    for(const run of runs){
+      if(run.linebreak){ flushLine(); continue; }
+      // Tokenize into words while preserving spaces between them.
+      const tokens = run.text.split(/(\s+)/);
+      for(const tok of tokens){
+        if(!tok) continue;
+        const tokW = approxRunWidth(tok, run.sz, run.bold);
+        // If a leading space and we're at line start, drop it.
+        if(/^\s+$/.test(tok) && curW === 0) continue;
+        if(curW > 0 && curW + tokW > maxWidth && !/^\s+$/.test(tok)){
+          flushLine();
+        }
+        if(curW === 0 && /^\s+$/.test(tok)) continue;
+        // Append token to current line, attaching to last run if same style.
+        const last = cur[cur.length-1];
+        if(last && !last.linebreak && last.font===run.font && last.sz===run.sz
+            && last.color===run.color && last.bold===run.bold
+            && last.italic===run.italic && last.underline===run.underline){
+          last.text += tok;
+        } else {
+          cur.push({...run, text: tok});
+        }
+        curW += tokW;
+      }
+    }
+    flushLine();
+    if(!lines.length) lines.push([]);
+    return lines;
+  }
+
+  // Render a text body element (<p:txBody>) directly as SVG <text> elements
+  // positioned within the shape's transform box. Returns an SVG fragment.
+  function renderTextBody(txBody, phType, xfrm){
+    if(!txBody || !xfrm) return '';
     const bodyPr = childByName(txBody, NS_A, 'bodyPr');
     const anchor = bodyPr ? (bodyPr.getAttribute('anchor') || 't') : 't';
     const lIns = bodyPr && bodyPr.getAttribute('lIns')!==null ? parseInt(bodyPr.getAttribute('lIns'),10) : 91440;
@@ -613,79 +715,101 @@
     const bIns = bodyPr && bodyPr.getAttribute('bIns')!==null ? parseInt(bodyPr.getAttribute('bIns'),10) : 45720;
     const wrap = bodyPr ? (bodyPr.getAttribute('wrap') !== 'none') : true;
 
+    const innerX = xfrm.x + lIns;
+    const innerY = xfrm.y + tIns;
+    const innerW = Math.max(xfrm.cx - lIns - rIns, 1);
+    const innerH = Math.max(xfrm.cy - tIns - bIns, 1);
+
     const paragraphs = childrenByName(txBody, NS_A, 'p');
-    const innerParts = [];
+    if(!paragraphs.length) return '';
+
+    // Build a flat list of visual lines across all paragraphs.
+    // Each entry: { runs, algn, indent, lineHeight, maxSize, isEmpty }
+    const visualLines = [];
     for(const p of paragraphs){
       const pPr = childByName(p, NS_A, 'pPr');
       const algn = pPr ? (pPr.getAttribute('algn') || 'l') : 'l';
       const lvl = pPr ? parseInt(pPr.getAttribute('lvl')||'0', 10) : 0;
       const indent = lvl * 365760; // ~0.4in per level
-      // Collect runs and breaks in document order
-      const runs = [];
-      for(const node of p.children){
-        if(node.namespaceURI !== NS_A) continue;
-        if(node.localName === 'r'){
-          const rPr = childByName(node, NS_A, 'rPr');
-          const tEl = childByName(node, NS_A, 't');
-          const text = tEl ? tEl.textContent : '';
-          if(!text) continue;
-          let bold = false, italic=false, underline=false;
-          let szEmu = defaultPhSize(phType);
-          let color = '#000000';
-          let font = 'Calibri, Segoe UI, Helvetica, Arial, sans-serif';
-          if(rPr){
-            if(rPr.getAttribute('b')==='1') bold=true;
-            if(rPr.getAttribute('i')==='1') italic=true;
-            const u = rPr.getAttribute('u');
-            if(u && u!=='none') underline=true;
-            const sz = rPr.getAttribute('sz');
-            if(sz) szEmu = szToEmu(sz);
-            const sf = childByName(rPr, NS_A, 'solidFill');
-            if(sf){
-              const c = resolveColor(sf);
-              if(c) color = c;
-            }
-            const latin = childByName(rPr, NS_A, 'latin');
-            if(latin && latin.getAttribute('typeface')){
-              const tf = latin.getAttribute('typeface');
-              font = `"${tf.replace(/"/g,'')}", Calibri, Segoe UI, Helvetica, Arial, sans-serif`;
-            }
-          }
-          let style = `font-size:${szEmu}px;color:${color};font-family:${font};`;
-          if(bold) style += 'font-weight:700;';
-          if(italic) style += 'font-style:italic;';
-          if(underline) style += 'text-decoration:underline;';
-          runs.push(`<span style="${style}">${escapeHtml(text)}</span>`);
-        } else if(node.localName === 'br'){
-          runs.push('<br/>');
-        } else if(node.localName === 'fld'){
-          // Field (date, slide number, etc.) - just use its text
-          const tEl = childByName(node, NS_A, 't');
-          if(tEl) runs.push(`<span>${escapeHtml(tEl.textContent)}</span>`);
-        }
-      }
+      const runs = collectRuns(p, phType);
+
       if(!runs.length){
-        // Empty paragraph still takes a line of vertical space (use literal NBSP, not &nbsp;)
+        // Empty paragraph still occupies a line of default size
         const sz = defaultPhSize(phType);
-        innerParts.push(`<div style="text-align:${alignToCss(algn)};margin-left:${indent}px;line-height:1.2;font-size:${sz}px;">\u00A0</div>`);
-      } else {
-        innerParts.push(`<div style="text-align:${alignToCss(algn)};margin-left:${indent}px;line-height:1.2;margin-bottom:0;">${runs.join('')}</div>`);
+        visualLines.push({ runs:[], algn, indent, lineHeight: sz * 1.2, maxSize: sz, isEmpty:true });
+        continue;
+      }
+      const availW = wrap ? Math.max(innerW - indent, 1) : Number.MAX_SAFE_INTEGER;
+      const wrapped = wrapRuns(runs, availW);
+      for(const line of wrapped){
+        let maxSz = 0;
+        for(const r of line){ if(!r.linebreak && r.sz > maxSz) maxSz = r.sz; }
+        if(!maxSz) maxSz = defaultPhSize(phType);
+        visualLines.push({ runs: line, algn, indent, lineHeight: maxSz * 1.2, maxSize: maxSz, isEmpty: line.length===0 });
       }
     }
-    if(!innerParts.length) return '';
+    if(!visualLines.length) return '';
 
-    const wrapStyle = wrap ? 'word-wrap:break-word;overflow-wrap:break-word;white-space:normal;' : 'white-space:nowrap;';
+    // Total text block height
+    let totalH = 0;
+    for(const ln of visualLines) totalH += ln.lineHeight;
 
-    return (
-      `<div xmlns="http://www.w3.org/1999/xhtml" style="`
-        + `box-sizing:border-box;width:100%;height:100%;`
-        + `padding:${tIns}px ${rIns}px ${bIns}px ${lIns}px;`
-        + `display:flex;flex-direction:column;justify-content:${anchorToFlex(anchor)};`
-        + wrapStyle
-        + `">`
-        + innerParts.join('')
-      + `</div>`
-    );
+    // Compute starting Y based on anchor
+    let cursorY;
+    if(anchor === 'ctr') cursorY = innerY + Math.max(0, (innerH - totalH) / 2);
+    else if(anchor === 'b') cursorY = innerY + Math.max(0, innerH - totalH);
+    else cursorY = innerY;
+
+    const parts = [];
+    for(const line of visualLines){
+      // Move cursor down by full line height; baseline sits ~0.85 down the line box
+      const baselineY = cursorY + line.maxSize * 0.95;
+      cursorY += line.lineHeight;
+      if(line.isEmpty) continue;
+
+      // Compute total width of this visual line for alignment
+      let lineW = 0;
+      for(const r of line.runs){
+        if(r.linebreak) continue;
+        lineW += approxRunWidth(r.text, r.sz, r.bold);
+      }
+
+      let xStart;
+      if(line.algn === 'ctr'){
+        xStart = innerX + line.indent + Math.max(0, (innerW - line.indent - lineW) / 2);
+      } else if(line.algn === 'r'){
+        xStart = innerX + Math.max(line.indent, innerW - lineW);
+      } else {
+        xStart = innerX + line.indent;
+      }
+
+      // Emit one <text> per visual line, with multiple <tspan> children for
+      // each run. Each tspan re-anchors to the running x so styling changes
+      // don't break the flow.
+      const tspans = [];
+      let runX = xStart;
+      for(const r of line.runs){
+        if(r.linebreak) continue;
+        const fontFamily = (r.font ? r.font + ',' : '') + 'Calibri,Segoe UI,Helvetica,Arial,sans-serif';
+        const styleParts = [];
+        styleParts.push(`font-family:${fontFamily}`);
+        styleParts.push(`font-size:${r.sz}px`);
+        if(r.bold) styleParts.push('font-weight:700');
+        if(r.italic) styleParts.push('font-style:italic');
+        if(r.underline) styleParts.push('text-decoration:underline');
+        const styleAttr = styleParts.join(';').replace(/'/g, '&apos;');
+        tspans.push(
+          `<tspan x="${Math.round(runX)}" y="${Math.round(baselineY)}" `+
+          `fill="${r.color}" style='${styleAttr}'>${escapeHtml(r.text)}</tspan>`
+        );
+        runX += approxRunWidth(r.text, r.sz, r.bold);
+      }
+      if(tspans.length){
+        parts.push(`<text>${tspans.join('')}</text>`);
+      }
+    }
+
+    return parts.join('');
   }
 
   // Default placeholder positions used when neither the slide nor any layout/master
@@ -811,16 +935,14 @@
       shapeSvg = `<rect x="${xfrm.x}" y="${xfrm.y}" width="${xfrm.cx}" height="${xfrm.cy}" ${fillStr} ${strokeStr}${transformAttr}/>`;
     }
 
-    // Text overlay via foreignObject
+    // Native SVG <text> overlay (no foreignObject - more reliable across browsers)
     let textSvg = '';
     if(txBody){
-      const html = renderTextBody(txBody, phType);
-      if(html){
-        textSvg = (
-          `<foreignObject x="${xfrm.x}" y="${xfrm.y}" width="${Math.max(xfrm.cx,1)}" height="${Math.max(xfrm.cy,1)}"${transformAttr}>`
-            + html
-          + `</foreignObject>`
-        );
+      const inner = renderTextBody(txBody, phType, xfrm);
+      if(inner){
+        textSvg = transformAttr
+          ? `<g${transformAttr}>${inner}</g>`
+          : inner;
       }
     }
 
