@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<meta name="description" content="View Excel (XLSX), Word (DOCX), and PowerPoint (PPTX) files directly in your browser. Runs locally."/>
-<title>Office File Viewer (XLSX / DOCX / PPTX) — ReportMedic</title>
+<meta name="description" content="View Excel (XLSX), Word (DOCX), and PowerPoint (PPTX) files directly in your browser with full slide rendering and presentation mode. Runs locally."/>
+<title>Office File Viewer (XLSX / DOCX / PPTX) - ReportMedic</title>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
 <link href="/assets/img/reportmedic-48.png?v=1" rel="icon" type="image/png"/>
 <link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
@@ -18,12 +18,96 @@
   .rm-table{border-collapse:collapse; width:100%; font-size:13px}
   .rm-table th,.rm-table td{border:1px solid rgba(255,255,255,.12); padding:6px 8px; vertical-align:top}
   .rm-table th{position:sticky; top:0; background:rgba(10,16,24,.92); backdrop-filter: blur(6px)}
-  .rm-slide{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:12px; margin:10px 0; background:rgba(0,0,0,.18)}
-  .rm-slide .rm-slideNo{font-weight:800; font-size:12px; color:var(--muted)}
   .rm-doc p{margin:0 0 10px}
   .rm-doc h1,.rm-doc h2,.rm-doc h3{margin:14px 0 10px}
 
-    :root{
+  /* === PPTX deck === */
+  .rm-deck{
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .rm-deck-controls{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    padding:8px; border:1px solid rgba(255,255,255,.12);
+    border-radius:12px; background:rgba(0,0,0,.18);
+  }
+  .rm-deck-controls .rm-spacer{flex:1}
+  .rm-deck-counter{font-variant-numeric:tabular-nums; font-weight:700; min-width:64px; text-align:center}
+  .rm-stage-wrap{
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:14px;
+    background:#0a0f1a;
+    padding:10px;
+    overflow:hidden;
+  }
+  .rm-stage{
+    width:100%;
+    aspect-ratio: 16 / 9;
+    background:#fff;
+    border-radius:8px;
+    overflow:hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+    position:relative;
+  }
+  .rm-stage svg{width:100%; height:100%; display:block}
+  .rm-thumbs{
+    display:flex; gap:8px; overflow-x:auto; padding:6px 2px;
+    scrollbar-width: thin;
+  }
+  .rm-thumb{
+    flex:0 0 auto;
+    width:140px; aspect-ratio: 16 / 9;
+    border:2px solid transparent;
+    border-radius:6px;
+    overflow:hidden;
+    background:#fff;
+    cursor:pointer;
+    position:relative;
+  }
+  .rm-thumb.is-active{border-color: var(--brand2, #7cf7d4); box-shadow:0 0 0 2px rgba(124,247,212,.25)}
+  .rm-thumb svg{width:100%; height:100%; display:block; pointer-events:none}
+  .rm-thumb-label{
+    position:absolute; left:4px; bottom:3px;
+    font-size:10px; padding:1px 5px; border-radius:8px;
+    background:rgba(0,0,0,.55); color:#fff; font-weight:700;
+  }
+
+  /* Presentation (fullscreen) overlay */
+  .rm-present{
+    position:fixed; inset:0; z-index:99998;
+    background:#000;
+    display:none;
+    align-items:center; justify-content:center;
+    padding:0;
+  }
+  .rm-present.is-open{display:flex}
+  .rm-present-stage{
+    width:min(100vw, calc(100vh * 16 / 9));
+    height:min(100vh, calc(100vw * 9 / 16));
+    background:#fff;
+    overflow:hidden;
+    box-shadow: 0 0 60px rgba(255,255,255,.05);
+  }
+  .rm-present-stage svg{width:100%; height:100%; display:block}
+  .rm-present-bar{
+    position:absolute; left:50%; bottom:18px; transform:translateX(-50%);
+    display:flex; gap:8px; align-items:center;
+    background:rgba(20,25,35,.85);
+    padding:8px 12px; border-radius:999px;
+    border:1px solid rgba(255,255,255,.15);
+    color:#fff; font-size:13px;
+    backdrop-filter: blur(8px);
+  }
+  .rm-present-bar button{
+    background:rgba(255,255,255,.08); color:#fff;
+    border:1px solid rgba(255,255,255,.18);
+    padding:6px 10px; border-radius:8px;
+    cursor:pointer; font-weight:700;
+    font-family:inherit; font-size:13px;
+  }
+  .rm-present-bar button:hover{background:rgba(255,255,255,.16)}
+  .rm-present-counter{font-variant-numeric:tabular-nums; min-width:60px; text-align:center}
+
+  :root{
     --lm-radius: 18px;
     --lm-border: rgba(255,255,255,.14);
     --lm-text: rgba(240,246,255,.92);
@@ -145,7 +229,7 @@
 <div class="wrap">
   <div class="panel">
     <h1>Office File Viewer <a class="rm-lm-link" data-rm-lm-open="rmLM" href="#">Learn more</a></h1>
-    <p class="sub">Preview <b>XLSX</b>, <b>DOCX</b>, and <b>PPTX</b> files in your browser. Nothing is uploaded — it stays on your device.</p>
+    <p class="sub">Preview <b>XLSX</b>, <b>DOCX</b>, and <b>PPTX</b> files in your browser, with a true presentation deck for PowerPoint files. Nothing is uploaded, it stays on your device.</p>
     <div class="hr"></div>
 
     <div class="card">
@@ -175,7 +259,7 @@
     <div class="grid2" style="margin-top:12px">
       <div class="card">
         <div style="font-weight:700">Preview</div>
-        <div class="tiny muted" style="margin-top:4px">Excel: first 200 rows per sheet. Word: clean HTML preview. PowerPoint: slide text outline preview.</div>
+        <div class="tiny muted" style="margin-top:4px">Excel: first 200 rows per sheet. Word: clean HTML preview. PowerPoint: slide deck with prev / next and full screen Present mode.</div>
         <div class="hr2"></div>
 
         <div id="paneXlsx">
@@ -192,21 +276,20 @@
         </div>
 
         <div id="panePptx" class="rm-hidden">
-          <div id="pptxView" class="rm-view"></div>
+          <div id="pptxView"></div>
         </div>
       </div>
 
       <div class="card">
         <div style="font-weight:700">Notes</div>
         <div class="tiny muted" style="margin-top:6px">
-          This viewer is designed for <b>quick inspection</b>.
-          If you need pixel-perfect slide rendering for PPTX, that typically requires a server-side renderer.
+          This viewer renders directly in your browser. Files never leave your device.
         </div>
         <div class="hr2"></div>
         <ul class="tiny muted" style="margin:0; padding-left:18px">
-          <li><b>XLSX</b>: we render a table view (no formulas recalculated).</li>
-          <li><b>DOCX</b>: layout is best-effort (headings/paragraphs/lists/images).</li>
-          <li><b>PPTX</b>: we show slide text extracted from the file.</li>
+          <li><b>XLSX</b>: rendered as a table view (no formulas recalculated).</li>
+          <li><b>DOCX</b>: layout is best-effort (headings, paragraphs, lists, images).</li>
+          <li><b>PPTX</b>: slides render with positioned text, shapes, images, and a full screen Present mode. Use arrow keys, Space, or Page Up / Down to navigate.</li>
         </ul>
       </div>
     </div>
@@ -244,15 +327,28 @@
       <h3>What this helps with</h3>
       <ul>
         <li>Open an Excel, Word, or PowerPoint file quickly in the browser</li>
-        <li>Verify content before sending / uploading</li>
-        <li>Stay private — files are read locally</li>
+        <li>Verify content before sending or uploading</li>
+        <li>Stay private since files are read locally</li>
+        <li>Walk through PPTX decks with full screen Present mode</li>
       </ul>
-      <h3>Good to know</h3>
+      <h3>PPTX presentation tips</h3>
       <ul>
-        <li>PPTX preview is text-outline (fast + private). For slide-perfect rendering, use a dedicated viewer.</li>
-        <li>Large spreadsheets are capped to keep the page responsive.</li>
+        <li>Click <b>Present</b> for full screen mode</li>
+        <li>Arrow keys, Page Up / Down, Space, or Home / End to navigate</li>
+        <li>Esc exits Present mode</li>
       </ul>
     </div>
+  </div>
+</div>
+
+<!-- Fullscreen presentation overlay -->
+<div class="rm-present" id="rmPresent" aria-hidden="true">
+  <div class="rm-present-stage" id="rmPresentStage"></div>
+  <div class="rm-present-bar">
+    <button id="rmPrevP" type="button" aria-label="Previous slide">&laquo; Prev</button>
+    <span class="rm-present-counter" id="rmCounterP">0 / 0</span>
+    <button id="rmNextP" type="button" aria-label="Next slide">Next &raquo;</button>
+    <button id="rmExitP" type="button" aria-label="Exit presentation">Exit</button>
   </div>
 </div>
 
@@ -283,7 +379,7 @@
     status.textContent = msg || '';
   }
 
-  function setMeta(name, type, size){
+  function setMeta(name){
     meta.innerHTML = '<b>FILE:</b><span class="muted"> ' + (name||'not loaded') + '</span>';
   }
 
@@ -296,12 +392,15 @@
     setStatus('', '');
     setMeta(null);
     setTab('xlsx');
+    deck.slides = [];
+    deck.index = 0;
   }
   $('clear').onclick=clearAll;
 
   function escapeHtml(s){
     return String(s??'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
   }
+  function escapeAttr(s){ return escapeHtml(s); }
 
   // --- XLSX ---
   function renderSheet(wb, sheetName){
@@ -309,7 +408,7 @@
     if(!ws){ $('xlsxView').textContent='Sheet not found.'; return; }
 
     const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:A1');
-    const maxRows = Math.min(range.e.r, 199); // 0-indexed
+    const maxRows = Math.min(range.e.r, 199);
     const maxCols = Math.min(range.e.c, 49);
 
     let html = '<table class="rm-table"><thead><tr>';
@@ -356,53 +455,817 @@
     }
   }
 
-  // --- PPTX (text outline) ---
-  function getTextFromSlideXml(xmlText){
-    // Pull <a:t>text</a:t> nodes
+  // ============================================================
+  // === PPTX renderer: real slides via SVG + presentation mode ===
+  // ============================================================
+  const NS_A = 'http://schemas.openxmlformats.org/drawingml/2006/main';
+  const NS_P = 'http://schemas.openxmlformats.org/presentationml/2006/main';
+  const NS_R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+
+  // Default slide size if presentation.xml is missing the value
+  const DEFAULT_W = 9144000;  // 10in
+  const DEFAULT_H = 6858000;  // 7.5in
+
+  // Theme colour fallbacks (used when slide references schemeClr without theme)
+  const SCHEME_FALLBACK = {
+    bg1:'FFFFFF', bg2:'E7E6E6', lt1:'FFFFFF', lt2:'E7E6E6',
+    tx1:'000000', tx2:'44546A', dk1:'000000', dk2:'44546A',
+    accent1:'4472C4', accent2:'ED7D31', accent3:'A5A5A5',
+    accent4:'FFC000', accent5:'5B9BD5', accent6:'70AD47',
+    hlink:'0563C1', folHlink:'954F72',
+    phClr:'4472C4'
+  };
+
+  function childByName(parent, ns, name){
+    if(!parent) return null;
+    for(const c of parent.children){
+      if(c.namespaceURI===ns && c.localName===name) return c;
+    }
+    return null;
+  }
+  function childrenByName(parent, ns, name){
     const out=[];
-    const re = /<a:t>([\s\S]*?)<\/a:t>/g;
-    let m;
-    while((m=re.exec(xmlText))){
-      const t = m[1]
-        .replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&')
-        .replace(/&quot;/g,'"').replace(/&#39;/g,"'");
-      const cleaned = t.replace(/\s+/g,' ').trim();
-      if(cleaned) out.push(cleaned);
+    if(!parent) return out;
+    for(const c of parent.children){
+      if(c.namespaceURI===ns && c.localName===name) out.push(c);
+    }
+    return out;
+  }
+  function descendantsByName(parent, ns, name){
+    if(!parent) return [];
+    return Array.from(parent.getElementsByTagNameNS(ns, name));
+  }
+
+  function getXfrm(spPr){
+    const xfrm = childByName(spPr, NS_A, 'xfrm');
+    if(!xfrm) return null;
+    const off = childByName(xfrm, NS_A, 'off');
+    const ext = childByName(xfrm, NS_A, 'ext');
+    if(!off || !ext) return null;
+    return {
+      x: parseInt(off.getAttribute('x')||'0', 10),
+      y: parseInt(off.getAttribute('y')||'0', 10),
+      cx: parseInt(ext.getAttribute('cx')||'0', 10),
+      cy: parseInt(ext.getAttribute('cy')||'0', 10),
+      rot: parseInt(xfrm.getAttribute('rot')||'0', 10) / 60000,
+      flipH: xfrm.getAttribute('flipH')==='1',
+      flipV: xfrm.getAttribute('flipV')==='1',
+      chOffX: 0, chOffY: 0, chExtX: 0, chExtY: 0,
+      hasChildXfrm: false
+    };
+  }
+  function getGroupXfrm(spPr){
+    const x = getXfrm(spPr);
+    if(!x) return null;
+    const xfrm = childByName(spPr, NS_A, 'xfrm');
+    const chOff = childByName(xfrm, NS_A, 'chOff');
+    const chExt = childByName(xfrm, NS_A, 'chExt');
+    if(chOff && chExt){
+      x.chOffX = parseInt(chOff.getAttribute('x')||'0', 10);
+      x.chOffY = parseInt(chOff.getAttribute('y')||'0', 10);
+      x.chExtX = parseInt(chExt.getAttribute('cx')||'0', 10);
+      x.chExtY = parseInt(chExt.getAttribute('cy')||'0', 10);
+      x.hasChildXfrm = true;
+    }
+    return x;
+  }
+
+  function resolveColor(fillEl){
+    if(!fillEl) return null;
+    // a:solidFill > a:srgbClr | a:schemeClr | a:sysClr
+    const srgb = childByName(fillEl, NS_A, 'srgbClr');
+    if(srgb) return '#' + srgb.getAttribute('val');
+    const scheme = childByName(fillEl, NS_A, 'schemeClr');
+    if(scheme){
+      const v = scheme.getAttribute('val');
+      const hex = SCHEME_FALLBACK[v] || '000000';
+      return '#' + hex;
+    }
+    const sys = childByName(fillEl, NS_A, 'sysClr');
+    if(sys) return '#' + (sys.getAttribute('lastClr') || '000000');
+    return null;
+  }
+
+  function getSolidFill(spPr){
+    const sf = childByName(spPr, NS_A, 'solidFill');
+    if(sf) return resolveColor(sf);
+    // Gradient: pick first stop colour as a reasonable fallback
+    const grad = childByName(spPr, NS_A, 'gradFill');
+    if(grad){
+      const stops = descendantsByName(grad, NS_A, 'gs');
+      if(stops.length){
+        const first = stops[0];
+        return resolveColor(first);
+      }
+    }
+    return null;
+  }
+
+  function getLine(spPr){
+    const ln = childByName(spPr, NS_A, 'ln');
+    if(!ln) return null;
+    const wAttr = ln.getAttribute('w');
+    const w = wAttr ? parseInt(wAttr, 10) : 9525; // default ~1pt
+    let color = null;
+    const sf = childByName(ln, NS_A, 'solidFill');
+    if(sf) color = resolveColor(sf);
+    const noFill = childByName(ln, NS_A, 'noFill');
+    if(noFill) return { w:0, color:null, none:true };
+    return { w, color: color || '#000000', none:false };
+  }
+
+  function getPresetGeom(spPr){
+    const pg = childByName(spPr, NS_A, 'prstGeom');
+    if(!pg) return null;
+    return pg.getAttribute('prst') || 'rect';
+  }
+
+  // Convert PPTX EMU sz to CSS px (in user units that match SVG viewBox)
+  // sz attr is in 100ths of a point, 1pt = 12700 EMU.
+  function szToEmu(sz){ return Math.round(parseInt(sz,10) * 127); }
+
+  // Default placeholder font sizes (EMU)
+  function defaultPhSize(phType){
+    const pt = (
+      phType==='title' || phType==='ctrTitle' ? 36 :
+      phType==='subTitle' ? 24 :
+      phType==='ftr' || phType==='dt' || phType==='sldNum' ? 12 :
+      18
+    );
+    return pt * 12700;
+  }
+
+  function alignToCss(algn){
+    return ({l:'left', ctr:'center', r:'right', just:'justify', dist:'justify'})[algn] || 'left';
+  }
+  function anchorToFlex(anchor){
+    return ({t:'flex-start', ctr:'center', b:'flex-end'})[anchor] || 'flex-start';
+  }
+
+  // Render a text body element (<p:txBody>) into HTML for foreignObject
+  function renderTextBody(txBody, phType){
+    if(!txBody) return '';
+    const bodyPr = childByName(txBody, NS_A, 'bodyPr');
+    const anchor = bodyPr ? (bodyPr.getAttribute('anchor') || 't') : 't';
+    const lIns = bodyPr && bodyPr.getAttribute('lIns')!==null ? parseInt(bodyPr.getAttribute('lIns'),10) : 91440;
+    const tIns = bodyPr && bodyPr.getAttribute('tIns')!==null ? parseInt(bodyPr.getAttribute('tIns'),10) : 45720;
+    const rIns = bodyPr && bodyPr.getAttribute('rIns')!==null ? parseInt(bodyPr.getAttribute('rIns'),10) : 91440;
+    const bIns = bodyPr && bodyPr.getAttribute('bIns')!==null ? parseInt(bodyPr.getAttribute('bIns'),10) : 45720;
+    const wrap = bodyPr ? (bodyPr.getAttribute('wrap') !== 'none') : true;
+
+    const paragraphs = childrenByName(txBody, NS_A, 'p');
+    const innerParts = [];
+    for(const p of paragraphs){
+      const pPr = childByName(p, NS_A, 'pPr');
+      const algn = pPr ? (pPr.getAttribute('algn') || 'l') : 'l';
+      const lvl = pPr ? parseInt(pPr.getAttribute('lvl')||'0', 10) : 0;
+      const indent = lvl * 365760; // ~0.4in per level
+      // Collect runs and breaks in document order
+      const runs = [];
+      for(const node of p.children){
+        if(node.namespaceURI !== NS_A) continue;
+        if(node.localName === 'r'){
+          const rPr = childByName(node, NS_A, 'rPr');
+          const tEl = childByName(node, NS_A, 't');
+          const text = tEl ? tEl.textContent : '';
+          if(!text) continue;
+          let bold = false, italic=false, underline=false;
+          let szEmu = defaultPhSize(phType);
+          let color = '#000000';
+          let font = 'Calibri, Segoe UI, Helvetica, Arial, sans-serif';
+          if(rPr){
+            if(rPr.getAttribute('b')==='1') bold=true;
+            if(rPr.getAttribute('i')==='1') italic=true;
+            const u = rPr.getAttribute('u');
+            if(u && u!=='none') underline=true;
+            const sz = rPr.getAttribute('sz');
+            if(sz) szEmu = szToEmu(sz);
+            const sf = childByName(rPr, NS_A, 'solidFill');
+            if(sf){
+              const c = resolveColor(sf);
+              if(c) color = c;
+            }
+            const latin = childByName(rPr, NS_A, 'latin');
+            if(latin && latin.getAttribute('typeface')){
+              const tf = latin.getAttribute('typeface');
+              font = `"${tf.replace(/"/g,'')}", Calibri, Segoe UI, Helvetica, Arial, sans-serif`;
+            }
+          }
+          let style = `font-size:${szEmu}px;color:${color};font-family:${font};`;
+          if(bold) style += 'font-weight:700;';
+          if(italic) style += 'font-style:italic;';
+          if(underline) style += 'text-decoration:underline;';
+          runs.push(`<span style="${style}">${escapeHtml(text)}</span>`);
+        } else if(node.localName === 'br'){
+          runs.push('<br/>');
+        } else if(node.localName === 'fld'){
+          // Field (date, slide number, etc.) - just use its text
+          const tEl = childByName(node, NS_A, 't');
+          if(tEl) runs.push(`<span>${escapeHtml(tEl.textContent)}</span>`);
+        }
+      }
+      if(!runs.length){
+        // Empty paragraph still takes a line of vertical space (use literal NBSP, not &nbsp;)
+        const sz = defaultPhSize(phType);
+        innerParts.push(`<div style="text-align:${alignToCss(algn)};margin-left:${indent}px;line-height:1.2;font-size:${sz}px;">\u00A0</div>`);
+      } else {
+        innerParts.push(`<div style="text-align:${alignToCss(algn)};margin-left:${indent}px;line-height:1.2;margin-bottom:0;">${runs.join('')}</div>`);
+      }
+    }
+    if(!innerParts.length) return '';
+
+    const wrapStyle = wrap ? 'word-wrap:break-word;overflow-wrap:break-word;white-space:normal;' : 'white-space:nowrap;';
+
+    return (
+      `<div xmlns="http://www.w3.org/1999/xhtml" style="`
+        + `box-sizing:border-box;width:100%;height:100%;`
+        + `padding:${tIns}px ${rIns}px ${bIns}px ${lIns}px;`
+        + `display:flex;flex-direction:column;justify-content:${anchorToFlex(anchor)};`
+        + wrapStyle
+        + `">`
+        + innerParts.join('')
+      + `</div>`
+    );
+  }
+
+  // Default placeholder positions used when neither the slide nor any layout/master
+  // supplies an explicit xfrm. Sized for a 10in x 7.5in slide.
+  const PH_DEFAULT_XFRM = {
+    title:    { x: 457200,  y: 274320,  cx: 8229600, cy: 1143000 },
+    ctrTitle: { x: 685800,  y: 2130425, cx: 7772400, cy: 1470025 },
+    subTitle: { x: 1371600, y: 3886200, cx: 6400800, cy: 1752600 },
+    body:     { x: 457200,  y: 1600200, cx: 8229600, cy: 4525963 },
+    ftr:      { x: 3008313, y: 6356350, cx: 3127375, cy: 365125  },
+    dt:       { x: 457200,  y: 6356350, cx: 2133600, cy: 365125  },
+    sldNum:   { x: 6553200, y: 6356350, cx: 2133600, cy: 365125  }
+  };
+
+  function findPhMatch(records, type, idx){
+    if(!records || !records.length) return null;
+    if(type !== null && idx !== null){
+      const r = records.find(x => x.type===type && x.idx===idx);
+      if(r) return r;
+    }
+    if(type !== null){
+      const r = records.find(x => x.type===type);
+      if(r) return r;
+    }
+    if(idx !== null){
+      const r = records.find(x => x.idx===idx);
+      if(r) return r;
+    }
+    return null;
+  }
+
+  // Render a shape (<p:sp> or <p:cxnSp>) into an SVG fragment.
+  // `placeholders` is an array of { type, idx, xfrm } records gathered from
+  // the slide's layout chain (layout -> master) and used to fill in missing
+  // positions on placeholder shapes (title, body, etc.) that inherit them.
+  function renderShape(sp, placeholders){
+    const nvSpPr = childByName(sp, NS_P, 'nvSpPr') || childByName(sp, NS_P, 'nvCxnSpPr');
+    const nvPr = nvSpPr ? childByName(nvSpPr, NS_P, 'nvPr') : null;
+    const ph = nvPr ? childByName(nvPr, NS_P, 'ph') : null;
+    const phType = ph ? (ph.getAttribute('type') || 'body') : null;
+    const phIdxAttr = ph ? ph.getAttribute('idx') : null;
+    const phIdx = phIdxAttr !== null && phIdxAttr !== '' ? parseInt(phIdxAttr, 10) : null;
+
+    const spPr = childByName(sp, NS_P, 'spPr');
+    const txBody = childByName(sp, NS_P, 'txBody');
+    if(!spPr) return '';
+
+    let xfrm = getXfrm(spPr);
+    if(!xfrm){
+      // Walk the layout / master placeholder chain to inherit a position.
+      if(ph){
+        const match = findPhMatch(placeholders, phType, phIdx);
+        if(match && match.xfrm){
+          xfrm = Object.assign({}, match.xfrm);
+        } else if(phType && PH_DEFAULT_XFRM[phType]){
+          xfrm = Object.assign({ rot: 0, flipH: false, flipV: false }, PH_DEFAULT_XFRM[phType]);
+        }
+      }
+    }
+    if(!xfrm) return '';
+
+    const fill = getSolidFill(spPr);
+    const line = getLine(spPr);
+    const prst = getPresetGeom(spPr) || 'rect';
+    const fillStr = fill ? `fill="${fill}"` : 'fill="none"';
+    const strokeStr = (line && !line.none && line.color)
+      ? `stroke="${line.color}" stroke-width="${Math.max(line.w, 6350)}"`
+      : 'stroke="none"';
+
+    const isCxn = sp.localName === 'cxnSp';
+
+    // Build a transform if rotation or flip is set. We rotate around shape centre.
+    const cxC = xfrm.x + xfrm.cx/2;
+    const cyC = xfrm.y + xfrm.cy/2;
+    const transforms = [];
+    if(xfrm.rot){
+      transforms.push(`rotate(${xfrm.rot} ${cxC} ${cyC})`);
+    }
+    if(xfrm.flipH || xfrm.flipV){
+      const sx = xfrm.flipH ? -1 : 1;
+      const sy = xfrm.flipV ? -1 : 1;
+      transforms.push(`translate(${cxC} ${cyC}) scale(${sx} ${sy}) translate(${-cxC} ${-cyC})`);
+    }
+    const transformAttr = transforms.length ? ` transform="${transforms.join(' ')}"` : '';
+
+    let shapeSvg = '';
+
+    if(isCxn || prst==='line' || prst==='straightConnector1'){
+      // Render as a line from one corner to opposite, accounting for flips
+      const x1 = xfrm.x, y1 = xfrm.y;
+      const x2 = xfrm.x + xfrm.cx, y2 = xfrm.y + xfrm.cy;
+      const lineColor = (line && !line.none && line.color) ? line.color : '#000000';
+      const lineW = Math.max((line && line.w) || 9525, 6350);
+      shapeSvg = `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${lineColor}" stroke-width="${lineW}"${transformAttr}/>`;
+    } else if(prst==='ellipse' || prst==='oval' || prst==='circle'){
+      const rx = xfrm.cx/2, ry = xfrm.cy/2;
+      shapeSvg = `<ellipse cx="${cxC}" cy="${cyC}" rx="${rx}" ry="${ry}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    } else if(prst==='triangle'){
+      const x = xfrm.x, y = xfrm.y, w = xfrm.cx, h = xfrm.cy;
+      const pts = `${x+w/2},${y} ${x+w},${y+h} ${x},${y+h}`;
+      shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    } else if(prst==='diamond'){
+      const x = xfrm.x, y = xfrm.y, w = xfrm.cx, h = xfrm.cy;
+      const pts = `${x+w/2},${y} ${x+w},${y+h/2} ${x+w/2},${y+h} ${x},${y+h/2}`;
+      shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    } else if(prst==='rightArrow'){
+      const x = xfrm.x, y = xfrm.y, w = xfrm.cx, h = xfrm.cy;
+      const head = w*0.35, body = h*0.5;
+      const top = y + (h-body)/2, bot = top + body;
+      const pts = `${x},${top} ${x+w-head},${top} ${x+w-head},${y} ${x+w},${y+h/2} ${x+w-head},${y+h} ${x+w-head},${bot} ${x},${bot}`;
+      shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    } else if(prst==='leftArrow'){
+      const x = xfrm.x, y = xfrm.y, w = xfrm.cx, h = xfrm.cy;
+      const head = w*0.35, body = h*0.5;
+      const top = y + (h-body)/2, bot = top + body;
+      const pts = `${x+w},${top} ${x+head},${top} ${x+head},${y} ${x},${y+h/2} ${x+head},${y+h} ${x+head},${bot} ${x+w},${bot}`;
+      shapeSvg = `<polygon points="${pts}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    } else if(prst==='roundRect' || prst==='round1Rect' || prst==='round2SameRect' || prst==='round2DiagRect'){
+      const r = Math.min(xfrm.cx, xfrm.cy) * 0.12;
+      shapeSvg = `<rect x="${xfrm.x}" y="${xfrm.y}" width="${xfrm.cx}" height="${xfrm.cy}" rx="${r}" ry="${r}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    } else {
+      // Default rectangle for unknown preset (covers rect and many others reasonably)
+      shapeSvg = `<rect x="${xfrm.x}" y="${xfrm.y}" width="${xfrm.cx}" height="${xfrm.cy}" ${fillStr} ${strokeStr}${transformAttr}/>`;
+    }
+
+    // Text overlay via foreignObject
+    let textSvg = '';
+    if(txBody){
+      const html = renderTextBody(txBody, phType);
+      if(html){
+        textSvg = (
+          `<foreignObject x="${xfrm.x}" y="${xfrm.y}" width="${Math.max(xfrm.cx,1)}" height="${Math.max(xfrm.cy,1)}"${transformAttr}>`
+            + html
+          + `</foreignObject>`
+        );
+      }
+    }
+
+    return shapeSvg + textSvg;
+  }
+
+  // Render a picture (<p:pic>)
+  function renderPicture(pic, mediaUrls){
+    const blipFill = childByName(pic, NS_P, 'blipFill');
+    const blip = blipFill ? childByName(blipFill, NS_A, 'blip') : null;
+    const rEmbed = blip ? blip.getAttributeNS(NS_R, 'embed') : null;
+    const spPr = childByName(pic, NS_P, 'spPr');
+    if(!spPr) return '';
+    const xfrm = getXfrm(spPr);
+    if(!xfrm) return '';
+
+    const cxC = xfrm.x + xfrm.cx/2;
+    const cyC = xfrm.y + xfrm.cy/2;
+    const transforms = [];
+    if(xfrm.rot) transforms.push(`rotate(${xfrm.rot} ${cxC} ${cyC})`);
+    if(xfrm.flipH || xfrm.flipV){
+      const sx = xfrm.flipH ? -1 : 1, sy = xfrm.flipV ? -1 : 1;
+      transforms.push(`translate(${cxC} ${cyC}) scale(${sx} ${sy}) translate(${-cxC} ${-cyC})`);
+    }
+    const transformAttr = transforms.length ? ` transform="${transforms.join(' ')}"` : '';
+
+    if(rEmbed && mediaUrls[rEmbed]){
+      return `<image href="${mediaUrls[rEmbed]}" x="${xfrm.x}" y="${xfrm.y}" width="${xfrm.cx}" height="${xfrm.cy}" preserveAspectRatio="xMidYMid meet"${transformAttr}/>`;
+    }
+    // Fallback: draw a placeholder rectangle
+    return `<rect x="${xfrm.x}" y="${xfrm.y}" width="${xfrm.cx}" height="${xfrm.cy}" fill="#E7E6E6" stroke="#9CA3AF" stroke-width="6350"${transformAttr}/>`;
+  }
+
+  // Render a group <p:grpSp>: we apply a transform that maps the child coordinate
+  // system (chOff/chExt) onto the group's outer xfrm box.
+  function renderGroup(grp, mediaUrls, placeholders){
+    const grpSpPr = childByName(grp, NS_P, 'grpSpPr');
+    if(!grpSpPr) return '';
+    const xfrm = getGroupXfrm(grpSpPr);
+    if(!xfrm) return walkSpTreeChildren(grp, mediaUrls, placeholders); // no transform, just emit children
+
+    let transform = '';
+    if(xfrm.hasChildXfrm && xfrm.chExtX > 0 && xfrm.chExtY > 0){
+      const sx = xfrm.cx / xfrm.chExtX;
+      const sy = xfrm.cy / xfrm.chExtY;
+      transform = `translate(${xfrm.x} ${xfrm.y}) scale(${sx} ${sy}) translate(${-xfrm.chOffX} ${-xfrm.chOffY})`;
+    } else {
+      transform = `translate(${xfrm.x} ${xfrm.y})`;
+    }
+
+    return `<g transform="${transform}">` + walkSpTreeChildren(grp, mediaUrls, placeholders) + `</g>`;
+  }
+
+  // Walk the children of a spTree or grpSp and emit SVG fragments
+  function walkSpTreeChildren(parent, mediaUrls, placeholders){
+    const parts = [];
+    for(const child of parent.children){
+      if(child.namespaceURI !== NS_P) continue;
+      const tag = child.localName;
+      if(tag==='sp' || tag==='cxnSp'){
+        parts.push(renderShape(child, placeholders));
+      } else if(tag==='pic'){
+        parts.push(renderPicture(child, mediaUrls));
+      } else if(tag==='grpSp'){
+        parts.push(renderGroup(child, mediaUrls, placeholders));
+      }
+    }
+    return parts.join('');
+  }
+
+  // Resolve a relative media path against the slide path (e.g. ../media/image1.png)
+  function resolvePath(basePath, target){
+    // basePath is like ppt/slides/slide1.xml
+    const baseParts = basePath.split('/').slice(0, -1); // ppt/slides
+    const tgtParts = target.split('/');
+    const stack = baseParts.slice();
+    for(const part of tgtParts){
+      if(part==='..'){ stack.pop(); }
+      else if(part==='.' || part===''){ /* skip */ }
+      else { stack.push(part); }
+    }
+    return stack.join('/');
+  }
+
+  function mimeFor(path){
+    const p = path.toLowerCase();
+    if(p.endsWith('.png')) return 'image/png';
+    if(p.endsWith('.jpg') || p.endsWith('.jpeg')) return 'image/jpeg';
+    if(p.endsWith('.gif')) return 'image/gif';
+    if(p.endsWith('.bmp')) return 'image/bmp';
+    if(p.endsWith('.svg')) return 'image/svg+xml';
+    if(p.endsWith('.webp')) return 'image/webp';
+    if(p.endsWith('.tif') || p.endsWith('.tiff')) return 'image/tiff';
+    if(p.endsWith('.emf')) return 'image/emf';
+    if(p.endsWith('.wmf')) return 'image/wmf';
+    return 'application/octet-stream';
+  }
+
+  async function buildMediaUrls(zip, slidePath){
+    const out = {};
+    const relsPath = slidePath.replace('/slides/', '/slides/_rels/') + '.rels';
+    const relsFile = zip.file(relsPath);
+    if(!relsFile) return out;
+    const xml = await relsFile.async('text');
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    const rels = doc.getElementsByTagName('Relationship');
+    for(const rel of rels){
+      const type = rel.getAttribute('Type') || '';
+      if(!type.endsWith('/image')) continue;
+      const id = rel.getAttribute('Id');
+      const target = rel.getAttribute('Target');
+      if(!id || !target) continue;
+      const abs = resolvePath(slidePath, target);
+      const mediaFile = zip.file(abs);
+      if(!mediaFile) continue;
+      const bytes = await mediaFile.async('uint8array');
+      // Build a base64 data URL
+      let bin = '';
+      for(let i=0; i<bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      const b64 = btoa(bin);
+      out[id] = `data:${mimeFor(abs)};base64,${b64}`;
     }
     return out;
   }
 
+  async function getSlideBackground(zip, slidePath){
+    // Slide-level background only. (Layout/master inheritance is approximated as white.)
+    try{
+      const xml = await zip.file(slidePath).async('text');
+      const doc = new DOMParser().parseFromString(xml, 'application/xml');
+      const cSld = doc.getElementsByTagNameNS(NS_P, 'cSld')[0];
+      if(!cSld) return '#FFFFFF';
+      const bg = childByName(cSld, NS_P, 'bg');
+      if(!bg) return '#FFFFFF';
+      const bgPr = childByName(bg, NS_P, 'bgPr');
+      if(bgPr){
+        const c = getSolidFill(bgPr);
+        if(c) return c;
+      }
+      return '#FFFFFF';
+    }catch{ return '#FFFFFF'; }
+  }
+
+  async function findRelTarget(zip, relsPath, typeEnding){
+    const f = zip.file(relsPath);
+    if(!f) return null;
+    const xml = await f.async('text');
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    for(const r of doc.getElementsByTagName('Relationship')){
+      const t = r.getAttribute('Type') || '';
+      if(t.endsWith(typeEnding)){
+        return r.getAttribute('Target');
+      }
+    }
+    return null;
+  }
+
+  // Read placeholder records (with positions) from a layout or master XML file.
+  async function readPlaceholdersFromXmlPath(zip, xmlPath){
+    const out = [];
+    const f = zip.file(xmlPath);
+    if(!f) return out;
+    const xml = await f.async('text');
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    const cSld = doc.getElementsByTagNameNS(NS_P, 'cSld')[0];
+    const spTree = cSld ? childByName(cSld, NS_P, 'spTree') : null;
+    if(!spTree) return out;
+    for(const sp of childrenByName(spTree, NS_P, 'sp')){
+      const nvSpPr = childByName(sp, NS_P, 'nvSpPr');
+      if(!nvSpPr) continue;
+      const nvPr = childByName(nvSpPr, NS_P, 'nvPr');
+      if(!nvPr) continue;
+      const ph = childByName(nvPr, NS_P, 'ph');
+      if(!ph) continue;
+      const type = ph.getAttribute('type');
+      const idxAttr = ph.getAttribute('idx');
+      const idx = idxAttr !== null && idxAttr !== '' ? parseInt(idxAttr, 10) : null;
+      const spPr = childByName(sp, NS_P, 'spPr');
+      const xfrm = spPr ? getXfrm(spPr) : null;
+      if(!xfrm) continue;
+      out.push({ type: type || null, idx: idx, xfrm });
+    }
+    return out;
+  }
+
+  // Walk the slide -> layout -> master chain and return all placeholder records
+  // with positions. Layout records come first (they take priority).
+  async function loadPlaceholders(zip, slidePath){
+    const all = [];
+    const slideRelsPath = slidePath.replace('/slides/', '/slides/_rels/') + '.rels';
+    const layoutTarget = await findRelTarget(zip, slideRelsPath, '/slideLayout');
+    if(!layoutTarget) return all;
+    const layoutPath = resolvePath(slidePath, layoutTarget);
+
+    const layoutRecs = await readPlaceholdersFromXmlPath(zip, layoutPath);
+    all.push(...layoutRecs);
+
+    const layoutRelsPath = layoutPath.replace('/slideLayouts/', '/slideLayouts/_rels/') + '.rels';
+    const masterTarget = await findRelTarget(zip, layoutRelsPath, '/slideMaster');
+    if(masterTarget){
+      const masterPath = resolvePath(layoutPath, masterTarget);
+      const masterRecs = await readPlaceholdersFromXmlPath(zip, masterPath);
+      all.push(...masterRecs);
+    }
+    return all;
+  }
+
+  async function renderSlideToSvg(zip, slidePath, slideW, slideH){
+    const xml = await zip.file(slidePath).async('text');
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    const mediaUrls = await buildMediaUrls(zip, slidePath);
+    const bg = await getSlideBackground(zip, slidePath);
+    const placeholders = await loadPlaceholders(zip, slidePath);
+
+    const cSld = doc.getElementsByTagNameNS(NS_P, 'cSld')[0];
+    const spTree = cSld ? childByName(cSld, NS_P, 'spTree') : null;
+
+    const parts = [];
+    parts.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${slideW} ${slideH}" preserveAspectRatio="xMidYMid meet">`);
+    parts.push(`<rect x="0" y="0" width="${slideW}" height="${slideH}" fill="${bg}"/>`);
+    if(spTree){
+      parts.push(walkSpTreeChildren(spTree, mediaUrls, placeholders));
+    }
+    parts.push(`</svg>`);
+    return parts.join('');
+  }
+
+  async function loadPresentationMeta(zip){
+    let slideW = DEFAULT_W, slideH = DEFAULT_H;
+    let ordered = [];
+
+    const presFile = zip.file('ppt/presentation.xml');
+    const presRelsFile = zip.file('ppt/_rels/presentation.xml.rels');
+
+    if(presFile){
+      try{
+        const xml = await presFile.async('text');
+        const doc = new DOMParser().parseFromString(xml, 'application/xml');
+        const sldSz = doc.getElementsByTagNameNS(NS_P, 'sldSz')[0];
+        if(sldSz){
+          slideW = parseInt(sldSz.getAttribute('cx')||DEFAULT_W, 10);
+          slideH = parseInt(sldSz.getAttribute('cy')||DEFAULT_H, 10);
+        }
+        if(presRelsFile){
+          const relsXml = await presRelsFile.async('text');
+          const relsDoc = new DOMParser().parseFromString(relsXml, 'application/xml');
+          const map = {};
+          for(const r of relsDoc.getElementsByTagName('Relationship')){
+            map[r.getAttribute('Id')] = r.getAttribute('Target');
+          }
+          const sldIds = doc.getElementsByTagNameNS(NS_P, 'sldId');
+          for(const sld of sldIds){
+            const rid = sld.getAttributeNS(NS_R, 'id');
+            const target = map[rid];
+            if(target){
+              ordered.push(resolvePath('ppt/presentation.xml', target));
+            }
+          }
+        }
+      }catch(_){ /* fall through */ }
+    }
+
+    if(!ordered.length){
+      ordered = Object.keys(zip.files)
+        .filter(p=>/^ppt\/slides\/slide\d+\.xml$/.test(p))
+        .sort((a,b)=>{
+          const na = parseInt(a.match(/slide(\d+)\.xml/)[1],10);
+          const nb = parseInt(b.match(/slide(\d+)\.xml/)[1],10);
+          return na-nb;
+        });
+    }
+
+    return { slideW, slideH, slidePaths: ordered };
+  }
+
+  // === Deck state and UI ===
+  const deck = { slides: [], index: 0, slideW: DEFAULT_W, slideH: DEFAULT_H };
+
+  function renderDeckUI(){
+    const total = deck.slides.length;
+    const view = $('pptxView');
+    if(!total){
+      view.innerHTML = '<div class="tiny muted">No slides found.</div>';
+      return;
+    }
+    view.innerHTML = `
+      <div class="rm-deck">
+        <div class="rm-deck-controls">
+          <button class="btn" type="button" id="rmFirst">&laquo;&laquo;</button>
+          <button class="btn" type="button" id="rmPrev">&laquo; Prev</button>
+          <span class="rm-deck-counter" id="rmCounter">1 / ${total}</span>
+          <button class="btn" type="button" id="rmNext">Next &raquo;</button>
+          <button class="btn" type="button" id="rmLast">&raquo;&raquo;</button>
+          <span class="rm-spacer"></span>
+          <button class="btn primary" type="button" id="rmPresent">▶ Present</button>
+        </div>
+        <div class="rm-stage-wrap">
+          <div class="rm-stage" id="rmStage"></div>
+        </div>
+        <div class="rm-thumbs" id="rmThumbs"></div>
+      </div>
+    `;
+
+    // Wire up
+    $('rmFirst').onclick = ()=>goTo(0);
+    $('rmPrev').onclick  = ()=>goTo(deck.index-1);
+    $('rmNext').onclick  = ()=>goTo(deck.index+1);
+    $('rmLast').onclick  = ()=>goTo(total-1);
+    $('rmPresent').onclick = openPresent;
+
+    // Build thumbs
+    const thumbs = $('rmThumbs');
+    for(let i=0;i<total;i++){
+      const t = document.createElement('button');
+      t.className = 'rm-thumb' + (i===deck.index ? ' is-active' : '');
+      t.dataset.idx = String(i);
+      t.type = 'button';
+      t.innerHTML = deck.slides[i] + `<span class="rm-thumb-label">${i+1}</span>`;
+      t.addEventListener('click', ()=>goTo(i));
+      thumbs.appendChild(t);
+    }
+
+    goTo(0);
+  }
+
+  function goTo(i){
+    if(!deck.slides.length) return;
+    if(i<0) i=0;
+    if(i>=deck.slides.length) i=deck.slides.length-1;
+    deck.index = i;
+    const stage = $('rmStage');
+    if(stage) stage.innerHTML = deck.slides[i];
+    const counter = $('rmCounter');
+    if(counter) counter.textContent = `${i+1} / ${deck.slides.length}`;
+    // Highlight thumbnail
+    const thumbs = document.querySelectorAll('.rm-thumb');
+    thumbs.forEach((el, idx)=> el.classList.toggle('is-active', idx===i));
+    // Sync presentation overlay if open
+    if($('rmPresent') && $('rmPresent').dataset && $('rmPresent').dataset.dummy){ /* no-op */ }
+    if(presentOpen){
+      const ps = $('rmPresentStage');
+      if(ps) ps.innerHTML = deck.slides[i];
+      const c2 = $('rmCounterP');
+      if(c2) c2.textContent = `${i+1} / ${deck.slides.length}`;
+    }
+    // Scroll active thumb into view
+    const active = document.querySelector('.rm-thumb.is-active');
+    if(active && active.scrollIntoView) active.scrollIntoView({block:'nearest', inline:'center', behavior:'smooth'});
+  }
+
+  // === Fullscreen presentation overlay ===
+  let presentOpen = false;
+  function openPresent(){
+    if(!deck.slides.length) return;
+    const overlay = $('rmPresent');
+    overlay.classList.add('is-open');
+    overlay.setAttribute('aria-hidden','false');
+    presentOpen = true;
+    const ps = $('rmPresentStage');
+    ps.innerHTML = deck.slides[deck.index];
+    $('rmCounterP').textContent = `${deck.index+1} / ${deck.slides.length}`;
+    // Try real OS fullscreen
+    try{
+      if(overlay.requestFullscreen) overlay.requestFullscreen().catch(()=>{});
+      else if(overlay.webkitRequestFullscreen) overlay.webkitRequestFullscreen();
+    }catch(_){ /* ignore */ }
+  }
+  function closePresent(){
+    const overlay = $('rmPresent');
+    overlay.classList.remove('is-open');
+    overlay.setAttribute('aria-hidden','true');
+    presentOpen = false;
+    try{
+      if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+    }catch(_){ /* ignore */ }
+  }
+  $('rmPrevP').onclick = ()=>goTo(deck.index-1);
+  $('rmNextP').onclick = ()=>goTo(deck.index+1);
+  $('rmExitP').onclick = closePresent;
+
+  // Keyboard shortcuts (deck only when PPTX tab active or in present mode)
+  document.addEventListener('keydown', (e)=>{
+    if(!deck.slides.length) return;
+    const pptxActive = !panes.pptx.classList.contains('rm-hidden');
+    if(!pptxActive && !presentOpen) return;
+    // Avoid stealing keys while typing
+    const tag = (e.target && e.target.tagName) || '';
+    if(/INPUT|TEXTAREA|SELECT/.test(tag) && !presentOpen) return;
+    let handled = true;
+    if(e.key==='ArrowRight' || e.key==='PageDown' || e.key===' ' || e.key==='Spacebar'){
+      goTo(deck.index+1);
+    } else if(e.key==='ArrowLeft' || e.key==='PageUp'){
+      goTo(deck.index-1);
+    } else if(e.key==='Home'){
+      goTo(0);
+    } else if(e.key==='End'){
+      goTo(deck.slides.length-1);
+    } else if(e.key==='Escape' && presentOpen){
+      closePresent();
+    } else if((e.key==='f' || e.key==='F') && !presentOpen && pptxActive){
+      openPresent();
+    } else {
+      handled = false;
+    }
+    if(handled) e.preventDefault();
+  });
+
+  // Browser fullscreen change: close overlay if user exits via Esc
+  document.addEventListener('fullscreenchange', ()=>{
+    if(!document.fullscreenElement && presentOpen){
+      // Keep overlay open as in-page fullscreen, since some users prefer it
+      // (do nothing). They can press Exit / Esc to fully close.
+    }
+  });
+
   async function handlePptx(buf){
     const zip = await JSZip.loadAsync(buf);
-    const slideFiles = Object.keys(zip.files)
-      .filter(p=>/^ppt\/slides\/slide\d+\.xml$/.test(p))
-      .sort((a,b)=>{
-        const na = parseInt(a.match(/slide(\d+)\.xml/)[1],10);
-        const nb = parseInt(b.match(/slide(\d+)\.xml/)[1],10);
-        return na-nb;
-      });
+    const meta = await loadPresentationMeta(zip);
+    deck.slideW = meta.slideW;
+    deck.slideH = meta.slideH;
+    deck.slides = [];
+    deck.index = 0;
 
-    if(!slideFiles.length){
-      $('pptxView').innerHTML = '<div class="tiny muted">No slides found.</div>';
+    if(!meta.slidePaths.length){
+      $('pptxView').innerHTML = '<div class="tiny muted">No slides found in this PPTX.</div>';
       return;
     }
 
-    let html='';
-    for(let i=0;i<slideFiles.length;i++){
-      const p = slideFiles[i];
-      const xml = await zip.files[p].async('text');
-      const texts = getTextFromSlideXml(xml);
-      html += '<div class="rm-slide">';
-      html += '<div class="rm-slideNo">Slide ' + (i+1) + '</div>';
-      if(!texts.length){
-        html += '<div class="tiny muted" style="margin-top:8px">(No text found on this slide)</div>';
-      } else {
-        html += '<ul style="margin:8px 0 0; padding-left:18px">' + texts.slice(0,80).map(t=>'<li>'+escapeHtml(t)+'</li>').join('') + '</ul>';
-        if(texts.length>80) html += '<div class="tiny muted" style="margin-top:8px">Showing first 80 text items.</div>';
+    // Render slides sequentially to keep memory predictable
+    for(const sp of meta.slidePaths){
+      try{
+        const svg = await renderSlideToSvg(zip, sp, meta.slideW, meta.slideH);
+        deck.slides.push(svg);
+      }catch(err){
+        deck.slides.push(
+          `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${meta.slideW} ${meta.slideH}">`+
+          `<rect width="100%" height="100%" fill="#fff"/>`+
+          `<text x="50%" y="50%" text-anchor="middle" font-size="200000" fill="#888">`+
+            escapeHtml('Could not render this slide')+
+          `</text></svg>`
+        );
       }
-      html += '</div>';
     }
-    $('pptxView').innerHTML = html;
+
+    renderDeckUI();
   }
 
   async function handleFile(f){
@@ -422,6 +1285,7 @@
         await handleDocx(buf);
       } else if(name.endsWith('.pptx')){
         setTab('pptx');
+        setStatus('Rendering slides…','');
         await handlePptx(buf);
       } else {
         setStatus('Unsupported file type.','rm-warn');
