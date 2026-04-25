@@ -354,6 +354,44 @@
   .rm-lm-body ul{margin:6px 0 10px 18px;}
   .rm-lm-body li{margin:5px 0;}
   .rm-lm-body p{margin:.55rem 0;}
+
+  /* SEO content sections under the tool. The base .card class uses
+     display:flex with gap:8px, which breaks vertical margin-collapsing
+     and adds an extra gap between every heading and paragraph, doubling
+     visual spacing inside FAQ blocks. .rm-seo-card overrides that to
+     normal block flow so headings and answers sit visually grouped. */
+  .rm-seo-card{
+    display:block !important;
+    min-height:auto;
+    cursor:default;
+    padding:16px 18px;
+  }
+  .rm-seo-card:hover{transform:none;}
+  .rm-seo-card h2{
+    margin:.2rem 0 .55rem;
+    font-size:1.2rem;
+    line-height:1.3;
+    letter-spacing:-.01em;
+  }
+  .rm-seo-card h3{
+    margin:1.05rem 0 .25rem;
+    font-size:1rem;
+    line-height:1.3;
+    font-weight:700;
+  }
+  .rm-seo-card h3 + p{margin-top:.15rem;}
+  .rm-seo-card p{
+    margin:.4rem 0 .55rem;
+    line-height:1.55;
+    color:var(--muted);
+  }
+  .rm-seo-card ul, .rm-seo-card ol{
+    margin:.4rem 0 .7rem 1.3rem;
+    color:var(--muted);
+    line-height:1.5;
+  }
+  .rm-seo-card li{margin:.3rem 0;}
+  .rm-seo-card li b{color:var(--text);}
 </style>
 </head>
 <body>
@@ -443,13 +481,13 @@
     <!-- SEO-rich body sections                                         -->
     <!-- ============================================================ -->
 
-    <div class="card" style="margin-top:18px">
+    <div class="card rm-seo-card" style="margin-top:18px">
       <h2>What this PPT viewer does</h2>
       <p>The ReportMedic PPT Viewer opens .ppt and .pptx files free, directly in any modern web browser, with no Microsoft PowerPoint, no Microsoft Office, no Google Slides account, and no software installation. The renderer parses the slide deck, draws every shape, image, and arrow into a true SVG canvas, and lays out text using the original positions, colors, fonts, and alignment from the source file. A Present mode runs your slides in full screen with arrow keys, the same way a real presentation app does.</p>
       <p>Most online PPT viewers send your file to a server, queue it for rendering, and return a static image of each slide a few seconds later. That is fine for casual previews, but it leaks confidential business decks to a third party and adds round-trip latency. This tool runs entirely in your browser using JavaScript. Your file is processed locally, byte by byte, and never travels off your device. That is the strongest privacy guarantee in the online PPT viewer category.</p>
     </div>
 
-    <div class="card" style="margin-top:12px">
+    <div class="card rm-seo-card" style="margin-top:12px">
       <h2>Why this is the best free PPT viewer online</h2>
       <ul>
         <li><b>Open PPT and PPTX without PowerPoint.</b> No Microsoft Office license, no LibreOffice install, no Google Slides upload. Just drop the file in.</li>
@@ -463,7 +501,7 @@
       </ul>
     </div>
 
-    <div class="card" style="margin-top:12px">
+    <div class="card rm-seo-card" style="margin-top:12px">
       <h2>How to view a PPT or PPTX file in your browser</h2>
       <ol>
         <li>Click the file picker above, or drag a .ppt or .pptx file onto it.</li>
@@ -475,7 +513,7 @@
       <p>Need to view an Excel spreadsheet or Word document instead? Switch to the Excel or Word tab above. The same privacy guarantee applies: nothing is uploaded.</p>
     </div>
 
-    <div class="card" style="margin-top:12px">
+    <div class="card rm-seo-card" style="margin-top:12px">
       <h2>PPT viewer FAQ</h2>
 
       <h3>Can I open a PPT file online without PowerPoint?</h3>
