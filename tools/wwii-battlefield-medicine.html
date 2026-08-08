@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WWII Battlefield Medicine - Historical Reference - ReportMedic</title>
+  <meta name="description" content="A historical reference on Second World War military medicine. Cold injury, heat, burns, starvation, combat stress, triage, disease, and civilian casualties." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+  <style>
+    .panel h1{display:flex; align-items:baseline; gap:.55rem; flex-wrap:wrap;}
+    .ww-toolbar{position:sticky; top:0; z-index:11; background:rgba(15,24,40,.86); backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--border); margin:0 -16px 18px; padding:12px 16px}
+    .ww-toolbar .row{gap:10px; flex-wrap:wrap}
+    .ww-idx{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:8px; margin-top:12px}
+    .ww-idx a{display:block; text-decoration:none; border:1px solid var(--border); border-radius:10px;
+      padding:10px 12px; background:rgba(255,255,255,.03); font-size:13.5px; font-weight:600}
+    .ww-idx a:hover{background:rgba(255,255,255,.08); border-color:var(--brand)}
+    .ww-idx a span{display:block; font-weight:400; font-size:12px; color:var(--muted); margin-top:3px}
+    .ww-sec{border:1px solid var(--border); border-radius:14px; background:rgba(255,255,255,.03);
+      padding:20px; margin-bottom:16px; scroll-margin-top:80px}
+    .ww-sec > h2{font-size:20px; margin:0 0 4px; letter-spacing:-.01em}
+    .ww-kicker{font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:8px}
+    .ww-sec p{margin:0 0 12px; line-height:1.75; font-size:14.5px}
+    .ww-sec h3{font-size:15px; margin:18px 0 8px; color:var(--brand2)}
+    .ww-anchor{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px; color:var(--muted);
+      border:1px solid var(--border); border-radius:6px; padding:2px 7px; background:rgba(0,0,0,.2)}
+    .ww-tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
+    .ww-tag{font-size:11px; font-weight:600; padding:3px 9px; border-radius:999px;
+      background:rgba(255,255,255,.06); border:1px solid var(--border); color:var(--muted)}
+    .ww-tbl-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:12px; margin:14px 0}
+    table.ww-tbl{border-collapse:collapse; width:100%; font-size:13.5px; min-width:560px}
+    table.ww-tbl th, table.ww-tbl td{border-bottom:1px solid rgba(255,255,255,.09); padding:9px 11px; text-align:left; vertical-align:top}
+    table.ww-tbl th{background:rgba(255,255,255,.06); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+    table.ww-tbl tr:last-child td{border-bottom:0}
+    .ww-note{border-left:3px solid var(--brand); background:rgba(255,255,255,.04);
+      border-radius:0 10px 10px 0; padding:12px 14px; font-size:13.5px; line-height:1.7; margin:14px 0}
+    .ww-warn{border-left:3px solid #ffb35c; background:rgba(255,179,92,.07);
+      border-radius:0 10px 10px 0; padding:14px 16px; font-size:13.5px; line-height:1.7}
+    .ww-hide{display:none}
+    .ww-count{font-size:12px; color:var(--muted)}
+  </style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>WWII Battlefield Medicine <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">A historical reference on how armies, navies, air forces, and civilian services of the Second World War understood, treated, and were defeated by injury and disease. Twenty subject areas, each written for readers arriving from a history article and wanting the medical fact behind the sentence they just read.</p>
+
+    <div class="ww-warn" style="margin-top:14px">
+      This page documents medical practice as it stood in the nineteen thirties and forties, including methods long since abandoned. It is a history reference and nothing on it is clinical guidance. For any present day medical question, consult a qualified clinician.
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="ww-toolbar">
+      <div class="row">
+        <input class="input" id="wwFind" type="search" placeholder="Search all twenty subjects" style="max-width:320px" />
+        <select class="input" id="wwTheatre" style="max-width:210px">
+          <option value="">Any theatre</option>
+        </select>
+        <span class="pill tiny" id="wwCount"><b>Showing:</b><span class="muted"> 20 of 20</span></span>
+        <button class="btn" id="wwTop" type="button">Back to index</button>
+      </div>
+    </div>
+
+    <div class="card" id="wwIndex">
+      <div style="font-weight:800; margin-bottom:4px">Reference index</div>
+      <div class="tiny muted">Every subject on this page has a permanent anchor. Deep link straight to the section a reader needs rather than sending them to the top of the page.</div>
+      <div class="ww-idx" id="wwIdxList"></div>
+    </div>
+
+    <div id="wwSections" style="margin-top:20px"></div>
+
+    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+      <a class="btn" href="/fix-my-report.html">Contact</a>
+    </div>
+  </div>
+
+<div class="footer">© 2026 ReportMedic</div>
+</div>
+
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
+<div aria-hidden="true" aria-label="WWII battlefield medicine details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">WWII Battlefield Medicine</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this covers</h3>
+      <ul>
+        <li>Twenty subject areas across land, sea, air, and civilian medicine</li>
+        <li>How each condition was recognised and treated with the means available at the time</li>
+        <li>What each cost armies operationally, in casualties and in lost fighting strength</li>
+        <li>The innovations the war forced, and the practices it discredited</li>
+      </ul>
+      <h3>How to use it</h3>
+      <ul>
+        <li>Every subject has a permanent anchor for deep linking from an article</li>
+        <li>Search filters all twenty subjects at once by keyword</li>
+        <li>Filter by theatre to see what dominated a given front</li>
+      </ul>
+      <h3>What it is not</h3>
+      <ul>
+        <li>Not clinical guidance, and not a description of modern treatment</li>
+        <li>Several methods described here were abandoned for good reason</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+var WW = {};
+
+WW.sections = [
+
+{id:"cold-injury", title:"Cold injury, frostbite and hypothermia", kicker:"Environmental casualty",
+ theatres:["Eastern Front","North West Europe","Northern Europe","Mountain"],
+ tags:["frostbite","hypothermia","trench foot","immersion foot","cold weather injury"],
+ body:[
+ "Cold produced casualties on a scale that rivalled enemy fire in several campaigns, and unlike combat losses it fell hardest on the side that had planned badly. German forces before Moscow in the winter of nineteen forty one suffered cold injury on a catastrophic scale because winter clothing had not been shipped forward, the campaign having been expected to end before it was needed. Soviet forces, equipped and acclimatised, absorbed the same temperatures at a fraction of the cost. The lesson recurs across the war: cold is not a hazard that falls equally on both armies, it is a test of logistics.",
+ "Three distinct conditions were routinely confused at the time and are worth separating. Frostbite is the freezing of tissue, most often at the extremities, and it destroys tissue outright. Hypothermia is the fall of core body temperature, which kills without visible injury. Trench foot, also called immersion foot, requires no freezing at all: prolonged wet and cold above freezing damages the foot through sustained circulatory constriction, and it disabled enormous numbers of men in Italy and North West Europe during the winter of nineteen forty four.",
+ "Treatment as understood at the time was inconsistent and often harmful. Rubbing frozen tissue with snow, a folk method still current in some armies, drove mechanical damage into already destroyed tissue. Rapid rewarming in warm water was understood by some medical services and not others, and the difference in outcome was substantial. What every service eventually agreed on was that prevention beat treatment by an enormous margin: dry socks, rotation out of forward positions, and the discipline to enforce foot inspection saved more feet than any surgical intervention."],
+ h3:[{t:"Why it decides campaigns", p:"An army losing men to cold is losing them from its most exposed and most forward positions, which is exactly where it can least afford the loss. Cold casualties also accumulate quietly rather than in a single identifiable event, so the strength return often reveals the problem after the operational damage is done. Commanders who treated foot discipline as a matter of morale rather than combat power tended to learn this expensively."},
+          {t:"Immersion in water", p:"Survival time in cold water is measured in minutes rather than hours, and it shortens sharply as water temperature falls. Naval and air crews ditching into northern waters faced a clock that no amount of fitness could meaningfully extend. This shaped naval doctrine on rescue and shaped how long a search was considered worth mounting."}]
+},
+
+{id:"heat-and-dehydration", title:"Heat, dehydration and exhaustion", kicker:"Environmental casualty",
+ theatres:["North Africa","Pacific","Mediterranean","Eastern Front"],
+ tags:["heat exhaustion","dehydration","water discipline","desert"],
+ body:[
+ "In the desert campaigns water was the binding constraint on every operation, and the physiological consequences of its scarcity were an operational factor rather than a background condition. Heat stress progresses through recognisable stages, from reduced performance and headache through exhaustion to collapse, and each stage takes fighting strength out of a formation before anyone is formally a casualty. A unit at half its water ration is a weaker unit long before a single man reports sick.",
+ "The armies that fought in North Africa learned that water discipline had to be commanded rather than left to individual judgement. Rationing that felt harsh in the morning kept a formation functional in the afternoon, and units allowed to drink freely early frequently had nothing left when they needed it. Salt loss compounded the problem, and salt tablets were widely issued, sometimes in quantities that created their own difficulties.",
+ "Heat also interacted with everything else. Wound infection accelerated in high temperatures, blood and plasma supplies degraded, and the tempo a commander could sustain fell whether or not he acknowledged it. Overextended forces in hot theatres lost fighting strength to their environment as surely as to the enemy, and a supply line that could not carry water forward set a hard limit on how far an advance could go."],
+ h3:[{t:"The operational arithmetic", p:"Water consumption in desert conditions is several times the temperate requirement, and it is not compressible. This turned water into a logistics problem of the same order as fuel and ammunition, and it is one reason desert advances repeatedly outran their own sustainability and stalled short of their objective."}]
+},
+
+{id:"burns-and-blast", title:"Burns, blast and crush injury", kicker:"Trauma",
+ theatres:["Naval","Air","All theatres"],
+ tags:["burns","blast injury","smoke inhalation","crush injury","reconstructive surgery"],
+ body:[
+ "Burns became a signature injury of mechanised and naval warfare. Fuel fires aboard ship, aircraft cockpit fires, and armoured vehicle fires produced a pattern of injury that peacetime medicine had rarely seen in volume. Burn severity was classified by depth and by the proportion of body surface involved, and both measures mattered because extensive burns kill through fluid loss and infection rather than through the burn itself.",
+ "The war drove genuine advance here. Saline bath treatment, improved fluid replacement, and above all the development of reconstructive surgery for airmen with severe facial and hand burns changed what survival meant. The surgical work done for burned aircrew in Britain, and the deliberate social rehabilitation that accompanied it, established principles that outlasted the war entirely.",
+ "Blast injury was less well understood and frequently missed. An explosion transmits a pressure wave that damages gas-containing organs, the lungs in particular, in men who may show no external wound at all. Secondary injury from fragments and tertiary injury from being thrown were easier to see and were therefore recorded, while primary blast injury was often recorded as shock or as an unexplained death. Crush injury from collapsed structures, common in bombed cities, produced a pattern of kidney failure whose mechanism was only properly described during the war.",
+ "Enclosed spaces added smoke inhalation, which damages the airway and lungs directly and kills men who escaped the flames. Below decks aboard a burning ship, or inside a bombed shelter, respiratory injury frequently determined the outcome."],
+ h3:[{t:"Why naval fires were different", p:"A ship on fire is a sealed environment full of fuel, ammunition, and men who cannot leave. Burns, smoke inhalation, and blast arrive together and in numbers, and the medical facility treating them is aboard the same vessel and equally at risk. Carrier actions in particular generated casualty patterns that no shore hospital was configured for."}]
+},
+
+{id:"starvation-and-nutrition", title:"Starvation, malnutrition and refeeding", kicker:"Deprivation",
+ theatres:["Eastern Front","Occupied Europe","Far East","Home front"],
+ tags:["starvation","malnutrition","refeeding","rationing","siege"],
+ body:[
+ "Prolonged undernutrition produces predictable physiological damage: muscle wasting that includes the heart, immune failure, oedema, and profound apathy that observers repeatedly mistook for a failure of will. Sieges and blockades in this war produced civilian starvation on a scale that made the condition a subject of systematic study for the first time, and famine in occupied territory and among prisoners produced the same picture in military populations.",
+ "The most counterintuitive finding concerned recovery. Feeding a severely starved person generously is dangerous, because the metabolic shift back to normal feeding places demands on a weakened heart and disturbs the body's chemistry in ways that can kill. Careful, graduated refeeding was learned expensively, sometimes by liberating forces who fed emaciated survivors with the best intentions and lost some of them. The management of physiological damage inflicted by prolonged malnutrition is a slow process measured in months, and it was the postwar reality for large numbers of survivors and returning prisoners.",
+ "Rationing on the home front was a different problem with an unexpected outcome. Several nations found that a well designed ration, while austere, improved population nutrition relative to prewar inequality, because it distributed a sufficient diet to people who had not previously had one."],
+ h3:[{t:"Deficiency disease in captivity", p:"Prison camps in the Far East produced classical deficiency diseases that western medicine had largely relegated to textbooks: beriberi from thiamine deficiency, pellagra, and severe vitamin deficiency affecting vision and nerve function. These conditions left permanent damage in survivors and shaped postwar medical follow up for former prisoners for decades."}]
+},
+
+{id:"combat-stress", title:"Combat stress and psychiatric casualty", kicker:"Psychiatric",
+ theatres:["All theatres"],
+ tags:["combat fatigue","battle exhaustion","psychiatric casualty","forward psychiatry","aircrew"],
+ body:[
+ "Every army in this war produced psychiatric casualties in numbers that could not be dismissed, and the argument over what to call them was itself revealing. Terms moved from the discredited language of the previous war toward battle exhaustion and combat fatigue, wording chosen deliberately to imply a temporary and treatable state rather than a permanent defect of character.",
+ "The central clinical finding was that prolonged exposure to combat produced breakdown in essentially anyone given enough time, which reframed the condition from individual weakness to a predictable consequence of sustained exposure. That reframing had a direct operational consequence: rotation policies, tour limits for aircrew, and unit relief schedules were adjusted in several services once the mathematics of cumulative exposure was accepted.",
+ "Treatment doctrine converged on forward psychiatry: treat close to the front, treat immediately, and communicate the expectation of return to duty. Evacuating a man far to the rear made return far less likely, a finding that had been established in the previous war, forgotten, and relearned. The approach was effective at returning men to duty, and historians continue to debate what it cost those men afterwards.",
+ "Aircrew were assessed under a distinct framework because their exposure pattern differed. A bomber crew faced concentrated terror on a defined schedule with a statistically visible chance of not returning, and the psychological load of that arithmetic was recognised as a specific problem requiring a specific response."],
+ h3:[{t:"Assessment under captivity", p:"Psychiatric assessment of prisoners under prolonged detention became its own field, complicated by the difficulty of separating the effects of captivity from any pre-existing condition, and by the obvious incentive of a detainee to present in a particular way. Assessments made in these conditions were contested at the time and remain so."}]
+},
+
+{id:"evacuation-and-triage", title:"Casualty evacuation, triage and the chain of care", kicker:"System",
+ theatres:["All theatres","Naval","Air"],
+ tags:["triage","casualty evacuation","field hospital","air evacuation","chain of care"],
+ body:[
+ "Survival after wounding depended less on any single treatment than on the speed and integrity of the chain that moved a casualty rearward. That chain ran from immediate first aid at the point of wounding, through a battalion aid post, to collecting and clearing stations, then to field and evacuation hospitals, and finally to general hospitals far to the rear. Each step traded time against capability, and the whole system was designed around the observation that most preventable deaths occur early.",
+ "Triage was the mechanism that made the system work under load. Sorting casualties by urgency and by likely benefit is straightforward to state and extremely hard to do, particularly when it means directing effort away from the most severely injured toward those most likely to survive with intervention. Every service used some form of it and every service found it the hardest duty it asked of its medical officers.",
+ "Air evacuation expanded dramatically during the war and compressed the timeline in a way nothing else could. Moving casualties by air from forward strips to rear hospitals turned journeys of days into hours, and the effect on survival for certain injury patterns was substantial. It also created a new set of problems, since altitude affects wounds, splints, and untreated chest injuries in ways ground transport does not.",
+ "At sea the problem was different again. Casualty evacuation and triage aboard ship or between ships had to be conducted in an environment that was still under attack, with a limited surgical facility that could not be reinforced and could not be moved."],
+ h3:[{t:"Why the chain mattered more than the hospital", p:"A well equipped rear hospital cannot save a casualty who does not reach it. Improvements in the forward links, better first aid, faster collection, and shorter transit repeatedly produced larger survival gains than improvements in rear facilities, a pattern military medicine has confirmed in every conflict since."}]
+},
+
+{id:"epidemic-disease", title:"Epidemic and tropical disease", kicker:"Disease",
+ theatres:["Pacific","Burma","Mediterranean","Eastern Front"],
+ tags:["malaria","typhus","cholera","plague","dysentery","quinine","DDT"],
+ body:[
+ "In several theatres disease removed more men from the line than the enemy did. Malaria in the Pacific and in Burma was the outstanding case, and it became a strategic problem when the fall of the principal quinine producing region in nineteen forty two cut the Allies off from their main supply of the standard treatment. Synthetic substitutes filled the gap, and enforcing that men actually took them became a matter of command discipline rather than medical persuasion, since the drugs had unpleasant effects and were widely avoided.",
+ "Typhus, carried by lice, was the classic disease of crowded and displaced populations, and it threatened every besieged city, prison camp, and refugee movement of the war. The mass application of insecticide to halt an urban typhus outbreak was one of the most striking public health interventions of the period and demonstrated that an epidemic of this kind could be stopped rather than merely endured.",
+ "Dysentery and other waterborne infection followed every breakdown of sanitation, and in siege conditions the collapse of clean water supply was frequently the decisive medical event. Plague and cholera appear in the record chiefly in the context of civilian catastrophe and of deliberate biological weapons programmes, the latter a subject that belongs with the ethics of the period rather than with its clinical practice."],
+ h3:[{t:"Prevention as a command function", p:"Anti-malarial discipline, sanitation, and delousing succeeded only where commanders enforced them as orders. Where medical officers were left to persuade, compliance collapsed and disease rates rose. This is one of the clearest demonstrations in the war that preventive medicine is a leadership problem rather than a technical one."}]
+},
+
+{id:"civilian-and-forensic", title:"Civilian casualty, deportation and forensic identification", kicker:"Civilian",
+ theatres:["Occupied Europe","Home front","Eastern Front"],
+ tags:["civilian mortality","deportation","air raid casualties","forensic identification","mass graves"],
+ body:[
+ "Civilian medical services faced a problem no peacetime system had been designed for: mass casualties arriving at once, in a city whose hospitals, water, and power might themselves have been hit. Prewar casualty projections for aerial bombardment were made in several countries and proved badly wrong in both directions, overestimating psychological collapse and underestimating the sheer logistical difficulty of treating large numbers simultaneously. Civil defence mobilisation, shelter provision, and the mass issue of protective equipment were organised on the basis of those projections.",
+ "Deportation and forced population movement produced their own mortality, driven by transport conditions, exposure, starvation, and the absence of any medical provision. The health consequences for survivors extended over decades, and the documentary record of occupation era public health is one of the principal sources historians use to reconstruct what happened.",
+ "Forensic identification of remains, whether from mass graves, from bombed cities, or from contested individual deaths, developed considerably under wartime pressure. Establishing identity and cause of death from skeletal and dental evidence became a formal discipline, and its wartime application set precedents that later international investigations relied on."],
+ h3:[{t:"Why the record is uneven", p:"Civilian mortality figures from this period vary widely between sources, because the systems that would have counted the dead were often the systems that had been destroyed. Where an occupying power had an interest in the number, the record is worse still. Any figure quoted for a civilian catastrophe of this war should be read with its source and its method attached."}]
+}
+];
+
+WW.sections = WW.sections.concat([
+
+{id:"surgery-and-wounds", title:"Wound surgery, debridement and amputation", kicker:"Trauma",
+ theatres:["All theatres"],
+ tags:["wound surgery","debridement","amputation","gas gangrene","delayed closure"],
+ body:[
+ "The single most important surgical principle of the war was that a battlefield wound must not be closed immediately. Earlier practice had favoured cleaning and stitching a wound at once, which sealed contamination inside and produced infection that killed. Wide excision of dead tissue, thorough cleaning, and then leaving the wound open for delayed closure several days later transformed survival from penetrating injury.",
+ "Gas gangrene was the infection that made this principle non negotiable. Soil contaminated wounds, particularly in agricultural country churned by shelling, carried organisms that thrive in dead tissue without oxygen, and the resulting infection could destroy a limb and kill a man within a day. Aggressive early excision was the only reliable answer, and amputation was frequently the decision that saved a life rather than the failure of an attempt to save a limb.",
+ "Immobilisation methods were contested. Enclosing a cleaned wound in plaster and leaving it undisturbed during evacuation, a method developed in an earlier conflict, was adopted with real success in some services, though the smell on removal led to persistent resistance from surgeons who did not trust it. The debate is a good illustration of how wartime surgical practice advanced by argument between services as much as by research."],
+ h3:[{t:"Amputation as a decision", p:"Amputation in this period was governed by whether tissue was viable and whether infection could be outrun, judgements made with limited imaging and under time pressure. Levels were chosen with the eventual prosthesis in mind where circumstances allowed, and rehabilitation services expanded enormously to meet the resulting need."}]
+},
+
+{id:"transfusion-and-plasma", title:"Blood, plasma and fluid replacement", kicker:"System",
+ theatres:["All theatres"],
+ tags:["blood transfusion","plasma","shock","blood banking","medical logistics"],
+ body:[
+ "Haemorrhagic shock kills wounded men faster than almost anything else, and the war produced the first large scale systems for putting fluid back into them. Dried plasma was the breakthrough of the early war years because it could be stored without refrigeration, shipped anywhere, and reconstituted at a forward aid post with water. It restored circulating volume even though it carried no red cells, and it saved very large numbers of lives.",
+ "Whole blood was better where it could be delivered, since it carries oxygen as well as volume, and the later years of the war saw the construction of genuine blood supply chains running from civilian donors at home to forward hospitals overseas. That required refrigeration, aircraft priority, and an organisational effort comparable to any other logistics problem of the war.",
+ "The scientific and organisational work behind plasma banking, including the separation and preservation methods that made it possible, was among the most consequential medical contributions of the period. It also collided with the social politics of the time in ways that are part of the historical record and worth stating plainly rather than omitting."],
+ h3:[{t:"Why plasma changed forward medicine", p:"Before plasma, a man in shock had to reach a facility with a donor. After it, a corpsman with a tin and a water bottle could begin resuscitation at the point of wounding. That shifted the effective start of treatment forward by hours and is one of the clearest single causes of improved survival across the war."}]
+},
+
+{id:"antimicrobials", title:"Sulfonamides, penicillin and infection control", kicker:"Pharmacology",
+ theatres:["All theatres"],
+ tags:["sulfa","penicillin","antibiotics","infection","wound sepsis"],
+ body:[
+ "This was the first major war fought with drugs that could kill bacteria inside the body. Sulfonamide powder was issued to individual soldiers to be sprinkled directly into wounds, a practice that felt decisive at the time and whose actual benefit was later found to be far smaller than the effort spent on it, since powder in a wound does not substitute for removing dead tissue.",
+ "Penicillin arrived mid war and was genuinely transformative. Moving it from a laboratory curiosity to mass production was an industrial achievement as much as a scientific one, and supply was rationed and prioritised with care because there was never enough. Its effect on wound infection, on burns, and on conditions that had previously required surgery or amounted to a death sentence was immediate and visible.",
+ "The essential caution is that antimicrobials did not replace surgery, they made good surgery survivable. Services that treated the new drugs as a substitute for thorough wound excision produced worse outcomes than those that treated them as an adjunct, and that hierarchy held throughout the war."],
+ h3:[{t:"Allocation as an ethical problem", p:"When a drug is scarce and effective, deciding who receives it is a moral decision made under pressure. Priority rules for penicillin varied between services and changed as supply grew, and the reasoning behind those rules is one of the more revealing records the period left behind."}]
+},
+
+{id:"anaesthesia-and-pain", title:"Anaesthesia, analgesia and resuscitation", kicker:"Pharmacology",
+ theatres:["All theatres","Naval"],
+ tags:["anaesthesia","morphine","analgesia","resuscitation","shock"],
+ body:[
+ "Field anaesthesia had to work with limited equipment, unstable patients, and often no specialist anaesthetist. Intravenous agents were attractive because they were fast and required no cumbersome apparatus, and their use expanded rapidly. That expansion also produced one of the war's hardest clinical lessons: an agent given at a normal dose to a patient already in shock can be lethal, and the losses that taught this were significant enough to reshape teaching permanently.",
+ "Morphine was issued in single dose syrettes carried by individual soldiers and corpsmen, which put effective pain relief at the point of wounding for the first time. It also created a real hazard of repeated dosing, since a casualty in pain and confusion might receive several doses from successive helpers. Marking a treated casualty, often literally on the forehead, became standard practice for exactly this reason.",
+ "Resuscitation as a discipline barely existed before the war and was recognisable by the end of it. The understanding that shock is a circulatory failure requiring volume replacement, rather than a mysterious collapse to be treated with stimulants, was consolidated in this period."],
+ h3:[{t:"The marking convention", p:"A simple mark on a casualty recording the drug and time given is a low technology solution to a lethal problem, and it illustrates how much wartime medicine depended on procedural discipline rather than on equipment."}]
+},
+
+{id:"aviation-medicine", title:"Aviation medicine and altitude physiology", kicker:"Air",
+ theatres:["Air","All theatres"],
+ tags:["anoxia","decompression","altitude","oxygen","aircrew","G-force"],
+ body:[
+ "High altitude flight created an entirely new category of medical problem. Above a certain height the air simply does not contain enough oxygen to sustain judgement, and anoxia is insidious because its first casualty is the ability to notice it. Crews became cheerful, careless, and then unconscious, and equipment failure at altitude killed men who never understood they were in trouble.",
+ "Cold at altitude was extreme, and frostbite in unpressurised bombers was common, particularly for gunners handling metal in open positions. Decompression problems similar to those experienced by divers appeared in crews flying high for long periods. Acceleration forces in combat manoeuvring caused loss of vision and consciousness, and the countermeasures developed to resist them, including the earliest pressure suits, were direct products of wartime research.",
+ "Aviation medicine also concerned itself with selection and with the sustainability of aircrew exposure, which links directly to the psychiatric picture. The physical and psychological loads on a bomber crew were studied together because they were experienced together."],
+ h3:[{t:"Why oxygen discipline was absolute", p:"An unnoticed oxygen failure has no warning symptom that the affected person can be relied upon to act on. Crew procedures therefore required regular check calls, with other crew members responsible for noticing a man who had stopped answering."}]
+},
+
+{id:"naval-and-immersion", title:"Naval medicine, immersion and survival at sea", kicker:"Naval",
+ theatres:["Naval","Atlantic","Pacific"],
+ tags:["immersion","survival at sea","oil ingestion","seasickness","shipboard surgery"],
+ body:[
+ "A man in the water after a sinking faces several threats at once, and cold is only the first. Survival time in cold water is short and falls sharply with temperature, which set hard limits on rescue planning in northern waters. Fuel oil on the surface added its own injuries through ingestion, inhalation, and damage to eyes and skin, and burning oil turned an escape route into a lethal one.",
+ "Prolonged exposure at sea, whether in a lifeboat or aboard a small vessel in heavy weather, degrades a fighting force even without casualties. Persistent seasickness produces dehydration and exhaustion and reduces the combat effectiveness of troops arriving by sea, which is why the condition of assault troops on arrival was an operational planning factor rather than a discomfort to be endured.",
+ "Shipboard surgery was performed in a facility that could not be evacuated, could not be reinforced, and might be hit during the operation. Naval medical services developed accordingly, with an emphasis on damage control, on distributing medical capability so that a single hit could not remove it, and on treating large numbers with what was already aboard."],
+ h3:[{t:"Submarine and diving medicine", p:"Confined atmosphere management, carbon dioxide accumulation, and escape from depth formed a distinct field with its own physiology. Escape training and equipment developed considerably during the war, and the decompression knowledge involved fed directly into postwar diving medicine."}]
+},
+
+{id:"radiation-injury", title:"Radiation injury and the atomic casualties", kicker:"Trauma",
+ theatres:["Pacific"],
+ tags:["radiation","acute radiation syndrome","atomic","blast","thermal burn"],
+ body:[
+ "The atomic attacks of nineteen forty five produced a casualty pattern that combined three mechanisms in one event: blast injury, thermal burn from the flash, and radiation exposure. The first two were understood in kind if not in scale. The third was not, and the medical response was consequently improvised from an incomplete theoretical base.",
+ "Acute radiation syndrome follows a recognisable course. An initial phase of nausea and vomiting is followed by an apparent recovery, then by a later phase of collapse driven by damage to the bone marrow and the lining of the gut, with severity and timing depending on dose. The deceptive middle period led observers to conclude that patients were recovering when they were not, and that misreading is a defining feature of the early medical accounts.",
+ "Thermal burns from the flash presented differently from ordinary burns because the energy arrived in an instant over exposed surfaces, producing patterns that followed clothing and shadow. Longer term effects on survivors became the subject of decades of follow up study, and that body of work remains a principal source for understanding radiation exposure in humans."],
+ h3:[{t:"Reading the historical accounts carefully", p:"Medical records from the immediate aftermath were made under conditions of destroyed infrastructure and incomplete understanding, and later study revised many early conclusions. Figures and clinical descriptions from the first weeks should be treated as contemporary observation rather than as settled findings."}]
+},
+
+{id:"chemical-and-gas", title:"Chemical warfare preparedness and gas casualties", kicker:"Trauma",
+ theatres:["Home front","Mediterranean","All theatres"],
+ tags:["chemical warfare","mustard","gas mask","civil defence","preparedness"],
+ body:[
+ "Chemical weapons were expected in this war and were not used on the battlefield between the major powers, which makes preparedness rather than treatment the main medical story. Civilian gas mask issue, decontamination planning, and civil defence training absorbed enormous effort on the basis of an attack that did not come, and the reasoning behind that investment is a useful case study in planning against a plausible worst case.",
+ "Casualties did occur, most notably through an accidental release from stockpiled munitions destroyed in an air raid on a port, an incident whose medical investigation had a significant and unexpected consequence. Observations of the effect of the agent on white blood cells contributed to the development of chemotherapy for certain cancers, one of the war's more striking indirect medical legacies.",
+ "Blistering agents damage skin, eyes, and airway, act after a delay that leaves casualties unaware of exposure, and persist in the environment and on clothing so that they injure the people treating the casualty. Decontamination before treatment was therefore fundamental, and getting that sequence wrong turned a single incident into a spreading one."],
+ h3:[{t:"Why non use is the interesting question", p:"The absence of battlefield chemical warfare between major combatants, despite large stockpiles and no shortage of ruthlessness elsewhere, is a subject historians continue to examine. Deterrence, operational impracticality, and the memory of the previous war all feature in the explanations offered."}]
+},
+
+{id:"prisoner-medicine", title:"Prisoner of war medicine and captivity", kicker:"Deprivation",
+ theatres:["Far East","Eastern Front","Occupied Europe"],
+ tags:["prisoner of war","captivity","beriberi","camp medicine","repatriation"],
+ body:[
+ "Medical conditions in captivity varied enormously depending on who held the prisoner and where, and that variation is itself one of the clearest measures of how differently the war was conducted in different theatres. Camps where the detaining power observed the conventions produced survivable if grim conditions. Camps where it did not produced mortality rates that approached or exceeded those of frontline combat.",
+ "Captured medical officers frequently continued to practise inside camps with almost nothing, and the record of improvised treatment under those conditions is remarkable. Deficiency diseases dominated the clinical picture in the Far East, alongside tropical infection, untreated injury, and the effects of forced labour on already malnourished men.",
+ "Repatriation created a second medical problem. Returning prisoners required graduated refeeding, treatment of chronic infection and deficiency damage, and a psychological reintegration that medical services of the period were poorly equipped to provide. Long term follow up revealed persistent effects that shaped veteran health provision for decades."],
+ h3:[{t:"The documentary record", p:"Camp medical records, where they survive, are among the most valuable sources for reconstructing conditions, precisely because they were often kept by prisoners themselves at considerable risk and were not written for an official audience."}]
+},
+
+{id:"medical-logistics", title:"Medical logistics, supply and organisation", kicker:"System",
+ theatres:["All theatres"],
+ tags:["medical logistics","supply chain","field hospital","organisation","personnel"],
+ body:[
+ "Medical capability in this war was a supply problem before it was a clinical one. Plasma, penicillin, morphine, dressings, splints, and surgical instruments all had to be manufactured, allocated, shipped, and moved forward against competition from every other category of war material, and a hospital without supply is a building.",
+ "Allied supply chain architecture in Western Europe illustrates the scale involved. Sustaining medical provision across an advancing front meant moving hospitals forward, keeping refrigerated blood supply intact, and maintaining an evacuation flow rearward along the same congested roads carrying reinforcement forward. The competition for transport between these flows was constant and was resolved differently by different commanders.",
+ "Organisational design mattered as much as tonnage. Where medical units were structured to move, split, and reassemble, they kept pace with operations. Where they were structured as fixed installations, they fell behind an advance and the chain of care lengthened until the forward links stopped working."],
+ h3:[{t:"Casualty protocols across a theatre", p:"Standardised casualty handling protocols across a theatre allowed units from different services and different nations to hand casualties between them without loss of information. Where protocols diverged, casualties arrived at rear facilities with unknown treatment histories, which caused repeated dosing and missed injuries."}]
+},
+
+{id:"nursing-and-personnel", title:"Nursing, corpsmen and medical personnel", kicker:"System",
+ theatres:["All theatres"],
+ tags:["nursing","corpsmen","stretcher bearers","medical personnel","training"],
+ body:[
+ "The people who determined whether a wounded man survived were usually not surgeons. The first treatment came from a comrade, a stretcher bearer, or a medical orderly working under fire with a satchel, and the quality of that first intervention set the ceiling for everything that followed. Training programmes for these roles expanded enormously and their content was revised repeatedly on the basis of what was actually killing casualties.",
+ "Military nursing expanded in scale and in scope, moving nurses far closer to the front than previous practice had allowed, including into field hospitals within artillery range and onto air evacuation flights. That shift was contested at the time and was settled by necessity rather than by argument.",
+ "Medical personnel carried a specific and difficult status under the conventions of war, protected in principle and frequently unprotected in practice. Casualty rates among stretcher bearers and forward medical staff were high, and the moral position of a non combatant operating in a firefight was and remains a subject of serious reflection."],
+ h3:[{t:"Why forward training paid off", p:"Improving what happens in the first minutes after wounding yields larger survival gains than almost any investment further back in the chain, because the deaths that occur early are the ones most amenable to simple intervention. Every service that measured this reached the same conclusion."}]
+},
+
+{id:"medical-ethics", title:"Medical ethics, experimentation and the postwar reckoning", kicker:"Ethics",
+ theatres:["Occupied Europe","Far East"],
+ tags:["medical ethics","human experimentation","consent","war crimes","Nuremberg Code"],
+ body:[
+ "The war produced the gravest violations of medical ethics in the history of the profession. Physicians in several states conducted experiments on prisoners and on civilian populations without consent, causing suffering and death on a large scale, and in some cases participated directly in programmes of killing. That these acts were carried out by qualified doctors, within institutional structures, is the fact that made the postwar reckoning necessary.",
+ "The trial of physicians after the war established that professional standing offers no defence, and it produced a statement of principles for research on human subjects. The requirement of voluntary informed consent, placed first in that statement, is the direct ancestor of every research ethics framework in use today. It is worth stating plainly that this principle was formulated in response to specific crimes rather than arrived at through abstract reflection.",
+ "Some programmes escaped prosecution through postwar bargaining over the data they had produced, and the question of whether such data may ethically be used at all has been argued ever since without resolution. Any article touching this subject should present the historical record accurately and should attribute contested claims rather than asserting them."],
+ h3:[{t:"How to write about this responsibly", p:"Name what was done, name who did it, and distinguish what is documented from what is alleged. Avoid both euphemism and sensationalism, since either one obscures the record. Where scholarship is divided, say so and give the strongest version of each position."}]
+}
+
+]);
+
+/* Slug alias map. Every path that published InsightCrunch articles reference,
+   pointed at the section that answers it. New series articles should link
+   directly to the anchor and use this table only as a lookup. */
+WW.aliases = {
+  "frostbite-cold-weather-injury":"cold-injury",
+  "frostbite-cold-weather-injury-treatment":"cold-injury",
+  "frostbite-cold-weather-injury-mountain-warfare":"cold-injury",
+  "frostbite-treatment-long-term-recovery":"cold-injury",
+  "frostbite-hypothermia-eastern-front-winter":"cold-injury",
+  "cold-weather-injury-and-frostbite":"cold-injury",
+  "hypothermia-symptoms-treatment":"cold-injury",
+  "hypothermia-cold-weather-injury-field-treatment":"cold-injury",
+  "hypothermia-cold-water-immersion":"cold-injury",
+  "cold-water-immersion-survival-times":"naval-and-immersion",
+  "seasickness-exposure-combat-effectiveness":"naval-and-immersion",
+  "casualty-evacuation-and-triage-at-sea":"naval-and-immersion",
+  "heat-exhaustion-dehydration-treatment":"heat-and-dehydration",
+  "dehydration-heat-exhaustion-field-treatment":"heat-and-dehydration",
+  "burn-injury-treatment-severity-classification":"burns-and-blast",
+  "burn-injury-treatment-history":"burns-and-blast",
+  "thermal-burn-treatment":"burns-and-blast",
+  "aviation-burns-reconstructive-surgery":"burns-and-blast",
+  "smoke-inhalation-respiratory-injury":"burns-and-blast",
+  "blast-injury-concussion-mechanics":"burns-and-blast",
+  "blast-and-crush-injuries-battlefield":"burns-and-blast",
+  "prisoner-of-war-nutrition-recovery":"starvation-and-nutrition",
+  "siege-starvation-physiology-world-war-two":"starvation-and-nutrition",
+  "wartime-rationing-nutrition-britain":"starvation-and-nutrition",
+  "combat-stress-and-operational-fatigue":"combat-stress",
+  "combat-fatigue-aircrew-1940":"combat-stress",
+  "wartime-psychiatric-assessment-prisoners":"combat-stress",
+  "mountain-warfare-medical-evacuation-cold-casualties":"evacuation-and-triage",
+  "combat-trauma-medicine-pacific-theater":"evacuation-and-triage",
+  "pearl-harbor-casualty-treatment-december-1941":"evacuation-and-triage",
+  "battlefield-casualties-1939-poland":"evacuation-and-triage",
+  "atlantic-theater-casualty-protocols-1941-1942":"medical-logistics",
+  "allied-supply-chain-architecture-western-europe":"medical-logistics",
+  "wartime-blood-plasma-medical-logistics":"transfusion-and-plasma",
+  "quinine-malaria-wartime-supply":"epidemic-disease",
+  "bubonic-plague-symptoms-and-treatment":"epidemic-disease",
+  "cholera-causes-symptoms-treatment":"epidemic-disease",
+  "warsaw-1939-siege-medical-response":"epidemic-disease",
+  "civilian-medical-collapse-poland-1939":"civilian-and-forensic",
+  "occupied-europe-civilian-mortality-1940-1944":"civilian-and-forensic",
+  "vichy-occupation-deportation-health-records":"civilian-and-forensic",
+  "mass-deportation-health-consequences-1940":"civilian-and-forensic",
+  "soviet-deportation-mortality-health":"civilian-and-forensic",
+  "soviet-deportation-transport-mortality":"civilian-and-forensic",
+  "wartime-mass-grave-forensic-identification":"civilian-and-forensic",
+  "forensic-identification-contested-deaths":"civilian-and-forensic",
+  "1938-british-air-raid-casualty-projections":"civilian-and-forensic",
+  "september-1938-civil-defense-gas-mask-mobilization":"chemical-and-gas",
+  "acute-radiation-syndrome":"radiation-injury"
+};
+</script>
+
+<script>
+(function(){
+  "use strict";
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  /* ---------- learn more modal ---------- */
+  function initModal(){
+    document.addEventListener("click", function(e){
+      var open = e.target.closest ? e.target.closest("[data-rm-lm-open]") : null;
+      if (open){
+        e.preventDefault();
+        var bd = $(open.getAttribute("data-rm-lm-open"));
+        if (bd) bd.setAttribute("aria-hidden","false");
+        return;
+      }
+      var close = e.target.closest ? e.target.closest("[data-rm-lm-close]") : null;
+      if (close){
+        e.preventDefault();
+        var b2 = $(close.getAttribute("data-rm-lm-close"));
+        if (b2) b2.setAttribute("aria-hidden","true");
+        return;
+      }
+      if (e.target.classList && e.target.classList.contains("rm-lm-backdrop")){
+        e.target.setAttribute("aria-hidden","true");
+      }
+    });
+    document.addEventListener("keydown", function(e){
+      if (e.key === "Escape"){
+        var o = document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        if (o) o.setAttribute("aria-hidden","true");
+      }
+    });
+  }
+
+  /* ---------- render ---------- */
+  function renderIndex(){
+    var html = "";
+    for (var i=0;i<WW.sections.length;i++){
+      var s = WW.sections[i];
+      html += '<a href="#'+esc(s.id)+'" data-idx="'+esc(s.id)+'">'+esc(s.title)+
+              "<span>"+esc(s.kicker)+" . #"+esc(s.id)+"</span></a>";
+    }
+    $("wwIdxList").innerHTML = html;
+  }
+
+  function renderSections(){
+    var html = "";
+    for (var i=0;i<WW.sections.length;i++){
+      var s = WW.sections[i];
+      var paras = "";
+      for (var p=0;p<s.body.length;p++){ paras += "<p>"+esc(s.body[p])+"</p>"; }
+      var subs = "";
+      for (var h=0;h<s.h3.length;h++){
+        subs += "<h3>"+esc(s.h3[h].t)+"</h3><p>"+esc(s.h3[h].p)+"</p>";
+      }
+      var tags = "";
+      for (var t=0;t<s.tags.length;t++){ tags += '<span class="ww-tag">'+esc(s.tags[t])+"</span>"; }
+      for (var v=0;v<s.theatres.length;v++){ tags += '<span class="ww-tag">'+esc(s.theatres[v])+"</span>"; }
+
+      html += '<section class="ww-sec" id="'+esc(s.id)+'" data-sec="'+esc(s.id)+
+        '"><div class="ww-kicker">'+esc(s.kicker)+'</div>'+
+        "<h2>"+esc(s.title)+"</h2>"+
+        '<div style="margin:6px 0 14px"><span class="ww-anchor">#'+esc(s.id)+"</span></div>"+
+        paras + subs +
+        '<div class="ww-tags">'+tags+"</div></section>";
+    }
+    $("wwSections").innerHTML = html;
+  }
+
+  /* ---------- filtering ---------- */
+  function initFilters(){
+    var theatres = [];
+    for (var i=0;i<WW.sections.length;i++){
+      for (var t=0;t<WW.sections[i].theatres.length;t++){
+        var v = WW.sections[i].theatres[t];
+        if (theatres.indexOf(v) < 0) theatres.push(v);
+      }
+    }
+    theatres.sort();
+    var sel = $("wwTheatre");
+    theatres.forEach(function(v){
+      var o = document.createElement("option");
+      o.value = v; o.textContent = v;
+      sel.appendChild(o);
+    });
+
+    function draw(){
+      var q = ($("wwFind").value || "").toLowerCase();
+      var wt = sel.value;
+      var shown = 0;
+      for (var i=0;i<WW.sections.length;i++){
+        var s = WW.sections[i];
+        var hay = (s.title+" "+s.kicker+" "+s.tags.join(" ")+" "+s.theatres.join(" ")+" "+
+                   s.body.join(" ")+" "+s.h3.map(function(x){ return x.t+" "+x.p; }).join(" ")).toLowerCase();
+        var ok = true;
+        if (q && hay.indexOf(q) < 0) ok = false;
+        if (wt && s.theatres.indexOf(wt) < 0) ok = false;
+
+        var node = document.querySelector('[data-sec="'+s.id+'"]');
+        var link = document.querySelector('[data-idx="'+s.id+'"]');
+        if (node) node.className = ok ? "ww-sec" : "ww-sec ww-hide";
+        if (link) link.className = ok ? "" : "ww-hide";
+        if (ok) shown++;
+      }
+      $("wwCount").innerHTML = "<b>Showing:</b><span class='muted'> "+shown+" of "+WW.sections.length+"</span>";
+    }
+
+    $("wwFind").addEventListener("input", draw);
+    sel.addEventListener("change", draw);
+    $("wwTop").addEventListener("click", function(){
+      $("wwFind").value = ""; sel.value = ""; draw();
+      $("wwIndex").scrollIntoView({ behavior:"smooth", block:"start" });
+    });
+    draw();
+  }
+
+  /* ---------- legacy slug redirect ----------
+     Older published articles link to a path-style slug rather than an anchor.
+     If one arrives as a hash, resolve it to the section that answers it so the
+     reader lands in the right place instead of at the top of the page. */
+  function resolveLegacyHash(){
+    var raw = (window.location.hash || "").replace(/^#/, "");
+    if (!raw) return;
+    if (document.getElementById(raw)) return;
+    var target = WW.aliases[raw];
+    if (target && document.getElementById(target)){
+      window.location.replace("#" + target);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    initModal();
+    renderIndex();
+    renderSections();
+    initFilters();
+    resolveLegacyHash();
+  });
+  window.addEventListener("hashchange", resolveLegacyHash);
+})();
+</script>
+
+</body>
+</html>
