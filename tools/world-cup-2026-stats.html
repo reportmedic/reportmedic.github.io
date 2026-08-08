@@ -1,0 +1,1032 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>World Cup Stats - Table Calculator and Data Reference - ReportMedic</title>
+  <meta name="description" content="Work out any World Cup group table with the real tiebreakers, rank third-placed teams, load your own fixture data, and read tournament statistics properly." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+  <style>
+    .panel h1{display:flex; align-items:baseline; gap:.55rem; flex-wrap:wrap;}
+    .wcs-tabs{display:flex; gap:6px; overflow-x:auto; margin:14px 0 4px; padding-bottom:4px}
+    .wcs-tabs::-webkit-scrollbar{display:none}
+    .wcs-tab{flex:0 0 auto; font:inherit; font-size:13.5px; font-weight:600; padding:8px 13px; border-radius:999px;
+      border:1px solid var(--border); background:rgba(255,255,255,.04); color:var(--muted); cursor:pointer; white-space:nowrap}
+    .wcs-tab:hover{background:rgba(255,255,255,.08); color:var(--text)}
+    .wcs-tab.on{background:var(--brand); border-color:var(--brand); color:#08111f}
+    .wcs-view{display:none}
+    .wcs-view.on{display:block}
+    .wcs-grid{display:grid; gap:12px}
+    .wcs-grid.two{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+    .wcs-grid.three{grid-template-columns:repeat(auto-fit,minmax(215px,1fr))}
+    .wcs-grid.four{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+    .wcs-tblw{overflow-x:auto; border:1px solid var(--border); border-radius:12px}
+    table.wcs-tbl{border-collapse:collapse; width:100%; font-size:13.5px; min-width:520px}
+    table.wcs-tbl th, table.wcs-tbl td{border-bottom:1px solid rgba(255,255,255,.09); padding:9px 11px; text-align:left; vertical-align:top}
+    table.wcs-tbl th{background:rgba(255,255,255,.06); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+    table.wcs-tbl tr:last-child td{border-bottom:0}
+    table.wcs-tbl td.num{text-align:right; font-variant-numeric:tabular-nums}
+    table.wcs-tbl th.num{text-align:right}
+    .wcs-qual{color:#5ee0a8; font-weight:700}
+    .wcs-third{color:#ffd166; font-weight:700}
+    .wcs-out{color:var(--muted)}
+    .wcs-acc{border:1px solid var(--border); border-radius:12px; margin-bottom:9px; background:rgba(255,255,255,.03)}
+    .wcs-acc-b{font:inherit; width:100%; text-align:left; background:none; border:0; color:var(--text); padding:14px 16px;
+      cursor:pointer; display:flex; justify-content:space-between; gap:12px; align-items:center; font-weight:700; font-size:15.5px}
+    .wcs-acc-b:hover{background:rgba(255,255,255,.05)}
+    .wcs-acc-body{display:none; padding:0 16px 16px; border-top:1px solid rgba(255,255,255,.08)}
+    .wcs-acc.open .wcs-acc-body{display:block}
+    .wcs-acc-k{font-size:11.5px; font-weight:600; color:var(--muted); white-space:nowrap}
+    .wcs-acc-body p{line-height:1.75; margin:14px 0 0; font-size:14.5px}
+    .wcs-note{border-left:3px solid var(--brand); background:rgba(255,255,255,.04); border-radius:0 10px 10px 0;
+      padding:12px 14px; font-size:13.5px; line-height:1.7; margin:14px 0}
+    .wcs-warn{border-left:3px solid #ffb35c; background:rgba(255,179,92,.07); border-radius:0 10px 10px 0;
+      padding:13px 15px; font-size:13.5px; line-height:1.7}
+    .wcs-stat{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px}
+    .wcs-stat-c{border:1px solid var(--border); border-radius:11px; padding:12px; background:rgba(255,255,255,.03)}
+    .wcs-stat-n{font-size:22px; font-weight:800; letter-spacing:-.02em}
+    .wcs-stat-l{font-size:11.5px; color:var(--muted); font-weight:600}
+    .wcs-empty{padding:22px; text-align:center; color:var(--muted); font-size:13.5px}
+    .wcs-fix{display:grid; grid-template-columns:1fr 60px 20px 60px 1fr; gap:8px; align-items:center; margin-bottom:8px}
+    @media (max-width:640px){.wcs-fix{grid-template-columns:1fr 54px 14px 54px 1fr; gap:5px; font-size:12px}}
+    .wcs-fix input[type=number]{text-align:center}
+    .wcs-fix .v{text-align:center; color:var(--muted); font-size:12px}
+    .wcs-team{font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .wcs-chip{display:inline-block; font-size:11px; font-weight:600; padding:3px 9px; border-radius:999px;
+      background:rgba(255,255,255,.06); border:1px solid var(--border); color:var(--muted); margin:2px 4px 2px 0}
+    .wcs-mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-variant-numeric:tabular-nums}
+    .wcs-bar{height:7px; border-radius:999px; background:rgba(255,255,255,.10); overflow:hidden; min-width:80px}
+    .wcs-bar i{display:block; height:100%; background:linear-gradient(90deg,var(--brand),var(--brand2))}
+  </style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>World Cup Stats <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">A working reference for any edition of the tournament. Compute a group table with the real tiebreakers rather than guessing, rank third-placed teams across every group at once, load your own fixture and squad data, and read tournament statistics without falling for the traps that a seven match sample sets. Free, no registration, runs entirely in your browser.</p>
+    <div class="tiny muted" style="margin-top:10px"><a href="https://vaultbook.net/tools/world-cup-2026-planner.html">Planning your own tournament schedule? Use the VaultBook World Cup planner →</a></div>
+
+    <div class="hr"></div>
+
+    <div class="wcs-tabs" id="wcsTabs">
+      <button class="wcs-tab on" data-v="table" type="button">Group table</button>
+      <button class="wcs-tab" data-v="third" type="button">Third place ranking</button>
+      <button class="wcs-tab" data-v="stats" type="button">Reading the numbers</button>
+      <button class="wcs-tab" data-v="formats" type="button">Format history</button>
+      <button class="wcs-tab" data-v="records" type="button">Records reference</button>
+      <button class="wcs-tab" data-v="data" type="button">Your data</button>
+      <button class="wcs-tab" data-v="compare" type="button">Compare teams</button>
+    </div>
+
+    <div class="wcs-view on" id="v-table">
+      <div class="card" style="margin-bottom:12px">
+        <div style="font-weight:800; margin-bottom:4px">Group table calculator</div>
+        <div class="tiny muted">Enter four team names and the six results, and the table sorts itself using the standard order: points, then goal difference, then goals scored, then the result between the tied teams. Most homemade tables stop at goal difference, which is where they go wrong.</div>
+      </div>
+
+      <div class="wcs-grid two" style="margin-bottom:12px">
+        <div class="card">
+          <div style="font-weight:800; margin-bottom:10px; font-size:14px">Teams</div>
+          <div id="wcsTeams"></div>
+          <div class="row" style="gap:8px; margin-top:12px; flex-wrap:wrap">
+            <span class="tiny muted" style="align-self:center">Group size</span>
+            <select class="input" id="wcsSize" style="max-width:110px">
+              <option value="4" selected>Four</option>
+              <option value="3">Three</option>
+            </select>
+            <button class="btn" id="wcsClear" type="button">Clear all</button>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-weight:800; margin-bottom:10px; font-size:14px">Results</div>
+          <div id="wcsFixtures"></div>
+          <div class="tiny muted" style="margin-top:10px">Leave a match blank if it has not been played. The table computes from whatever is entered.</div>
+        </div>
+      </div>
+
+      <div class="wcs-tblw">
+        <table class="wcs-tbl" id="wcsTable">
+          <thead><tr>
+            <th style="min-width:38px">Pos</th><th style="min-width:150px">Team</th>
+            <th class="num">P</th><th class="num">W</th><th class="num">D</th><th class="num">L</th>
+            <th class="num">GF</th><th class="num">GA</th><th class="num">GD</th><th class="num">Pts</th>
+            <th style="min-width:120px">Status</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="row" style="gap:10px; margin-top:12px; flex-wrap:wrap">
+        <button class="btn primary" id="wcsSendThird" type="button">Send third place to the ranking</button>
+        <button class="btn" id="wcsExportTable" type="button">Export table</button>
+        <span class="tiny muted" id="wcsTableMsg"></span>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div style="font-weight:800; margin-bottom:6px">The tiebreakers, in the order they are applied</div>
+        <div class="tiny muted" style="line-height:1.75">Points come first, and three for a win with one for a draw has been the standard at this tournament since the nineteen nineties. Goal difference across the whole group comes second, then goals scored. Only after those does the competition look at the matches between the tied teams, applying points, then goal difference, then goals scored within that subset. If teams are still level after all of that, disciplinary record and then a drawing of lots decide it. The exact sequence is set by the competition regulations for each edition and has changed more than once, so check the current regulations before settling an argument on the fine detail.</div>
+      </div>
+    </div>
+
+    <div class="wcs-view" id="v-third">
+      <div class="card" style="margin-bottom:12px">
+        <div style="font-weight:800; margin-bottom:4px">Third place ranking</div>
+        <div class="tiny muted">In an expanded format the best third-placed teams advance, ranked against each other across every group. This is the calculation that eliminates teams through results in groups they never played in, and it is the one nobody can do in their head.</div>
+      </div>
+
+      <div class="row" style="gap:10px; margin-bottom:12px; flex-wrap:wrap">
+        <span class="tiny muted" style="align-self:center">Groups in the tournament</span>
+        <select class="input" id="wcsGroupCount" style="max-width:130px">
+          <option value="12" selected>Twelve</option>
+          <option value="8">Eight</option>
+          <option value="6">Six</option>
+        </select>
+        <span class="tiny muted" style="align-self:center">Third-placed teams advancing</span>
+        <select class="input" id="wcsAdvance" style="max-width:110px">
+          <option value="8" selected>Eight</option>
+          <option value="6">Six</option>
+          <option value="4">Four</option>
+        </select>
+        <button class="btn" id="wcsThirdClear" type="button">Clear</button>
+        <button class="btn" id="wcsThirdExport" type="button">Export</button>
+        <span class="tiny muted" id="wcsThirdMsg"></span>
+      </div>
+
+      <div class="wcs-grid two">
+        <div class="card">
+          <div style="font-weight:800; margin-bottom:10px; font-size:14px">Third-placed teams</div>
+          <div id="wcsThirdInputs"></div>
+        </div>
+        <div class="card">
+          <div style="font-weight:800; margin-bottom:10px; font-size:14px">Ranked</div>
+          <div id="wcsThirdOut"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div style="font-weight:800; margin-bottom:6px">Why the last round is played simultaneously</div>
+        <div class="tiny muted" style="line-height:1.75">Because third place is judged across the whole tournament, a team finishing its group early would know exactly what every other group needs to produce, and so would its opponent. Staggering those kickoffs would let two teams agree on a result that eliminates a third party neither of them plays. Simultaneous kickoffs in the final round remove that possibility, and the rule exists because the alternative was tried and produced a match that damaged the competition's reputation for a generation.</div>
+      </div>
+    </div>
+
+    <div class="wcs-view" id="v-stats">
+      <div class="card" style="margin-bottom:12px">
+        <div style="font-weight:800; margin-bottom:4px">Reading the numbers</div>
+        <div class="tiny muted">Twelve metrics you will see quoted during a tournament, what each actually measures, what it hides, and the sample size problem that makes all of them harder to use here than in a league season. This is the section most statistics pages skip.</div>
+      </div>
+      <div class="row" style="gap:10px; margin-bottom:12px; flex-wrap:wrap">
+        <input class="input" id="wcsStatFind" type="search" placeholder="Filter metrics" style="max-width:260px" />
+        <span class="tiny muted" id="wcsStatCount"></span>
+      </div>
+      <div id="wcsStatAcc"></div>
+      <div class="wcs-warn" style="margin-top:14px">The single most important caveat on this page. A team that wins the tournament plays seven matches, or eight in an expanded format. A league season gives thirty eight. Almost every metric that is stable and predictive across a season is noisy across seven matches, which means tournament statistics describe what happened far better than they predict what will happen. Treat a tournament number as a record of events rather than as a measurement of quality.</div>
+    </div>
+
+    <div class="wcs-view" id="v-formats">
+      <div class="card" style="margin-bottom:12px">
+        <div style="font-weight:800; margin-bottom:4px">Format history</div>
+        <div class="tiny muted">The tournament has been restructured repeatedly, and comparing records across eras without accounting for that produces nonsense. This is the structural history you need before any cross-era comparison means anything.</div>
+      </div>
+      <div class="wcs-tblw" style="margin-bottom:14px">
+        <table class="wcs-tbl" id="wcsFormatTbl">
+          <thead><tr><th style="min-width:130px">Era</th><th class="num">Teams</th><th style="min-width:150px">Group stage</th><th style="min-width:160px">Knockout</th><th class="num">Matches to win</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="wcsFormatAcc"></div>
+      <div class="wcs-note">Expansion changes what a statistic means. More teams means more matches, a wider spread of quality in the group stage, and more opportunity to accumulate totals. A goalscoring record set when the champion played four matches is not comparable to one set when the champion plays eight, and any list that ranks them together without saying so is misleading you.</div>
+    </div>
+
+    <div class="wcs-view" id="v-records">
+      <div class="card" style="margin-bottom:12px">
+        <div style="font-weight:800; margin-bottom:4px">Records reference</div>
+        <div class="tiny muted">What each record category actually counts, where the definitions disagree between sources, and how to compare fairly across eras. Deliberately no leaderboard, because a list of numbers goes stale and the reasoning does not.</div>
+      </div>
+      <div id="wcsRecordAcc"></div>
+      <div class="wcs-warn" style="margin-top:14px">Record tables published in different places disagree more often than people expect, usually because they draw the boundary differently. Whether qualifying counts, whether a match awarded by forfeit counts, whether an own goal is credited, and whether tournaments interrupted by war are included all change the answer. Before quoting a record, check what the source counted.</div>
+    </div>
+
+    <div class="wcs-view" id="v-data">
+      <div class="card" style="margin-bottom:12px">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <div style="font-weight:800; margin-bottom:4px">Your data</div>
+            <div class="tiny muted">Load fixtures, results, or squad lists as CSV or JSON. Everything stays on your device and powers the table below.</div>
+          </div>
+          <span class="pill tiny" id="wcsDataState"><b>Loaded:</b><span class="muted"> nothing</span></span>
+        </div>
+        <div class="wcs-grid two" style="margin-top:12px">
+          <div>
+            <div class="tiny muted" style="margin-bottom:5px">Open a file</div>
+            <input class="input" id="wcsFile" type="file" accept=".csv,.json,.txt" />
+            <div class="tiny muted" style="margin-top:7px">Fixtures header: date,group,home,away,home_goals,away_goals</div>
+            <div class="tiny muted">Squads header: team,player,position,club</div>
+          </div>
+          <div>
+            <div class="tiny muted" style="margin-bottom:5px">Or paste rows</div>
+            <textarea class="input" id="wcsPaste" style="min-height:88px; resize:vertical" placeholder="Paste CSV rows here"></textarea>
+            <div class="row" style="margin-top:8px; gap:8px">
+              <button class="btn primary" id="wcsLoad" type="button">Load</button>
+              <button class="btn" id="wcsSample" type="button">Format sample</button>
+              <button class="btn" id="wcsDataClear" type="button">Clear</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="gap:10px; margin-bottom:12px; flex-wrap:wrap">
+        <select class="input" id="wcsDataGroup" style="max-width:170px"><option value="">All groups</option></select>
+        <input class="input" id="wcsDataFind" type="search" placeholder="Search rows" style="max-width:210px" />
+        <button class="btn" id="wcsBuildTables" type="button">Build all group tables</button>
+        <span class="pill tiny" id="wcsDataCount"><b>Rows:</b><span class="muted"> 0</span></span>
+      </div>
+      <div id="wcsDataOut"><div class="wcs-empty">Nothing loaded yet. Load a fixtures file and every group table computes at once.</div></div>
+    </div>
+
+    <div class="wcs-view" id="v-compare">
+      <div class="card" style="margin-bottom:12px">
+        <div style="font-weight:800; margin-bottom:4px">Compare teams</div>
+        <div class="tiny muted">Two teams, the same questions, side by side. Fill in what you know from any source and the comparison holds the reasoning rather than just the numbers.</div>
+      </div>
+      <div class="row" style="gap:10px; margin-bottom:12px; flex-wrap:wrap">
+        <input class="input" id="wcsCmpA" type="text" placeholder="First team" style="max-width:210px" />
+        <input class="input" id="wcsCmpB" type="text" placeholder="Second team" style="max-width:210px" />
+        <button class="btn primary" id="wcsCmpSave" type="button">Save</button>
+        <button class="btn" id="wcsCmpExport" type="button">Export</button>
+        <span class="tiny muted" id="wcsCmpMsg"></span>
+      </div>
+      <div id="wcsCmpRows"></div>
+    </div>
+
+    <div style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+      <a class="btn" href="/fix-my-report.html">Contact</a>
+    </div>
+  </div>
+
+<div class="footer">© 2026 ReportMedic</div>
+</div>
+
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
+<div aria-hidden="true" aria-label="World Cup stats details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">World Cup Stats</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this helps with</h3>
+      <ul>
+        <li>Working out a group table correctly, including the tiebreakers most people stop short of</li>
+        <li>Ranking third-placed teams across every group, which cannot be done in your head</li>
+        <li>Understanding what a tournament statistic can and cannot tell you</li>
+        <li>Comparing records across eras without being misled by format changes</li>
+      </ul>
+      <h3>How it works</h3>
+      <ul>
+        <li>Type results directly, or load a fixtures file as CSV or JSON</li>
+        <li>Tables sort by points, goal difference, goals scored, then head to head</li>
+        <li>Everything stays on your device, with no upload and no account</li>
+      </ul>
+      <h3>Why there is no leaderboard</h3>
+      <ul>
+        <li>Published record lists go stale and disagree with each other</li>
+        <li>This page teaches you how each category is counted so you can read any source critically</li>
+        <li>Load your own data and the tools compute against it</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+var WCS = {};
+
+WCS.formats = [
+{era:"Early tournaments", teams:"13 to 16", group:"Groups of varying size, some played as knockout from the start",
+ knockout:"Straight knockout, with a final pool used in some editions instead of a final", n:"3 to 5",
+ note:"The earliest editions were structurally unstable, with entrant numbers varying by who could travel and one tournament decided by a final round-robin pool rather than a single final. Records from this period sit in a different competition in every meaningful sense, and comparing individual totals across the boundary produces figures that mean very little."},
+{era:"Sixteen team era", teams:"16", group:"Four groups of four",
+ knockout:"Quarter finals onward, with second round group pools used in two editions", n:"6",
+ note:"The long stable period. Two editions replaced the straight knockout with a second group stage, which changed the number of matches a champion played and therefore the totals a player could accumulate. Any record set in those two editions carries an extra opportunity that neighbouring editions did not offer."},
+{era:"Twenty four team era", teams:"24", group:"Six groups of four",
+ knockout:"Round of sixteen onward, with best third-placed teams advancing", n:"7",
+ note:"The first format to promote third-placed teams, which introduced the cross-group ranking calculation. It also created an awkward asymmetry, since six groups do not divide cleanly into a sixteen team knockout, and the bracket had to be assembled by rule rather than by simple pairing."},
+{era:"Thirty two team era", teams:"32", group:"Eight groups of four",
+ knockout:"Round of sixteen onward, top two from each group", n:"7",
+ note:"The cleanest structure the tournament has had. Eight groups of four produce exactly sixteen qualifiers with no third place calculation, and the bracket pairs group winners against runners up in a fixed pattern. Most modern record comparisons are drawn from this era for exactly that reason."},
+{era:"Forty eight team era", teams:"48", group:"Twelve groups of four",
+ knockout:"Round of thirty two onward, top two plus the eight best third-placed teams", n:"8",
+ note:"Expansion restored the third place calculation at larger scale and added a knockout round, so the champion now plays eight matches rather than seven. Group opponents span a wider range of quality, which inflates goal totals at the top and compresses them elsewhere. Treat totals from this era as belonging to a different competition again."}
+];
+
+WCS.metrics = [
+{t:"Possession", k:"volume",
+ what:"The share of playing time a team has the ball, usually calculated from pass counts rather than a stopwatch.",
+ hides:"It says nothing about where the ball was held or what was done with it. A team recycling possession across its own defensive third can post a very high figure while creating nothing, and a side defending deep by design can win comfortably with well under half.",
+ use:"Read it alongside territory and shot location. Possession alone is a description of style, not of control."},
+{t:"Expected goals", k:"quality",
+ what:"A model estimate of how likely each shot was to score, based on historical outcomes from similar situations, summed across a match.",
+ hides:"The models disagree, sometimes substantially, because they weight different inputs. Most take no account of who is shooting, and none accounts for the pressure of the specific moment. A single unusual chance can move a match figure a long way.",
+ use:"Useful across many matches, unreliable across one. Quoting a single match figure to the second decimal implies a precision the model does not have."},
+{t:"Shots and shots on target", k:"volume",
+ what:"Raw counts of attempts, and of attempts that would enter the goal without intervention.",
+ hides:"All shots count the same regardless of distance or difficulty, so a team can lead heavily on volume while attempting almost nothing plausible. On target is slightly better and still treats a tap-in and a speculative effort identically.",
+ use:"Combine with shot location. Volume without location is close to meaningless as a measure of threat."},
+{t:"Pass completion", k:"volume",
+ what:"The proportion of attempted passes that reach a teammate.",
+ hides:"Difficulty is entirely absent. Sideways passing between centre backs completes at a very high rate, and the passes that break a defensive line complete far less often. A rising completion percentage frequently indicates a team taking fewer risks rather than passing better.",
+ use:"Look at progressive passes and passes into the final third instead, and treat overall completion as a style indicator."},
+{t:"Pressing intensity", k:"pressure",
+ what:"Measures of how aggressively a team engages the opponent in possession, commonly expressed as opponent passes allowed per defensive action.",
+ hides:"A team that is winning and defending deep by choice will look passive by this measure. Heat and altitude also depress pressing figures for reasons that have nothing to do with intent, which matters a great deal at a summer tournament.",
+ use:"Compare like for like within a match state. Pressing numbers across different scorelines are not comparable."},
+{t:"Distance covered", k:"physical",
+ what:"Total ground covered by a team or a player during a match.",
+ hides:"Almost everything. A team chasing the ball covers more ground than a team controlling it, so high distance frequently indicates a worse afternoon rather than a better one. It also says nothing about the intensity of that movement.",
+ use:"High-intensity running and sprint counts carry more information. Total distance is a broadcast graphic rather than an analytical tool."},
+{t:"Set piece share", k:"source",
+ what:"The proportion of a team's goals arising from corners, free kicks, and penalties.",
+ hides:"It is highly volatile across small samples and it says nothing about the process behind it. A team with two set piece goals in five matches has a striking percentage and almost no evidence.",
+ use:"Genuinely useful at a tournament, because set pieces are one of the few things a coach can install quickly with a squad that trains together for weeks rather than months."},
+{t:"Clean sheets", k:"outcome",
+ what:"Matches in which a team conceded nothing.",
+ hides:"It is a binary outcome heavily influenced by opposition quality and by luck. A defence can be repeatedly opened up and survive through finishing errors, and the record will show a clean sheet.",
+ use:"Read alongside expected goals conceded and shot locations allowed. Clean sheets describe results, not defending."},
+{t:"Goals per match", k:"outcome",
+ what:"Scoring rate across a tournament, for a team, a player, or the competition as a whole.",
+ hides:"Format is everything. Expansion widens the quality range in the group stage, which lifts scoring rates at the top end and depresses them in tighter knockout rounds. Comparing a tournament rate across eras without adjusting for structure is the most common error in football statistics writing.",
+ use:"Compare within an era, or state the structural change explicitly when crossing one."},
+{t:"Penalty shootout record", k:"outcome",
+ what:"A team's or a nation's history in shootouts.",
+ hides:"The sample is tiny and the popular framing treats it as a stable national trait. Across the whole history of the tournament most nations have taken a small number of shootouts, which is far too few to establish anything about temperament.",
+ use:"Treat shootout history as a story rather than a predictor. The evidence base does not support the conclusions usually drawn from it."},
+{t:"Squad age and caps", k:"squad",
+ what:"Average age of a squad and the total international appearances it carries.",
+ hides:"Averages conceal distribution. A squad averaging a moderate age might be evenly balanced or might combine several very experienced players with a group of debutants, and those are different teams entirely.",
+ use:"Look at the spread and at the age of the likely starting eleven rather than the whole squad, since squad averages are moved substantially by reserve goalkeepers."},
+{t:"Qualifying record", k:"context",
+ what:"A team's results in the campaign that got it to the tournament.",
+ hides:"Confederations differ enormously in strength and in format, so an unbeaten qualifying campaign means very different things depending on the region. Some teams qualify automatically as hosts and arrive with no competitive record at all.",
+ use:"Compare qualifying records only within a confederation. Across confederations they are not the same measurement."}
+];
+
+WCS.records = [
+{t:"Goals in a single tournament", k:"scoring",
+ body:"The category most affected by format. A player in an era where the champion played three matches simply had fewer opportunities than one playing eight. Any ranking that lists these together without noting matches played is comparing different things. The fairest cross-era comparison is goals per match played, and even that favours players whose team went out early against weak opposition after scoring heavily in a group."},
+{t:"Career goals across tournaments", k:"scoring",
+ body:"Depends heavily on longevity and on a team qualifying repeatedly. A player from a nation that missed two consecutive tournaments loses years of opportunity through no fault of their own. It also depends on whether the source counts goals in matches later annulled or awarded, which differs between record keepers."},
+{t:"Appearances", k:"longevity",
+ body:"Straightforward to count and still contested, because sources disagree on whether an unused substitute appearance counts and on how to treat matches from tournaments with irregular structures. The underlying variable is really team qualification rather than individual quality."},
+{t:"Consecutive matches unbeaten", k:"sequence",
+ body:"Sequence records are the most fragile category, because they depend entirely on where the counter is allowed to start and stop. Whether a shootout defeat breaks a run, and whether the sequence carries across tournaments separated by four years, changes the answer completely. Check the definition before quoting one."},
+{t:"Biggest winning margin", k:"scoring",
+ body:"Almost always set in early qualifying or in the earliest tournaments, when the gap between the strongest and weakest entrants was far wider than it is now. Expansion narrows the gap at the top and widens the field, which makes very large margins in the finals rarer even as the number of matches grows."},
+{t:"Team tournament wins", k:"honours",
+ body:"The most stable category and still worth reading carefully. Tournaments were not held during the war years, several nations were absent for political reasons in various editions, and the number of entrants has changed by a factor of nearly four. A count of titles is a count of titles and not a measurement of national footballing strength across a century."},
+{t:"Goalkeeping records", k:"defending",
+ body:"Minutes without conceding is the usual measure and it is heavily dependent on the defence in front of the goalkeeper and on the quality of group opponents. It also depends on whether the clock stops at the end of a match or runs across a tournament, and on how extra time is treated. Sources differ on both."},
+{t:"Attendance and audience", k:"context",
+ body:"Attendance records are shaped by stadium capacity and by counting method, and historical figures for older tournaments are estimates rather than turnstile counts. Broadcast audience figures come from bodies with an interest in the number being large and should be attributed to their source rather than stated as fact."}
+];
+
+WCS.compareRows = [
+ "Route to the tournament, and what that route was worth",
+ "Squad experience, and how it is distributed rather than averaged",
+ "How the team defends, and what it gives up to do it",
+ "Where its goals come from, by source rather than by scorer",
+ "Set piece threat, attacking and defending",
+ "What happens when it goes behind",
+ "The most likely way it goes out",
+ "The single question the group stage will answer about it"
+];
+
+WCS.sample = "date,group,home,away,home_goals,away_goals\n2026-06-11,A,Team One,Team Two,2,1\n2026-06-11,A,Team Three,Team Four,0,0\n2026-06-15,A,Team One,Team Three,1,1\n2026-06-15,A,Team Two,Team Four,3,2\n2026-06-19,A,Team One,Team Four,,\n2026-06-19,A,Team Two,Team Three,,";
+</script>
+
+<script>
+(function(){
+  "use strict";
+  var K_T="rm_wcs_table_v1", K_3="rm_wcs_third_v1", K_C="rm_wcs_cmp_v1";
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function put(k,v){ try{ window.localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+  function get(k,f){ try{ var r=window.localStorage.getItem(k); return r?JSON.parse(r):f; }catch(e){ return f; } }
+  function flash(id,msg){
+    var el=$(id); if(!el) return;
+    el.textContent=msg;
+    window.setTimeout(function(){ el.textContent=""; }, 2600);
+  }
+  function download(name,text){
+    var blob=new Blob([text],{type:"text/plain;charset=utf-8"});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a");
+    a.href=url; a.download=name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  function num(v){ var n=parseInt(v,10); return isNaN(n)?null:n; }
+
+  var S = { grp:get(K_T,{teams:[],res:{},size:4}), third:get(K_3,[]), cmp:get(K_C,{}), data:[] };
+
+  /* ---------- tabs and modal ---------- */
+  function initTabs(){
+    var btns=$("wcsTabs").querySelectorAll(".wcs-tab");
+    Array.prototype.forEach.call(btns, function(b){
+      b.addEventListener("click", function(){
+        Array.prototype.forEach.call(btns, function(x){ x.classList.remove("on"); });
+        b.classList.add("on");
+        Array.prototype.forEach.call(document.querySelectorAll(".wcs-view"), function(v){ v.classList.remove("on"); });
+        var t=$("v-"+b.getAttribute("data-v"));
+        if(t) t.classList.add("on");
+      });
+    });
+  }
+  function initModal(){
+    document.addEventListener("click", function(e){
+      var o=e.target.closest ? e.target.closest("[data-rm-lm-open]") : null;
+      if (o){ e.preventDefault(); var bd=$(o.getAttribute("data-rm-lm-open")); if(bd) bd.setAttribute("aria-hidden","false"); return; }
+      var c=e.target.closest ? e.target.closest("[data-rm-lm-close]") : null;
+      if (c){ e.preventDefault(); var b2=$(c.getAttribute("data-rm-lm-close")); if(b2) b2.setAttribute("aria-hidden","true"); return; }
+      if (e.target.classList && e.target.classList.contains("rm-lm-backdrop")) e.target.setAttribute("aria-hidden","true");
+    });
+    document.addEventListener("keydown", function(e){
+      if (e.key==="Escape"){
+        var op=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        if (op) op.setAttribute("aria-hidden","true");
+      }
+    });
+  }
+
+  /* ---------- shared table engine ---------- */
+  function pairs(n){
+    var out=[];
+    for (var i=0;i<n;i++){ for (var j=i+1;j<n;j++){ out.push([i,j]); } }
+    return out;
+  }
+
+  /* Computes a sorted standings array from team names and a result map.
+     Sort order: points, goal difference, goals scored, then the mini table
+     between the tied teams only, then goals scored in that mini table. */
+  function standings(teams, res){
+    var rows=teams.map(function(name,i){
+      return { i:i, name:name||("Team "+(i+1)), p:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0 };
+    });
+    var played=[];
+    Object.keys(res).forEach(function(k){
+      var r=res[k];
+      if (r.h===null || r.a===null) return;
+      var ix=k.split("-").map(Number);
+      var A=rows[ix[0]], B=rows[ix[1]];
+      if (!A || !B) return;
+      played.push({a:ix[0], b:ix[1], ha:r.h, ab:r.a});
+      A.p++; B.p++;
+      A.gf+=r.h; A.ga+=r.a; B.gf+=r.a; B.ga+=r.h;
+      if (r.h>r.a){ A.w++; B.l++; A.pts+=3; }
+      else if (r.h<r.a){ B.w++; A.l++; B.pts+=3; }
+      else { A.d++; B.d++; A.pts++; B.pts++; }
+    });
+    rows.forEach(function(r){ r.gd = r.gf - r.ga; });
+
+    function mini(group){
+      var m={};
+      group.forEach(function(r){ m[r.i]={pts:0,gd:0,gf:0}; });
+      played.forEach(function(g){
+        if (!m[g.a] || !m[g.b]) return;
+        m[g.a].gf+=g.ha; m[g.b].gf+=g.ab;
+        m[g.a].gd+=(g.ha-g.ab); m[g.b].gd+=(g.ab-g.ha);
+        if (g.ha>g.ab) m[g.a].pts+=3;
+        else if (g.ha<g.ab) m[g.b].pts+=3;
+        else { m[g.a].pts++; m[g.b].pts++; }
+      });
+      return m;
+    }
+
+    rows.sort(function(a,b){
+      if (b.pts!==a.pts) return b.pts-a.pts;
+      if (b.gd !==a.gd ) return b.gd -a.gd;
+      if (b.gf !==a.gf ) return b.gf -a.gf;
+      var tied=rows.filter(function(r){ return r.pts===a.pts && r.gd===a.gd && r.gf===a.gf; });
+      if (tied.length>1){
+        var m=mini(tied);
+        var ma=m[a.i], mb=m[b.i];
+        if (ma && mb){
+          if (mb.pts!==ma.pts) return mb.pts-ma.pts;
+          if (mb.gd !==ma.gd ) return mb.gd -ma.gd;
+          if (mb.gf !==ma.gf ) return mb.gf -ma.gf;
+        }
+      }
+      return a.name.localeCompare(b.name);
+    });
+    return rows;
+  }
+
+  /* ---------- group table view ---------- */
+  function renderTeams(){
+    var n=parseInt($("wcsSize").value,10);
+    var html="";
+    for (var i=0;i<n;i++){
+      html += '<div style="margin-bottom:8px"><input class="input" type="text" data-tm="'+i+
+        '" value="'+esc(S.grp.teams[i]||"")+'" placeholder="Team '+(i+1)+'"></div>';
+    }
+    $("wcsTeams").innerHTML=html;
+    Array.prototype.forEach.call($("wcsTeams").querySelectorAll("input[data-tm]"), function(inp){
+      inp.addEventListener("input", function(){
+        S.grp.teams[parseInt(inp.getAttribute("data-tm"),10)]=inp.value;
+        renderFixtures(); renderTable();
+      });
+    });
+  }
+
+  function renderFixtures(){
+    var n=parseInt($("wcsSize").value,10);
+    var html="";
+    pairs(n).forEach(function(p){
+      var k=p[0]+"-"+p[1];
+      var r=S.grp.res[k]||{h:null,a:null};
+      html += '<div class="wcs-fix">'+
+        '<div class="wcs-team">'+esc(S.grp.teams[p[0]]||("Team "+(p[0]+1)))+"</div>"+
+        '<input class="input" type="number" min="0" data-h="'+k+'" value="'+(r.h===null?"":r.h)+'">'+
+        '<div class="v">v</div>'+
+        '<input class="input" type="number" min="0" data-a="'+k+'" value="'+(r.a===null?"":r.a)+'">'+
+        '<div class="wcs-team">'+esc(S.grp.teams[p[1]]||("Team "+(p[1]+1)))+"</div></div>";
+    });
+    $("wcsFixtures").innerHTML=html;
+    Array.prototype.forEach.call($("wcsFixtures").querySelectorAll("input"), function(inp){
+      inp.addEventListener("input", function(){
+        var k = inp.hasAttribute("data-h") ? inp.getAttribute("data-h") : inp.getAttribute("data-a");
+        if (!S.grp.res[k]) S.grp.res[k]={h:null,a:null};
+        S.grp.res[k][inp.hasAttribute("data-h")?"h":"a"] = num(inp.value);
+        renderTable();
+      });
+    });
+  }
+
+  function renderTable(){
+    var n=parseInt($("wcsSize").value,10);
+    var rows=standings(S.grp.teams.slice(0,n), S.grp.res);
+    var html="";
+    for (var i=0;i<rows.length;i++){
+      var r=rows[i];
+      var status = i<2 ? '<span class="wcs-qual">Advances</span>'
+                : (i===2 ? '<span class="wcs-third">Third, may advance</span>'
+                         : '<span class="wcs-out">Eliminated</span>');
+      html += "<tr><td>"+(i+1)+"</td><td><strong>"+esc(r.name)+"</strong></td>"+
+        "<td class='num'>"+r.p+"</td><td class='num'>"+r.w+"</td><td class='num'>"+r.d+"</td><td class='num'>"+r.l+"</td>"+
+        "<td class='num'>"+r.gf+"</td><td class='num'>"+r.ga+"</td><td class='num'>"+(r.gd>0?"+":"")+r.gd+"</td>"+
+        "<td class='num'><strong>"+r.pts+"</strong></td><td>"+status+"</td></tr>";
+    }
+    $("wcsTable").querySelector("tbody").innerHTML=html;
+    put(K_T,S.grp);
+  }
+
+  function tableText(){
+    var n=parseInt($("wcsSize").value,10);
+    var rows=standings(S.grp.teams.slice(0,n), S.grp.res);
+    var out=["Group table",""];
+    out.push("Pos  Team                    P  W  D  L  GF GA  GD Pts");
+    rows.forEach(function(r,i){
+      out.push(String(i+1).padEnd(5)+String(r.name).slice(0,22).padEnd(24)+
+        String(r.p).padEnd(3)+String(r.w).padEnd(3)+String(r.d).padEnd(3)+String(r.l).padEnd(3)+
+        String(r.gf).padEnd(3)+String(r.ga).padEnd(3)+String((r.gd>0?"+":"")+r.gd).padEnd(4)+String(r.pts));
+    });
+    return out.join("\n");
+  }
+
+  function initTable(){
+    if (S.grp.size) $("wcsSize").value=String(S.grp.size);
+    $("wcsSize").addEventListener("change", function(){
+      S.grp.size=parseInt($("wcsSize").value,10);
+      renderTeams(); renderFixtures(); renderTable();
+    });
+    $("wcsClear").addEventListener("click", function(){
+      if(!window.confirm("Clear the teams and every result?")) return;
+      S.grp={teams:[],res:{},size:parseInt($("wcsSize").value,10)};
+      put(K_T,S.grp); renderTeams(); renderFixtures(); renderTable();
+    });
+    $("wcsExportTable").addEventListener("click", function(){
+      download("world-cup-group-table.txt", tableText()); flash("wcsTableMsg","Exported.");
+    });
+    $("wcsSendThird").addEventListener("click", function(){
+      var n=parseInt($("wcsSize").value,10);
+      var rows=standings(S.grp.teams.slice(0,n), S.grp.res);
+      if (rows.length<3){ flash("wcsTableMsg","Need at least three teams."); return; }
+      var r=rows[2];
+      S.third.push({ group:"", team:r.name, pts:r.pts, gd:r.gd, gf:r.gf });
+      put(K_3,S.third);
+      renderThirdInputs(); rankThird();
+      flash("wcsTableMsg","Sent to the third place ranking.");
+    });
+    renderTeams(); renderFixtures(); renderTable();
+  }
+
+  /* ---------- third place ranking ---------- */
+  function renderThirdInputs(){
+    var n=parseInt($("wcsGroupCount").value,10);
+    while (S.third.length < n) S.third.push({group:"",team:"",pts:"",gd:"",gf:""});
+    S.third = S.third.slice(0,n);
+    var letters="ABCDEFGHIJKL".split("");
+    var html="";
+    for (var i=0;i<n;i++){
+      var t=S.third[i];
+      html += '<div class="row" style="gap:6px; margin-bottom:8px; flex-wrap:nowrap">'+
+        '<span class="tiny muted" style="width:16px; align-self:center">'+esc(letters[i]||String(i+1))+"</span>"+
+        '<input class="input" type="text" data-t3="'+i+'" value="'+esc(t.team||"")+'" placeholder="Team" style="flex:1; min-width:90px">'+
+        '<input class="input" type="number" data-p3="'+i+'" value="'+esc(t.pts)+'" placeholder="Pts" style="max-width:66px">'+
+        '<input class="input" type="number" data-d3="'+i+'" value="'+esc(t.gd)+'" placeholder="GD" style="max-width:66px">'+
+        '<input class="input" type="number" data-f3="'+i+'" value="'+esc(t.gf)+'" placeholder="GF" style="max-width:66px">'+
+        "</div>";
+    }
+    $("wcsThirdInputs").innerHTML=html;
+    Array.prototype.forEach.call($("wcsThirdInputs").querySelectorAll("input"), function(inp){
+      inp.addEventListener("input", function(){
+        var i, key;
+        if (inp.hasAttribute("data-t3")){ i=inp.getAttribute("data-t3"); key="team"; }
+        else if (inp.hasAttribute("data-p3")){ i=inp.getAttribute("data-p3"); key="pts"; }
+        else if (inp.hasAttribute("data-d3")){ i=inp.getAttribute("data-d3"); key="gd"; }
+        else { i=inp.getAttribute("data-f3"); key="gf"; }
+        S.third[parseInt(i,10)][key] = inp.value;
+        S.third[parseInt(i,10)].group = "ABCDEFGHIJKL".charAt(parseInt(i,10));
+        put(K_3,S.third);
+        rankThird();
+      });
+    });
+  }
+
+  function rankThird(){
+    var adv=parseInt($("wcsAdvance").value,10);
+    var live=S.third.filter(function(t){ return String(t.team||"").trim().length>0; })
+      .map(function(t,ix){
+        return { group:t.group||"", team:t.team,
+                 pts:parseInt(t.pts,10)||0, gd:parseInt(t.gd,10)||0, gf:parseInt(t.gf,10)||0 };
+      });
+    live.sort(function(a,b){
+      if (b.pts!==a.pts) return b.pts-a.pts;
+      if (b.gd !==a.gd ) return b.gd -a.gd;
+      if (b.gf !==a.gf ) return b.gf -a.gf;
+      return String(a.team).localeCompare(String(b.team));
+    });
+    if (!live.length){
+      $("wcsThirdOut").innerHTML='<div class="wcs-empty">Enter at least one third-placed team and the ranking appears here.</div>';
+      return;
+    }
+    var rows="";
+    for (var i=0;i<live.length;i++){
+      var t=live[i];
+      var cut = i<adv ? '<span class="wcs-qual">Advances</span>' : '<span class="wcs-out">Out</span>';
+      rows += "<tr><td>"+(i+1)+"</td><td>"+esc(t.group)+"</td><td><strong>"+esc(t.team)+
+        "</strong></td><td class='num'>"+t.pts+"</td><td class='num'>"+(t.gd>0?"+":"")+t.gd+
+        "</td><td class='num'>"+t.gf+"</td><td>"+cut+"</td></tr>";
+    }
+    var boundary = live.length>adv
+      ? '<div class="wcs-note" style="margin-top:12px">The cut falls between position '+adv+" and "+(adv+1)+
+        ". Those two are separated by "+
+        (live[adv-1].pts!==live[adv].pts ? "points" :
+         (live[adv-1].gd!==live[adv].gd ? "goal difference" :
+         (live[adv-1].gf!==live[adv].gf ? "goals scored" : "nothing yet, which means a further tiebreaker decides it")))+
+        ".</div>"
+      : "";
+    $("wcsThirdOut").innerHTML='<div class="wcs-tblw"><table class="wcs-tbl" style="min-width:auto">'+
+      "<thead><tr><th>Rank</th><th>Grp</th><th style='min-width:110px'>Team</th><th class='num'>Pts</th>"+
+      "<th class='num'>GD</th><th class='num'>GF</th><th>Status</th></tr></thead><tbody>"+rows+"</tbody></table></div>"+boundary;
+  }
+
+  function thirdText(){
+    var adv=parseInt($("wcsAdvance").value,10);
+    var live=S.third.filter(function(t){ return String(t.team||"").trim().length>0; });
+    live.sort(function(a,b){
+      var ap=parseInt(a.pts,10)||0, bp=parseInt(b.pts,10)||0;
+      if (bp!==ap) return bp-ap;
+      var ad=parseInt(a.gd,10)||0, bd=parseInt(b.gd,10)||0;
+      if (bd!==ad) return bd-ad;
+      return (parseInt(b.gf,10)||0)-(parseInt(a.gf,10)||0);
+    });
+    var out=["Third place ranking",""];
+    live.forEach(function(t,i){
+      out.push(String(i+1).padEnd(4)+String(t.group||"").padEnd(4)+String(t.team).slice(0,22).padEnd(24)+
+        "Pts "+String(t.pts||0).padEnd(4)+"GD "+String(t.gd||0).padEnd(5)+"GF "+String(t.gf||0)+
+        (i<adv ? "   ADVANCES" : ""));
+    });
+    if (!live.length) out.push("Nothing entered yet.");
+    return out.join("\n");
+  }
+
+  function initThird(){
+    $("wcsGroupCount").addEventListener("change", function(){ renderThirdInputs(); rankThird(); });
+    $("wcsAdvance").addEventListener("change", rankThird);
+    $("wcsThirdClear").addEventListener("click", function(){
+      if(!window.confirm("Clear the third place ranking?")) return;
+      S.third=[]; put(K_3,S.third); renderThirdInputs(); rankThird();
+    });
+    $("wcsThirdExport").addEventListener("click", function(){
+      download("world-cup-third-place-ranking.txt", thirdText()); flash("wcsThirdMsg","Exported.");
+    });
+    renderThirdInputs(); rankThird();
+  }
+
+  /* ---------- accordions ---------- */
+  function acc(target, list, keyName, bodyKeys){
+    var html="";
+    for (var i=0;i<list.length;i++){
+      var e=list[i], body="";
+      bodyKeys.forEach(function(bk){
+        if (e[bk.k]) body += "<p><strong>"+bk.label+"</strong> "+esc(e[bk.k])+"</p>";
+      });
+      html += '<div class="wcs-acc"><button class="wcs-acc-b" type="button"><span>'+esc(e.t)+"</span>"+
+        (e[keyName] ? '<span class="wcs-acc-k">'+esc(e[keyName])+"</span>" : "")+"</button>"+
+        '<div class="wcs-acc-body">'+body+"</div></div>";
+    }
+    $(target).innerHTML=html;
+    Array.prototype.forEach.call($(target).querySelectorAll(".wcs-acc-b"), function(b){
+      b.addEventListener("click", function(){ b.parentNode.classList.toggle("open"); });
+    });
+  }
+
+  function initMetrics(){
+    function draw(){
+      var q=($("wcsStatFind").value||"").toLowerCase();
+      var list=WCS.metrics.filter(function(m){
+        return !q || (m.t+" "+m.k+" "+m.what+" "+m.hides+" "+m.use).toLowerCase().indexOf(q)>=0;
+      });
+      acc("wcsStatAcc", list, "k", [
+        {k:"what",  label:"What it measures."},
+        {k:"hides", label:"What it hides."},
+        {k:"use",   label:"How to use it."}
+      ]);
+      $("wcsStatCount").textContent=list.length+" of "+WCS.metrics.length+" metrics";
+    }
+    $("wcsStatFind").addEventListener("input", draw);
+    draw();
+  }
+
+  function initFormats(){
+    var rows="";
+    for (var i=0;i<WCS.formats.length;i++){
+      var f=WCS.formats[i];
+      rows += "<tr><td><strong>"+esc(f.era)+"</strong></td><td class='num'>"+esc(f.teams)+
+        "</td><td>"+esc(f.group)+"</td><td>"+esc(f.knockout)+"</td><td class='num'>"+esc(f.n)+"</td></tr>";
+    }
+    $("wcsFormatTbl").querySelector("tbody").innerHTML=rows;
+    acc("wcsFormatAcc", WCS.formats.map(function(f){ return {t:f.era, k:f.teams+" teams", note:f.note}; }),
+        "k", [{k:"note", label:"What it means for records."}]);
+  }
+
+  function initRecords(){
+    acc("wcsRecordAcc", WCS.records, "k", [{k:"body", label:"How it is counted."}]);
+  }
+
+  /* ---------- your data ---------- */
+  function parseCSV(text){
+    var rows=[], row=[], val="", q=false;
+    for (var i=0;i<text.length;i++){
+      var c=text[i];
+      if (q){
+        if (c==='"' && text[i+1]==='"'){ val+='"'; i++; }
+        else if (c==='"'){ q=false; }
+        else { val+=c; }
+      } else {
+        if (c==='"'){ q=true; }
+        else if (c===","){ row.push(val); val=""; }
+        else if (c==="\n"){ row.push(val); rows.push(row); row=[]; val=""; }
+        else if (c!=="\r"){ val+=c; }
+      }
+    }
+    if (val.length || row.length){ row.push(val); rows.push(row); }
+    return rows.filter(function(r){ return r.length>1; });
+  }
+
+  function ingest(text){
+    var trimmed=text.trim();
+    if (!trimmed) return 0;
+    var items=[];
+    if (trimmed.charAt(0)==="[" || trimmed.charAt(0)==="{"){
+      try{
+        var j=JSON.parse(trimmed);
+        items = Array.isArray(j) ? j : (j.fixtures || j.rows || []);
+      }catch(e){ items=[]; }
+    } else {
+      var rows=parseCSV(trimmed);
+      if (!rows.length) return 0;
+      var head=rows[0].map(function(h){ return h.trim().toLowerCase(); });
+      for (var r=1;r<rows.length;r++){
+        var o={};
+        head.forEach(function(h,ix){ o[h]=(rows[r][ix]||"").trim(); });
+        if (Object.keys(o).length) items.push(o);
+      }
+    }
+    if (!items.length) return 0;
+    S.data=items;
+    afterData();
+    return items.length;
+  }
+
+  function afterData(){
+    $("wcsDataState").innerHTML="<b>Loaded:</b><span class='muted'> "+(S.data.length? S.data.length+" rows":"nothing")+"</span>";
+    var groups=[];
+    S.data.forEach(function(r){
+      if (r.group && groups.indexOf(r.group)<0) groups.push(r.group);
+    });
+    var sel=$("wcsDataGroup"), keep=sel.value;
+    sel.innerHTML='<option value="">All groups</option>';
+    groups.sort().forEach(function(g){
+      var o=document.createElement("option"); o.value=g; o.textContent="Group "+g; sel.appendChild(o);
+    });
+    if (groups.indexOf(keep)>=0) sel.value=keep;
+    drawData();
+  }
+
+  function drawData(){
+    var want=$("wcsDataGroup").value;
+    var q=($("wcsDataFind").value||"").toLowerCase();
+    var list=S.data.filter(function(r){
+      if (want && r.group!==want) return false;
+      if (q && JSON.stringify(r).toLowerCase().indexOf(q)<0) return false;
+      return true;
+    });
+    $("wcsDataCount").innerHTML="<b>Rows:</b><span class='muted'> "+list.length+"</span>";
+    if (!list.length){
+      $("wcsDataOut").innerHTML='<div class="wcs-empty">No rows match. Load a file or clear the filters.</div>';
+      return;
+    }
+    var keys=Object.keys(list[0]).slice(0,8);
+    var head=keys.map(function(k){ return "<th>"+esc(k)+"</th>"; }).join("");
+    var rows="";
+    list.slice(0,200).forEach(function(r){
+      rows += "<tr>"+keys.map(function(k){ return "<td>"+esc(r[k]||"")+"</td>"; }).join("")+"</tr>";
+    });
+    $("wcsDataOut").innerHTML='<div class="wcs-tblw"><table class="wcs-tbl"><thead><tr>'+head+
+      "</tr></thead><tbody>"+rows+"</tbody></table></div>"+
+      (list.length>200 ? '<div class="tiny muted" style="margin-top:8px">Showing the first 200 rows.</div>' : "");
+  }
+
+  function buildAllTables(){
+    if (!S.data.length){ $("wcsDataOut").innerHTML='<div class="wcs-empty">Load a fixtures file first.</div>'; return; }
+    var byGroup={};
+    S.data.forEach(function(r){
+      var g=r.group||"Ungrouped";
+      if (!byGroup[g]) byGroup[g]={teams:[], res:{}};
+      var h=r.home, a=r.away;
+      if (!h || !a) return;
+      var G=byGroup[g];
+      if (G.teams.indexOf(h)<0) G.teams.push(h);
+      if (G.teams.indexOf(a)<0) G.teams.push(a);
+      var hi=G.teams.indexOf(h), ai=G.teams.indexOf(a);
+      var key = hi<ai ? hi+"-"+ai : ai+"-"+hi;
+      var hg=num(r.home_goals), ag=num(r.away_goals);
+      if (hg===null || ag===null) return;
+      G.res[key] = hi<ai ? {h:hg,a:ag} : {h:ag,a:hg};
+    });
+    var html="";
+    Object.keys(byGroup).sort().forEach(function(g){
+      var G=byGroup[g];
+      if (!G.teams.length) return;
+      var rows=standings(G.teams, G.res);
+      var body="";
+      rows.forEach(function(r,i){
+        var status = i<2 ? '<span class="wcs-qual">Advances</span>'
+                  : (i===2 ? '<span class="wcs-third">Third</span>' : '<span class="wcs-out">Out</span>');
+        body += "<tr><td>"+(i+1)+"</td><td><strong>"+esc(r.name)+"</strong></td><td class='num'>"+r.p+
+          "</td><td class='num'>"+r.w+"</td><td class='num'>"+r.d+"</td><td class='num'>"+r.l+
+          "</td><td class='num'>"+r.gf+"</td><td class='num'>"+r.ga+"</td><td class='num'>"+(r.gd>0?"+":"")+r.gd+
+          "</td><td class='num'><strong>"+r.pts+"</strong></td><td>"+status+"</td></tr>";
+      });
+      html += '<div class="card" style="margin-bottom:12px"><div style="font-weight:800;margin-bottom:10px">Group '+esc(g)+"</div>"+
+        '<div class="wcs-tblw"><table class="wcs-tbl"><thead><tr><th>Pos</th><th style="min-width:130px">Team</th>'+
+        "<th class='num'>P</th><th class='num'>W</th><th class='num'>D</th><th class='num'>L</th>"+
+        "<th class='num'>GF</th><th class='num'>GA</th><th class='num'>GD</th><th class='num'>Pts</th><th>Status</th>"+
+        "</tr></thead><tbody>"+body+"</tbody></table></div></div>";
+    });
+    $("wcsDataOut").innerHTML = html || '<div class="wcs-empty">No group data found. Check the column names against the sample.</div>';
+  }
+
+  function initData(){
+    $("wcsFile").addEventListener("change", function(e){
+      var f=e.target.files && e.target.files[0];
+      if(!f) return;
+      var rd=new FileReader();
+      rd.onload=function(){
+        var n=ingest(String(rd.result));
+        $("wcsDataState").innerHTML="<b>Loaded:</b><span class='muted'> "+(n? n+" rows":"could not read that file")+"</span>";
+      };
+      rd.readAsText(f);
+    });
+    $("wcsLoad").addEventListener("click", function(){
+      var v=$("wcsPaste").value;
+      if (v.trim().length<20){ $("wcsDataState").innerHTML="<b>Loaded:</b><span class='muted'> paste more than that</span>"; return; }
+      var n=ingest(v);
+      if (n) $("wcsPaste").value="";
+      $("wcsDataState").innerHTML="<b>Loaded:</b><span class='muted'> "+(n? n+" rows":"could not parse that")+"</span>";
+    });
+    $("wcsSample").addEventListener("click", function(){ $("wcsPaste").value=WCS.sample; });
+    $("wcsDataClear").addEventListener("click", function(){ S.data=[]; afterData(); });
+    $("wcsDataGroup").addEventListener("change", drawData);
+    $("wcsDataFind").addEventListener("input", drawData);
+    $("wcsBuildTables").addEventListener("click", buildAllTables);
+  }
+
+  /* ---------- compare ---------- */
+  function renderCmp(){
+    var a=$("wcsCmpA").value||"First team", b=$("wcsCmpB").value||"Second team";
+    var html="";
+    for (var i=0;i<WCS.compareRows.length;i++){
+      html += '<div class="card" style="margin-bottom:10px; padding:15px">'+
+        '<div style="font-weight:800; margin-bottom:9px; font-size:14px">'+esc(WCS.compareRows[i])+"</div>"+
+        '<div class="wcs-grid two">'+
+        '<div><div class="tiny muted" style="margin-bottom:4px">'+esc(a)+"</div>"+
+        '<textarea class="input" data-ca="'+i+'" style="min-height:72px; resize:vertical">'+esc(S.cmp["a"+i]||"")+"</textarea></div>"+
+        '<div><div class="tiny muted" style="margin-bottom:4px">'+esc(b)+"</div>"+
+        '<textarea class="input" data-cb="'+i+'" style="min-height:72px; resize:vertical">'+esc(S.cmp["b"+i]||"")+"</textarea></div>"+
+        "</div></div>";
+    }
+    $("wcsCmpRows").innerHTML=html;
+    Array.prototype.forEach.call($("wcsCmpRows").querySelectorAll("textarea"), function(t){
+      t.addEventListener("input", function(){
+        var key = t.hasAttribute("data-ca") ? "a"+t.getAttribute("data-ca") : "b"+t.getAttribute("data-cb");
+        S.cmp[key]=t.value;
+        S.cmp.a=$("wcsCmpA").value; S.cmp.b=$("wcsCmpB").value;
+      });
+    });
+  }
+
+  function cmpText(){
+    var out=["Team comparison", "", (S.cmp.a||"A")+" versus "+(S.cmp.b||"B"), ""];
+    for (var i=0;i<WCS.compareRows.length;i++){
+      if (!S.cmp["a"+i] && !S.cmp["b"+i]) continue;
+      out.push(WCS.compareRows[i]);
+      out.push("  "+(S.cmp.a||"A")+": "+(S.cmp["a"+i]||"-"));
+      out.push("  "+(S.cmp.b||"B")+": "+(S.cmp["b"+i]||"-"));
+      out.push("");
+    }
+    if (out.length<=4) out.push("Nothing entered yet.");
+    return out.join("\n");
+  }
+
+  function initCmp(){
+    if (S.cmp.a) $("wcsCmpA").value=S.cmp.a;
+    if (S.cmp.b) $("wcsCmpB").value=S.cmp.b;
+    $("wcsCmpA").addEventListener("input", renderCmp);
+    $("wcsCmpB").addEventListener("input", renderCmp);
+    $("wcsCmpSave").addEventListener("click", function(){
+      put(K_C,S.cmp); flash("wcsCmpMsg","Saved on this device.");
+    });
+    $("wcsCmpExport").addEventListener("click", function(){
+      download("world-cup-team-comparison.txt", cmpText()); flash("wcsCmpMsg","Exported.");
+    });
+    renderCmp();
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    initTabs();
+    initModal();
+    initTable();
+    initThird();
+    initMetrics();
+    initFormats();
+    initRecords();
+    initData();
+    initCmp();
+  });
+})();
+</script>
+
+</body>
+</html>
