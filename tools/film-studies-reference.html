@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Film Studies Reference - Terms, Craft and Method - ReportMedic</title>
+  <meta name="description" content="A reference for film studies. Technical vocabulary by department, movements and national cinemas, the production pipeline, critical terms, and how to cite film." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+
+  <script defer src="/assets/js/rm-tools-drawer.js"></script>
+
+  <style>
+    .panel h1{display:flex; align-items:baseline; gap:.55rem; flex-wrap:wrap;}
+    .fr-bar{position:sticky; top:0; z-index:11; background:rgba(15,24,40,.88); backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--border); margin:0 -16px 18px; padding:12px 16px}
+    .fr-bar .row{gap:10px; flex-wrap:wrap}
+    .fr-idx{display:grid; grid-template-columns:repeat(auto-fit,minmax(235px,1fr)); gap:8px; margin-top:12px}
+    .fr-idx a{display:block; text-decoration:none; border:1px solid var(--border); border-radius:10px;
+      padding:10px 12px; background:rgba(255,255,255,.03); font-size:13.5px; font-weight:600}
+    .fr-idx a:hover{background:rgba(255,255,255,.08); border-color:var(--brand)}
+    .fr-idx a span{display:block; font-weight:400; font-size:12px; color:var(--muted); margin-top:3px}
+    .fr-sec{border:1px solid var(--border); border-radius:14px; background:rgba(255,255,255,.03);
+      padding:20px; margin-bottom:16px; scroll-margin-top:80px}
+    .fr-sec > h2{font-size:20px; margin:0 0 4px; letter-spacing:-.01em}
+    .fr-kicker{font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:8px}
+    .fr-sec p{margin:0 0 12px; line-height:1.75; font-size:14.5px}
+    .fr-sec h3{font-size:15px; margin:18px 0 8px; color:var(--brand2)}
+    .fr-anchor{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px; color:var(--muted);
+      border:1px solid var(--border); border-radius:6px; padding:2px 7px; background:rgba(0,0,0,.2)}
+    .fr-tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
+    .fr-tag{font-size:11px; font-weight:600; padding:3px 9px; border-radius:999px;
+      background:rgba(255,255,255,.06); border:1px solid var(--border); color:var(--muted)}
+    .fr-tblw{overflow-x:auto; border:1px solid var(--border); border-radius:12px; margin:14px 0}
+    table.fr-tbl{border-collapse:collapse; width:100%; font-size:13.5px; min-width:540px}
+    table.fr-tbl th, table.fr-tbl td{border-bottom:1px solid rgba(255,255,255,.09); padding:9px 11px; text-align:left; vertical-align:top}
+    table.fr-tbl th{background:rgba(255,255,255,.06); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+    table.fr-tbl tr:last-child td{border-bottom:0}
+    .fr-note{border-left:3px solid var(--brand); background:rgba(255,255,255,.04); border-radius:0 10px 10px 0;
+      padding:12px 14px; font-size:13.5px; line-height:1.7; margin:14px 0}
+    .fr-warn{border-left:3px solid #ffb35c; background:rgba(255,179,92,.07); border-radius:0 10px 10px 0;
+      padding:13px 15px; font-size:13.5px; line-height:1.7}
+    .fr-hide{display:none}
+    .fr-term{font-weight:700; color:var(--text)}
+    .fr-ratio{display:inline-block; border:1px solid var(--border); background:rgba(255,255,255,.06);
+      height:22px; vertical-align:middle; margin-right:8px}
+  </style>
+</head>
+
+<body class="tools-page">
+<header>
+  <div class="nav">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <div class="mark"></div>
+      <div>ReportMedic</div>
+    </a>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Home</a>
+    <button class="btn" id="openDrawerBtn" type="button">All Tools</button>
+    <a class="btn primary" href="/fix-my-report.html">Live Agent</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h1>Film Studies Reference <a href="#" class="rm-lm-link" data-rm-lm-open="rmLM">Learn more</a></h1>
+    <p class="sub">The lookup layer for anyone writing seriously about film. Fourteen subject areas covering the technical vocabulary of every department, the movements and national cinemas that gave those techniques meaning, who actually decides what on a production, and the critical terms that get used loosely. Plus a searchable glossary and a straight answer on how to cite a film properly.</p>
+    <div class="tiny muted" style="margin-top:10px"><a href="https://vaultbook.net/tools/film-study-notebook.html">Taking notes on a specific film? Use the VaultBook film study notebook →</a></div>
+
+    <div class="hr"></div>
+
+    <div class="fr-bar">
+      <div class="row">
+        <input class="input" id="frFind" type="search" placeholder="Search every section and the glossary" style="max-width:320px" />
+        <select class="input" id="frDept" style="max-width:200px"><option value="">Any area</option></select>
+        <span class="pill tiny" id="frCount"><b>Showing:</b><span class="muted"> 14 of 14</span></span>
+        <button class="btn" id="frTop" type="button">Back to index</button>
+      </div>
+    </div>
+
+    <div class="card" id="frIndex">
+      <div style="font-weight:800; margin-bottom:4px">Reference index</div>
+      <div class="tiny muted">Every subject has a permanent anchor. Deep link straight to the section a reader needs rather than sending them to the top of the page.</div>
+      <div class="fr-idx" id="frIdxList"></div>
+    </div>
+
+    <div id="frSections" style="margin-top:20px"></div>
+
+    <div class="card" id="frGlossaryCard" style="margin-top:20px; scroll-margin-top:80px" id="glossary">
+      <div style="font-weight:800; margin-bottom:4px">Glossary</div>
+      <div class="tiny muted">Terms you will meet in criticism, on a set, and in a technical credit list, with the department each belongs to. Filtered by the search box above.</div>
+      <div class="fr-tblw" style="margin-top:12px">
+        <table class="fr-tbl" id="frGloss">
+          <thead><tr><th style="min-width:170px">Term</th><th style="min-width:120px">Area</th><th>What it means</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="tiny muted" id="frGlossCount"></div>
+    </div>
+
+    <div style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn primary" href="/#toolbox">Back to Toolbox</a>
+      <a class="btn" href="/fix-my-report.html">Contact</a>
+    </div>
+  </div>
+
+<div class="footer">© 2026 ReportMedic</div>
+</div>
+
+<footer class="rm-footer">
+  <div class="rm-footer-inner">
+    <div class="rm-footer-brand">
+      <div class="rm-footer-name">ReportMedic</div>
+      <div class="rm-footer-tag">Report diagnostics tools + consulting help.</div>
+    </div>
+    <div class="rm-footer-links">
+      <a href="/fix-my-report.html">Fix My Report</a>
+      <a href="/#tools">Tools</a>
+      <a href="/docs/">Docs</a>
+      <a href="https://t.me/ReportMedic" rel="nofollow noopener" target="_blank">Telegram: @ReportMedic</a>
+    </div>
+    <div class="rm-footer-meta">© 2026 ReportMedic</div>
+  </div>
+</footer>
+
+<div aria-hidden="true" aria-label="Film studies reference details" aria-modal="true" class="rm-lm-backdrop" id="rmLM" role="dialog">
+  <div class="rm-lm-dialog">
+    <div class="rm-lm-head">
+      <h2 class="rm-lm-title">Film Studies Reference</h2>
+      <button aria-label="Close" class="rm-lm-close" data-rm-lm-close="rmLM" type="button">×</button>
+    </div>
+    <div class="rm-lm-body">
+      <h3>What this covers</h3>
+      <ul>
+        <li>Technical vocabulary organised by the department that uses it</li>
+        <li>Movements and national cinemas, and what each was reacting against</li>
+        <li>The production pipeline, and who holds the decision at each stage</li>
+        <li>Critical terms that are used loosely, defined precisely</li>
+        <li>Formats, gauges, aspect ratios, and why a frame is the shape it is</li>
+        <li>How to cite a film, a scene, and a version in an essay</li>
+      </ul>
+      <h3>How to use it</h3>
+      <ul>
+        <li>Every subject has a permanent anchor for deep linking from an article</li>
+        <li>The search box filters all fourteen sections and the glossary at once</li>
+        <li>Filter by area to see only one department or one field</li>
+      </ul>
+      <h3>What it is not</h3>
+      <ul>
+        <li>Not a list of films, directors, or rankings, all of which date immediately</li>
+        <li>Not a substitute for watching. It is the vocabulary you need afterwards</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+var FR = {};
+
+FR.sections = [
+
+{id:"camera-and-lenses", title:"Camera and lenses", kicker:"Camera department", dept:"Camera",
+ tags:["focal length","aperture","depth of field","frame rate","sensor","format"],
+ body:[
+ "The camera department controls what the frame contains and how much of it is legible. Focal length is the first variable: a short focal length takes in a wide angle of view and exaggerates the sense of distance between foreground and background, while a long focal length narrows the view and compresses that distance until objects far apart appear stacked. This is why a figure walking toward a long lens seems to make no progress, and why a wide lens close to a face distorts it.",
+ "Aperture governs how much light reaches the sensor or film and, as a side effect, how much of the depth of the shot is acceptably sharp. A wide aperture isolates a subject against a soft background and takes the choice of where to look away from the viewer. A narrow aperture holds foreground and background in focus together, which invites the viewer to compare them. Neither is neutral, and the switch between them within a film is always worth marking.",
+ "Frame rate is the number of images captured each second. Recording faster than the projection rate produces slow motion on playback, recording slower produces acceleration. The standard rate for sound cinema is twenty four frames per second, and departures from it are conspicuous. Shutter angle controls how long each frame is exposed within its slice of time, which determines how much motion blur each frame carries. A narrow shutter produces the stuttering, hard-edged movement associated with certain kinds of action sequence."],
+ h3:[{t:"Why the lens choice is an argument", p:"A director choosing between a wide and a long lens for the same shot is choosing between two different claims about space. The wide lens says these things are far apart and the character has ground to cover. The long lens says the distance is collapsing or that it cannot be crossed at all. When a film changes its lens habit partway through, it has changed its mind about the world it is describing."},
+     {t:"Format and gauge", p:"The physical size of the recording medium sets the grain, the depth of field at a given framing, and the amount of detail available. Larger negative or sensor area at the same field of view yields shallower depth of field and finer grain. This is why large format work looks distinct even to viewers who could not name what they are seeing."}]},
+
+{id:"lighting-and-grip", title:"Lighting and grip", kicker:"Camera department", dept:"Camera",
+ tags:["key light","fill","ratio","practical","diffusion","rigging"],
+ body:[
+ "Lighting is described by direction, quality, and ratio. Direction is where the light comes from relative to the subject and the camera, and it determines where shadow falls on a face. Quality runs from hard, meaning a small source producing sharp-edged shadows, to soft, meaning a large or diffused source producing gradual transitions. Ratio is the difference in brightness between the lit side and the shadow side, and it is the single number that most determines the mood of an image.",
+ "The conventional arrangement uses a key light as the dominant source, a fill light to control how deep the shadows go, and a back or rim light to separate the subject from the background. High key lighting means a low ratio and even illumination, which reads as open and reassuring. Low key means a high ratio with substantial areas in darkness, which is the grammar an entire tradition of crime and horror was built on.",
+ "The grip department shapes and blocks light rather than producing it, and it builds and moves everything the camera sits on. Flags, nets, and diffusion frames are grip equipment, as are dollies, cranes, and track. When a critic praises a camera movement, they are usually praising grip work as much as camerawork."],
+ h3:[{t:"Motivated and unmotivated light", p:"A practical is a light source visible within the frame, such as a lamp or a window, that plausibly explains the illumination. Lighting that is motivated by a practical grounds the scene in its own world. Light arriving from no identifiable source is expressive rather than realistic, and the shift between the two modes is a directorial decision worth noticing."},
+     {t:"What shadow is doing", p:"Shadow is a decision to withhold information. Asking what a scene has allowed to go black, and what it would have revealed if lit, is usually more productive than cataloguing what is illuminated."}]},
+
+{id:"production-design", title:"Production design and art direction", kicker:"Design", dept:"Design",
+ tags:["set","props","costume","dressing","location","continuity"],
+ body:[
+ "Production design covers everything constructed or selected to appear in front of the camera. The production designer sets the visual concept, the art director executes it across departments, and set decoration handles what fills a space once it is built. Costume design operates as a parallel discipline with its own head of department, and props sit between the two, since an object handled by a performer belongs to both worlds.",
+ "The department does characterisation that dialogue cannot. A room states what a person believes about themselves before they speak, and it does so without the viewer registering that they have been told anything. Costume tracks change more reliably than speech, because a character can misrepresent themselves and the wardrobe plan cannot.",
+ "Continuity is the discipline that keeps this coherent across a shoot that films scenes out of order over months. A continuity supervisor records the state of every element in every take so that a shot filmed in one location matches its neighbour filmed elsewhere weeks later. Most visible errors that audiences catch are continuity failures rather than design failures."],
+ h3:[{t:"The object that does not belong", p:"A single item out of period, out of class, or out of taste is rarely an accident on a well-run production. Finding it and asking who placed it there and what it is meant to signal is one of the most reliable routes into a design reading."}]},
+
+{id:"sound-recording", title:"Sound recording and design", kicker:"Sound", dept:"Sound",
+ tags:["production sound","boom","ADR","foley","ambience","diegetic"],
+ body:[
+ "Sound divides into what is captured during shooting and what is created afterwards. Production sound is recorded on set by a mixer working with boom operators, and the goal is usable dialogue rather than a finished soundtrack. Everything else is built in post: atmospheres, effects, and the entire physical presence of a world that the picture only implies.",
+ "Foley is the practice of performing everyday sounds in sync to picture, from footsteps to clothing movement to the handling of objects. It exists because sound recorded on location is dominated by dialogue and rarely contains usable detail. Automated dialogue replacement is the equivalent for speech, re-recorded by the performer in a studio and matched to the original performance.",
+ "The most important analytical distinction is between sound that exists within the world of the film and sound that does not. A radio playing in a room is heard by the characters. A score swelling behind them is not. Films play with the boundary deliberately, and a sound that begins as one and turns out to be the other is always a designed effect rather than an accident."],
+ h3:[{t:"Off screen sound", p:"The cheapest and most effective suspense device available, because the audience constructs the unseen source themselves and constructs it worse than any image could. A film that keeps a sound source outside the frame is asking the viewer to do the work."},
+     {t:"Silence as a cue", p:"Dropping ambience entirely is among the strongest signals a soundtrack can send. It is conspicuous precisely because a real space is never silent, so the absence registers as wrongness before the viewer identifies why."}]},
+
+{id:"editing-and-post", title:"Editing and post-production", kicker:"Post", dept:"Post",
+ tags:["cut","continuity editing","montage","assembly","rough cut","conform"],
+ body:[
+ "Editing is the assembly of shots into sequence, and it is where a film is finally written. The workflow moves from assembly, which contains everything in script order, through a rough cut, a fine cut, and finally a locked picture after which sound and colour work can proceed against a stable timeline.",
+ "Continuity editing is the dominant system, designed so that cuts pass unnoticed. It relies on conventions that maintain spatial and temporal coherence: matching action across a cut, keeping camera positions on one side of an imaginary line through the scene, and cutting on movement so the eye is occupied at the moment of the join. Because the system is designed to be invisible, noticing it is already an analytical act.",
+ "Montage in the broad sense means any assembly of shots, but in criticism it usually names an approach that treats the collision between two images as the source of meaning rather than their continuity. A cut that joins two unconnected things asserts a relationship between them, and that assertion is an argument the film is making rather than a story it is telling."],
+ h3:[{t:"Cut rate as tempo", p:"The number of cuts per minute works on the body before it reaches the mind. A scene that accelerates its cutting raises the viewer's pulse whether or not the events warrant it, which is why timing the fastest and slowest passages of a film usually identifies the scenes the director cared most about."},
+     {t:"The long take", p:"Refusing to cut makes duration itself the subject and denies the viewer the relief that a cut provides. It also removes the editor's ability to fix a performance, which is why the technique carries a reputation for difficulty that is entirely deserved."}]},
+
+{id:"colour-and-image", title:"Colour, grading and the image pipeline", kicker:"Post", dept:"Post",
+ tags:["grading","colour space","LUT","stock","digital intermediate","saturation"],
+ body:[
+ "The look of a finished film is set in two places: what was captured, and what was done to it afterwards. On photochemical productions the choice of stock, its exposure, and the processing determined colour and contrast, with limited scope for later change. The arrival of the digital intermediate made the entire image reworkable after the fact, and colour grading became a major creative stage rather than a corrective one.",
+ "Grading works in two passes. A primary grade sets overall exposure, contrast, and colour balance for a shot. Secondaries isolate parts of the image, by colour or by region, and treat them independently, which is how a single element can be made to sit apart from everything around it. A lookup table applies a predefined transformation and is often used to preview an intended look during shooting.",
+ "Colour organises a film into zones faster than any other element. Two locations graded differently become two worlds, and a character carrying one palette into another is visibly out of place before a word is spoken. Saturation controls how heightened or documentary a world feels, and it is processed by the viewer long before it is noticed."],
+ h3:[{t:"Reading a palette by sequence", p:"Chart the palette by sequence rather than by shot. The pattern that emerges almost always maps onto the structure, and the point where it breaks is where the film turns."}]},
+
+{id:"formats-and-aspect-ratios", title:"Formats, gauges and aspect ratios", kicker:"Image", dept:"Image",
+ tags:["aspect ratio","widescreen","anamorphic","gauge","framing","projection"],
+ body:[
+ "Aspect ratio is the proportion of width to height in the projected image, and it is a compositional constraint rather than a neutral container. A squarer frame favours vertical composition and single figures, and it makes a face dominant easily. A wide frame favours horizontal relationships, group staging, and landscape, and it makes isolating a single figure require deliberate effort.",
+ "Widescreen arrived in the nineteen fifties as an answer to television, and it produced two distinct technical routes. One captured a wide image directly onto a larger area of film. The other used anamorphic lenses to squeeze a wide field of view onto standard film, then unsqueezed it in projection, which introduced optical characteristics such as oval highlights and a distinctive focus falloff that are now sought deliberately.",
+ "Gauge refers to the physical width of the film stock. Larger gauges carry more detail and finer grain, smaller gauges are cheaper, lighter, and grainier, which made them the format of amateur, documentary, and low budget work and gave them an associated texture that is now used as a deliberate signal."],
+ h3:[{t:"Why the ratio matters to a reading", p:"When a film changes ratio partway through, it is almost always marking a change of world, of time, or of register. Treat it as a structural signal rather than a technical curiosity, and ask what each ratio is being used to say."},
+     {t:"Framing for two masters", p:"Many films are composed so that they work when projected wide and when cropped for another format. Knowing this explains a great deal of otherwise puzzling headroom and empty space, and it means the framing you are analysing may be a compromise rather than a choice."}]},
+
+{id:"the-production-pipeline", title:"The production pipeline", kicker:"Process", dept:"Process",
+ tags:["development","pre-production","principal photography","post","delivery"],
+ body:[
+ "A film moves through five broad stages. Development covers everything before a production is committed: rights, script drafts, financing, and attachment of key personnel. It is the longest and least visible stage and the one where most projects die. Pre-production is the planning phase once money is committed, covering casting, location scouting, design, scheduling, and budgeting.",
+ "Principal photography is the shoot itself, and it is the shortest and most expensive stage. Everything about how a film is organised follows from the fact that a day of shooting costs more than a week of anything else, which is why scenes are filmed out of order and grouped by location rather than by narrative sequence.",
+ "Post-production covers editing, sound, music, visual effects, and colour, and it typically runs far longer than the shoot. Delivery is the final stage: creating the technical versions required by distributors, territories, and platforms, including different aspect ratios, subtitles, dubs, and censored cuts.",
+ "Understanding this sequence explains most apparent oddities in a finished film. A performance that seems inconsistent may have been shot months apart. A scene that feels detached may have been added in reshoots. A version that differs by territory was almost certainly created at delivery rather than by the director."],
+ h3:[{t:"Why scenes are shot out of order", p:"Scheduling is driven by location availability, cast availability, and daylight. A performer may film the emotional climax of a story in their first week, before establishing the character that the climax depends on, which is a genuine craft problem rather than a curiosity."}]},
+
+{id:"who-decides-what", title:"Who decides what", kicker:"Process", dept:"Process",
+ tags:["director","producer","cinematographer","editor","authorship","final cut"],
+ body:[
+ "Authorship in film is contested precisely because the labour is distributed. The director leads the creative interpretation and directs performance and staging, but the extent of their authority varies enormously by production, by era, and by contract. Final cut, the contractual right to determine the released version, is held by the director on some productions and by the financier or studio on many others.",
+ "The producer secures financing and carries responsibility for the production as an enterprise, which includes decisions with large creative consequences such as budget, schedule, and casting. The cinematographer determines how the film is photographed within the director's brief and carries their own signature across projects, which is one of the strongest arguments against attributing everything to the director.",
+ "The editor shapes the final structure and is frequently the person who identifies what the film actually is, as distinct from what it was written to be. Screenwriters may be numerous and sequential, with credit allocated by arbitration rather than by contribution. Composers, sound designers, and production designers all bring recognisable habits across films with different directors.",
+ "None of this means directorial authorship is meaningless. It means a reading that attributes every effect to one name is making a claim it has not evidenced, and the stronger version of the argument identifies which choices plausibly belong to which role."],
+ h3:[{t:"How to write about authorship honestly", p:"Name the department responsible for the effect you are describing wherever you can. Saying that a cinematographer's habit produced an image is more precise than saying a director did, and it strengthens rather than weakens a claim about the film as a whole."}]}
+];
+
+FR.sections = FR.sections.concat([
+
+{id:"movements-and-national-cinemas", title:"Movements and national cinemas", kicker:"History", dept:"History",
+ tags:["movement","national cinema","realism","new wave","avant garde"],
+ body:[
+ "A movement is a group of filmmakers working in proximity, in time and often in place, who share a set of formal commitments and, usually, something they are reacting against. The reaction matters more than the shared style, because it explains why the techniques were adopted rather than merely describing them. Naming a movement without naming what it opposed produces a description rather than an argument.",
+ "Movements have tended to cluster around three conditions. The first is material constraint: a shortage of studio infrastructure pushes filmmakers onto real locations with available light, and the resulting look becomes an aesthetic position rather than a limitation. The second is political rupture, where a change of regime or the end of a war reopens what may be shown and said. The third is generational, where a group of critics or students turns to production with a shared set of arguments already worked out in print.",
+ "National cinema is a looser and more contested category. It can mean films made within a state's industry, films made in a language, films addressing a national audience, or films that carry a set of themes associated with a place. These definitions disagree constantly, particularly for co-productions, diasporic filmmaking, and industries whose output is aimed primarily at export. A reading that uses the term should say which definition it means."],
+ h3:[{t:"The questions to ask of any movement", p:"What were the material conditions, what was being rejected, what formal commitments followed from that rejection, who financed it, how long did it hold together, and what ended it. A movement that cannot answer the last two questions is usually a critical category applied retrospectively rather than a group that existed."},
+     {t:"Retrospective naming", p:"Many movements were named by critics after the fact, sometimes decades later, and the filmmakers grouped under a label frequently rejected it. Treat the label as a tool for organising discussion rather than as a claim about what the filmmakers thought they were doing."}]},
+
+{id:"genre-and-mode", title:"Genre, mode and cycle", kicker:"Criticism", dept:"Criticism",
+ tags:["genre","convention","cycle","hybrid","revisionism"],
+ body:[
+ "Genre is a set of expectations shared between producers and audiences, expressed through recurring situations, character types, settings, and resolutions. It is not a fixed taxonomy. Genres shift by decade and by country, boundaries are drawn differently by industries and by critics, and many categories were named retrospectively by writers rather than by the people making the films.",
+ "A mode is broader than a genre and describes a register rather than a content type. Melodrama, comedy, and documentary are modes in this sense, and they cut across genres freely. A cycle is narrower and shorter: a run of films exploiting a specific successful formula within a genre over a few years, typically ending when the returns fall.",
+ "The analytically useful move is to establish the convention in precise terms before identifying the deviation. A genre reading that states the rules vaguely can smuggle in its own conclusion, because a loosely defined convention can be made to accommodate any film. Late entries in a cycle and deliberately revisionist works are the most productive objects, because they assume audience knowledge of the rules and play against it."],
+ h3:[{t:"Hybrid is not a category", p:"Describing a film as a genre hybrid is usually a way of avoiding the analysis. The stronger reading identifies which genre's rules govern the structure and which genre is supplying surface elements, because the two roles are rarely equal."}]},
+
+{id:"critical-vocabulary", title:"Critical vocabulary", kicker:"Criticism", dept:"Criticism",
+ tags:["diegesis","mise en scene","suture","point of view","reflexivity"],
+ body:[
+ "A small number of terms do most of the work in film criticism and are used loosely often enough to be worth stating precisely. Diegesis is the world of the story: everything the characters can perceive. Something diegetic exists within it, something non-diegetic exists only for the audience. The distinction applies to sound most often but covers titles, narration, and any element addressed past the characters.",
+ "Mise en scene names everything arranged in front of the camera: setting, lighting, costume, and the placement and movement of performers within the frame. The term is sometimes stretched to include framing and camera position, which is a defensible extension and should be declared rather than assumed, because the narrower and broader uses produce different arguments.",
+ "Point of view has an optical sense and a narrational sense, and conflating them causes most confusion around the term. A point of view shot shows what a character sees. Narrational point of view concerns whose knowledge and whose experience the film aligns the viewer with, which can be entirely different from whose eyes the camera borrows.",
+ "Reflexivity describes a film drawing attention to its own construction. It ranges from a character addressing the audience to a film whose subject is filmmaking itself, and its analytical value depends on asking what the acknowledgement achieves rather than simply noting that it occurred."],
+ h3:[{t:"Terms to define before you use them", p:"Realism, classical, avant-garde, auteur, and formal are the words most likely to carry different meanings for writer and reader. Any essay using them heavily should define its sense once and hold to it, because the alternative is an argument that cannot be checked."}]},
+
+{id:"archives-versions-restoration", title:"Archives, versions and restoration", kicker:"Materials", dept:"Materials",
+ tags:["restoration","version","print","preservation","director's cut"],
+ body:[
+ "Films exist in versions rather than as single objects, and this is the fact most often ignored in writing about them. A film may have been cut differently for different territories, censored to different standards, re-edited after a poor preview, shortened for television, restored decades later from incomplete materials, or reissued in a director's cut assembled long after the original release.",
+ "Restoration is interpretive work rather than mechanical recovery. Where original elements are damaged or missing, a restoration team decides what to reconstruct, from what sources, and to what standard. Colour timing must be inferred when reference prints have faded, and different teams reach different conclusions. Two restorations of the same film can look meaningfully unalike, and both can be defensible.",
+ "For a writer this has a practical consequence. Any close analysis of an image, a cut, or a running time is analysis of a specific version, and it should say which one. Citing a timecode without identifying the release is a common error that makes a claim uncheckable."],
+ h3:[{t:"Lost and incomplete films", p:"A substantial proportion of early cinema does not survive, and much of what does survives incompletely. Arguments about early film history are therefore arguments about a surviving sample rather than about what was made, and the honest version says so."}]},
+
+{id:"exhibition-and-audience", title:"Exhibition, distribution and audience", kicker:"Industry", dept:"Industry",
+ tags:["distribution","exhibition","release","censorship","reception"],
+ body:[
+ "How a film reaches an audience shapes what it can be. Distribution determines which territories see it, in what form, and with what marketing. Exhibition covers the conditions of viewing: screen size, sound system, whether an audience is present, and whether the film can be paused. A work designed for a large screen with a captive audience is not the same object when watched in fragments on a small one, and criticism that ignores this is describing a different experience from the one intended.",
+ "Censorship and classification operate at distribution and vary by territory, which is a principal source of version differences. A film may exist in several legal cuts simultaneously, and the version circulating in one country may be the only one most of its audience has ever seen.",
+ "Reception study treats the audience as evidence rather than assuming it. Contemporary reviews, box office performance, correspondence, and later reappraisal all record how a film was actually received, which frequently differs sharply from the reputation it now carries. A film described as a landmark may have been dismissed on release, and saying so is usually more interesting than repeating the settled view."],
+ h3:[{t:"Reputation is not reception", p:"The standing a film holds now was assembled over time by critics, programmers, and rereleases. Distinguishing what a film meant on release from what it means now is one of the most reliable ways to make a familiar work newly interesting."}]},
+
+{id:"citing-film-in-an-essay", title:"Citing film in an essay", kicker:"Method", dept:"Method",
+ tags:["citation","timecode","version","evidence","referencing"],
+ body:[
+ "A film citation needs to let a reader find exactly what you looked at. That means the title, the director, the year of release, and, where it matters, the version you watched and the release you watched it on. Different style guides order these elements differently, so follow whichever your institution or publication requires, but include all of them regardless of order.",
+ "For close analysis, cite a timecode and say which release it refers to. Timecodes vary between editions because of frame rate conversion, different cuts, and differing amounts of front matter, so a bare timecode is not reproducible. Where a scene has a conventional name, give both the name and the timecode.",
+ "Describing rather than reproducing is the correct default for evidence. A shot described precisely, with its scale, duration, camera position, and what it withholds, is stronger evidence than a still, and it demonstrates the analysis rather than outsourcing it. Where dialogue is genuinely necessary, keep it minimal and attribute it, because a paragraph of transcript is not analysis."],
+ h3:[{t:"The evidence standard", p:"A claim about a film should be checkable by someone with the same edition. That means specific enough that they can find the moment, and described precisely enough that they can see what you saw. Vague evidence produces unfalsifiable readings, which is the most common weakness in student film writing."},
+     {t:"Attribute contested claims", p:"Production history is full of anecdote repeated until it hardens into fact. Where a story about how a scene came about is disputed or rests on a single interview, say so and name the source rather than stating it flatly."}]}
+
+]);
+
+FR.glossary = [
+{t:"180 degree rule", d:"Camera", x:"The convention of keeping the camera on one side of an imaginary line through a scene so that screen direction stays consistent. Crossing it disorients the viewer, which is why it is broken deliberately."},
+{t:"Anamorphic", d:"Camera", x:"A lens system that squeezes a wide field of view onto a narrower recording area and unsqueezes it in projection, producing characteristic oval highlights and focus falloff."},
+{t:"Aperture", d:"Camera", x:"The adjustable opening controlling how much light reaches the recording medium, and by consequence how much of the depth of the shot is sharp."},
+{t:"Assembly", d:"Post", x:"The first full edit containing every scene in script order, made before any decisions about pace or removal."},
+{t:"Blocking", d:"Direction", x:"The planned movement and placement of performers and camera within a scene."},
+{t:"Boom", d:"Sound", x:"A pole carrying a microphone above or below the frame, operated to follow dialogue without appearing in shot."},
+{t:"Colour timing", d:"Post", x:"Setting the colour and density of an image, originally a photochemical process and now performed digitally as grading."},
+{t:"Conform", d:"Post", x:"Rebuilding a locked edit at full quality from the original camera material, using the edit decisions made on lower resolution copies."},
+{t:"Continuity", d:"Design", x:"The discipline of keeping every visible element consistent across shots filmed out of order, tracked by a continuity supervisor."},
+{t:"Coverage", d:"Direction", x:"The set of shots filmed for a scene beyond the master, giving the editor options for how to assemble it."},
+{t:"Crane", d:"Grip", x:"A counterweighted arm carrying the camera, allowing vertical movement and sweeping repositioning within a single shot."},
+{t:"Cutaway", d:"Post", x:"A shot of something outside the main action, used to compress time, cover a join, or comment on the scene."},
+{t:"Depth of field", d:"Camera", x:"The range of distance from the camera that appears acceptably sharp, controlled by aperture, focal length, and subject distance."},
+{t:"Diegetic", d:"Criticism", x:"Existing within the world of the story and perceptible to its characters. Non-diegetic elements exist only for the audience."},
+{t:"Digital intermediate", d:"Post", x:"The stage at which the whole film exists as digital image data and can be graded and manipulated as a single continuous work."},
+{t:"Dolly", d:"Grip", x:"A wheeled platform carrying the camera, moved on track or on a smooth floor to produce controlled travelling shots."},
+{t:"Dutch angle", d:"Camera", x:"A shot with the camera rolled off horizontal, producing a tilted frame associated with instability or disorientation."},
+{t:"Establishing shot", d:"Camera", x:"A wide shot placing the audience in a location before the scene proceeds at closer scale."},
+{t:"Eyeline match", d:"Post", x:"Cutting from a character looking to the thing they are looking at, so the viewer accepts the two shots as one continuous space."},
+{t:"Fill light", d:"Lighting", x:"A secondary source controlling how deep the shadow side of a subject goes, setting the lighting ratio with the key."},
+{t:"Final cut", d:"Industry", x:"The contractual right to determine the released version of a film, held by the director on some productions and the financier on many."},
+{t:"Flag", d:"Grip", x:"An opaque panel used to block light from part of a subject or to keep it off the lens."},
+{t:"Focal length", d:"Camera", x:"The property of a lens determining angle of view and the apparent compression of depth. Short is wide, long is narrow."},
+{t:"Foley", d:"Sound", x:"Everyday sounds performed in sync to picture in a studio, covering footsteps, clothing, and object handling."},
+{t:"Frame rate", d:"Camera", x:"Images captured per second. Recording faster than playback yields slow motion, slower yields acceleration."},
+{t:"Gaffer", d:"Lighting", x:"The head of the electrical department, responsible for executing the cinematographer's lighting plan."},
+{t:"Gauge", d:"Image", x:"The physical width of film stock, determining detail, grain, and cost, and carrying strong associations of context and budget."},
+{t:"Grade", d:"Post", x:"The adjustment of colour, contrast and exposure across a film, in a primary pass for the whole image and secondaries for isolated parts."},
+{t:"High key", d:"Lighting", x:"Even, low-ratio illumination with little deep shadow, reading as open and unthreatening."},
+{t:"Insert", d:"Camera", x:"A close shot of a detail, usually an object or a hand, cut into a scene to direct attention."},
+{t:"Jump cut", d:"Post", x:"A cut between two shots of the same subject that are too similar to read as separate, producing a visible leap in time."},
+{t:"Key light", d:"Lighting", x:"The dominant light source on a subject, whose direction determines where shadow falls."},
+{t:"Lock", d:"Post", x:"The point at which picture editing is finished and sound, music, and colour work can proceed against a stable timeline."},
+{t:"Long take", d:"Direction", x:"A shot held for an unusually extended duration, making time itself part of the scene's subject."},
+{t:"Low key", d:"Lighting", x:"High-ratio lighting with substantial areas in darkness, the grammar of crime and horror traditions."},
+{t:"LUT", d:"Post", x:"A lookup table applying a predefined colour transformation, often used to preview an intended final look during shooting."},
+{t:"Master shot", d:"Direction", x:"A wide take covering an entire scene from beginning to end, providing a spine the editor can cut into."},
+{t:"Match cut", d:"Post", x:"A join between two shots sharing a shape, movement, or composition, asserting a relationship between otherwise unconnected things."},
+{t:"Mise en scene", d:"Criticism", x:"Everything arranged in front of the camera: setting, lighting, costume, and the placement and movement of performers."},
+{t:"Montage", d:"Post", x:"Broadly, any assembly of shots. In criticism, an approach treating the collision between images as the source of meaning."},
+{t:"Motivated light", d:"Lighting", x:"Illumination explained by a visible source within the frame, grounding a scene as opposed to expressive lighting from nowhere."},
+{t:"Negative space", d:"Image", x:"Empty area within a frame, used compositionally to isolate, diminish, or unsettle a figure."},
+{t:"Practical", d:"Lighting", x:"A light source visible in shot, such as a lamp or window, that motivates the illumination of a scene."},
+{t:"Pre-production", d:"Process", x:"The planning stage after financing is committed, covering casting, scouting, design, scheduling and budgeting."},
+{t:"Principal photography", d:"Process", x:"The main shooting period, the shortest and most expensive stage of production."},
+{t:"Rack focus", d:"Camera", x:"Shifting focus from one plane to another within a shot, moving the viewer's attention without a cut."},
+{t:"Reaction shot", d:"Post", x:"A cut to the listener rather than the speaker, telling the viewer how to interpret what was said."},
+{t:"Rough cut", d:"Post", x:"An edit past assembly in which structure and pace have been addressed but detail work remains."},
+{t:"Rushes", d:"Post", x:"The unedited footage from a day's shooting, reviewed to confirm that scenes were successfully captured."},
+{t:"Shot scale", d:"Camera", x:"How much of the subject fills the frame, running from extreme wide to extreme close, and the main control on viewer intimacy."},
+{t:"Shutter angle", d:"Camera", x:"How long each frame is exposed within its slice of time, determining the amount of motion blur each frame carries."},
+{t:"Sound bridge", d:"Sound", x:"Audio carried across a cut, either arriving early from the next scene or persisting from the last, asserting a connection."},
+{t:"Steadicam", d:"Grip", x:"A stabilised body-mounted camera rig combining the freedom of handheld with the smoothness of a dolly."},
+{t:"Storyboard", d:"Direction", x:"A drawn shot-by-shot plan of a sequence, used to communicate intent and to plan complex or expensive setups."},
+{t:"Tracking shot", d:"Grip", x:"A shot in which the camera travels through space, typically following a subject or revealing an environment."},
+{t:"Two shot", d:"Camera", x:"A framing containing two subjects, in which relative position and space assign power between them."},
+{t:"Wipe", d:"Post", x:"A transition in which one image replaces another by moving across the frame, conspicuous by design."}
+];
+</script>
+
+<script>
+(function(){
+  "use strict";
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  /* ---------- learn more modal ---------- */
+  function initModal(){
+    document.addEventListener("click", function(e){
+      var o = e.target.closest ? e.target.closest("[data-rm-lm-open]") : null;
+      if (o){
+        e.preventDefault();
+        var bd=$(o.getAttribute("data-rm-lm-open"));
+        if (bd) bd.setAttribute("aria-hidden","false");
+        return;
+      }
+      var c = e.target.closest ? e.target.closest("[data-rm-lm-close]") : null;
+      if (c){
+        e.preventDefault();
+        var b2=$(c.getAttribute("data-rm-lm-close"));
+        if (b2) b2.setAttribute("aria-hidden","true");
+        return;
+      }
+      if (e.target.classList && e.target.classList.contains("rm-lm-backdrop")){
+        e.target.setAttribute("aria-hidden","true");
+      }
+    });
+    document.addEventListener("keydown", function(e){
+      if (e.key === "Escape"){
+        var op=document.querySelector('.rm-lm-backdrop[aria-hidden="false"]');
+        if (op) op.setAttribute("aria-hidden","true");
+      }
+    });
+  }
+
+  /* ---------- render ---------- */
+  function renderIndex(){
+    var html="";
+    for (var i=0;i<FR.sections.length;i++){
+      var s=FR.sections[i];
+      html += '<a href="#'+esc(s.id)+'" data-idx="'+esc(s.id)+'">'+esc(s.title)+
+              "<span>"+esc(s.kicker)+" . #"+esc(s.id)+"</span></a>";
+    }
+    html += '<a href="#glossary" data-idx="glossary">Glossary<span>'+FR.glossary.length+" terms . #glossary</span></a>";
+    $("frIdxList").innerHTML=html;
+  }
+
+  function renderSections(){
+    var html="";
+    for (var i=0;i<FR.sections.length;i++){
+      var s=FR.sections[i];
+      var paras="";
+      for (var p=0;p<s.body.length;p++){ paras += "<p>"+esc(s.body[p])+"</p>"; }
+      var subs="";
+      for (var h=0;h<s.h3.length;h++){
+        subs += "<h3>"+esc(s.h3[h].t)+"</h3><p>"+esc(s.h3[h].p)+"</p>";
+      }
+      var tags="";
+      for (var t=0;t<s.tags.length;t++){ tags += '<span class="fr-tag">'+esc(s.tags[t])+"</span>"; }
+      tags += '<span class="fr-tag">'+esc(s.dept)+"</span>";
+
+      html += '<section class="fr-sec" id="'+esc(s.id)+'" data-sec="'+esc(s.id)+
+        '"><div class="fr-kicker">'+esc(s.kicker)+"</div>"+
+        "<h2>"+esc(s.title)+"</h2>"+
+        '<div style="margin:6px 0 14px"><span class="fr-anchor">#'+esc(s.id)+"</span></div>"+
+        paras + subs +
+        '<div class="fr-tags">'+tags+"</div></section>";
+    }
+    $("frSections").innerHTML=html;
+  }
+
+  function renderGloss(query, dept){
+    var body=$("frGloss").querySelector("tbody");
+    var rows="", n=0;
+    for (var i=0;i<FR.glossary.length;i++){
+      var g=FR.glossary[i];
+      var hay=(g.t+" "+g.d+" "+g.x).toLowerCase();
+      if (query && hay.indexOf(query)<0) continue;
+      if (dept && g.d!==dept) continue;
+      rows += '<tr><td class="fr-term">'+esc(g.t)+"</td><td>"+esc(g.d)+"</td><td>"+esc(g.x)+"</td></tr>";
+      n++;
+    }
+    body.innerHTML = rows || '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:18px">No term matches that filter.</td></tr>';
+    $("frGlossCount").textContent = n+" of "+FR.glossary.length+" terms";
+    return n;
+  }
+
+  /* ---------- filtering across sections and glossary ---------- */
+  function initFilters(){
+    var areas=[];
+    for (var i=0;i<FR.sections.length;i++){
+      if (areas.indexOf(FR.sections[i].dept)<0) areas.push(FR.sections[i].dept);
+    }
+    for (var g=0;g<FR.glossary.length;g++){
+      if (areas.indexOf(FR.glossary[g].d)<0) areas.push(FR.glossary[g].d);
+    }
+    areas.sort();
+    var sel=$("frDept");
+    areas.forEach(function(a){
+      var o=document.createElement("option");
+      o.value=a; o.textContent=a;
+      sel.appendChild(o);
+    });
+
+    function draw(){
+      var q=($("frFind").value||"").toLowerCase();
+      var d=sel.value;
+      var shown=0;
+      for (var i=0;i<FR.sections.length;i++){
+        var s=FR.sections[i];
+        var hay=(s.title+" "+s.kicker+" "+s.dept+" "+s.tags.join(" ")+" "+s.body.join(" ")+" "+
+                 s.h3.map(function(x){ return x.t+" "+x.p; }).join(" ")).toLowerCase();
+        var ok=true;
+        if (q && hay.indexOf(q)<0) ok=false;
+        if (d && s.dept!==d) ok=false;
+        var node=document.querySelector('[data-sec="'+s.id+'"]');
+        var link=document.querySelector('[data-idx="'+s.id+'"]');
+        if (node) node.className = ok ? "fr-sec" : "fr-sec fr-hide";
+        if (link) link.className = ok ? "" : "fr-hide";
+        if (ok) shown++;
+      }
+      var gn=renderGloss(q, d);
+      var gcard=$("frGlossaryCard");
+      var glink=document.querySelector('[data-idx="glossary"]');
+      if (gcard) gcard.className = gn ? "card" : "card fr-hide";
+      if (glink) glink.className = gn ? "" : "fr-hide";
+      $("frCount").innerHTML="<b>Showing:</b><span class='muted'> "+shown+" of "+FR.sections.length+
+        " sections, "+gn+" terms</span>";
+    }
+
+    $("frFind").addEventListener("input", draw);
+    sel.addEventListener("change", draw);
+    $("frTop").addEventListener("click", function(){
+      $("frFind").value=""; sel.value=""; draw();
+      $("frIndex").scrollIntoView({ behavior:"smooth", block:"start" });
+    });
+    draw();
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    initModal();
+    renderIndex();
+    renderSections();
+    initFilters();
+  });
+})();
+</script>
+
+</body>
+</html>
