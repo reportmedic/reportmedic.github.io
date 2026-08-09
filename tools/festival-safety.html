@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the Festival Safety Companion.</p><a href="https://reportmedic.org/tools/festival-safety.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="A festival readiness companion. Score your preparation, learn heat and crowd safety properly, and agree what to do when something actually goes wrong."/>
+<title>Festival Safety Companion - Readiness and Response - ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+/* -- Animated Background -- */
+.bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12;animation:meshDrift 20s ease-in-out infinite alternate;}
+.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);top:-15%;right:-10%;}
+.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#a78bfa,#6ea8ff);bottom:-10%;left:-5%;animation-delay:-7s;animation-duration:25s;}
+.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#7cf7d4,#f59e0b);top:50%;left:40%;animation-delay:-14s;animation-duration:28s;}
+@keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg) scale(1);}100%{transform:translate(40px,-30px) rotate(15deg) scale(1.1);}}
+
+/* -- Tabs Nav -- */
+.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:24px;overflow-x:auto;}
+.tab-btn{flex:1;min-width:fit-content;padding:12px 20px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;letter-spacing:.01em;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(110,168,255,.18),rgba(124,247,212,.12));color:var(--text);box-shadow:0 2px 16px rgba(110,168,255,.12),inset 0 1px 0 rgba(255,255,255,.06);}
+
+/* -- Views -- */
+.view{display:none;}
+.view.active{display:block;}
+
+/* -- Hero -- */
+.daily-hero{text-align:center;padding:32px 0 16px;}
+.daily-hero h1{font-size:clamp(26px,4.5vw,38px);font-weight:700;letter-spacing:-.02em;line-height:1.15;}
+.daily-hero h1 .grad{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:10px;line-height:1.5;letter-spacing:.01em;}
+
+/* -- Streak Banner -- */
+.streak-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 26px;flex-wrap:wrap;}
+.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);backdrop-filter:blur(8px);font-size:13px;font-weight:600;transition:transform .15s;}
+.streak-pill:hover{transform:translateY(-1px);}
+.streak-pill .fire{font-size:20px;}
+.streak-pill .sval{font-size:18px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-pill .sval.green{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-dots{display:flex;gap:5px;}
+.streak-dots .dot{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;color:var(--muted);}
+.streak-dots .dot.done{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(124,247,212,.1));border-color:rgba(16,185,129,.25);color:#34d399;}
+.streak-dots .dot.today{border-color:rgba(110,168,255,.45);box-shadow:0 0 14px rgba(110,168,255,.15);}
+
+/* -- Phase Filter -- */
+.phase-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.phase-filter .pf-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px;}
+.pf-btn{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;}
+.pf-btn:hover{border-color:rgba(255,255,255,.22);color:var(--text);}
+.pf-btn.active{background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.35);color:#6ea8ff;}
+
+/* -- Quiz Container -- */
+.quiz-panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:26px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
+.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
+.quiz-progress{display:flex;gap:4px;margin-bottom:18px;}
+.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.06);transition:background .3s;}
+.quiz-progress .pip.done{background:linear-gradient(90deg,#10b981,#7cf7d4);}
+.quiz-progress .pip.wrong{background:#ef4444;}
+.quiz-progress .pip.current{background:rgba(110,168,255,.4);animation:pipPulse 1.5s ease infinite;}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.1);color:#6ea8ff;border:1px solid rgba(110,168,255,.15);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);color:var(--muted);}
+.quiz-meta .qphase{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid rgba(124,247,212,.2);background:rgba(124,247,212,.06);color:#7cf7d4;}
+.quiz-meta .qdiff{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.quiz-meta .qdiff.easy{border:1px solid rgba(52,211,153,.2);background:rgba(52,211,153,.06);color:#34d399;}
+.quiz-meta .qdiff.medium{border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.06);color:#fbbf24;}
+.quiz-meta .qdiff.hard{border:1px solid rgba(248,113,113,.2);background:rgba(248,113,113,.06);color:#f87171;}
+.quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.quiz-meta .timer svg{color:rgba(110,168,255,.6);}
+
+.quiz-question{font-size:16.5px;line-height:1.7;font-weight:600;margin-bottom:18px;letter-spacing:.005em;}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s;}
+.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.06);}
+.qo.selected .letter{border-color:#6ea8ff;background:#6ea8ff;color:#061021;}
+.qo.correct{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);}
+.qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
+.qo.disabled{pointer-events:none;opacity:.65;}
+.qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
+
+.quiz-explain{margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(124,247,212,.035);border:1px solid rgba(124,247,212,.1);font-size:13.5px;line-height:1.7;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;letter-spacing:.01em;}
+.qa-btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;}
+.qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+.qa-btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);}
+
+/* -- Results Card -- */
+.result-card{text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;}
+.result-card .big-score{font-size:64px;font-weight:700;line-height:1;margin-bottom:8px;}
+.result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
+.result-mini .rm{padding:16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.result-mini .rm .rv{font-size:20px;font-weight:700;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* -- Subject Practice Grid -- */
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.subj-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.subj-card .sc-icon{font-size:30px;margin-bottom:10px;}
+.subj-card .sc-name{font-size:14.5px;font-weight:700;margin-bottom:4px;letter-spacing:.01em;}
+.subj-card .sc-count{font-size:12px;color:var(--muted);}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .5s ease;}
+.fl-tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);margin:3px 5px 0 0;}
+.fs-dom{border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.03);padding:18px;margin-bottom:14px;}
+.fs-dom h4{font-size:15.5px;margin-bottom:4px;}
+.fs-dom .dsub{font-size:12.5px;color:var(--muted);margin-bottom:10px;line-height:1.7;}
+.fs-chk{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-top:1px solid rgba(255,255,255,.07);}
+.fs-chk:first-of-type{border-top:0;}
+.fs-chk input{width:18px;height:18px;margin-top:3px;accent-color:var(--brand);flex:0 0 auto;}
+.fs-chk label{font-size:14.5px;line-height:1.6;cursor:pointer;}
+.fs-chk .why{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.7;}
+.fs-chk.on label{color:var(--muted);}
+.fs-crit{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;background:rgba(248,113,113,.14);border:1px solid rgba(248,113,113,.3);color:#f87171;margin-left:6px;vertical-align:middle;}
+.fs-gauge{height:12px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin:12px 0 6px;}
+.fs-gauge i{display:block;height:100%;transition:width .4s ease;}
+.fs-inc{border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.03);padding:18px;margin-bottom:12px;}
+.fs-inc h4{font-size:16px;margin-bottom:10px;}
+.fs-step{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.75;}
+.fs-step:last-child{border-bottom:0;}
+.fs-step .n{flex:0 0 25px;height:25px;border-radius:50%;background:rgba(110,168,255,.12);border:1px solid rgba(110,168,255,.25);color:#6ea8ff;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;}
+.fs-red{border-left:3px solid #f87171;background:rgba(248,113,113,.08);border-radius:0 12px 12px 0;padding:13px 15px;font-size:13.5px;line-height:1.75;margin-top:12px;}
+.fs-row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.75;}
+.fs-row:last-child{border-bottom:0;}
+.fs-row .lbl{font-weight:700;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px;}
+@media(max-width:640px){.fs-row{grid-template-columns:1fr;gap:4px;}}
+.ri-cell{padding:12px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.03);text-align:center;}
+.ri-cell .cv{font-size:19px;font-weight:800;}
+.ri-cell .cl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:3px;}
+.bn-text{line-height:1.9;}
+.ri-warnbox{border-left:3px solid #ffb35c;background:rgba(255,179,92,.07);border-radius:0 12px 12px 0;padding:14px 16px;font-size:13.5px;line-height:1.75;}
+.lit-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.lit-detail h3{font-size:20px;margin-bottom:4px;}
+.lit-detail .meta{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+.lit-detail p{line-height:1.75;font-size:14.5px;margin-bottom:12px;}
+.lit-row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.lit-row:last-child{border-bottom:0;}
+.lit-row .lbl{font-weight:700;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px;}
+@media(max-width:640px){.lit-row{grid-template-columns:1fr;gap:4px;}}
+.cmp-grid{display:grid;grid-template-columns:170px 1fr 1fr;gap:10px;align-items:start;}
+.cmp-grid > div{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.cmp-grid .cmp-lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;}
+.cmp-grid .cmp-head{font-weight:700;font-size:15px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.14);}
+@media(max-width:760px){.cmp-grid{grid-template-columns:1fr;}.cmp-grid .cmp-lbl{padding-bottom:0;border-bottom:0;}}
+.theme-chip{display:inline-block;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:rgba(110,168,255,.10);border:1px solid rgba(110,168,255,.20);color:#6ea8ff;margin:3px 5px 3px 0;cursor:pointer;}
+.theme-chip.on{background:var(--brand);border-color:var(--brand);color:#08111f;}
+
+/* -- Analytics Dashboard -- */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
+.an-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.an-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);}
+.an-card.full{grid-column:1/-1;}
+.an-card h3{font-size:12.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* -- Overview Strip -- */
+.overview-strip{display:flex;align-items:center;gap:24px;}
+.ov-ring{position:relative;flex-shrink:0;width:100px;height:100px;}
+.ov-ring canvas{width:100px;height:100px;}
+.ov-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ov-ring-label .rv{font-size:22px;font-weight:700;line-height:1;}
+.ov-ring-label .rl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ov-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ov-stat{padding:12px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;}
+.ov-stat .os-val{font-size:18px;font-weight:700;line-height:1.2;font-family:'JetBrains Mono',monospace;}
+.ov-stat .os-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+@media(max-width:600px){
+  .overview-strip{flex-direction:column;gap:16px;}
+  .ov-stats{grid-template-columns:repeat(3,1fr);width:100%;}
+}
+
+/* -- Subject accuracy bars -- */
+.sub-bars{display:flex;flex-direction:column;gap:10px;}
+.sb-row{display:flex;align-items:center;gap:10px;}
+.sb-label{width:105px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:46px;text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+/* -- Trend Chart -- */
+.trend-wrap{position:relative;min-height:220px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.trend-wrap::-webkit-scrollbar{height:4px;}.trend-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--muted);text-align:center;}
+.trend-empty .te-icon{font-size:40px;opacity:.4;}
+.trend-empty .te-msg{font-size:13px;line-height:1.5;max-width:320px;}
+.trend-bar-chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding:10px 0;min-width:min-content;}
+.trend-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:48px;width:48px;flex-shrink:0;}
+.trend-bar-outer{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative;}
+.trend-bar{width:100%;border-radius:6px 6px 2px 2px;transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;min-height:4px;}
+.trend-bar:hover{filter:brightness(1.2);}
+.trend-bar .tb-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.trend-bar:hover .tb-val{opacity:1;}
+.trend-label{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.trend-mode-label.daily{background:rgba(110,168,255,.12);color:#6ea8ff;}
+.trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
+
+/* -- Mastery Dashboard -- */
+.mastery-wrap{margin-top:8px;}
+.mastery-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.m-stat{padding:12px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);}
+.m-stat .ms-val{font-size:22px;font-weight:800;margin-bottom:2px;}
+.m-stat .ms-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+.m-stat.green .ms-val{color:#34d399;} .m-stat.yellow .ms-val{color:#fbbf24;} .m-stat.red .ms-val{color:#f87171;} .m-stat.blue .ms-val{color:#6ea8ff;} .m-stat.purple .ms-val{color:#a78bfa;}
+.coverage-ring{display:flex;align-items:center;gap:16px;padding:14px;border-radius:14px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);margin-bottom:14px;overflow:hidden;}
+.cov-canvas{width:90px;height:90px;flex-shrink:0;}
+.cov-info{flex:1;min-width:0;overflow:hidden;}
+.cov-title{font-size:13px;font-weight:700;color:var(--fg);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cov-sub{font-size:11px;color:var(--muted);line-height:1.6;word-break:break-word;}
+.subj-mastery{margin-top:14px;}
+.sm-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+.sm-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.sm-icon{font-size:14px;width:20px;text-align:center;}
+.sm-name{width:70px;font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-bar{flex:1;height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative;}
+.sm-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.sm-pct{width:34px;text-align:right;font-weight:700;font-size:11px;}
+
+/* -- Passage block for reading items -- */
+.quiz-passage{padding:14px 16px;border-radius:14px;background:rgba(110,168,255,.04);border:1px solid rgba(110,168,255,.10);font-size:14.5px;line-height:1.75;color:var(--muted);margin-bottom:14px;}
+.quiz-passage em{color:var(--text);font-style:italic;}
+
+/* -- Difficulty chips -- */
+.diff-dist{display:flex;gap:10px;margin-top:6px;}
+.diff-chip{flex:1;padding:14px 10px;border-radius:14px;text-align:center;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);}
+.diff-chip .dc-val{font-size:20px;font-weight:700;margin-bottom:2px;}
+.diff-chip .dc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+.diff-chip.easy .dc-val{color:#34d399;}
+.diff-chip.medium .dc-val{color:#fbbf24;}
+.diff-chip.hard .dc-val{color:#f87171;}
+
+/* -- Session History -- */
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding-right:4px;}
+.hist-list::-webkit-scrollbar{width:4px;}
+.hist-list::-webkit-scrollbar-track{background:transparent;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:12px;transition:background .1s;}
+.hist-row:hover{background:rgba(255,255,255,.04);}
+.hist-date{font-weight:600;min-width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hist-mode{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.hist-mode.daily{background:rgba(110,168,255,.1);color:#6ea8ff;}
+.hist-mode.practice{background:rgba(139,92,246,.1);color:#a78bfa;}
+.hist-score{margin-left:auto;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.hist-detail{color:var(--muted);font-size:11px;}
+
+/* -- Reset Button -- */
+.reset-zone{margin-top:20px;text-align:center;}
+.reset-btn{padding:10px 20px;border-radius:12px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.reset-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);}
+
+/* -- Tab label responsive -- */
+.tab-short{display:none;}
+@media(max-width:540px){.tab-full{display:none;}.tab-short{display:inline;}}
+@media(max-width:640px){
+  .quiz-panel{padding:16px;}
+  .streak-bar{gap:10px;}
+  .subj-grid{grid-template-columns:1fr 1fr;}
+  .diff-dist{flex-wrap:wrap;}
+  .diff-chip{min-width:calc(50% - 5px);}
+  .mastery-stats{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .coverage-ring{flex-direction:column;text-align:center;}
+  .sm-name{width:55px;font-size:10px;}
+  .tab-nav{overflow-x:hidden;}
+  .hide-mobile{display:none!important;}
+}
+
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .5s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+
+.btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;padding:10px 20px;border-radius:10px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:.01em;transition:all .18s;}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-mesh"><div class="strand"></div><div class="strand"></div><div class="strand"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn hide-mobile" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+  <a class="btn primary" href="https://vaultbook.net/tools/lollapalooza-planner.html">Festival Planner</a>
+</div>
+</header>
+
+<div class="wrap">
+  <!-- Tab Nav -->
+  <nav class="tab-nav anim-up">
+    <button class="tab-btn active" data-tab="ready"><span class="tab-full">Readiness Check</span><span class="tab-short">Readiness</span></button>
+    <button class="tab-btn" data-tab="body"><span class="tab-full">Heat and Body</span><span class="tab-short">Heat</span></button>
+    <button class="tab-btn" data-tab="crowds"><span class="tab-full">Crowds</span><span class="tab-short">Crowds</span></button>
+    <button class="tab-btn" data-tab="incident"><span class="tab-full">If Something Happens</span><span class="tab-short">Response</span></button>
+    <button class="tab-btn" data-tab="plan"><span class="tab-full">My Plan</span><span class="tab-short">Plan</span></button>
+  </nav>
+
+  <!-- VIEW: READY -->
+  <div class="view active" id="viewReady">
+    <div class="daily-hero anim-up d1">
+      <h1>Festival <span class="grad">Readiness</span></h1>
+      <p class="sub">Thirty checks across six areas. Work through them before you go and the things most likely to end a day early are already handled.</p>
+    </div>
+
+    <div class="ri-warnbox anim-up d2" style="margin-bottom:18px">
+      This is general preparation guidance, not medical advice. If someone becomes confused, faints, stops sweating in heat, or does not recover quickly in shade with water, find festival medical staff immediately rather than waiting to see whether it improves. Every large event has medical teams and using them early is always the right call.
+    </div>
+
+    <div class="analytics-grid anim-up d3" style="margin-bottom:18px">
+      <div class="an-card full">
+        <div class="ov-stats" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
+          <div class="ri-cell"><div class="cv" id="rdDone">0</div><div class="cl">Done</div></div>
+          <div class="ri-cell"><div class="cv" id="rdTotal">0</div><div class="cl">Checks</div></div>
+          <div class="ri-cell"><div class="cv" id="rdPct">0%</div><div class="cl">Ready</div></div>
+          <div class="ri-cell"><div class="cv" id="rdCrit">0</div><div class="cl">Critical left</div></div>
+          <div class="ri-cell"><div class="cv" id="rdAreas">0</div><div class="cl">Areas complete</div></div>
+        </div>
+        <div class="fs-gauge"><i id="rdBar" style="width:0%;background:#94a3b8"></i></div>
+        <div class="tiny muted" id="rdRead">Work through the checks and a readiness reading appears here.</div>
+      </div>
+    </div>
+
+    <div class="row" style="gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <input class="input" id="rdFind" type="search" placeholder="Search the checks" style="max-width:280px" />
+      <button class="btn" id="rdReset" type="button">Untick everything</button>
+      <button class="btn" id="rdExport" type="button">Export checklist</button>
+      <span class="tiny muted" id="rdMsg"></span>
+    </div>
+
+    <div id="rdList"></div>
+  </div>
+
+  <!-- VIEW: BODY -->
+  <div class="view" id="viewBody">
+    <div class="daily-hero">
+      <h1>Heat and <span class="grad">Body</span></h1>
+      <p class="sub">Seven things that decide whether you finish the weekend. Read them once before you go rather than looking them up when someone is already in trouble.</p>
+    </div>
+    <div id="bodyList"></div>
+    <div class="fs-red" style="margin-top:16px">The line that matters most. Heat exhaustion is recoverable with shade, rest, fluids and cooling. If a person becomes confused, stops sweating, has hot dry skin, faints, or does not improve quickly, that is a different and far more serious condition and it needs festival medical staff immediately. Do not wait and do not move them far unaided.</div>
+  </div>
+
+  <!-- VIEW: CROWDS -->
+  <div class="view" id="viewCrowds">
+    <div class="daily-hero">
+      <h1>Crowd <span class="grad">Safety</span></h1>
+      <p class="sub">How to read density, why the edge matters more than the exit, and what to do if movement stops being your own.</p>
+    </div>
+    <div id="crowdList"></div>
+  </div>
+
+  <!-- VIEW: INCIDENT -->
+  <div class="view" id="viewIncident">
+    <div class="daily-hero">
+      <h1>If Something <span class="grad">Happens</span></h1>
+      <p class="sub">Eight situations with a first step rather than a general principle. Read these before you need them, because nobody reads well under pressure.</p>
+    </div>
+    <div id="incList"></div>
+  </div>
+
+  <!-- VIEW: PLAN -->
+  <div class="view" id="viewPlan">
+    <div class="daily-hero">
+      <h1>My <span class="grad">Plan</span></h1>
+      <p class="sub">The details that matter when a phone dies. Fill these in, export it, and keep a paper copy in a pocket.</p>
+    </div>
+    <div class="an-card full" style="margin-bottom:16px">
+      <div id="planFields"></div>
+      <div class="row" style="gap:10px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn primary" id="plExport" type="button">Export plan</button>
+        <button class="btn" id="plCopy" type="button">Copy to clipboard</button>
+        <button class="btn" id="plClear" type="button">Clear</button>
+        <span class="tiny muted" id="plMsg"></span>
+      </div>
+    </div>
+    <div class="ri-warnbox">Write the essentials on paper as well as in this tool. A phone that has died at eleven at night is the exact moment you need your accommodation address and one emergency number, and it is the exact moment you cannot reach them on the phone.</div>
+    <div id="plPreview" style="margin-top:16px"></div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">Festival Safety Companion - readiness scoring and incident response</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. Copyright ReportMedic.</div>
+</div>
+</footer>
+<script>
+var FS = {};
+
+FS.areas = [
+{id:"heat", name:"Heat, sun and hydration",
+ sub:"The largest single cause of people leaving a festival early, and almost entirely preventable.",
+ items:[
+ {t:"Empty refillable bottle packed", crit:true, why:"Most events allow an empty container and provide free refill stations. It is the highest value item you can carry"},
+ {t:"Electrolyte sachets or tablets", crit:false, why:"Heavy sweating loses salts as well as water, and water alone does not replace them"},
+ {t:"High factor sunscreen, and a plan to reapply", crit:true, why:"A full day outdoors burns badly even under cloud, and one application in the morning is not enough"},
+ {t:"Hat with a brim and sunglasses", crit:false, why:"Shade you carry beats shade you have to queue for, and squinting all day produces a headache that ends your night"},
+ {t:"Know where the water stations are", crit:true, why:"Find them during your first walk of the site, not when you are already struggling"}
+ ]},
+{id:"feet", name:"Feet, clothing and weather",
+ sub:"Unglamorous and decisive. Most abandoned days trace back to feet or to being cold and wet after dark.",
+ items:[
+ {t:"Footwear already broken in", crit:true, why:"New shoes across several days is the most common self-inflicted injury at any festival"},
+ {t:"Spare socks in a sealed bag", crit:false, why:"Dry socks mid-afternoon changes an entire day, and the sealed bag is what keeps them dry"},
+ {t:"Blister plasters packed", crit:false, why:"Treat a hot spot before it becomes a blister and you keep walking. Afterwards you do not"},
+ {t:"Light waterproof layer", crit:true, why:"Weather turns fast on open ground and a soaked person gets cold quickly even in summer"},
+ {t:"Warm layer for after dark", crit:true, why:"Temperatures drop sharply once the sun goes and standing still makes it worse"}
+ ]},
+{id:"hearing", name:"Hearing and senses",
+ sub:"The only damage on this page that does not heal. Cheap to prevent and impossible to reverse.",
+ items:[
+ {t:"Filtered earplugs packed", crit:true, why:"Plugs designed for music lower volume across frequencies rather than muffling, so sound stays clear while the load on your ears drops"},
+ {t:"Agreed not to stand directly in front of a speaker stack", crit:false, why:"Distance from the stacks matters as much as plugs, and directly in front is the loudest position on site"},
+ {t:"Know that ringing afterwards is a warning", crit:true, why:"Ringing after a set is not a normal outcome, it is a signal that damage occurred, and repeated exposure is cumulative"},
+ {t:"Plan a quiet break each day", crit:false, why:"An hour away from the noise reduces total exposure and does more for stamina than any other single decision"}
+ ]},
+{id:"group", name:"Group and communication",
+ sub:"Phones die and signal collapses when tens of thousands of people use data at once. Everything here is about what happens then.",
+ items:[
+ {t:"Primary meetup point agreed and physically seen", crit:true, why:"Not a stage, a bar, or a food stall. A fixed permanent structure everyone has actually stood at"},
+ {t:"Backup meetup point outside the crowd", crit:true, why:"Used when the primary point sits inside a crowd nobody can cross"},
+ {t:"Check-in times agreed rather than relying on messages", crit:true, why:"Being somewhere at a fixed time works when messaging does not, and costs nothing when messaging works"},
+ {t:"Portable battery charged, and cable packed", crit:true, why:"Phones burn battery searching for signal. Assume no charging on site"},
+ {t:"Everyone has their own offline map and schedule", crit:false, why:"Do not rely on one person being the group's memory, because that person's battery will die"},
+ {t:"Agreed that anyone can call it a night without argument", crit:false, why:"The person who most needs to leave is usually the one least willing to say so"}
+ ]},
+{id:"solo", name:"Going alone or splitting up",
+ sub:"Attending alone is entirely normal and safe with a little planning. These are the checks that make it so.",
+ items:[
+ {t:"Someone not at the festival knows your plan", crit:true, why:"One person who knows where you are staying and roughly what you are doing each day"},
+ {t:"Accommodation address written on paper", crit:true, why:"A dead phone should not mean you cannot tell a taxi or a steward where you are staying"},
+ {t:"One emergency contact number written on paper", crit:true, why:"A locked phone helps nobody if you are unconscious. Put it in a pocket, not a bag"},
+ {t:"Know how you are getting back, and the last service time", crit:true, why:"Deciding this at midnight when the whole site empties at once is how people end up stranded"},
+ {t:"Never leave a drink unattended, and never accept an opened one", crit:true, why:"Simple, absolute, and worth stating plainly rather than assuming everyone knows"},
+ {t:"Located the welfare or safeguarding point", crit:false, why:"Most large events have one, staffed by people trained to help, and finding it early costs two minutes"}
+ ]},
+{id:"admin", name:"Rules, documents and money",
+ sub:"The category that gets you turned away at the gate rather than hurt, and it is the easiest to get right.",
+ items:[
+ {t:"Bag checked against the venue policy", crit:true, why:"Bag size and type rules are enforced strictly and a rejected bag means a long walk back"},
+ {t:"Ticket saved offline as an image", crit:true, why:"App will not load at the gate is a common scenario, and a screenshot solves it"},
+ {t:"Photo identification packed", crit:false, why:"Required for age verification and for anything held at a box office"},
+ {t:"A card and a small amount of cash", crit:false, why:"Card systems fail under load and some independent vendors are cash only"},
+ {t:"Any prescription medication in labelled packaging", crit:true, why:"Loose pills in a bag create problems at a security check"},
+ {t:"Read the re-entry policy", crit:false, why:"Some events do not permit re-entry, which changes what you must carry in with you"}
+ ]}
+];
+
+FS.body = [
+{t:"Recognising heat exhaustion early", k:"heat",
+ body:"It builds over hours rather than arriving suddenly, which is why people miss it in themselves. The early signs are heavy sweating, headache, dizziness, nausea, muscle cramps, and a weakness out of proportion to what you have done. The right response is to stop, get out of direct sun, sit down, take fluids with salts in them, and cool the skin. The mistake almost everyone makes is deciding to push through one more set."},
+{t:"Hydration that actually works", k:"heat",
+ body:"Drinking large amounts of plain water while sweating heavily replaces the fluid and not the salts, and in extreme cases that imbalance causes problems of its own. Steady intake throughout the day beats large amounts occasionally, and alternating water with something containing electrolytes covers both halves of the loss. Alcohol and long hours in the sun work against each other, and caffeine is not a substitute for water."},
+{t:"Sun exposure over a whole weekend", k:"sun",
+ body:"Burn accumulates across days and a badly burned back on day one makes days two and three miserable. Cloud cover reduces the sensation of heat far more than it reduces the exposure, which is why people burn worst on overcast days. Reapply on a schedule rather than when you feel like it, and pay attention to the parts people forget, which are ears, the back of the neck, and the tops of the feet."},
+{t:"Feet, and why they end more days than anything else", k:"body",
+ body:"You will walk considerably further than you expect, on hard ground, standing still for long periods in between. A hot spot treated at once with a plaster stays a hot spot. Left alone for an hour it becomes a blister and the rest of the weekend changes shape around it. Dry socks in the afternoon are worth more than almost anything else in the bag."},
+{t:"Eating properly across a long day", k:"body",
+ body:"Low blood sugar in heat is a common route into a medical tent and it is entirely avoidable. Queues lengthen exactly when everyone else gets hungry, so eating slightly off the peak means a shorter wait and a better choice. Carry something packable for the gap between meals, because the moment you feel you need food is later than the moment you should have eaten."},
+{t:"Alcohol, heat, and judgement", k:"body",
+ body:"Alcohol accelerates dehydration, impairs the ability to notice you are overheating, and removes the judgement that would normally tell you to stop. Those three effects compound in sun in a way they do not indoors. Alternating with water and eating properly changes the whole picture, and the people who get into difficulty are almost always the ones who did neither."},
+{t:"Pacing across several days", k:"stamina",
+ body:"Day one is where multi-day festivals are lost. The temptation is to treat the first day as the whole event, and the cost lands on day three when the acts you most wanted are playing. Sleep, food, and time off your feet are the three inputs that decide whether you are still functional at the end, and a deliberate shaded break each day does more for the weekend than any individual set."}
+];
+
+FS.crowds = [
+{t:"Reading density before it becomes a problem", k:"density",
+ body:"The risk in a crowd is density rather than headcount, and the change is felt before it is seen. If you can no longer choose your own direction, if you are being moved rather than walking, or if you feel pressure from more than one side at once, the density has passed the point where you can extract yourself easily. Move outward and diagonally toward the edge early, because it becomes far harder once it compresses further."},
+{t:"The edge matters more than the exit", k:"movement",
+ body:"In a dense crowd the useful direction is sideways rather than backwards. Everyone thinks about the exit and the exit is where pressure concentrates. Position yourself so you always know where the nearest edge of the crowd is, and treat that as your route out rather than the marked exit behind you."},
+{t:"If you feel pressure from several directions", k:"pressure",
+ body:"Keep your arms up in front of your chest to protect space for your ribcage to expand, stay on your feet, and move with the crowd rather than against it, taking any chance to drift toward the edge. Shouting consumes breath you need. If someone goes down, the priority is helping them up immediately, because a person on the ground in a dense crowd is in serious danger within seconds."},
+{t:"The barrier, honestly assessed", k:"position",
+ body:"The front is the best view and the worst position. Getting there means holding a spot for hours with no shade, no easy exit, and no realistic route to water or a toilet without losing the place. It is a genuine choice with a genuine cost, and it works far better for one set you truly care about than as a default strategy across a whole weekend."},
+{t:"Leaving at the end of the night", k:"exit",
+ body:"The end of the headline set is when the entire site tries to move at once, transport surges, and groups fragment. Deciding beforehand whether you leave before the last song or wait out the crush removes the argument at the exact moment nobody is capable of having it well. Waiting twenty minutes in a cleared area is frequently faster than joining the initial press."},
+{t:"Looking after the people you came with", k:"group",
+ body:"Groups drift apart, and the person who most needs checking on is usually the one insisting they are fine. Someone who has gone quiet, stopped drinking water, or is sitting when they would normally be standing is worth a direct question. Never let someone leave the site alone at night if they are unwell or heavily drunk, because that is the moment where a festival problem becomes a serious one."}
+];
+
+FS.incidents = [
+{t:"Someone in your group is missing",
+ steps:["Go to the agreed meetup point and wait there rather than searching, because two people searching for each other rarely meet",
+        "Send one person to the second agreed point if you have one",
+        "If they are not at either after your agreed interval, go to the information or welfare point and report it",
+        "Give stewards a description and the last known location rather than only a name",
+        "Stay contactable at a fixed point so they can find you if they return"]},
+{t:"Your phone has died",
+ steps:["Go to your agreed meetup point at the next check-in time, which is exactly why the times exist",
+        "Use the paper note in your pocket for your accommodation address and emergency number",
+        "Ask a steward rather than a stranger if you need help getting back",
+        "Do not leave the site alone at night without a settled plan for getting back"]},
+{t:"Someone is overheating",
+ steps:["Get them out of direct sun and sitting or lying down immediately",
+        "Cool the skin with water and loosen tight clothing",
+        "Give fluids with salts if they are fully alert and able to drink",
+        "Stay with them and watch for improvement within a short time",
+        "If they are confused, not sweating, faint, or not improving, get festival medical staff at once"],
+ red:"Confusion, hot dry skin, fainting, or no improvement means this has moved beyond something you should manage yourself. Find medical staff immediately rather than moving them a long distance."},
+{t:"Someone has drunk too much",
+ steps:["Keep them sitting up rather than lying flat, and never leave them alone",
+        "Move them somewhere quieter and cooler if they can walk",
+        "Give water, not more alcohol and not coffee",
+        "If they cannot be roused, are breathing irregularly, or have been sick while barely conscious, get medical staff immediately",
+        "Do not put them in a taxi alone under any circumstances"],
+ red:"Unrousable, irregular breathing, or vomiting while semi-conscious are medical emergencies. Festival medical teams deal with this constantly and will not judge anyone."},
+{t:"You feel unsafe or are being followed",
+ steps:["Move toward light, staff, and other people rather than away from the crowd",
+        "Go directly to a steward, a bar, or the welfare point and say plainly that you feel unsafe",
+        "Ask staff to walk with you rather than handling it alone",
+        "Trust the feeling rather than talking yourself out of it, because being wrong costs you nothing"]},
+{t:"The crowd is getting too tight",
+ steps:["Move sideways toward the nearest edge rather than backwards toward the exit",
+        "Keep your arms up in front of your chest to protect breathing space",
+        "Move with the crowd and take any gap that drifts you outward",
+        "Help anyone who goes down back to their feet immediately",
+        "Once out, do not go back in for a bag, a friend, or a position"]},
+{t:"You have lost something valuable",
+ steps:["Report it at the lost property or information point as soon as you notice rather than at the end",
+        "If it is a phone or a card, cancel or lock it first and worry about recovery second",
+        "Give the exact area and the time, which is what makes recovery possible",
+        "Check again at the end of the day, because most handed-in items arrive hours after they are lost"]},
+{t:"You are separated at the end of the night",
+ steps:["Follow the end of night plan you agreed rather than improvising",
+        "If there is no plan, go to the main exit meeting area and wait a fixed period",
+        "Tell someone not at the festival where you are and what is happening",
+        "Get back to your accommodation and regroup there rather than searching the site as it empties"]}
+];
+
+FS.planFields = [
+{id:"p1", l:"Accommodation address", h:"Full address, not just the name of the place"},
+{id:"p2", l:"Emergency contact name and number", h:"Someone not at the festival"},
+{id:"p3", l:"Primary meetup point", h:"A fixed permanent structure everyone has stood at"},
+{id:"p4", l:"Backup meetup point", h:"Somewhere outside the crowd, usually near an exit"},
+{id:"p5", l:"Check-in times", h:"For example on the hour at every set changeover"},
+{id:"p6", l:"How you are getting back, and last service time", h:"Decide this before the day rather than at midnight"},
+{id:"p7", l:"Anything medical the group should know", h:"Allergies, medication, conditions, who is not drinking"},
+{id:"p8", l:"Welfare or medical point location", h:"Find it during your first walk of the site"}
+];
+
+/* ================================================================ */
+(function(){
+  "use strict";
+  var K_C="rm_fs_checks_v1", K_P="rm_fs_plan_v1";
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function put(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  function get(k,f){ try{ var r=localStorage.getItem(k); return r?JSON.parse(r):f; }catch(e){ return f; } }
+  function flash(id,m){ var el=$(id); if(!el) return; el.textContent=m; setTimeout(function(){el.textContent="";},2600); }
+  function download(name,text){
+    var b=new Blob([text],{type:"text/plain;charset=utf-8"});
+    var u=URL.createObjectURL(b); var a=document.createElement("a");
+    a.href=u; a.download=name; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(u);
+  }
+  function key(a,i){ return "c"+a+"-"+i; }
+
+  var C = get(K_C, {});
+  var P = get(K_P, {});
+
+  /* ---------- readiness ---------- */
+  function counts(){
+    var done=0,total=0,crit=0,areasDone=0;
+    FS.areas.forEach(function(d,a){
+      var all=d.items.length, ok=0;
+      d.items.forEach(function(it,i){
+        total++;
+        if(C[key(a,i)]) { done++; ok++; }
+        else if(it.crit) crit++;
+      });
+      if(ok===all) areasDone++;
+    });
+    return {done:done,total:total,crit:crit,areas:areasDone};
+  }
+
+  function renderReady(){
+    var q=($("rdFind").value||"").toLowerCase();
+    var html="";
+    FS.areas.forEach(function(d,a){
+      var items=d.items.map(function(it,i){ return {it:it,i:i}; }).filter(function(x){
+        return !q || (x.it.t+" "+x.it.why+" "+d.name).toLowerCase().indexOf(q)>=0;
+      });
+      if(!items.length) return;
+      var ok=d.items.filter(function(it,i){ return C[key(a,i)]; }).length;
+      html += '<div class="fs-dom"><h4>'+esc(d.name)+
+        ' <span class="fl-tag">'+ok+" of "+d.items.length+"</span></h4>"+
+        '<div class="dsub">'+esc(d.sub)+"</div>";
+      items.forEach(function(x){
+        var k=key(a,x.i), on=!!C[k];
+        html += '<div class="fs-chk'+(on?" on":"")+'">'+
+          '<input type="checkbox" id="ck-'+k+'" data-ck="'+k+'"'+(on?" checked":"")+">"+
+          '<label for="ck-'+k+'">'+esc(x.it.t)+
+          (x.it.crit?'<span class="fs-crit">critical</span>':"")+
+          '<span class="why">'+esc(x.it.why)+"</span></label></div>";
+      });
+      html += "</div>";
+    });
+    $("rdList").innerHTML = html || '<div class="trend-empty"><div class="te-msg">Nothing matches that search.</div></div>';
+    $("rdList").querySelectorAll("input[data-ck]").forEach(function(cb){
+      cb.addEventListener("change", function(){
+        C[cb.getAttribute("data-ck")]=cb.checked;
+        put(K_C,C); renderReady(); renderStats();
+      });
+    });
+    renderStats();
+  }
+
+  function renderStats(){
+    var c=counts();
+    var pct=Math.round(c.done/c.total*100);
+    $("rdDone").textContent=c.done;
+    $("rdTotal").textContent=c.total;
+    $("rdPct").textContent=pct+"%";
+    $("rdCrit").textContent=c.crit;
+    $("rdAreas").textContent=c.areas+" of "+FS.areas.length;
+    var col = c.crit>6 ? "#f87171" : (c.crit>0 ? "#fbbf24" : "#34d399");
+    $("rdBar").style.width=pct+"%";
+    $("rdBar").style.background = c.done ? col : "#94a3b8";
+    $("rdRead").textContent = !c.done
+      ? "Work through the checks and a readiness reading appears here."
+      : (c.crit>0
+         ? c.crit+" critical item"+(c.crit===1?"":"s")+" still outstanding. Those are the ones that end days early or get you turned away at the gate, so clear them before the optional items."
+         : "Every critical item is done. The remainder are comfort and convenience, and you are in good shape to go.");
+  }
+
+  function checksText(){
+    var out=["Festival readiness checklist",""];
+    FS.areas.forEach(function(d,a){
+      out.push(d.name.toUpperCase());
+      d.items.forEach(function(it,i){
+        out.push("  ["+(C[key(a,i)]?"x":" ")+"] "+it.t+(it.crit?"   (critical)":""));
+      });
+      out.push("");
+    });
+    var c=counts();
+    out.push("Done "+c.done+" of "+c.total+". Critical outstanding: "+c.crit+".");
+    return out.join("\n");
+  }
+
+  /* ---------- reference lists ---------- */
+  function renderRef(target, list){
+    $(target).innerHTML='<div class="an-card full">'+ list.map(function(e){
+      return '<div class="fs-row"><div class="lbl">'+esc(e.t)+"</div><div>"+esc(e.body)+"</div></div>";
+    }).join("")+"</div>";
+  }
+
+  function renderIncidents(){
+    $("incList").innerHTML = FS.incidents.map(function(x){
+      var steps=x.steps.map(function(s,i){
+        return '<div class="fs-step"><div class="n">'+(i+1)+"</div><div>"+esc(s)+"</div></div>";
+      }).join("");
+      return '<div class="fs-inc"><h4>'+esc(x.t)+"</h4>"+steps+
+        (x.red?'<div class="fs-red"><strong>Get medical staff.</strong> '+esc(x.red)+"</div>":"")+"</div>";
+    }).join("");
+  }
+
+  /* ---------- plan ---------- */
+  function renderPlan(){
+    $("planFields").innerHTML = FS.planFields.map(function(f){
+      return '<div style="margin-bottom:12px"><label class="tiny muted" for="'+f.id+'">'+esc(f.l)+"</label>"+
+        '<input class="input" id="'+f.id+'" data-pf="'+f.id+'" style="margin-top:5px" placeholder="'+esc(f.h)+'" value="'+esc(P[f.id]||"")+'"></div>';
+    }).join("");
+    $("planFields").querySelectorAll("input[data-pf]").forEach(function(inp){
+      inp.addEventListener("input", function(){
+        P[inp.getAttribute("data-pf")]=inp.value;
+        put(K_P,P); renderPreview();
+      });
+    });
+    renderPreview();
+  }
+
+  function planText(){
+    var out=["Festival safety plan",""];
+    FS.planFields.forEach(function(f){
+      out.push(f.l+": "+((P[f.id]||"").trim() || "-"));
+    });
+    out.push("");
+    out.push("=".repeat(52));
+    out.push("");
+    out.push(checksText());
+    return out.join("\n");
+  }
+
+  function renderPreview(){
+    $("plPreview").innerHTML='<div class="an-card full"><div style="font-weight:700;margin-bottom:10px">Preview</div>'+
+      '<pre style="white-space:pre-wrap;font-size:13px;line-height:1.6;margin:0;font-family:\'JetBrains Mono\',monospace">'+
+      esc(planText().slice(0,3500))+"</pre></div>";
+  }
+
+  /* ---------- tabs ---------- */
+  function switchTab(name){
+    document.querySelectorAll(".tab-btn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-tab")===name);
+    });
+    var map={ready:"viewReady",body:"viewBody",crowds:"viewCrowds",incident:"viewIncident",plan:"viewPlan"};
+    document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+    var el=$(map[name]); if(el) el.classList.add("active");
+    if(name==="plan") renderPreview();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    document.querySelector(".tab-nav").addEventListener("click", function(e){
+      var b=e.target.closest(".tab-btn"); if(!b) return;
+      switchTab(b.getAttribute("data-tab"));
+    });
+    $("rdFind").addEventListener("input", renderReady);
+    $("rdReset").addEventListener("click", function(){
+      if(!confirm("Untick every readiness item?")) return;
+      C={}; put(K_C,C); renderReady();
+    });
+    $("rdExport").addEventListener("click", function(){
+      download("festival-readiness.txt", checksText()); flash("rdMsg","Exported.");
+    });
+    $("plExport").addEventListener("click", function(){
+      download("festival-safety-plan.txt", planText()); flash("plMsg","Exported.");
+    });
+    $("plCopy").addEventListener("click", function(){
+      var text=planText();
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(
+          function(){ flash("plMsg","Copied."); },
+          function(){ flash("plMsg","Copy failed, use Export instead."); });
+      } else { flash("plMsg","Copy not supported here, use Export instead."); }
+    });
+    $("plClear").addEventListener("click", function(){
+      if(!confirm("Clear the plan fields?")) return;
+      P={}; put(K_P,P); renderPlan();
+    });
+
+    renderReady();
+    renderRef("bodyList", FS.body);
+    renderRef("crowdList", FS.crowds);
+    renderIncidents();
+    renderPlan();
+  });
+})();
+</script>
+
+</body>
+</html>
