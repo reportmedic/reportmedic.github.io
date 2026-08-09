@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the Egypt History Study tool.</p><a href="https://reportmedic.org/tools/egypt-history-study.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="Practice questions on ancient Egyptian history across every period, with explanations, a chronology reference and a guide to how the evidence works."/>
+<title>Egypt History Study - Practice Questions - ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+/* -- Animated Background -- */
+.bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12;animation:meshDrift 20s ease-in-out infinite alternate;}
+.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);top:-15%;right:-10%;}
+.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#a78bfa,#6ea8ff);bottom:-10%;left:-5%;animation-delay:-7s;animation-duration:25s;}
+.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#7cf7d4,#f59e0b);top:50%;left:40%;animation-delay:-14s;animation-duration:28s;}
+@keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg) scale(1);}100%{transform:translate(40px,-30px) rotate(15deg) scale(1.1);}}
+
+/* -- Tabs Nav -- */
+.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:24px;overflow-x:auto;}
+.tab-btn{flex:1;min-width:fit-content;padding:12px 20px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;letter-spacing:.01em;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(110,168,255,.18),rgba(124,247,212,.12));color:var(--text);box-shadow:0 2px 16px rgba(110,168,255,.12),inset 0 1px 0 rgba(255,255,255,.06);}
+
+/* -- Views -- */
+.view{display:none;}
+.view.active{display:block;}
+
+/* -- Hero -- */
+.daily-hero{text-align:center;padding:32px 0 16px;}
+.daily-hero h1{font-size:clamp(26px,4.5vw,38px);font-weight:700;letter-spacing:-.02em;line-height:1.15;}
+.daily-hero h1 .grad{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:10px;line-height:1.5;letter-spacing:.01em;}
+
+/* -- Streak Banner -- */
+.streak-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 26px;flex-wrap:wrap;}
+.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);backdrop-filter:blur(8px);font-size:13px;font-weight:600;transition:transform .15s;}
+.streak-pill:hover{transform:translateY(-1px);}
+.streak-pill .fire{font-size:20px;}
+.streak-pill .sval{font-size:18px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-pill .sval.green{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-dots{display:flex;gap:5px;}
+.streak-dots .dot{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;color:var(--muted);}
+.streak-dots .dot.done{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(124,247,212,.1));border-color:rgba(16,185,129,.25);color:#34d399;}
+.streak-dots .dot.today{border-color:rgba(110,168,255,.45);box-shadow:0 0 14px rgba(110,168,255,.15);}
+
+/* -- Phase Filter -- */
+.phase-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.phase-filter .pf-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px;}
+.pf-btn{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;}
+.pf-btn:hover{border-color:rgba(255,255,255,.22);color:var(--text);}
+.pf-btn.active{background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.35);color:#6ea8ff;}
+
+/* -- Quiz Container -- */
+.quiz-panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:26px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
+.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
+.quiz-progress{display:flex;gap:4px;margin-bottom:18px;}
+.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.06);transition:background .3s;}
+.quiz-progress .pip.done{background:linear-gradient(90deg,#10b981,#7cf7d4);}
+.quiz-progress .pip.wrong{background:#ef4444;}
+.quiz-progress .pip.current{background:rgba(110,168,255,.4);animation:pipPulse 1.5s ease infinite;}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.1);color:#6ea8ff;border:1px solid rgba(110,168,255,.15);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);color:var(--muted);}
+.quiz-meta .qphase{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid rgba(124,247,212,.2);background:rgba(124,247,212,.06);color:#7cf7d4;}
+.quiz-meta .qdiff{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.quiz-meta .qdiff.easy{border:1px solid rgba(52,211,153,.2);background:rgba(52,211,153,.06);color:#34d399;}
+.quiz-meta .qdiff.medium{border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.06);color:#fbbf24;}
+.quiz-meta .qdiff.hard{border:1px solid rgba(248,113,113,.2);background:rgba(248,113,113,.06);color:#f87171;}
+.quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.quiz-meta .timer svg{color:rgba(110,168,255,.6);}
+
+.quiz-question{font-size:16.5px;line-height:1.7;font-weight:600;margin-bottom:18px;letter-spacing:.005em;}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s;}
+.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.06);}
+.qo.selected .letter{border-color:#6ea8ff;background:#6ea8ff;color:#061021;}
+.qo.correct{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);}
+.qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
+.qo.disabled{pointer-events:none;opacity:.65;}
+.qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
+
+.quiz-explain{margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(124,247,212,.035);border:1px solid rgba(124,247,212,.1);font-size:13.5px;line-height:1.7;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;letter-spacing:.01em;}
+.qa-btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;}
+.qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+.qa-btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);}
+
+/* -- Results Card -- */
+.result-card{text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;}
+.result-card .big-score{font-size:64px;font-weight:700;line-height:1;margin-bottom:8px;}
+.result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
+.result-mini .rm{padding:16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.result-mini .rm .rv{font-size:20px;font-weight:700;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* -- Subject Practice Grid -- */
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.subj-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.subj-card .sc-icon{font-size:30px;margin-bottom:10px;}
+.subj-card .sc-name{font-size:14.5px;font-weight:700;margin-bottom:4px;letter-spacing:.01em;}
+.subj-card .sc-count{font-size:12px;color:var(--muted);}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .5s ease;}
+.ri-gauge{height:12px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin:12px 0 6px;}
+.ri-gauge i{display:block;height:100%;transition:width .4s ease;}
+.eg-q{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;}
+.eg-stem{font-size:16.5px;line-height:1.75;font-weight:600;margin-bottom:16px;}
+.eg-opt{padding:13px 15px;border-radius:13px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;gap:12px;align-items:flex-start;font-size:14.5px;line-height:1.65;margin-bottom:9px;}
+.eg-opt:hover{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.05);}
+.eg-opt .ltr{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex-shrink:0;}
+.eg-opt.ok{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.07);}
+.eg-opt.ok .ltr{border-color:#10b981;background:#10b981;color:#061021;}
+.eg-opt.no{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.eg-opt.no .ltr{border-color:#ef4444;background:#ef4444;color:#fff;}
+.eg-opt.locked{pointer-events:none;}
+.eg-per{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);margin:3px 5px 0 0;}
+.eg-row{display:grid;grid-template-columns:190px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14.5px;line-height:1.8;}
+.eg-row:last-child{border-bottom:0;}
+.eg-row .lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;padding-top:3px;}
+@media(max-width:660px){.eg-row{grid-template-columns:1fr;gap:5px;}}
+.eg-code{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:15px;overflow-x:auto;white-space:pre;color:#a7c7f0;}
+.eg-warn{border-left:3px solid #ffb35c;background:rgba(255,179,92,.07);border-radius:0 12px 12px 0;padding:13px 15px;font-size:13.5px;line-height:1.8;}
+.ri-cell{padding:12px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.03);text-align:center;}
+.ri-cell .cv{font-size:19px;font-weight:800;}
+.ri-cell .cl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:3px;}
+.bn-text{line-height:1.9;}
+.ri-warnbox{border-left:3px solid #ffb35c;background:rgba(255,179,92,.07);border-radius:0 12px 12px 0;padding:14px 16px;font-size:13.5px;line-height:1.75;}
+.lit-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.lit-detail h3{font-size:20px;margin-bottom:4px;}
+.lit-detail .meta{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+.lit-detail p{line-height:1.75;font-size:14.5px;margin-bottom:12px;}
+.lit-row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.lit-row:last-child{border-bottom:0;}
+.lit-row .lbl{font-weight:700;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px;}
+@media(max-width:640px){.lit-row{grid-template-columns:1fr;gap:4px;}}
+.cmp-grid{display:grid;grid-template-columns:170px 1fr 1fr;gap:10px;align-items:start;}
+.cmp-grid > div{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.cmp-grid .cmp-lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;}
+.cmp-grid .cmp-head{font-weight:700;font-size:15px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.14);}
+@media(max-width:760px){.cmp-grid{grid-template-columns:1fr;}.cmp-grid .cmp-lbl{padding-bottom:0;border-bottom:0;}}
+.theme-chip{display:inline-block;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:rgba(110,168,255,.10);border:1px solid rgba(110,168,255,.20);color:#6ea8ff;margin:3px 5px 3px 0;cursor:pointer;}
+.theme-chip.on{background:var(--brand);border-color:var(--brand);color:#08111f;}
+
+/* -- Analytics Dashboard -- */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
+.an-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.an-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);}
+.an-card.full{grid-column:1/-1;}
+.an-card h3{font-size:12.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* -- Overview Strip -- */
+.overview-strip{display:flex;align-items:center;gap:24px;}
+.ov-ring{position:relative;flex-shrink:0;width:100px;height:100px;}
+.ov-ring canvas{width:100px;height:100px;}
+.ov-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ov-ring-label .rv{font-size:22px;font-weight:700;line-height:1;}
+.ov-ring-label .rl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ov-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ov-stat{padding:12px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;}
+.ov-stat .os-val{font-size:18px;font-weight:700;line-height:1.2;font-family:'JetBrains Mono',monospace;}
+.ov-stat .os-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+@media(max-width:600px){
+  .overview-strip{flex-direction:column;gap:16px;}
+  .ov-stats{grid-template-columns:repeat(3,1fr);width:100%;}
+}
+
+/* -- Subject accuracy bars -- */
+.sub-bars{display:flex;flex-direction:column;gap:10px;}
+.sb-row{display:flex;align-items:center;gap:10px;}
+.sb-label{width:105px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:46px;text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+/* -- Trend Chart -- */
+.trend-wrap{position:relative;min-height:220px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.trend-wrap::-webkit-scrollbar{height:4px;}.trend-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--muted);text-align:center;}
+.trend-empty .te-icon{font-size:40px;opacity:.4;}
+.trend-empty .te-msg{font-size:13px;line-height:1.5;max-width:320px;}
+.trend-bar-chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding:10px 0;min-width:min-content;}
+.trend-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:48px;width:48px;flex-shrink:0;}
+.trend-bar-outer{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative;}
+.trend-bar{width:100%;border-radius:6px 6px 2px 2px;transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;min-height:4px;}
+.trend-bar:hover{filter:brightness(1.2);}
+.trend-bar .tb-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.trend-bar:hover .tb-val{opacity:1;}
+.trend-label{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.trend-mode-label.daily{background:rgba(110,168,255,.12);color:#6ea8ff;}
+.trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
+
+/* -- Mastery Dashboard -- */
+.mastery-wrap{margin-top:8px;}
+.mastery-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.m-stat{padding:12px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);}
+.m-stat .ms-val{font-size:22px;font-weight:800;margin-bottom:2px;}
+.m-stat .ms-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+.m-stat.green .ms-val{color:#34d399;} .m-stat.yellow .ms-val{color:#fbbf24;} .m-stat.red .ms-val{color:#f87171;} .m-stat.blue .ms-val{color:#6ea8ff;} .m-stat.purple .ms-val{color:#a78bfa;}
+.coverage-ring{display:flex;align-items:center;gap:16px;padding:14px;border-radius:14px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);margin-bottom:14px;overflow:hidden;}
+.cov-canvas{width:90px;height:90px;flex-shrink:0;}
+.cov-info{flex:1;min-width:0;overflow:hidden;}
+.cov-title{font-size:13px;font-weight:700;color:var(--fg);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cov-sub{font-size:11px;color:var(--muted);line-height:1.6;word-break:break-word;}
+.subj-mastery{margin-top:14px;}
+.sm-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+.sm-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.sm-icon{font-size:14px;width:20px;text-align:center;}
+.sm-name{width:70px;font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-bar{flex:1;height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative;}
+.sm-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.sm-pct{width:34px;text-align:right;font-weight:700;font-size:11px;}
+
+/* -- Passage block for reading items -- */
+.quiz-passage{padding:14px 16px;border-radius:14px;background:rgba(110,168,255,.04);border:1px solid rgba(110,168,255,.10);font-size:14.5px;line-height:1.75;color:var(--muted);margin-bottom:14px;}
+.quiz-passage em{color:var(--text);font-style:italic;}
+
+/* -- Difficulty chips -- */
+.diff-dist{display:flex;gap:10px;margin-top:6px;}
+.diff-chip{flex:1;padding:14px 10px;border-radius:14px;text-align:center;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);}
+.diff-chip .dc-val{font-size:20px;font-weight:700;margin-bottom:2px;}
+.diff-chip .dc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+.diff-chip.easy .dc-val{color:#34d399;}
+.diff-chip.medium .dc-val{color:#fbbf24;}
+.diff-chip.hard .dc-val{color:#f87171;}
+
+/* -- Session History -- */
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding-right:4px;}
+.hist-list::-webkit-scrollbar{width:4px;}
+.hist-list::-webkit-scrollbar-track{background:transparent;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:12px;transition:background .1s;}
+.hist-row:hover{background:rgba(255,255,255,.04);}
+.hist-date{font-weight:600;min-width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hist-mode{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.hist-mode.daily{background:rgba(110,168,255,.1);color:#6ea8ff;}
+.hist-mode.practice{background:rgba(139,92,246,.1);color:#a78bfa;}
+.hist-score{margin-left:auto;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.hist-detail{color:var(--muted);font-size:11px;}
+
+/* -- Reset Button -- */
+.reset-zone{margin-top:20px;text-align:center;}
+.reset-btn{padding:10px 20px;border-radius:12px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.reset-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);}
+
+/* -- Tab label responsive -- */
+.tab-short{display:none;}
+@media(max-width:540px){.tab-full{display:none;}.tab-short{display:inline;}}
+@media(max-width:640px){
+  .quiz-panel{padding:16px;}
+  .streak-bar{gap:10px;}
+  .subj-grid{grid-template-columns:1fr 1fr;}
+  .diff-dist{flex-wrap:wrap;}
+  .diff-chip{min-width:calc(50% - 5px);}
+  .mastery-stats{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .coverage-ring{flex-direction:column;text-align:center;}
+  .sm-name{width:55px;font-size:10px;}
+  .tab-nav{overflow-x:hidden;}
+  .hide-mobile{display:none!important;}
+}
+
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .5s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+
+.btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;padding:10px 20px;border-radius:10px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:.01em;transition:all .18s;}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-mesh"><div class="strand"></div><div class="strand"></div><div class="strand"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn hide-mobile" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+  <a class="btn primary" href="https://vaultbook.net/tools/egypt-history-notes.html">Egypt Notes</a>
+</div>
+</header>
+
+<div class="wrap">
+  <!-- Tab Nav -->
+  <nav class="tab-nav anim-up">
+    <button class="tab-btn active" data-tab="practice"><span class="tab-full">Practice</span><span class="tab-short">Practice</span></button>
+    <button class="tab-btn" data-tab="periods"><span class="tab-full">Periods</span><span class="tab-short">Periods</span></button>
+    <button class="tab-btn" data-tab="evidence"><span class="tab-full">How We Know</span><span class="tab-short">Evidence</span></button>
+    <button class="tab-btn" data-tab="progress"><span class="tab-full">My Progress</span><span class="tab-short">Progress</span></button>
+    <button class="tab-btn" data-tab="extend"><span class="tab-full">Extending This</span><span class="tab-short">Extend</span></button>
+  </nav>
+
+  <!-- VIEW: PRACTICE -->
+  <div class="view active" id="viewPractice">
+    <div class="daily-hero anim-up d1">
+      <h1>Egyptian History <span class="grad">Practice</span></h1>
+      <p class="sub">Questions across every period, each with an explanation that teaches rather than confirms. Filter by period or difficulty and work through as many as you like.</p>
+    </div>
+    <div class="phase-filter anim-up d2">
+      <span class="pf-label">Period:</span><span id="perBtns"></span>
+    </div>
+    <div class="phase-filter anim-up d2" style="margin-top:-6px">
+      <span class="pf-label">Difficulty:</span><span id="diffBtns"></span>
+    </div>
+    <div class="row" style="gap:10px;margin:14px 0;flex-wrap:wrap">
+      <span class="pill tiny" id="egCount"></span>
+      <button class="btn primary" id="egNext" type="button">Next question</button>
+      <button class="btn" id="egShuffle" type="button">Shuffle order</button>
+      <button class="btn" id="egReset" type="button">Reset progress</button>
+      <span class="tiny muted" id="egMsg"></span>
+    </div>
+    <div id="egQuestion"></div>
+  </div>
+
+  <!-- VIEW: PERIODS -->
+  <div class="view" id="viewPeriods">
+    <div class="daily-hero">
+      <h1>The <span class="grad">Periods</span></h1>
+      <p class="sub">The conventional framework, what defines each period, and where the dates are firm against where they are argued over.</p>
+    </div>
+    <div id="perList"></div>
+    <div class="eg-warn" style="margin-top:16px">All dates before roughly 690 BC are approximate and are debated between the high, middle and low chronologies, with the disagreement widening the further back you go. Different textbooks give different dates for the same reign and neither is wrong. Say which chronology you are following when precision matters.</div>
+  </div>
+
+  <!-- VIEW: EVIDENCE -->
+  <div class="view" id="viewEvidence">
+    <div class="daily-hero">
+      <h1>How We <span class="grad">Know</span></h1>
+      <p class="sub">Ten kinds of evidence, what each can establish, and the limits every one of them carries. This is what separates an answer from a recitation.</p>
+    </div>
+    <div id="evList"></div>
+  </div>
+
+  <!-- VIEW: PROGRESS -->
+  <div class="view" id="viewProgress">
+    <div class="daily-hero">
+      <h1>My <span class="grad">Progress</span></h1>
+      <p class="sub">What you have attempted and how you did, broken down by period. Everything stays in your browser.</p>
+    </div>
+    <div class="analytics-grid">
+      <div class="an-card full">
+        <div class="ov-stats" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
+          <div class="ri-cell"><div class="cv" id="pgDone">0</div><div class="cl">Attempted</div></div>
+          <div class="ri-cell"><div class="cv" id="pgTotal">0</div><div class="cl">Questions</div></div>
+          <div class="ri-cell"><div class="cv" id="pgRight">0</div><div class="cl">First-time correct</div></div>
+          <div class="ri-cell"><div class="cv" id="pgRate">-</div><div class="cl">Hit rate</div></div>
+          <div class="ri-cell"><div class="cv" id="pgPer">0</div><div class="cl">Periods covered</div></div>
+        </div>
+        <div class="ri-gauge"><i id="pgBar" style="width:0%;background:#94a3b8"></i></div>
+        <div class="tiny muted" id="pgRead">Answer a question and your progress appears here.</div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(139,92,246,.1);color:#8b5cf6;">A</span>Accuracy by period</h3>
+        <div class="sub-bars" id="pgBars"></div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(239,68,68,.1);color:#f87171;">W</span>Where you went wrong</h3>
+        <div id="pgWrong"></div>
+      </div>
+    </div>
+    <div class="reset-zone">
+      <button class="reset-btn" id="pgWipe" type="button">Reset All Progress</button>
+    </div>
+  </div>
+
+  <!-- VIEW: EXTEND -->
+  <div class="view" id="viewExtend">
+    <div class="daily-hero">
+      <h1>Extending <span class="grad">This</span></h1>
+      <p class="sub">Everything renders from four arrays. Adding a question, a period or an evidence entry is appending one object.</p>
+    </div>
+    <div id="extendList"></div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">Egypt History Study - practice questions across every period</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. Copyright ReportMedic.</div>
+</div>
+</footer>
+
+<script>
+/* ============================================================================
+   EGYPT HISTORY STUDY - DATA
+   EG.periods   the conventional framework
+   EG.questions practice questions, keyed to a period
+   EG.evidence  what each kind of source can and cannot establish
+   EG.extend    schema documentation for the Extending tab
+   ========================================================================== */
+
+var EG = {};
+
+/* PERIOD SCHEMA
+   id, name, span, defines, marks, dispute                          */
+EG.periods = [
+{id:"pre", name:"Predynastic", span:"roughly 5000 to 3100 BC",
+ defines:"The long development from farming villages along the Nile to the material culture and social hierarchy that immediately precedes a unified state.",
+ marks:"Named after cemetery sites rather than kings, because there are no written records. Naqada I, II and III are the standard sequence.",
+ dispute:"Dating rests on pottery sequence and radiocarbon rather than on any king list, so the absolute dates carry the widest error bars in Egyptian history."},
+{id:"early", name:"Early Dynastic", span:"roughly 3100 to 2686 BC, dynasties 1 and 2",
+ defines:"The first unified state, with a capital at Memphis, the earliest writing, and royal tombs at Abydos and Saqqara.",
+ marks:"Writing appears, the royal titulary begins to form, and administration becomes visible through seal impressions and labels.",
+ dispute:"Whether unification was a single conquest or a gradual process is genuinely open, and the identity of the first king is not settled."},
+{id:"old", name:"Old Kingdom", span:"roughly 2686 to 2181 BC, dynasties 3 to 6",
+ defines:"The pyramid age. A strongly centralised state directing enormous resources into royal mortuary complexes.",
+ marks:"Djoser's step pyramid, the Giza pyramids of the fourth dynasty, and the Pyramid Texts appearing at the end of the fifth.",
+ dispute:"The causes of its collapse, whether climate, provincial autonomy, or the cost of the mortuary economy, remain argued."},
+{id:"fip", name:"First Intermediate Period", span:"roughly 2181 to 2055 BC, dynasties 7 to early 11",
+ defines:"Central authority fragments, with rival centres at Herakleopolis and Thebes and considerable regional variation.",
+ marks:"Provincial art styles, a wider distribution of funerary texts, and literature that reflects on disorder.",
+ dispute:"Whether this was a catastrophe or a period of provincial vitality is a live revision, and the traditional dark age reading is heavily qualified now."},
+{id:"middle", name:"Middle Kingdom", span:"roughly 2055 to 1650 BC, dynasties 11 to 13",
+ defines:"Reunification under Theban rulers, a strong bureaucratic state, expansion into Nubia and the classical phase of Egyptian literature.",
+ marks:"Fortresses at the second cataract, the Coffin Texts, and works later copied as models of the language.",
+ dispute:"The end of the thirteenth dynasty is poorly documented and the transition into the Second Intermediate Period is not sharply datable."},
+{id:"sip", name:"Second Intermediate Period", span:"roughly 1650 to 1550 BC, dynasties 14 to 17",
+ defines:"Rule of the north by the Hyksos from Avaris, with a Theban kingdom in the south and a Nubian kingdom of Kush beyond.",
+ marks:"New military technology including the composite bow and the horse and chariot, and substantial Levantine material culture in the delta.",
+ dispute:"Whether the Hyksos arrived by invasion or by gradual settlement is the central question, and the archaeology now favours gradual settlement over conquest."},
+{id:"new", name:"New Kingdom", span:"roughly 1550 to 1069 BC, dynasties 18 to 20",
+ defines:"Egypt as an imperial power, with an empire in the Levant and Nubia, the Valley of the Kings, and the greatest surviving monumental building.",
+ marks:"Hatshepsut, Thutmose III, the Amarna period, Tutankhamun, and the Ramesside pharaohs.",
+ dispute:"The Amarna succession between Akhenaten and Tutankhamun involves at least one and possibly two short reigns whose identity is not settled."},
+{id:"amarna", name:"Amarna Period", span:"roughly 1353 to 1336 BC, within the eighteenth dynasty",
+ defines:"Akhenaten's reign, the elevation of the Aten, the new capital at Akhetaten, and a distinctive artistic style.",
+ marks:"Closure or neglect of other cults, a new capital on virgin ground, and the Amarna letters recording foreign correspondence.",
+ dispute:"Whether the reforms were genuinely monotheistic, and whether they were religious conviction or a move against the Amun priesthood, are both unresolved."},
+{id:"ramesside", name:"Ramesside", span:"roughly 1295 to 1069 BC, dynasties 19 and 20",
+ defines:"The dynasties of the Ramesses kings, with Kadesh, the first surviving international peace treaty, and later the Sea Peoples.",
+ marks:"Ramesses II's long reign and building programme, the Deir el-Medina workmen's village, and the tomb robbery papyri.",
+ dispute:"The scale of the decline at the end of the twentieth dynasty and the causes, including drought and the loss of empire, are debated."},
+{id:"tip", name:"Third Intermediate Period", span:"roughly 1069 to 664 BC, dynasties 21 to 25",
+ defines:"Divided rule between Tanis and Thebes, then Libyan dynasties, then conquest by the Kushite kings of the twenty fifth dynasty.",
+ marks:"The god's wives of Amun, extensive royal reburial of New Kingdom mummies, and Nubian rule over a united Egypt.",
+ dispute:"The chronology of overlapping dynasties is the most contested in Egyptian history, and reconstructions differ by decades."},
+{id:"late", name:"Late Period", span:"664 to 332 BC, dynasties 26 to 31",
+ defines:"The Saite revival, two periods of Persian rule, and the last native pharaohs.",
+ marks:"Archaising art reaching back to the Old Kingdom, Greek mercenaries and traders at Naucratis, and Herodotus visiting.",
+ dispute:"Whether Persian rule was as destructive as later Egyptian and Greek sources claim is widely doubted by modern scholarship."}
+];
+
+/* QUESTION SCHEMA
+   id, per (period id), diff (easy|medium|hard),
+   q (stem), o (four options), a (index of the correct option),
+   e (explanation that teaches, including why the wrong ones are wrong) */
+EG.questions = [
+{id:"q1", per:"pre", diff:"medium", q:"Why are Predynastic phases named after sites such as Naqada rather than after rulers?",
+ o:["There is no writing from the period, so the sequence rests on material culture","Egyptians did not use personal names before unification","The names were lost when the Turin King List was damaged","The rulers' names were deliberately erased later"],
+ a:0, e:"Writing appears only at the very end of the Predynastic, so the period has no king list and no royal names to organise it. Archaeologists therefore built the sequence from changes in pottery, burial practice and grave goods at type sites, chiefly Naqada. The Turin King List is a New Kingdom document and does not reach this far back in usable form."},
+{id:"q2", per:"pre", diff:"hard", q:"What does the increasing differentiation of Predynastic graves tell us?",
+ o:["That the population was falling","That social hierarchy was emerging before the state","That Egypt was already unified","That burial was reserved for priests"],
+ a:1, e:"Early Predynastic graves are broadly similar. Over time some become far larger and richer than others, which indicates that differences in wealth and status were becoming entrenched and inheritable. This matters because it shows hierarchy developing before political unification rather than as a consequence of it."},
+{id:"q3", per:"early", diff:"easy", q:"Which city served as the administrative capital of the newly unified state?",
+ o:["Tanis","Thebes","Memphis","Amarna"],
+ a:2, e:"Memphis sits at the junction of Upper and Lower Egypt, which is precisely why it was chosen. Thebes becomes central much later in the Middle and New Kingdoms, Amarna exists only for about two decades under Akhenaten, and Tanis is a Third Intermediate Period capital."},
+{id:"q4", per:"early", diff:"hard", q:"What is the main difficulty in identifying the first king of a unified Egypt?",
+ o:["The unification happened outside Egypt","The relevant tombs have never been located","No royal names survive from the period","Later king lists and contemporary objects do not agree"],
+ a:3, e:"Contemporary objects such as the Narmer palette and later king lists compiled centuries afterwards give different names and different orders. Narmer and Menes may be the same person under different names, or they may not. The problem is not absence of evidence but evidence that does not reconcile."},
+{id:"q5", per:"old", diff:"easy", q:"Which structure is generally regarded as the earliest large scale stone building in Egypt?",
+ o:["The step pyramid of Djoser at Saqqara","The Bent Pyramid at Dahshur","The temple at Karnak","The Great Pyramid at Giza"],
+ a:0, e:"Djoser's step pyramid, attributed to the architect Imhotep, is a third dynasty monument and precedes the Giza pyramids by roughly a century. The Bent Pyramid is fourth dynasty and represents a stage in the development toward the true pyramid form, and Karnak is overwhelmingly a New Kingdom complex."},
+{id:"q6", per:"old", diff:"medium", q:"What does the evidence from the workers' settlement at Giza indicate about pyramid labour?",
+ o:["That the workforce was enslaved foreign captives","That it was an organised paid workforce receiving rations and medical care","That the pyramids were built by a small elite guild","That construction used no permanent workforce at all"],
+ a:1, e:"Excavation of the settlement revealed bakeries, breweries, substantial quantities of cattle bone, and skeletons showing healed fractures that had been set. That pattern indicates an organised workforce that was fed, housed and treated, not a slave population, and the Herodotean account of slave labour is not supported by the archaeology."},
+{id:"q7", per:"old", diff:"hard", q:"Which is the strongest single line of evidence that the Old Kingdom ended amid environmental stress?",
+ o:["Absence of pottery from the period","Greek accounts of a famine","Contemporary inscriptions describing hunger and low Nile floods","A gap in the Turin King List"],
+ a:2, e:"Provincial tomb inscriptions from the late Old Kingdom and First Intermediate Period refer to feeding the hungry and to years of low flood, and these are contemporary claims by local officials. Palaeoclimate work broadly supports a period of aridification. The Turin King List is damaged throughout so a gap proves little, and Greek accounts are two thousand years later."},
+{id:"q8", per:"fip", diff:"medium", q:"Why do modern historians resist calling the First Intermediate Period a dark age?",
+ o:["Because it lasted only a few years","Because the traditional dates have been shown to be wrong","Because the period produced no written sources at all","Because provincial centres flourished and funerary culture spread more widely"],
+ a:3, e:"Central authority fragmented, but provincial workshops developed distinctive styles and funerary texts once restricted to royalty became available to a much broader group. The dark age label reflects a royal and Memphite perspective, and reading the period from the provinces gives a different picture."},
+{id:"q9", per:"fip", diff:"hard", q:"How should a historian treat literary works describing chaos in this period?",
+ o:["As later compositions that may use disorder as a literary and political theme","As forgeries with no historical value","As royal annals","As direct eyewitness reporting"],
+ a:0, e:"Several such works survive only in later copies and their date of composition is disputed. They may reflect memory of real disorder, or they may use the theme of chaos to argue for the value of strong kingship in the writer's own time. Treating them as reportage is the standard error."},
+{id:"q10", per:"middle", diff:"easy", q:"Which region did Middle Kingdom rulers fortify most heavily?",
+ o:["The Libyan desert oases","Nubia, at the second cataract","The Sinai coast road","The Mediterranean delta"],
+ a:1, e:"A chain of massive mudbrick fortresses was built around the second cataract to control the river route and trade in gold, hard stone and other goods from the south. Delta fortification becomes a preoccupation later, particularly after the Hyksos period."},
+{id:"q11", per:"middle", diff:"medium", q:"Why is the Middle Kingdom described as the classical phase of Egyptian literature?",
+ o:["Its texts were written in Greek","It is when writing was invented","Its works were copied as models of the language for a thousand years afterwards","It is the only period with surviving literature"],
+ a:2, e:"Middle Egyptian became the prestige literary language and New Kingdom scribal students copied Middle Kingdom compositions as exercises, which is both why the works survive and why the dialect remained the standard for formal texts long after everyday speech had moved on."},
+{id:"q12", per:"middle", diff:"hard", q:"What does the spread of the Coffin Texts indicate?",
+ o:["That the Pyramid Texts had been forgotten","That the Middle Kingdom rejected earlier religion","That literacy had become universal","That funerary provision once restricted to kings had widened to officials"],
+ a:3, e:"The Coffin Texts descend from the royal Pyramid Texts and appear on the coffins of non-royal officials. The change indicates a broadening of access to an afterlife once framed as royal, which historians connect to the redistribution of authority during the First Intermediate Period."},
+{id:"q13", per:"sip", diff:"medium", q:"What does the archaeology at Avaris suggest about how the Hyksos came to power?",
+ o:["Gradual settlement of a Levantine population over generations, then political control","That the Hyksos never actually lived in Egypt","That the city was founded by Nubians","A sudden violent conquest destroying the earlier settlement"],
+ a:0, e:"Excavation shows a Levantine population present at Avaris across several generations, with continuity of occupation rather than a destruction layer marking an invasion. The invasion narrative comes largely from later Egyptian sources written after their expulsion, which had strong reasons to present them as foreign aggressors."},
+{id:"q14", per:"sip", diff:"medium", q:"Which military technologies are associated with this period in Egypt?",
+ o:["Iron weapons and cavalry","The horse and chariot and the composite bow","Gunpowder siege equipment","Bronze cannon"],
+ a:1, e:"The horse drawn chariot and the composite bow become prominent in Egypt from this period and are central to New Kingdom warfare afterwards. Iron does not become the dominant metal for weapons in Egypt until much later, and cavalry proper is later still."},
+{id:"q15", per:"sip", diff:"hard", q:"Why did later Egyptian sources emphasise the foreignness of the Hyksos?",
+ o:["Because Greek writers required it","Because Egyptians never encountered foreigners otherwise","Because the expulsion became a founding story legitimating the New Kingdom","Because the Hyksos left no monuments"],
+ a:2, e:"The Theban rulers who expelled them founded the eighteenth dynasty, and a narrative of foreign occupation ended by liberation supplied legitimacy. This is why later accounts are stronger on invasion than the archaeology is, and it is a good example of why a source's purpose matters as much as its content."},
+{id:"q16", per:"new", diff:"easy", q:"Why were New Kingdom royal tombs cut into the Valley of the Kings?",
+ o:["Because stone for pyramids had run out","To place them closer to Memphis","Because pyramids were forbidden by religious law","To conceal the tombs and protect them from robbery"],
+ a:3, e:"Pyramids advertise their own location and had been robbed repeatedly. Cutting hidden tombs into a remote valley on the west bank at Thebes was an attempt at concealment. The tomb robbery papyri from the end of the New Kingdom show that it did not ultimately work."},
+{id:"q17", per:"new", diff:"medium", q:"What makes Deir el-Medina unusually valuable to historians?",
+ o:["It was a literate workers' village that left thousands of everyday documents","It contains the only surviving temple of the period","It was never occupied, so it is undisturbed","It was the burial place of the pharaohs"],
+ a:0, e:"The village housed the workmen who cut the royal tombs, and they were literate. The surviving ostraca record wages, disputes, absences, illness, court cases and one of the earliest recorded labour strikes, which gives an ordinary-life record almost nothing else in the ancient world matches."},
+{id:"q18", per:"new", diff:"hard", q:"Why is the claim that Hatshepsut was erased from history now heavily qualified?",
+ o:["No erasure of her monuments occurred at all","The erasure was partial, began long after her death, and appears politically motivated rather than personal","She was never actually a ruler","The evidence for her reign is forged"],
+ a:1, e:"Her monuments were damaged, but the campaign began roughly two decades into Thutmose III's sole reign rather than immediately, and it was selective. That timing argues against personal vengeance and toward a later concern with the legitimacy of the succession, possibly in the interests of Thutmose III's own heir."},
+{id:"q19", per:"new", diff:"medium", q:"What best describes Thutmose III's military record?",
+ o:["A withdrawal from all foreign territory","A single defensive campaign","Repeated campaigns into the Levant establishing an imperial system of vassals and tribute","Conquest of Mesopotamia and Anatolia"],
+ a:2, e:"He conducted numerous campaigns recorded in the annals at Karnak, and the system that resulted relied on vassal rulers, tribute, garrisons and the education of their sons in Egypt rather than on direct provincial administration. That indirect model is what later fails under pressure in the Amarna period."},
+{id:"q20", per:"amarna", diff:"easy", q:"What was the most conspicuous religious change under Akhenaten?",
+ o:["Adoption of Mesopotamian gods","Introduction of animal mummification","Abolition of all temples","Elevation of the Aten above other gods, with other cults neglected or closed"],
+ a:3, e:"The Aten, the visible sun disc, was elevated above the traditional pantheon and the cult of Amun in particular was attacked, with names and images defaced. Whether this amounts to true monotheism or to an extreme form of favouring one god is precisely the interpretive question."},
+{id:"q21", per:"amarna", diff:"medium", q:"Why did Akhenaten build a new capital on previously unoccupied ground?",
+ o:["To create a centre with no existing priesthood or prior claim on the land","Because the Nile had changed course","To be closer to the Levantine empire","The old capital had been destroyed by fire"],
+ a:0, e:"Akhetaten was founded on virgin ground and boundary stelae record his commitment not to extend beyond them. Building on land with no established temple estates or priestly interests gave the new cult a base free of the entrenched institutions it was displacing."},
+{id:"q22", per:"amarna", diff:"hard", q:"What do the Amarna letters chiefly reveal?",
+ o:["The theology of the Aten in detail","Diplomatic correspondence showing strain in Egypt's control of the Levant","The construction methods used at Akhetaten","Akhenaten's personal diary"],
+ a:1, e:"The letters are a cuneiform archive of correspondence with foreign rulers and Levantine vassals, many of them appealing for military help that does not appear to arrive. They are evidence about the working of the empire rather than about religion, and they are why the reign is associated with imperial neglect."},
+{id:"q23", per:"amarna", diff:"hard", q:"Why is the succession between Akhenaten and Tutankhamun difficult to reconstruct?",
+ o:["The period was deliberately omitted from all king lists","No records from the period survive","One or two short reigns intervene whose occupants are not securely identified","Tutankhamun reigned before Akhenaten"],
+ a:2, e:"Smenkhkare and Neferneferuaten appear in the record, and whether these are one person or two, and their relationship to Akhenaten and to Nefertiti, is unresolved. Later erasure of the Amarna kings from official lists removed exactly the evidence that would settle it."},
+{id:"q24", per:"new", diff:"medium", q:"Why did the discovery of Tutankhamun's tomb matter so much?",
+ o:["It contained the only surviving papyri of the period","It proved the Exodus narrative","He was the most important pharaoh of the New Kingdom","It was largely intact, which no other royal tomb of the period was"],
+ a:3, e:"His historical importance is modest. The value of the find is that a minor king's burial survived substantially unrobbed, which shows what a royal burial actually contained and by extension what has been lost from every other royal tomb."},
+{id:"q25", per:"ramesside", diff:"medium", q:"How should the Egyptian account of the Battle of Kadesh be assessed?",
+ o:["As a royal narrative claiming victory, where the strategic outcome was closer to a draw","As a Hittite document","As a later Greek invention","As neutral reporting of a decisive Egyptian victory"],
+ a:0, e:"Ramesses II recorded the battle extensively on temple walls as a personal triumph. The surviving Hittite material and the subsequent treaty, which leaves the disputed territory largely under Hittite influence, indicate a strategic outcome far short of victory. It is the standard example of reading a royal monument as advocacy."},
+{id:"q26", per:"ramesside", diff:"hard", q:"What is the significance of the Egyptian and Hittite treaty following Kadesh?",
+ o:["It records Egypt surrendering Nubia","It is the earliest surviving treaty preserved from both parties","It is the first document written in hieroglyphs","It ended the New Kingdom"],
+ a:1, e:"Versions survive in Egyptian and in Hittite cuneiform, which makes it exceptional: two independent copies of the same agreement from both sides. The differences between the two versions are themselves informative about how each state presented the arrangement at home."},
+{id:"q27", per:"ramesside", diff:"medium", q:"What do the tomb robbery papyri tell us about the late New Kingdom?",
+ o:["That robbery was punished by fines only","That tomb robbery was unknown until Roman times","That royal tombs were being systematically robbed, sometimes with official involvement","That the Valley of the Kings was empty"],
+ a:2, e:"The papyri record investigations, confessions and trials, and implicate officials as well as workmen. They indicate both a breakdown in the security of the royal necropolis and an economic situation in which even those employed to protect it were participating."},
+{id:"q28", per:"tip", diff:"medium", q:"What was the political situation during the twenty first dynasty?",
+ o:["Persian provincial administration","Rule from Alexandria","A single strong central government at Memphis","Divided authority, with kings at Tanis and the high priests of Amun effectively ruling Thebes"],
+ a:3, e:"Kings ruled from Tanis in the delta while the high priests of Amun exercised effective authority in the south. The two were connected by marriage and were not necessarily in conflict, but the country was not governed as a single administration."},
+{id:"q29", per:"tip", diff:"hard", q:"Why were many New Kingdom royal mummies found together in caches?",
+ o:["Priests of the Third Intermediate Period collected and rewrapped them for safekeeping","They were assembled by Napoleon's expedition","They were moved by the Kushite kings for ritual reasons","They were buried together originally"],
+ a:0, e:"With the royal necropolis no longer secure, priests removed royal bodies from their tombs, rewrapped them, labelled them and hid them in two main caches. The dockets they wrote are themselves valuable historical documents recording when and by whom each body was moved."},
+{id:"q30", per:"tip", diff:"medium", q:"What distinguished the twenty fifth dynasty?",
+ o:["It was a Libyan dynasty ruling from Bubastis","It was a Kushite dynasty from Nubia that ruled a reunified Egypt","It was the first Persian occupation","It was founded by Alexander"],
+ a:1, e:"The kings of Kush, based at Napata, extended control northward and ruled Egypt as pharaohs. They presented themselves as restorers of traditional Egyptian religion and revived Old Kingdom artistic forms, and they built pyramids in Nubia long after Egypt had stopped."},
+{id:"q31", per:"late", diff:"medium", q:"What characterises Saite period art of the twenty sixth dynasty?",
+ o:["Absence of monumental art","Complete abandonment of earlier styles","Deliberate archaising that revives Old and Middle Kingdom models","Direct imitation of Greek sculpture"],
+ a:2, e:"Saite art self-consciously reaches back to earlier periods, reproducing Old Kingdom forms and reviving older texts. This is a political statement about continuity and legitimacy after a long period of division and foreign rule, not merely a stylistic preference."},
+{id:"q32", per:"late", diff:"hard", q:"Why do modern historians doubt the traditional picture of Persian rule in Egypt?",
+ o:["Because Persia never actually controlled Egypt","Because Herodotus praised Persian rule","Because no Persian records survive","Because the hostile accounts come from later interested parties and the same charges recur suspiciously"],
+ a:3, e:"The most vivid accusations of sacrilege appear in Greek and later Egyptian sources with reasons to blacken Persian rule, and the same charge is attached to more than one Persian king, which suggests a narrative template rather than a record of events. Contemporary Egyptian evidence shows temples continuing to function."},
+{id:"q33", per:"late", diff:"medium", q:"What was Naucratis?",
+ o:["A Greek trading settlement in the delta with a regulated status","The Persian provincial capital","A Middle Kingdom pyramid site","A Nubian fortress"],
+ a:0, e:"Naucratis was the settlement through which Greek trade with Egypt was channelled, which allowed the Egyptian state to tax and supervise it in one place. Its existence shows Greeks present in Egypt long before Alexander and complicates the idea of a sudden Hellenistic arrival."},
+{id:"q34", per:"new", diff:"hard", q:"What is the main limitation of using temple reliefs as historical evidence?",
+ o:["They are usually too damaged to read","They are royal statements designed to assert order and victory rather than to report events","They are written in an undeciphered script","They date from long after the events shown"],
+ a:1, e:"Temple reliefs are ideological statements in a religious setting. Defeats are absent, victories are attributed to the king personally, and the compositions follow conventions rather than describing particular events. They tell you what the crown wished to assert, which is valuable but is not the same as what happened."},
+{id:"q35", per:"old", diff:"medium", q:"What is the significance of the Pyramid Texts?",
+ o:["They describe the daily life of workers","They record the construction methods of the pyramids","They are the earliest substantial body of religious writing from Egypt","They are a king list"],
+ a:2, e:"Inscribed in late fifth and sixth dynasty pyramids, they are spells intended to assist the king in the afterlife and constitute the earliest large corpus of Egyptian religious text. They later descend into the Coffin Texts and eventually into the funerary literature of the New Kingdom."},
+{id:"q36", per:"early", diff:"medium", q:"What does the Narmer palette most reliably demonstrate?",
+ o:["That Narmer ruled for sixty years","The location of the first capital","The exact date of unification","Royal iconography of dominance already fully formed at the start of the dynastic era"],
+ a:3, e:"The palette shows a king smiting an enemy, wearing the crowns associated with Upper and Lower Egypt, in a composition that becomes standard for three thousand years. What it cannot establish is whether it records a specific conquest or presents an ideological claim, and historians differ on exactly that."},
+{id:"q37", per:"middle", diff:"medium", q:"What was the practical purpose of the Nubian fortresses?",
+ o:["Control of river traffic, trade goods and the movement of people","Housing the Egyptian court in summer","Storing grain for the delta","Defence against a Nubian invasion of Egypt"],
+ a:0, e:"Their placement at the cataract, their scale, and the surviving despatches recording the monitoring of movement all indicate control of a trade corridor rather than defence against a serious military threat. Gold, hard stone, ivory and cattle moved north through them."},
+{id:"q38", per:"tip", diff:"hard", q:"Why is Third Intermediate Period chronology the most contested in Egyptian history?",
+ o:["No inscriptions survive from the period","Dynasties overlapped and ruled simultaneously in different places","All dates are fixed by radiocarbon alone","The period lasted only a few years"],
+ a:1, e:"Manetho's dynastic scheme presents dynasties in sequence, but several of these ruled at the same time in different centres. Reconstructing a single timeline from sources that assume succession produces disagreements of decades between reputable scholars."},
+{id:"q39", per:"amarna", diff:"medium", q:"What is the strongest argument that Akhenaten's reforms had a political dimension?",
+ o:["He moved the capital to Nubia","He abolished taxation","The Amun priesthood at Thebes controlled enormous estates and was the institution most directly diminished","He was not related to the royal family"],
+ a:2, e:"The temple of Amun at Karnak controlled vast landholdings and personnel, making its priesthood a major power centre. A religious programme that closed its cult and founded a new capital elsewhere had unavoidable political effects, whatever Akhenaten's personal convictions were."},
+{id:"q40", per:"pre", diff:"easy", q:"What was the principal economic basis of Predynastic society?",
+ o:["Nomadic pastoralism in the desert","Mining in the Sinai","Long distance maritime trade","Agriculture along the Nile floodplain"],
+ a:3, e:"Settled farming on the annually flooded strip beside the Nile supported population growth and surplus, which is the precondition for the craft specialisation and hierarchy visible in the cemeteries. Trade and mining existed and were secondary to it."}
+];
+
+/* EVIDENCE SCHEMA: id, name, what, can, cannot */
+EG.evidence = [
+{id:"kinglists", name:"King lists",
+ what:"Documents such as the Turin King List, the Abydos and Karnak lists, and Manetho's dynastic scheme, all compiled long after the reigns they record.",
+ can:"Supply a framework of names and dynasties, and in the Turin list, reign lengths that anchor much of the conventional chronology.",
+ cannot:"Be treated as neutral. The Abydos list omits Hatshepsut and the Amarna kings deliberately, and Manetho survives only in quotations by later writers who disagree with each other."},
+{id:"annals", name:"Royal annals and campaign records",
+ what:"Inscribed accounts of military campaigns, such as the annals of Thutmose III at Karnak.",
+ can:"Give sequences of events, place names, and quantities of tribute that are broadly checkable against other evidence.",
+ cannot:"Record defeats. Egyptian royal texts do not report failure, so absence of a campaign or a reverse in the record proves nothing either way."},
+{id:"reliefs", name:"Temple reliefs and monumental art",
+ what:"Carved scenes on temple and tomb walls, following long established conventions.",
+ can:"Show ritual practice, royal ideology, dress, equipment and the formal presentation of kingship.",
+ cannot:"Be read as reportage. The king smiting enemies is an ideological formula that appears for three thousand years and does not describe a particular battle."},
+{id:"tombs", name:"Tomb inscriptions and biographies",
+ what:"Autobiographical texts in the tombs of officials, describing careers and virtues.",
+ can:"Give administrative titles, career paths, and occasionally direct references to events such as famine or campaigns.",
+ cannot:"Be assumed truthful about the individual. These are self-presentations composed for eternity and they follow a strong conventional pattern of claimed virtues."},
+{id:"papyri", name:"Administrative papyri and ostraca",
+ what:"Everyday documents: accounts, rations, letters, legal proceedings and school exercises, best preserved at Deir el-Medina and in the Faiyum.",
+ can:"Show how the state and ordinary households actually worked, including wages, disputes, illness and absence from work.",
+ cannot:"Be assumed representative. Survival depends on dry conditions, so preservation is heavily skewed toward particular places rather than the country as a whole."},
+{id:"archaeo", name:"Settlement archaeology",
+ what:"Excavation of towns, villages and workers' settlements rather than tombs and temples.",
+ can:"Test claims made by monuments, as with the workers' settlement at Giza and the Levantine occupation at Avaris.",
+ cannot:"Give names, motives or dates directly. Archaeology gives you a population and a practice, and it does not tell you who ordered anything."},
+{id:"c14", name:"Radiocarbon and scientific dating",
+ what:"Radiocarbon dating of organic material, sometimes combined with dendrochronology and Bayesian modelling of sequences.",
+ can:"Provide independent absolute dating that is not dependent on king lists, which matters most for the Predynastic where no texts exist.",
+ cannot:"Resolve short intervals. The error range is frequently wider than the disagreements between chronologies, so it constrains rather than settles the debate."},
+{id:"astro", name:"Astronomical observations",
+ what:"Records of events such as the heliacal rising of Sothis, used to fix points in the calendar.",
+ can:"Anchor the chronology at particular moments, which is why certain reigns have far tighter dates than those around them.",
+ cannot:"Work without an assumption about the observation point, and different assumptions shift the resulting dates by decades, which is one root of the high and low chronology dispute."},
+{id:"foreign", name:"Foreign records",
+ what:"Hittite, Assyrian, Babylonian and later Greek sources referring to Egypt, including the Amarna letters and the Hittite treaty copy.",
+ can:"Provide an external check on Egyptian royal claims, which is exactly what makes the Kadesh material so useful.",
+ cannot:"Be assumed disinterested. Each has its own ideology, and the Greek accounts in particular are late, second hand, and shaped by their authors' purposes."},
+{id:"mummies", name:"Human remains",
+ what:"Mummified and skeletal remains, increasingly studied with imaging and genetic analysis.",
+ can:"Establish age at death, disease, injury, diet and in some cases family relationships, independently of any inscription.",
+ cannot:"Be securely attributed without provenance. Many royal mummies were moved and rewrapped in antiquity, so the label on a coffin and the body inside it are separate questions."}
+];
+
+EG.extend = [
+{t:"Where the data lives",
+ code:"EG.periods    the framework and the chronological caveats\nEG.questions  practice questions, each keyed to a period\nEG.evidence   what each kind of source can and cannot show\nEG.extend     this documentation",
+ body:"Every panel renders from these arrays. Filter buttons for periods and difficulties are generated from the data, so adding a question in a new period creates its own filter without any code change."},
+{t:"Adding a question",
+ code:'{id:"q41", per:"old", diff:"medium",\n q:"The stem, phrased as a real question",\n o:["Option A","Option B","Option C","Option D"],\n a:2,\n e:"Why the answer is right AND why the others are wrong"}',
+ body:"Append to EG.questions. The id must be unique and per must match a period id, or the question is skipped and logged to the console. The explanation is the point of the tool, so it should teach rather than confirm, and it should say what makes each wrong option tempting."},
+{t:"Keeping the answer key balanced",
+ code:"Current spread across A, B, C, D\nshould stay close to even.\nCheck it after every batch you add.",
+ body:"A question bank that clusters correct answers on one letter can be beaten without reading anything. When this page was built the first draft had 38 of 40 answers on option B, which was caught and corrected. Re-check the spread whenever you add a batch and rotate options where needed."},
+{t:"Adding a period",
+ code:'{id:"ptol", name:"Ptolemaic",\n span:"332 to 30 BC",\n defines:"What the period is",\n marks:"What identifies it in the record",\n dispute:"Where the dates or the interpretation are argued"}',
+ body:"Append to EG.periods. The dispute field is not optional in this subject. Egyptian chronology is genuinely contested and a page that presents dates as settled is teaching something false."},
+{t:"Adding an evidence type",
+ code:'{id:"seals", name:"Seal impressions",\n what:"What the source is",\n can:"What it can establish",\n cannot:"The limit it carries"}',
+ body:"Append to EG.evidence. The cannot field is the reason this tab exists. Every source in Egyptology carries a limit, and knowing the limit is what separates a strong answer from a recitation of facts."},
+{t:"The editorial rule",
+ code:"Dates      approximate, and say so\nSources    always with their limit attached\nDisputes   named, not smoothed over",
+ body:"Egyptian history is full of questions that look settled in a textbook and are not: the identity of the first king, whether the Hyksos invaded, why Hatshepsut's monuments were attacked, what Akhenaten intended, how destructive Persian rule was. Where the field disagrees, the page should say so rather than picking a side and presenting it as fact."},
+{t:"Suggested order of expansion",
+ code:"1  More questions in thin periods: FIP, Predynastic\n2  Ptolemaic and Roman Egypt as new periods\n3  Nubia and Kush as a parallel thread\n4  Daily life, religion and women's history as themes\n5  Historiography: how Egyptology itself changed",
+ body:"Coverage across periods is currently uneven, with the New Kingdom and Amarna best served because that is where most study demand sits. The First Intermediate and Predynastic periods are the thinnest and are the obvious next additions."}
+];
+</script>
+
+<script>
+(function(){
+  "use strict";
+  var KEY="rm_eg_prog_v1";
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function put(v){ try{ localStorage.setItem(KEY, JSON.stringify(v)); }catch(e){} }
+  function get(){ try{ var r=localStorage.getItem(KEY); return r?JSON.parse(r):{}; }catch(e){ return {}; } }
+  function flash(id,m){ var el=$(id); if(!el) return; el.textContent=m; setTimeout(function(){el.textContent="";},2600); }
+  function perById(id){ for(var i=0;i<EG.periods.length;i++){ if(EG.periods[i].id===id) return EG.periods[i]; } return null; }
+  function perName(id){ var p=perById(id); return p?p.name:id; }
+
+  /* Questions pointing at an unknown period are skipped and logged. */
+  var QS = EG.questions.filter(function(q){
+    if(perById(q.per)) return true;
+    console.warn("Egypt study: question "+q.id+" references unknown period "+q.per);
+    return false;
+  });
+
+  var P=get(), fPer="All", fDiff="All", order=[], cursor=0, current=null;
+
+  function pool(){
+    return QS.filter(function(q){
+      if(fPer!=="All" && q.per!==fPer) return false;
+      if(fDiff!=="All" && q.diff!==fDiff) return false;
+      return true;
+    });
+  }
+  function shuffle(a){
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a;
+  }
+  function rebuild(){
+    order=shuffle(pool().map(function(q){ return q.id; }));
+    cursor=0;
+    $("egCount").innerHTML="<b>In this set:</b><span class='muted'> "+order.length+" of "+QS.length+"</span>";
+  }
+  function qById(id){ for(var i=0;i<QS.length;i++){ if(QS[i].id===id) return QS[i]; } return null; }
+
+  function renderFilters(){
+    $("perBtns").innerHTML='<button class="pf-btn'+(fPer==="All"?" active":"")+'" data-p="All">All</button>'+
+      EG.periods.map(function(p){
+        var n=QS.filter(function(q){ return q.per===p.id; }).length;
+        if(!n) return "";
+        return '<button class="pf-btn'+(fPer===p.id?" active":"")+'" data-p="'+esc(p.id)+'">'+esc(p.name)+" ("+n+")</button>";
+      }).join("");
+    $("diffBtns").innerHTML=["All","easy","medium","hard"].map(function(d){
+      var n = d==="All" ? QS.length : QS.filter(function(q){ return q.diff===d; }).length;
+      return '<button class="pf-btn'+(fDiff===d?" active":"")+'" data-d="'+esc(d)+'">'+esc(d)+" ("+n+")</button>";
+    }).join("");
+    $("perBtns").querySelectorAll("[data-p]").forEach(function(b){
+      b.addEventListener("click", function(){ fPer=b.getAttribute("data-p"); renderFilters(); rebuild(); nextQ(); });
+    });
+    $("diffBtns").querySelectorAll("[data-d]").forEach(function(b){
+      b.addEventListener("click", function(){ fDiff=b.getAttribute("data-d"); renderFilters(); rebuild(); nextQ(); });
+    });
+  }
+
+  function nextQ(){
+    if(!order.length){
+      $("egQuestion").innerHTML='<div class="trend-empty"><div class="te-msg">No question matches those filters.</div></div>';
+      return;
+    }
+    if(cursor>=order.length) cursor=0;
+    current=qById(order[cursor]);
+    cursor++;
+    renderQ();
+  }
+
+  function renderQ(){
+    var q=current; if(!q) return;
+    var letters=["A","B","C","D"];
+    $("egQuestion").innerHTML='<div class="eg-q">'+
+      '<div style="margin-bottom:12px"><span class="eg-per">'+esc(perName(q.per))+'</span><span class="eg-per">'+esc(q.diff)+"</span>"+
+      (P[q.id]?'<span class="eg-per">'+(P[q.id].first?"solved first try":"attempted")+"</span>":"")+"</div>"+
+      '<div class="eg-stem">'+esc(q.q)+"</div>"+
+      '<div id="egOpts">'+q.o.map(function(o,i){
+        return '<div class="eg-opt" data-pick="'+i+'"><div class="ltr">'+letters[i]+"</div><div>"+esc(o)+"</div></div>";
+      }).join("")+"</div>"+
+      '<div id="egResult"></div></div>';
+    $("egQuestion").querySelectorAll("[data-pick]").forEach(function(el){
+      el.addEventListener("click", function(){ answer(parseInt(el.getAttribute("data-pick"),10)); });
+    });
+  }
+
+  function answer(picked){
+    var q=current, ok = picked===q.a;
+    if(!P[q.id]) P[q.id]={first:ok, picked:picked};
+    put(P);
+    $("egQuestion").querySelectorAll("[data-pick]").forEach(function(el){
+      var i=parseInt(el.getAttribute("data-pick"),10);
+      el.classList.add("locked");
+      if(i===q.a) el.classList.add("ok");
+      else if(i===picked) el.classList.add("no");
+    });
+    $("egResult").innerHTML='<div class="quiz-explain show" style="margin-top:16px"><strong>'+
+      (ok?"Correct.":"Not quite.")+"</strong> "+esc(q.e)+"</div>"+
+      '<div class="row" style="gap:10px;margin-top:16px"><button class="btn primary" id="egGo" type="button">Next question</button></div>';
+    $("egGo").addEventListener("click", nextQ);
+    renderProgress();
+  }
+
+  function renderPeriods(){
+    $("perList").innerHTML = EG.periods.map(function(p){
+      var n=QS.filter(function(q){ return q.per===p.id; }).length;
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(251,191,36,.1);color:#fbbf24;'>P</span>"+esc(p.name)+
+        " <span class='eg-per'>"+esc(p.span)+"</span><span class='eg-per'>"+n+" questions</span></h3>"+
+        '<div class="eg-row"><div class="lbl">What defines it</div><div>'+esc(p.defines)+"</div></div>"+
+        '<div class="eg-row"><div class="lbl">What marks it</div><div>'+esc(p.marks)+"</div></div>"+
+        '<div class="eg-row"><div class="lbl">Where it is argued</div><div><div class="eg-warn">'+esc(p.dispute)+"</div></div></div></div>";
+    }).join("");
+  }
+
+  function renderEvidence(){
+    $("evList").innerHTML = EG.evidence.map(function(e){
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(110,168,255,.1);color:#6ea8ff;'>E</span>"+esc(e.name)+"</h3>"+
+        '<div class="eg-row"><div class="lbl">What it is</div><div>'+esc(e.what)+"</div></div>"+
+        '<div class="eg-row"><div class="lbl">What it can show</div><div>'+esc(e.can)+"</div></div>"+
+        '<div class="eg-row"><div class="lbl">What it cannot</div><div><div class="eg-warn">'+esc(e.cannot)+"</div></div></div></div>";
+    }).join("");
+  }
+
+  function renderProgress(){
+    var ids=Object.keys(P).filter(function(i){ return qById(i); });
+    var right=ids.filter(function(i){ return P[i].first; }).length;
+    var pers={}; ids.forEach(function(i){ pers[qById(i).per]=true; });
+    var rate = ids.length ? Math.round(right/ids.length*100) : 0;
+
+    $("pgDone").textContent=ids.length;
+    $("pgTotal").textContent=QS.length;
+    $("pgRight").textContent=right;
+    $("pgRate").textContent = ids.length ? rate+"%" : "-";
+    $("pgPer").textContent=Object.keys(pers).length+" of "+EG.periods.length;
+    var col = rate>=75?"#34d399":(rate>=50?"#fbbf24":"#f87171");
+    $("pgBar").style.width=(ids.length?Math.round(ids.length/QS.length*100):0)+"%";
+    $("pgBar").style.background = ids.length?col:"#94a3b8";
+    $("pgRead").textContent = ids.length
+      ? "Attempted "+ids.length+" of "+QS.length+" questions across "+Object.keys(pers).length+
+        " periods, solving "+right+" on the first attempt. The hit rate matters less than whether you could now explain why the wrong options were wrong."
+      : "Answer a question and your progress appears here.";
+
+    $("pgBars").innerHTML = EG.periods.map(function(p){
+      var all=QS.filter(function(q){ return q.per===p.id; });
+      if(!all.length) return "";
+      var att=all.filter(function(q){ return P[q.id]; });
+      var ok=att.filter(function(q){ return P[q.id].first; }).length;
+      var pct = att.length ? Math.round(ok/att.length*100) : 0;
+      var c = !att.length ? "#475569" : (pct>=75?"#34d399":(pct>=50?"#fbbf24":"#f87171"));
+      return '<div class="sb-row"><div class="sb-label">'+esc(p.name)+"</div>"+
+        '<div class="sb-track"><div class="sb-fill" style="width:'+(att.length?Math.max(pct,10):6)+'%;background:'+c+'">'+
+        (att.length?pct+"%":"")+"</div></div>"+
+        '<div class="sb-val">'+(att.length? ok+"/"+att.length : "-")+"</div></div>";
+    }).join("");
+
+    var wrong=ids.filter(function(i){ return !P[i].first; }).map(qById).filter(Boolean);
+    $("pgWrong").innerHTML = wrong.length ? wrong.map(function(q){
+      return '<div class="eg-row"><div class="lbl">'+esc(perName(q.per))+"</div><div><strong>"+esc(q.q)+"</strong>"+
+        '<div style="margin-top:6px;color:var(--muted);font-size:13.5px;line-height:1.75">'+esc(q.e)+"</div></div></div>";
+    }).join("") : '<div class="tiny muted">Nothing missed yet. Anything you get wrong on the first try collects here with its explanation.</div>';
+  }
+
+  function renderExtend(){
+    var counts='<div class="an-card full" style="margin-bottom:14px">'+
+      "<h3><span class='icon' style='background:rgba(52,211,153,.1);color:#34d399;'>C</span>Currently covered</h3>"+
+      '<div class="ov-stats" style="grid-template-columns:repeat(auto-fit,minmax(115px,1fr))">'+
+      '<div class="ri-cell"><div class="cv">'+EG.periods.length+'</div><div class="cl">Periods</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+QS.length+'</div><div class="cl">Questions</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+EG.evidence.length+'</div><div class="cl">Evidence types</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+
+        [0,1,2,3].map(function(i){ return QS.filter(function(q){ return q.a===i; }).length; }).join(" / ")+
+      '</div><div class="cl">Answer spread A B C D</div></div>'+
+      "</div></div>";
+    $("extendList").innerHTML = counts + EG.extend.map(function(x){
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(110,168,255,.1);color:#6ea8ff;'>E</span>"+esc(x.t)+"</h3>"+
+        '<div style="font-size:14.5px;line-height:1.8;margin-bottom:12px;color:var(--muted)">'+esc(x.body)+"</div>"+
+        '<div class="eg-code">'+esc(x.code)+"</div></div>";
+    }).join("");
+  }
+
+  function switchTab(name){
+    document.querySelectorAll(".tab-btn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-tab")===name);
+    });
+    var map={practice:"viewPractice",periods:"viewPeriods",evidence:"viewEvidence",progress:"viewProgress",extend:"viewExtend"};
+    document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+    var el=$(map[name]); if(el) el.classList.add("active");
+    if(name==="progress") renderProgress();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    document.querySelector(".tab-nav").addEventListener("click", function(e){
+      var b=e.target.closest(".tab-btn"); if(!b) return;
+      switchTab(b.getAttribute("data-tab"));
+    });
+    $("egNext").addEventListener("click", nextQ);
+    $("egShuffle").addEventListener("click", function(){ rebuild(); nextQ(); flash("egMsg","Reshuffled."); });
+    $("egReset").addEventListener("click", function(){
+      if(!confirm("Reset every question attempt?")) return;
+      P={}; put(P); renderProgress(); renderQ(); flash("egMsg","Progress cleared.");
+    });
+    $("pgWipe").addEventListener("click", function(){
+      if(!confirm("This will erase all your progress. Continue?")) return;
+      P={}; put(P); renderProgress();
+    });
+    renderFilters();
+    rebuild();
+    nextQ();
+    renderPeriods();
+    renderEvidence();
+    renderProgress();
+    renderExtend();
+  });
+})();
+</script>
+
+</body>
+</html>
