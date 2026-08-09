@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the Risk Indicator Tracker.</p><a href="https://reportmedic.org/tools/poland-russia-risk-monitor.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="Track strategic indicators and build a structured risk checklist. Score what you observe, weigh gaps by priority, and use calibrated analytic language."/>
+<title>Risk Indicator Tracker - Structured Assessment - ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+/* -- Animated Background -- */
+.bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12;animation:meshDrift 20s ease-in-out infinite alternate;}
+.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);top:-15%;right:-10%;}
+.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#a78bfa,#6ea8ff);bottom:-10%;left:-5%;animation-delay:-7s;animation-duration:25s;}
+.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#7cf7d4,#f59e0b);top:50%;left:40%;animation-delay:-14s;animation-duration:28s;}
+@keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg) scale(1);}100%{transform:translate(40px,-30px) rotate(15deg) scale(1.1);}}
+
+/* -- Tabs Nav -- */
+.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:24px;overflow-x:auto;}
+.tab-btn{flex:1;min-width:fit-content;padding:12px 20px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;letter-spacing:.01em;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(110,168,255,.18),rgba(124,247,212,.12));color:var(--text);box-shadow:0 2px 16px rgba(110,168,255,.12),inset 0 1px 0 rgba(255,255,255,.06);}
+
+/* -- Views -- */
+.view{display:none;}
+.view.active{display:block;}
+
+/* -- Hero -- */
+.daily-hero{text-align:center;padding:32px 0 16px;}
+.daily-hero h1{font-size:clamp(26px,4.5vw,38px);font-weight:700;letter-spacing:-.02em;line-height:1.15;}
+.daily-hero h1 .grad{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:10px;line-height:1.5;letter-spacing:.01em;}
+
+/* -- Streak Banner -- */
+.streak-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 26px;flex-wrap:wrap;}
+.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);backdrop-filter:blur(8px);font-size:13px;font-weight:600;transition:transform .15s;}
+.streak-pill:hover{transform:translateY(-1px);}
+.streak-pill .fire{font-size:20px;}
+.streak-pill .sval{font-size:18px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-pill .sval.green{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-dots{display:flex;gap:5px;}
+.streak-dots .dot{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;color:var(--muted);}
+.streak-dots .dot.done{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(124,247,212,.1));border-color:rgba(16,185,129,.25);color:#34d399;}
+.streak-dots .dot.today{border-color:rgba(110,168,255,.45);box-shadow:0 0 14px rgba(110,168,255,.15);}
+
+/* -- Phase Filter -- */
+.phase-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.phase-filter .pf-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px;}
+.pf-btn{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;}
+.pf-btn:hover{border-color:rgba(255,255,255,.22);color:var(--text);}
+.pf-btn.active{background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.35);color:#6ea8ff;}
+
+/* -- Quiz Container -- */
+.quiz-panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:26px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
+.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
+.quiz-progress{display:flex;gap:4px;margin-bottom:18px;}
+.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.06);transition:background .3s;}
+.quiz-progress .pip.done{background:linear-gradient(90deg,#10b981,#7cf7d4);}
+.quiz-progress .pip.wrong{background:#ef4444;}
+.quiz-progress .pip.current{background:rgba(110,168,255,.4);animation:pipPulse 1.5s ease infinite;}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.1);color:#6ea8ff;border:1px solid rgba(110,168,255,.15);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);color:var(--muted);}
+.quiz-meta .qphase{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid rgba(124,247,212,.2);background:rgba(124,247,212,.06);color:#7cf7d4;}
+.quiz-meta .qdiff{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.quiz-meta .qdiff.easy{border:1px solid rgba(52,211,153,.2);background:rgba(52,211,153,.06);color:#34d399;}
+.quiz-meta .qdiff.medium{border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.06);color:#fbbf24;}
+.quiz-meta .qdiff.hard{border:1px solid rgba(248,113,113,.2);background:rgba(248,113,113,.06);color:#f87171;}
+.quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.quiz-meta .timer svg{color:rgba(110,168,255,.6);}
+
+.quiz-question{font-size:16.5px;line-height:1.7;font-weight:600;margin-bottom:18px;letter-spacing:.005em;}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s;}
+.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.06);}
+.qo.selected .letter{border-color:#6ea8ff;background:#6ea8ff;color:#061021;}
+.qo.correct{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);}
+.qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
+.qo.disabled{pointer-events:none;opacity:.65;}
+.qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
+
+.quiz-explain{margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(124,247,212,.035);border:1px solid rgba(124,247,212,.1);font-size:13.5px;line-height:1.7;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;letter-spacing:.01em;}
+.qa-btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;}
+.qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+.qa-btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);}
+
+/* -- Results Card -- */
+.result-card{text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;}
+.result-card .big-score{font-size:64px;font-weight:700;line-height:1;margin-bottom:8px;}
+.result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
+.result-mini .rm{padding:16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.result-mini .rm .rv{font-size:20px;font-weight:700;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* -- Subject Practice Grid -- */
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.subj-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.subj-card .sc-icon{font-size:30px;margin-bottom:10px;}
+.subj-card .sc-name{font-size:14.5px;font-weight:700;margin-bottom:4px;letter-spacing:.01em;}
+.subj-card .sc-count{font-size:12px;color:var(--muted);}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .5s ease;}
+.ri-dom{border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.03);padding:18px;margin-bottom:14px;}
+.ri-dom h4{font-size:15.5px;margin-bottom:4px;}
+.ri-dom .dsub{font-size:12.5px;color:var(--muted);margin-bottom:12px;line-height:1.7;}
+.ri-ind{border-top:1px solid rgba(255,255,255,.07);padding:13px 0;}
+.ri-ind:last-child{padding-bottom:0;}
+.ri-ind .it{font-weight:600;font-size:14.5px;}
+.ri-ind .iw{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.7;}
+.ri-scale{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center;}
+.ri-sbtn{font:inherit;font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);cursor:pointer;}
+.ri-sbtn:hover{border-color:rgba(255,255,255,.25);color:var(--text);}
+.ri-sbtn.on0{background:rgba(148,163,184,.18);border-color:rgba(148,163,184,.4);color:#cbd5e1;}
+.ri-sbtn.on1{background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.4);color:#34d399;}
+.ri-sbtn.on2{background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.4);color:#fbbf24;}
+.ri-sbtn.on3{background:rgba(248,113,113,.16);border-color:rgba(248,113,113,.42);color:#f87171;}
+.ri-gauge{height:10px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin:10px 0 4px;}
+.ri-gauge i{display:block;height:100%;transition:width .4s ease;}
+.ri-cell{padding:12px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.03);text-align:center;}
+.ri-cell .cv{font-size:19px;font-weight:800;}
+.ri-cell .cl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:3px;}
+.ri-band{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);margin:3px 5px 0 0;}
+.ri-warnbox{border-left:3px solid #ffb35c;background:rgba(255,179,92,.07);border-radius:0 12px 12px 0;padding:14px 16px;font-size:13.5px;line-height:1.75;}
+.lit-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.lit-detail h3{font-size:20px;margin-bottom:4px;}
+.lit-detail .meta{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+.lit-detail p{line-height:1.75;font-size:14.5px;margin-bottom:12px;}
+.lit-row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.lit-row:last-child{border-bottom:0;}
+.lit-row .lbl{font-weight:700;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px;}
+@media(max-width:640px){.lit-row{grid-template-columns:1fr;gap:4px;}}
+.cmp-grid{display:grid;grid-template-columns:170px 1fr 1fr;gap:10px;align-items:start;}
+.cmp-grid > div{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.cmp-grid .cmp-lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;}
+.cmp-grid .cmp-head{font-weight:700;font-size:15px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.14);}
+@media(max-width:760px){.cmp-grid{grid-template-columns:1fr;}.cmp-grid .cmp-lbl{padding-bottom:0;border-bottom:0;}}
+.theme-chip{display:inline-block;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:rgba(110,168,255,.10);border:1px solid rgba(110,168,255,.20);color:#6ea8ff;margin:3px 5px 3px 0;cursor:pointer;}
+.theme-chip.on{background:var(--brand);border-color:var(--brand);color:#08111f;}
+
+/* -- Analytics Dashboard -- */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
+.an-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.an-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);}
+.an-card.full{grid-column:1/-1;}
+.an-card h3{font-size:12.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* -- Overview Strip -- */
+.overview-strip{display:flex;align-items:center;gap:24px;}
+.ov-ring{position:relative;flex-shrink:0;width:100px;height:100px;}
+.ov-ring canvas{width:100px;height:100px;}
+.ov-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ov-ring-label .rv{font-size:22px;font-weight:700;line-height:1;}
+.ov-ring-label .rl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ov-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ov-stat{padding:12px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;}
+.ov-stat .os-val{font-size:18px;font-weight:700;line-height:1.2;font-family:'JetBrains Mono',monospace;}
+.ov-stat .os-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+@media(max-width:600px){
+  .overview-strip{flex-direction:column;gap:16px;}
+  .ov-stats{grid-template-columns:repeat(3,1fr);width:100%;}
+}
+
+/* -- Subject accuracy bars -- */
+.sub-bars{display:flex;flex-direction:column;gap:10px;}
+.sb-row{display:flex;align-items:center;gap:10px;}
+.sb-label{width:105px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:46px;text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+/* -- Trend Chart -- */
+.trend-wrap{position:relative;min-height:220px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.trend-wrap::-webkit-scrollbar{height:4px;}.trend-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--muted);text-align:center;}
+.trend-empty .te-icon{font-size:40px;opacity:.4;}
+.trend-empty .te-msg{font-size:13px;line-height:1.5;max-width:320px;}
+.trend-bar-chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding:10px 0;min-width:min-content;}
+.trend-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:48px;width:48px;flex-shrink:0;}
+.trend-bar-outer{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative;}
+.trend-bar{width:100%;border-radius:6px 6px 2px 2px;transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;min-height:4px;}
+.trend-bar:hover{filter:brightness(1.2);}
+.trend-bar .tb-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.trend-bar:hover .tb-val{opacity:1;}
+.trend-label{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.trend-mode-label.daily{background:rgba(110,168,255,.12);color:#6ea8ff;}
+.trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
+
+/* -- Mastery Dashboard -- */
+.mastery-wrap{margin-top:8px;}
+.mastery-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.m-stat{padding:12px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);}
+.m-stat .ms-val{font-size:22px;font-weight:800;margin-bottom:2px;}
+.m-stat .ms-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+.m-stat.green .ms-val{color:#34d399;} .m-stat.yellow .ms-val{color:#fbbf24;} .m-stat.red .ms-val{color:#f87171;} .m-stat.blue .ms-val{color:#6ea8ff;} .m-stat.purple .ms-val{color:#a78bfa;}
+.coverage-ring{display:flex;align-items:center;gap:16px;padding:14px;border-radius:14px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);margin-bottom:14px;overflow:hidden;}
+.cov-canvas{width:90px;height:90px;flex-shrink:0;}
+.cov-info{flex:1;min-width:0;overflow:hidden;}
+.cov-title{font-size:13px;font-weight:700;color:var(--fg);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cov-sub{font-size:11px;color:var(--muted);line-height:1.6;word-break:break-word;}
+.subj-mastery{margin-top:14px;}
+.sm-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+.sm-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.sm-icon{font-size:14px;width:20px;text-align:center;}
+.sm-name{width:70px;font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-bar{flex:1;height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative;}
+.sm-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.sm-pct{width:34px;text-align:right;font-weight:700;font-size:11px;}
+
+/* -- Passage block for reading items -- */
+.quiz-passage{padding:14px 16px;border-radius:14px;background:rgba(110,168,255,.04);border:1px solid rgba(110,168,255,.10);font-size:14.5px;line-height:1.75;color:var(--muted);margin-bottom:14px;}
+.quiz-passage em{color:var(--text);font-style:italic;}
+
+/* -- Difficulty chips -- */
+.diff-dist{display:flex;gap:10px;margin-top:6px;}
+.diff-chip{flex:1;padding:14px 10px;border-radius:14px;text-align:center;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);}
+.diff-chip .dc-val{font-size:20px;font-weight:700;margin-bottom:2px;}
+.diff-chip .dc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+.diff-chip.easy .dc-val{color:#34d399;}
+.diff-chip.medium .dc-val{color:#fbbf24;}
+.diff-chip.hard .dc-val{color:#f87171;}
+
+/* -- Session History -- */
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding-right:4px;}
+.hist-list::-webkit-scrollbar{width:4px;}
+.hist-list::-webkit-scrollbar-track{background:transparent;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:12px;transition:background .1s;}
+.hist-row:hover{background:rgba(255,255,255,.04);}
+.hist-date{font-weight:600;min-width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hist-mode{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.hist-mode.daily{background:rgba(110,168,255,.1);color:#6ea8ff;}
+.hist-mode.practice{background:rgba(139,92,246,.1);color:#a78bfa;}
+.hist-score{margin-left:auto;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.hist-detail{color:var(--muted);font-size:11px;}
+
+/* -- Reset Button -- */
+.reset-zone{margin-top:20px;text-align:center;}
+.reset-btn{padding:10px 20px;border-radius:12px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.reset-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);}
+
+/* -- Tab label responsive -- */
+.tab-short{display:none;}
+@media(max-width:540px){.tab-full{display:none;}.tab-short{display:inline;}}
+@media(max-width:640px){
+  .quiz-panel{padding:16px;}
+  .streak-bar{gap:10px;}
+  .subj-grid{grid-template-columns:1fr 1fr;}
+  .diff-dist{flex-wrap:wrap;}
+  .diff-chip{min-width:calc(50% - 5px);}
+  .mastery-stats{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .coverage-ring{flex-direction:column;text-align:center;}
+  .sm-name{width:55px;font-size:10px;}
+  .tab-nav{overflow-x:hidden;}
+  .hide-mobile{display:none!important;}
+}
+
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .5s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+
+.btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;padding:10px 20px;border-radius:10px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:.01em;transition:all .18s;}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-mesh"><div class="strand"></div><div class="strand"></div><div class="strand"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn hide-mobile" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+  <a class="btn primary" href="/tools/world-history-timeline.html">History Timeline</a>
+</div>
+</header>
+
+<div class="wrap">
+  <!-- Tab Nav -->
+  <nav class="tab-nav anim-up">
+    <button class="tab-btn active" data-tab="indicators"><span class="tab-full">Indicators</span><span class="tab-short">Indicators</span></button>
+    <button class="tab-btn" data-tab="gaps"><span class="tab-full">Gap Priority Matrix</span><span class="tab-short">Gaps</span></button>
+    <button class="tab-btn" data-tab="method"><span class="tab-full">Analytic Method</span><span class="tab-short">Method</span></button>
+    <button class="tab-btn" data-tab="language"><span class="tab-full">Calibrated Language</span><span class="tab-short">Language</span></button>
+    <button class="tab-btn" data-tab="checklist"><span class="tab-full">My Checklist</span><span class="tab-short">Checklist</span></button>
+  </nav>
+
+  <!-- VIEW: INDICATORS -->
+  <div class="view active" id="viewIndicators">
+    <div class="daily-hero anim-up d1">
+      <h1>Risk Indicator <span class="grad">Tracker</span></h1>
+      <p class="sub">Score what you can actually observe, across eight domains. The tool holds the structure so your judgement stays visible and revisable.</p>
+    </div>
+
+    <div class="ri-warnbox anim-up d2" style="margin-bottom:18px">
+      This is a method tool, not an intelligence product. It contains no live data, no forecast, and no assessment of any current situation. Every score is yours, entered from open sources you have read and judged. The value is in making a judgement explicit enough that you can revise it when the evidence changes, and in seeing which of your conclusions rest on thin ground.
+    </div>
+
+    <div class="analytics-grid anim-up d3" style="margin-bottom:18px">
+      <div class="an-card full">
+        <div class="ov-stats" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
+          <div class="ri-cell"><div class="cv" id="riScored">0</div><div class="cl">Scored</div></div>
+          <div class="ri-cell"><div class="cv" id="riTotal">0</div><div class="cl">Indicators</div></div>
+          <div class="ri-cell"><div class="cv" id="riComposite">-</div><div class="cl">Composite</div></div>
+          <div class="ri-cell"><div class="cv" id="riCoverage">0%</div><div class="cl">Coverage</div></div>
+          <div class="ri-cell"><div class="cv" id="riWeak">0</div><div class="cl">Low confidence</div></div>
+        </div>
+        <div class="ri-gauge"><i id="riBar" style="width:0%;background:#94a3b8"></i></div>
+        <div class="tiny muted" id="riReading">Score some indicators and a reading appears here.</div>
+      </div>
+    </div>
+
+    <div class="row" style="gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <input class="input" id="riFind" type="search" placeholder="Search indicators" style="max-width:280px" />
+      <button class="btn" id="riReset" type="button">Clear all scores</button>
+      <button class="btn" id="riExport" type="button">Export assessment</button>
+      <span class="tiny muted" id="riMsg"></span>
+    </div>
+
+    <div id="riDomains"></div>
+  </div>
+
+  <!-- VIEW: GAPS -->
+  <div class="view" id="viewGaps">
+    <div class="daily-hero">
+      <h1>Gap Priority <span class="grad">Matrix</span></h1>
+      <p class="sub">Not every unknown matters equally. This ranks what you do not know by how much it would change your conclusion if you learned it.</p>
+    </div>
+    <div class="an-card full" style="margin-bottom:16px">
+      <div class="quiz-explain show">A gap is worth collecting on when three things hold at once: you have low confidence in it, it would materially move your assessment, and it is realistically observable from sources you can reach. An unknown that fails the third test is not a collection priority, it is a caveat you must state and live with. The matrix below computes priority from the scores you have already entered.</div>
+    </div>
+    <div id="gapList"></div>
+  </div>
+
+  <!-- VIEW: METHOD -->
+  <div class="view" id="viewMethod">
+    <div class="daily-hero">
+      <h1>Analytic <span class="grad">Method</span></h1>
+      <p class="sub">Nine structured techniques for keeping a judgement honest, each with what it is for and the failure it prevents.</p>
+    </div>
+    <div id="methodList"></div>
+  </div>
+
+  <!-- VIEW: LANGUAGE -->
+  <div class="view" id="viewLanguage">
+    <div class="daily-hero">
+      <h1>Calibrated <span class="grad">Language</span></h1>
+      <p class="sub">Words carrying probability should mean the same thing every time you use them. Fix a scale, publish it, and hold to it.</p>
+    </div>
+    <div class="an-card full" style="margin-bottom:16px">
+      <div id="langTable"></div>
+    </div>
+    <div id="langNotes"></div>
+  </div>
+
+  <!-- VIEW: CHECKLIST -->
+  <div class="view" id="viewChecklist">
+    <div class="daily-hero">
+      <h1>My <span class="grad">Checklist</span></h1>
+      <p class="sub">A working checklist built from your scores, plus your own added lines. Export it and bring it back next time.</p>
+    </div>
+    <div class="an-card full" style="margin-bottom:16px">
+      <div class="row" style="gap:10px;flex-wrap:wrap">
+        <input class="input" id="clText" type="text" placeholder="Add your own checklist line" style="flex:1;min-width:220px" />
+        <select class="input" id="clDom" style="max-width:220px"></select>
+        <button class="btn primary" id="clAdd" type="button">Add</button>
+        <button class="btn" id="clExport" type="button">Export checklist</button>
+        <button class="btn" id="clClear" type="button">Clear mine</button>
+        <span class="tiny muted" id="clMsg"></span>
+      </div>
+    </div>
+    <div id="clList"></div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">Risk Indicator Tracker - structured indicators, checklists and analytic method</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. Copyright ReportMedic.</div>
+</div>
+</footer>
+<script>
+var RI = {};
+
+/* Eight observation domains drawn from open strategic-warning literature.
+   All indicators are framed at the level of what is publicly reportable.
+   Nothing here is operational, and nothing describes a current situation. */
+RI.domains = [
+{id:"posture", name:"Force posture and readiness",
+ sub:"What is publicly observable about where forces are and what state they are in. The most watched domain and the most prone to over-reading, because routine activity and preparation look alike from outside.",
+ inds:[
+ {id:"p1", t:"Publicly reported changes in unit locations", w:"Movement is visible and easily counted, which is exactly why it is a weak stand-alone signal. Rotations, exercises, and repositioning all produce the same reporting."},
+ {id:"p2", t:"Scale and duration of announced exercises", w:"An exercise that does not end on schedule, or that is extended without explanation, carries more information than one that simply happens."},
+ {id:"p3", t:"Reported readiness or leave changes", w:"Cancelled leave and recalled reservists are costly and hard to sustain, so they are harder to fake than movement and decay quickly if not used."},
+ {id:"p4", t:"Visible medical and casualty preparation", w:"Among the most consequential indicators because it is expensive, unambiguous in purpose, and rarely part of routine posture."},
+ {id:"p5", t:"Duration of an elevated posture", w:"Elevated readiness is expensive and degrades over weeks. A posture held far beyond its sustainable window is a decision rather than a signal."}
+ ]},
+{id:"logistics", name:"Logistics and sustainment",
+ sub:"The least glamorous domain and historically the most reliable. Intent is cheap to signal and logistics are not, so preparation here is difficult to stage for effect.",
+ inds:[
+ {id:"l1", t:"Reported fuel and ammunition stockpiling", w:"Consumable stockpiling near a frontier has few alternative explanations and is slow to assemble, which makes it a lagging but high-confidence indicator."},
+ {id:"l2", t:"Rail, road and port throughput changes", w:"Civilian transport requisitioning is visible, economically costly, and difficult to reverse quietly."},
+ {id:"l3", t:"Field repair and recovery capacity", w:"Sustainment infrastructure signals expectation of attrition rather than of a demonstration."},
+ {id:"l4", t:"Bridging and engineering asset movement", w:"Specialised assets have narrow uses. Their appearance narrows the range of plausible explanations considerably."},
+ {id:"l5", t:"Contracting and procurement surges", w:"Public procurement records are open in many jurisdictions and frequently precede visible activity."}
+ ]},
+{id:"command", name:"Command and control signals",
+ sub:"Changes in how decisions are organised. Harder to observe from open sources than posture, and correspondingly easier to misjudge.",
+ inds:[
+ {id:"c1", t:"Announced command reorganisation", w:"Consolidating authority is a precondition for coordinated action but also for routine reform. Read against other domains rather than alone."},
+ {id:"c2", t:"Senior appointments with operational backgrounds", w:"Personnel choices are public, deliberate, and expensive to reverse, which makes them a moderate-confidence signal of expected task."},
+ {id:"c3", t:"Changes in exercise command structure", w:"An exercise run under a structure suited to something other than the stated exercise is worth marking."},
+ {id:"c4", t:"Communications and spectrum activity reported openly", w:"Frequently over-interpreted by non-specialists. Treat public reporting on this with more caution than most other categories."}
+ ]},
+{id:"political", name:"Political and diplomatic signalling",
+ sub:"Statements, legal steps, and diplomatic moves. Cheap to produce and therefore weak individually, but valuable when they create commitments that are costly to abandon.",
+ inds:[
+ {id:"d1", t:"Legal or constitutional steps enabling action", w:"Formal authorisation is a genuine threshold. It is public, deliberate, and creates domestic expectations that raise the cost of standing down."},
+ {id:"d2", t:"Framing that establishes a justification in advance", w:"Narrative preparation frequently precedes action, and it also frequently precedes nothing at all. Track whether the framing is sustained or dropped."},
+ {id:"d3", t:"Withdrawal of diplomatic personnel", w:"Removing people from harm is a costly signal and one of the few political indicators that is difficult to perform without meaning it."},
+ {id:"d4", t:"Changes in third-party and mediator access", w:"Closing channels reduces off-ramps and is a structural change rather than a statement."},
+ {id:"d5", t:"Treaty or agreement suspension", w:"A formal step with legal consequences, visible to everyone, and hard to reverse without cost."}
+ ]},
+{id:"info", name:"Information environment",
+ sub:"What is being said, by whom, and to which audience. The most contested domain, because activity here is designed to be seen and therefore designed to shape your assessment.",
+ inds:[
+ {id:"i1", t:"Sustained shift in domestic messaging", w:"Domestic framing is aimed at mobilisation rather than at you, which makes it more informative than messaging aimed outward."},
+ {id:"i2", t:"Coordinated external messaging campaigns", w:"Designed to be observed. Treat as evidence of intent to influence, not as evidence of intent to act."},
+ {id:"i3", t:"Restrictions on independent reporting", w:"Reducing observation ahead of an event is a preparatory step with few benign explanations if it is abrupt."},
+ {id:"i4", t:"Pre-positioning of attribution narratives", w:"Claims prepared before an incident occurs are among the clearest signals available, and among the hardest to catch in real time."}
+ ]},
+{id:"economic", name:"Economic and financial measures",
+ sub:"Fiscal and monetary steps that cost real money. Expensive signals are more informative than cheap ones, and this domain is almost entirely expensive.",
+ inds:[
+ {id:"e1", t:"Reserve repositioning or repatriation", w:"Protecting assets against anticipated sanction is costly, visible in aggregate data, and difficult to explain otherwise."},
+ {id:"e2", t:"Emergency fiscal authority sought or granted", w:"Public, legally recorded, and a precondition for sustained expenditure."},
+ {id:"e3", t:"Strategic commodity stockpiling", w:"Distinguishable from ordinary hedging by scale and by timing against price, and observable in trade statistics with a lag."},
+ {id:"e4", t:"Insurance and shipping risk repricing", w:"Markets aggregate many private judgements. A move here reflects what informed commercial actors believe, which is a useful cross-check on your own view."},
+ {id:"e5", t:"Fiscal durability of the current posture", w:"Ask how long the observed activity can be paid for. A posture that cannot be sustained beyond a season imposes a decision deadline."}
+ ]},
+{id:"civil", name:"Civil defence and domestic preparation",
+ sub:"Preparation of a population rather than of a force. Politically costly, publicly visible, and consequently among the more meaningful domains.",
+ inds:[
+ {id:"v1", t:"Civil defence exercises or public guidance", w:"Alarming a population carries domestic political cost, which is why governments avoid it unless the expected benefit is real."},
+ {id:"v2", t:"Shelter, stockpile or evacuation preparation", w:"Expensive, slow, and hard to conceal. A high-confidence indicator when it appears at scale."},
+ {id:"v3", t:"Emergency legislation or mobilisation groundwork", w:"Legally recorded and publicly debated in most systems, which makes it one of the more accessible indicators."},
+ {id:"v4", t:"Changes in border or transport controls", w:"Immediately visible to ordinary travellers and therefore widely reported, though also produced by many unrelated causes."}
+ ]},
+{id:"alliance", name:"Alliance and partner behaviour",
+ sub:"What others are doing in response, which is evidence about what they believe. Watching the reaction is frequently more informative than watching the subject.",
+ inds:[
+ {id:"a1", t:"Reinforcement or repositioning by partners", w:"Allied action reflects allied assessment, which draws on sources you do not have. Treat it as an independent read rather than as confirmation of your own."},
+ {id:"a2", t:"Changes in intelligence sharing posture", w:"Rarely announced directly, sometimes inferable from public statements. Low observability, high value when visible."},
+ {id:"a3", t:"Public commitment statements and their specificity", w:"Vague reassurance and specific commitment are different acts. Track the specificity rather than the sentiment."},
+ {id:"a4", t:"Consultation mechanisms being invoked", w:"Formal consultation is a procedural step with a public record, and invoking it is a deliberate escalatory choice in signalling terms."},
+ {id:"a5", t:"Divergence between partners", w:"Disagreement among allies is itself an indicator, because it changes what responses are available and what an adversary may expect."}
+ ]}
+];
+
+RI.scale = [
+{v:0, label:"Not observed", hint:"No reporting you consider credible."},
+{v:1, label:"Ambiguous",    hint:"Some reporting, consistent with routine activity."},
+{v:2, label:"Notable",      hint:"Reporting that is difficult to explain as routine."},
+{v:3, label:"Strong",       hint:"Multiple independent sources, few benign explanations."}
+];
+
+RI.confidence = [
+{v:"low",  label:"Low confidence",  hint:"Single source, or source you cannot assess."},
+{v:"med",  label:"Moderate",        hint:"Several sources, some corroboration."},
+{v:"high", label:"High confidence", hint:"Independent corroboration from sources with different access."}
+];
+
+RI.method = [
+{t:"Analysis of competing hypotheses",
+ body:"List every explanation that could account for what you are seeing, including the boring ones, then test each piece of evidence against all of them at once. The technique works by looking for evidence that is inconsistent with a hypothesis rather than evidence that supports it, because support accumulates for almost any story while inconsistency eliminates. Prevents the most common failure, which is settling on an explanation early and then reading everything afterwards as confirmation."},
+{t:"Key assumptions check",
+ body:"Write down what your assessment takes for granted, then ask of each one what would have to be true for it to hold and what would happen to your conclusion if it failed. Assumptions are invisible precisely because they feel like background rather than judgement. Most assessments that fail badly fail on an assumption nobody had written down."},
+{t:"Indicator validity testing",
+ body:"Before tracking an indicator, ask what else would produce it. An indicator that many ordinary situations also produce carries almost no information no matter how dramatic it looks. The useful indicators are the ones with few benign explanations, and they are usually the expensive, slow, and unglamorous ones rather than the visible ones."},
+{t:"Base rate discipline",
+ body:"Start from how often the thing you are assessing has actually happened in comparable circumstances, then adjust from there. Analysts working intensively on a single question systematically overestimate the probability of the dramatic outcome, because the volume of evidence about a possibility feels like evidence for it. The base rate is the anchor that prevents this."},
+{t:"Separating capability from intent",
+ body:"Capability is observable, slow to build, and hard to conceal. Intent is not observable at all and can change in a day. Assessments that infer intent from capability produce false alarms, and assessments that ignore capability because intent seems absent produce surprises. Score them separately and say which one your conclusion rests on."},
+{t:"Deception and denial check",
+ body:"Ask whether what you are observing is what someone wants you to observe. Activity designed to be seen is evidence about intent to influence rather than intent to act. The corollary matters more: a genuine preparation is frequently accompanied by an effort to reduce your observation, so a sudden fall in available reporting is itself information."},
+{t:"Devil's advocacy and red teaming",
+ body:"Assign someone, or yourself deliberately, to build the strongest case against the emerging consensus. The point is not balance but stress testing. An assessment that has not been attacked has not been tested, and a group that agrees quickly has usually agreed on the basis of who spoke first rather than on the evidence."},
+{t:"Indicator decay",
+ body:"An indicator that was informative last month may not be now. Elevated readiness degrades, stockpiles are consumed, and messaging that is sustained becomes background. Date every score and revisit it, because a stale indicator held at its original value quietly corrupts the whole assessment."},
+{t:"Writing the falsifier",
+ body:"State in advance what observation would make you abandon your current judgement, and write it down where you will see it again. An assessment with no falsifier is not an assessment, it is a position. This single habit does more than any other technique to make revision possible when the evidence turns."}
+];
+
+RI.language = [
+{term:"Almost certainly",  band:"roughly 90 to 99 percent", note:"Reserve for cases where you would be genuinely surprised to be wrong and can say why."},
+{term:"Very likely",       band:"roughly 75 to 90 percent", note:"Strong evidence with corroboration, and a named residual possibility."},
+{term:"Likely",            band:"roughly 55 to 75 percent", note:"Evidence favours this, and the alternative remains plausible enough to plan against."},
+{term:"Roughly even odds", band:"roughly 45 to 55 percent", note:"Say this plainly rather than hedging. It is a real and useful judgement."},
+{term:"Unlikely",          band:"roughly 25 to 45 percent", note:"Not dismissed. An unlikely outcome with severe consequences still deserves preparation."},
+{term:"Very unlikely",     band:"roughly 10 to 25 percent", note:"Evidence points away, and you should still name what would change your mind."},
+{term:"Almost no chance",  band:"roughly 1 to 10 percent",  note:"Use sparingly. Historically this band contains most of the events that produced surprise."}
+];
+
+RI.langNotes = [
+{t:"Never mix a probability word with a hedge",
+ body:"Likely and possibly in the same sentence cancels both. If you write that something is likely, the sentence has already carried the uncertainty and adding possibly means the reader cannot tell what you think. Choose one word from the scale and let it do the work."},
+{t:"Confidence and probability are different axes",
+ body:"Probability is how likely the outcome is. Confidence is how good your evidence base is. A high probability judgement on thin sourcing is a normal and honest thing to write, and it must say both parts, because a reader who conflates them will act on far more certainty than you intended."},
+{t:"Publish your scale",
+ body:"A probability word means nothing unless the reader knows what number you attach to it. Studies of how people interpret these terms show enormous variation, with some readers reading likely as sixty percent and others as ninety. Put the scale next to the assessment every time."},
+{t:"Give a timeframe or the estimate is empty",
+ body:"An event is almost certain eventually and very unlikely this week. A probability without a window cannot be checked and cannot be acted on, and it is the most common way an assessment avoids ever being wrong."},
+{t:"Record the estimate before the outcome",
+ body:"The only way to know whether your calibration is any good is to write estimates down with dates and check them afterwards. Memory reliably reconstructs past judgements as closer to what happened, so an unrecorded estimate teaches you nothing."}
+];
+
+/* ================================================================ */
+(function(){
+  "use strict";
+  var K_S="rm_ri_scores_v1", K_C="rm_ri_checklist_v1";
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function put(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  function get(k,f){ try{ var r=localStorage.getItem(k); return r?JSON.parse(r):f; }catch(e){ return f; } }
+  function flash(id,m){ var el=$(id); if(!el) return; el.textContent=m; setTimeout(function(){el.textContent="";},2600); }
+  function download(name,text){
+    var b=new Blob([text],{type:"text/plain;charset=utf-8"});
+    var u=URL.createObjectURL(b); var a=document.createElement("a");
+    a.href=u; a.download=name; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(u);
+  }
+  function allInds(){
+    var out=[];
+    RI.domains.forEach(function(d){ d.inds.forEach(function(i){ out.push({d:d, i:i}); }); });
+    return out;
+  }
+  function domName(id){
+    for(var k=0;k<RI.domains.length;k++){ if(RI.domains[k].id===id) return RI.domains[k].name; }
+    return id;
+  }
+
+  var S = get(K_S, {});
+  var CL = get(K_C, []);
+
+  /* ---------- indicators ---------- */
+  function renderDomains(){
+    var q=($("riFind").value||"").toLowerCase();
+    var html="";
+    RI.domains.forEach(function(d){
+      var inds=d.inds.filter(function(i){
+        return !q || (i.t+" "+i.w+" "+d.name+" "+d.sub).toLowerCase().indexOf(q)>=0;
+      });
+      if(!inds.length) return;
+      var scored=d.inds.filter(function(i){ return S[i.id] && S[i.id].v!=null; }).length;
+      html += '<div class="ri-dom"><h4>'+esc(d.name)+
+        ' <span class="ri-band">'+scored+" of "+d.inds.length+" scored</span></h4>"+
+        '<div class="dsub">'+esc(d.sub)+"</div>";
+      inds.forEach(function(i){
+        var cur=S[i.id]||{};
+        var sbtns=RI.scale.map(function(sc){
+          var on = cur.v===sc.v ? " on"+sc.v : "";
+          return '<button class="ri-sbtn'+on+'" data-sc="'+i.id+"|"+sc.v+'" title="'+esc(sc.hint)+'">'+esc(sc.label)+"</button>";
+        }).join("");
+        var cbtns=RI.confidence.map(function(cf){
+          var on = cur.c===cf.v ? " on1" : "";
+          return '<button class="ri-sbtn'+on+'" data-cf="'+i.id+"|"+cf.v+'" title="'+esc(cf.hint)+'">'+esc(cf.label)+"</button>";
+        }).join("");
+        html += '<div class="ri-ind"><div class="it">'+esc(i.t)+"</div>"+
+          '<div class="iw">'+esc(i.w)+"</div>"+
+          '<div class="ri-scale">'+sbtns+"</div>"+
+          '<div class="ri-scale" style="margin-top:6px">'+cbtns+"</div></div>";
+      });
+      html += "</div>";
+    });
+    $("riDomains").innerHTML = html || '<div class="trend-empty"><div class="te-msg">No indicator matches that search.</div></div>';
+
+    $("riDomains").querySelectorAll("[data-sc]").forEach(function(b){
+      b.addEventListener("click", function(){
+        var p=b.getAttribute("data-sc").split("|");
+        if(!S[p[0]]) S[p[0]]={};
+        S[p[0]].v = S[p[0]].v===parseInt(p[1],10) ? null : parseInt(p[1],10);
+        S[p[0]].at = new Date().toISOString().slice(0,10);
+        put(K_S,S); renderDomains(); renderStats(); renderGaps(); renderChecklist();
+      });
+    });
+    $("riDomains").querySelectorAll("[data-cf]").forEach(function(b){
+      b.addEventListener("click", function(){
+        var p=b.getAttribute("data-cf").split("|");
+        if(!S[p[0]]) S[p[0]]={};
+        S[p[0]].c = S[p[0]].c===p[1] ? null : p[1];
+        put(K_S,S); renderDomains(); renderStats(); renderGaps();
+      });
+    });
+  }
+
+  function renderStats(){
+    var all=allInds();
+    var scored=all.filter(function(x){ return S[x.i.id] && S[x.i.id].v!=null; });
+    var sum=scored.reduce(function(a,x){ return a+S[x.i.id].v; },0);
+    var pct = scored.length ? Math.round(sum/(scored.length*3)*100) : 0;
+    var weak=scored.filter(function(x){ return S[x.i.id].c==="low" || !S[x.i.id].c; }).length;
+
+    $("riScored").textContent=scored.length;
+    $("riTotal").textContent=all.length;
+    $("riComposite").textContent = scored.length ? pct+"%" : "-";
+    $("riCoverage").textContent = Math.round(scored.length/all.length*100)+"%";
+    $("riWeak").textContent=weak;
+
+    var col = pct<25?"#34d399":(pct<50?"#fbbf24":(pct<75?"#fb923c":"#f87171"));
+    $("riBar").style.width = (scored.length?pct:0)+"%";
+    $("riBar").style.background = col;
+
+    if(!scored.length){
+      $("riReading").textContent="Score some indicators and a reading appears here.";
+      return;
+    }
+    var cov=Math.round(scored.length/all.length*100);
+    var msg="Composite of "+pct+" percent across "+scored.length+" scored indicators, covering "+cov+" percent of the set. ";
+    if(cov<30) msg+="Coverage is thin, so this composite is a summary of what you happened to look at rather than of the situation. Treat it as provisional.";
+    else if(weak>scored.length/2) msg+="More than half your scores rest on low or unstated confidence, which means the composite is less firm than the number implies. The gap matrix will show where to look first.";
+    else msg+="Coverage and confidence are reasonable. Remember the composite weights every indicator equally, which no real assessment should do, so read the domain pattern rather than the single figure.";
+    $("riReading").textContent=msg;
+  }
+
+  function assessmentText(){
+    var out=["Structured indicator assessment", "Generated "+new Date().toISOString().slice(0,10), ""];
+    RI.domains.forEach(function(d){
+      var lines=d.inds.filter(function(i){ return S[i.id] && S[i.id].v!=null; });
+      if(!lines.length) return;
+      out.push(d.name.toUpperCase());
+      lines.forEach(function(i){
+        var sc=RI.scale.filter(function(x){ return x.v===S[i.id].v; })[0];
+        var cf=RI.confidence.filter(function(x){ return x.v===S[i.id].c; })[0];
+        out.push("  ["+(sc?sc.label:"?")+"]  "+i.t+
+          (cf?"   confidence: "+cf.label:"   confidence: unstated")+
+          (S[i.id].at?"   scored "+S[i.id].at:""));
+      });
+      out.push("");
+    });
+    if(out.length<=3) out.push("Nothing scored yet.");
+    out.push("");
+    out.push("This is a record of the author's own judgements against a fixed framework.");
+    out.push("It contains no source data and constitutes no forecast.");
+    return out.join("\n");
+  }
+
+  /* ---------- gap matrix ---------- */
+  function renderGaps(){
+    var rows=allInds().map(function(x){
+      var st=S[x.i.id]||{};
+      var unscored = st.v==null;
+      var lowconf = (st.c==="low" || !st.c);
+      /* priority rises with uncertainty and with how much the indicator would move a judgement */
+      var uncertainty = unscored ? 3 : (lowconf ? 2 : (st.c==="med" ? 1 : 0));
+      var leverage = st.v!=null ? Math.max(1, st.v) : 2;
+      return {x:x, st:st, p:uncertainty*leverage, unscored:unscored, lowconf:lowconf};
+    }).filter(function(r){ return r.p>0; }).sort(function(a,b){ return b.p-a.p; }).slice(0,15);
+
+    if(!rows.length){
+      $("gapList").innerHTML='<div class="trend-empty"><div class="te-msg">Every indicator is scored with stated confidence. There are no priority gaps left in this framework, which is a good moment to ask whether the framework itself is missing a domain.</div></div>';
+      return;
+    }
+    var html='<div class="an-card full"><h3><span class="icon" style="background:rgba(248,113,113,.1);color:#f87171;">G</span>Top collection priorities</h3>';
+    rows.forEach(function(r,ix){
+      var why = r.unscored ? "Not yet scored" : (r.lowconf ? "Scored on low or unstated confidence" : "Moderate confidence only");
+      html += '<div class="lit-row"><div class="lbl">'+(ix+1)+"</div><div>"+
+        "<strong>"+esc(r.x.i.t)+"</strong>"+
+        '<div class="tiny muted" style="margin-top:4px">'+esc(domName(r.x.d.id))+" . "+esc(why)+" . priority "+r.p+"</div>"+
+        '<div style="margin-top:6px;color:var(--muted);font-size:13.5px;line-height:1.7">'+esc(r.x.i.w)+"</div></div></div>";
+    });
+    html += '<div class="quiz-explain show" style="margin-top:14px">Priority here combines how uncertain you are with how much the indicator would move a judgement. It deliberately does not account for whether you can actually collect on it, because only you know that. Work down the list and cross off anything you have no realistic access to, then state those as caveats rather than carrying them as open questions.</div></div>';
+    $("gapList").innerHTML=html;
+  }
+
+  /* ---------- static views ---------- */
+  function renderMethod(){
+    $("methodList").innerHTML='<div class="an-card full">'+ RI.method.map(function(m,i){
+      return '<div class="lit-row"><div class="lbl">'+(i+1)+"</div><div><strong>"+esc(m.t)+
+        '</strong><div style="margin-top:6px;color:var(--muted)">'+esc(m.body)+"</div></div></div>";
+    }).join("")+"</div>";
+  }
+
+  function renderLanguage(){
+    $("langTable").innerHTML = RI.language.map(function(l){
+      return '<div class="lit-row"><div class="lbl">'+esc(l.term)+"</div><div>"+
+        '<div class="wh-y" style="font-family:\'JetBrains Mono\',monospace;font-size:12.5px;color:var(--brand2);font-weight:700">'+esc(l.band)+"</div>"+
+        '<div style="margin-top:5px;color:var(--muted);font-size:13.5px;line-height:1.7">'+esc(l.note)+"</div></div></div>";
+    }).join("");
+    $("langNotes").innerHTML='<div class="an-card full">'+ RI.langNotes.map(function(n,i){
+      return '<div class="lit-row"><div class="lbl">'+(i+1)+"</div><div><strong>"+esc(n.t)+
+        '</strong><div style="margin-top:6px;color:var(--muted)">'+esc(n.body)+"</div></div></div>";
+    }).join("")+"</div>";
+  }
+
+  /* ---------- checklist ---------- */
+  function checklistText(){
+    var out=["Working risk checklist", "Generated "+new Date().toISOString().slice(0,10), ""];
+    RI.domains.forEach(function(d){
+      var mine=CL.filter(function(c){ return c.dom===d.id; });
+      var flagged=d.inds.filter(function(i){ return S[i.id] && S[i.id].v>=2; });
+      if(!mine.length && !flagged.length) return;
+      out.push(d.name.toUpperCase());
+      flagged.forEach(function(i){ out.push("  [ ] Re-check: "+i.t); });
+      mine.forEach(function(c){ out.push("  [ ] "+c.t); });
+      out.push("");
+    });
+    if(out.length<=3) out.push("Nothing on the checklist yet.");
+    return out.join("\n");
+  }
+
+  function renderChecklist(){
+    var html="";
+    RI.domains.forEach(function(d){
+      var mine=CL.filter(function(c){ return c.dom===d.id; });
+      var flagged=d.inds.filter(function(i){ return S[i.id] && S[i.id].v>=2; });
+      if(!mine.length && !flagged.length) return;
+      html += '<div class="an-card full" style="margin-bottom:12px"><h3><span class="icon" style="background:rgba(110,168,255,.1);color:#6ea8ff;">C</span>'+esc(d.name)+"</h3>";
+      flagged.forEach(function(i){
+        html += '<div class="lit-row"><div class="lbl">Re-check</div><div>'+esc(i.t)+
+          '<div class="tiny muted" style="margin-top:4px">Auto-added because you scored it notable or stronger. Confirm it has not decayed.</div></div></div>';
+      });
+      mine.forEach(function(c){
+        html += '<div class="lit-row"><div class="lbl">Yours</div><div class="row" style="justify-content:space-between;gap:10px">'+
+          "<span>"+esc(c.t)+"</span>"+
+          '<button class="btn" data-cdel="'+CL.indexOf(c)+'" style="padding:4px 9px;font-size:12px">Remove</button></div></div>';
+      });
+      html += "</div>";
+    });
+    $("clList").innerHTML = html || '<div class="trend-empty"><div class="te-msg">Nothing here yet. Score an indicator as notable or stronger and it is added automatically, or add your own line above.</div></div>';
+    $("clList").querySelectorAll("[data-cdel]").forEach(function(b){
+      b.addEventListener("click", function(){
+        CL.splice(parseInt(b.getAttribute("data-cdel"),10),1);
+        put(K_C,CL); renderChecklist();
+      });
+    });
+  }
+
+  /* ---------- tabs ---------- */
+  function switchTab(name){
+    document.querySelectorAll(".tab-btn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-tab")===name);
+    });
+    var map={indicators:"viewIndicators",gaps:"viewGaps",method:"viewMethod",language:"viewLanguage",checklist:"viewChecklist"};
+    document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+    var el=$(map[name]); if(el) el.classList.add("active");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    document.querySelector(".tab-nav").addEventListener("click", function(e){
+      var b=e.target.closest(".tab-btn"); if(!b) return;
+      switchTab(b.getAttribute("data-tab"));
+    });
+    RI.domains.forEach(function(d){
+      var o=document.createElement("option"); o.value=d.id; o.textContent=d.name; $("clDom").appendChild(o);
+    });
+    $("riFind").addEventListener("input", renderDomains);
+    $("riReset").addEventListener("click", function(){
+      if(!confirm("Clear every score you have entered?")) return;
+      S={}; put(K_S,S); renderDomains(); renderStats(); renderGaps(); renderChecklist();
+    });
+    $("riExport").addEventListener("click", function(){
+      download("indicator-assessment.txt", assessmentText()); flash("riMsg","Exported.");
+    });
+    $("clAdd").addEventListener("click", function(){
+      var t=$("clText").value.trim();
+      if(t.length<3){ flash("clMsg","Write the line first."); return; }
+      CL.push({t:t, dom:$("clDom").value});
+      put(K_C,CL); $("clText").value=""; renderChecklist(); flash("clMsg","Added.");
+    });
+    $("clExport").addEventListener("click", function(){
+      download("risk-checklist.txt", checklistText()); flash("clMsg","Exported.");
+    });
+    $("clClear").addEventListener("click", function(){
+      if(!confirm("Clear the lines you added?")) return;
+      CL=[]; put(K_C,CL); renderChecklist();
+    });
+
+    renderDomains();
+    renderStats();
+    renderGaps();
+    renderMethod();
+    renderLanguage();
+    renderChecklist();
+  });
+})();
+</script>
+
+</body>
+</html>
