@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the World History Timeline.</p><a href="https://reportmedic.org/tools/world-history-timeline.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="An interactive world history timeline. Filter by era, region and theme, trace threads across the centuries, and build your own chronology alongside it."/>
+<title>World History Timeline - Interactive Chronology - ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+/* -- Animated Background -- */
+.bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12;animation:meshDrift 20s ease-in-out infinite alternate;}
+.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);top:-15%;right:-10%;}
+.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#a78bfa,#6ea8ff);bottom:-10%;left:-5%;animation-delay:-7s;animation-duration:25s;}
+.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#7cf7d4,#f59e0b);top:50%;left:40%;animation-delay:-14s;animation-duration:28s;}
+@keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg) scale(1);}100%{transform:translate(40px,-30px) rotate(15deg) scale(1.1);}}
+
+/* -- Tabs Nav -- */
+.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:24px;overflow-x:auto;}
+.tab-btn{flex:1;min-width:fit-content;padding:12px 20px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;letter-spacing:.01em;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(110,168,255,.18),rgba(124,247,212,.12));color:var(--text);box-shadow:0 2px 16px rgba(110,168,255,.12),inset 0 1px 0 rgba(255,255,255,.06);}
+
+/* -- Views -- */
+.view{display:none;}
+.view.active{display:block;}
+
+/* -- Hero -- */
+.daily-hero{text-align:center;padding:32px 0 16px;}
+.daily-hero h1{font-size:clamp(26px,4.5vw,38px);font-weight:700;letter-spacing:-.02em;line-height:1.15;}
+.daily-hero h1 .grad{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:10px;line-height:1.5;letter-spacing:.01em;}
+
+/* -- Streak Banner -- */
+.streak-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 26px;flex-wrap:wrap;}
+.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);backdrop-filter:blur(8px);font-size:13px;font-weight:600;transition:transform .15s;}
+.streak-pill:hover{transform:translateY(-1px);}
+.streak-pill .fire{font-size:20px;}
+.streak-pill .sval{font-size:18px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-pill .sval.green{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-dots{display:flex;gap:5px;}
+.streak-dots .dot{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;color:var(--muted);}
+.streak-dots .dot.done{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(124,247,212,.1));border-color:rgba(16,185,129,.25);color:#34d399;}
+.streak-dots .dot.today{border-color:rgba(110,168,255,.45);box-shadow:0 0 14px rgba(110,168,255,.15);}
+
+/* -- Phase Filter -- */
+.phase-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.phase-filter .pf-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px;}
+.pf-btn{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;}
+.pf-btn:hover{border-color:rgba(255,255,255,.22);color:var(--text);}
+.pf-btn.active{background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.35);color:#6ea8ff;}
+
+/* -- Quiz Container -- */
+.quiz-panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:26px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
+.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
+.quiz-progress{display:flex;gap:4px;margin-bottom:18px;}
+.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.06);transition:background .3s;}
+.quiz-progress .pip.done{background:linear-gradient(90deg,#10b981,#7cf7d4);}
+.quiz-progress .pip.wrong{background:#ef4444;}
+.quiz-progress .pip.current{background:rgba(110,168,255,.4);animation:pipPulse 1.5s ease infinite;}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.1);color:#6ea8ff;border:1px solid rgba(110,168,255,.15);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);color:var(--muted);}
+.quiz-meta .qphase{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid rgba(124,247,212,.2);background:rgba(124,247,212,.06);color:#7cf7d4;}
+.quiz-meta .qdiff{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.quiz-meta .qdiff.easy{border:1px solid rgba(52,211,153,.2);background:rgba(52,211,153,.06);color:#34d399;}
+.quiz-meta .qdiff.medium{border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.06);color:#fbbf24;}
+.quiz-meta .qdiff.hard{border:1px solid rgba(248,113,113,.2);background:rgba(248,113,113,.06);color:#f87171;}
+.quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.quiz-meta .timer svg{color:rgba(110,168,255,.6);}
+
+.quiz-question{font-size:16.5px;line-height:1.7;font-weight:600;margin-bottom:18px;letter-spacing:.005em;}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s;}
+.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.06);}
+.qo.selected .letter{border-color:#6ea8ff;background:#6ea8ff;color:#061021;}
+.qo.correct{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);}
+.qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
+.qo.disabled{pointer-events:none;opacity:.65;}
+.qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
+
+.quiz-explain{margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(124,247,212,.035);border:1px solid rgba(124,247,212,.1);font-size:13.5px;line-height:1.7;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;letter-spacing:.01em;}
+.qa-btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;}
+.qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+.qa-btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);}
+
+/* -- Results Card -- */
+.result-card{text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;}
+.result-card .big-score{font-size:64px;font-weight:700;line-height:1;margin-bottom:8px;}
+.result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
+.result-mini .rm{padding:16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.result-mini .rm .rv{font-size:20px;font-weight:700;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* -- Subject Practice Grid -- */
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.subj-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.subj-card .sc-icon{font-size:30px;margin-bottom:10px;}
+.subj-card .sc-name{font-size:14.5px;font-weight:700;margin-bottom:4px;letter-spacing:.01em;}
+.subj-card .sc-count{font-size:12px;color:var(--muted);}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .5s ease;}
+.subj-card[data-era="Ancient"]::before,.subj-card[data-era="Ancient"] .sc-fill{background:#f59e0b;}
+.subj-card[data-era="Classical"]::before,.subj-card[data-era="Classical"] .sc-fill{background:#fb923c;}
+.subj-card[data-era="Medieval"]::before,.subj-card[data-era="Medieval"] .sc-fill{background:#a78bfa;}
+.subj-card[data-era="Early Modern"]::before,.subj-card[data-era="Early Modern"] .sc-fill{background:#6ea8ff;}
+.subj-card[data-era="Modern"]::before,.subj-card[data-era="Modern"] .sc-fill{background:#34d399;}
+.subj-card[data-era="Contemporary"]::before,.subj-card[data-era="Contemporary"] .sc-fill{background:#f472b6;}
+.wh-ev{position:relative;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.03);padding:14px 16px;margin-bottom:10px;margin-left:24px;}
+.wh-ev:before{content:"";position:absolute;left:-21px;top:20px;width:10px;height:10px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 3px rgba(110,168,255,.15);}
+.wh-line{position:relative;}
+.wh-line:before{content:"";position:absolute;left:4px;top:8px;bottom:8px;width:2px;background:rgba(255,255,255,.10);}
+.wh-y{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;color:var(--brand2);}
+.wh-t{font-weight:700;font-size:15.5px;margin:3px 0 5px;}
+.wh-meta{font-size:11.5px;color:var(--muted);}
+.wh-band{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);margin:3px 5px 0 0;}
+.wh-groups{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:22px 0 10px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.08);}
+.lit-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.lit-detail h3{font-size:20px;margin-bottom:4px;}
+.lit-detail .meta{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+.lit-detail p{line-height:1.75;font-size:14.5px;margin-bottom:12px;}
+.lit-row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.lit-row:last-child{border-bottom:0;}
+.lit-row .lbl{font-weight:700;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px;}
+@media(max-width:640px){.lit-row{grid-template-columns:1fr;gap:4px;}}
+.cmp-grid{display:grid;grid-template-columns:170px 1fr 1fr;gap:10px;align-items:start;}
+.cmp-grid > div{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.cmp-grid .cmp-lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;}
+.cmp-grid .cmp-head{font-weight:700;font-size:15px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.14);}
+@media(max-width:760px){.cmp-grid{grid-template-columns:1fr;}.cmp-grid .cmp-lbl{padding-bottom:0;border-bottom:0;}}
+.theme-chip{display:inline-block;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:rgba(110,168,255,.10);border:1px solid rgba(110,168,255,.20);color:#6ea8ff;margin:3px 5px 3px 0;cursor:pointer;}
+.theme-chip.on{background:var(--brand);border-color:var(--brand);color:#08111f;}
+
+/* -- Analytics Dashboard -- */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
+.an-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.an-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);}
+.an-card.full{grid-column:1/-1;}
+.an-card h3{font-size:12.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* -- Overview Strip -- */
+.overview-strip{display:flex;align-items:center;gap:24px;}
+.ov-ring{position:relative;flex-shrink:0;width:100px;height:100px;}
+.ov-ring canvas{width:100px;height:100px;}
+.ov-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ov-ring-label .rv{font-size:22px;font-weight:700;line-height:1;}
+.ov-ring-label .rl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ov-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ov-stat{padding:12px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;}
+.ov-stat .os-val{font-size:18px;font-weight:700;line-height:1.2;font-family:'JetBrains Mono',monospace;}
+.ov-stat .os-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+@media(max-width:600px){
+  .overview-strip{flex-direction:column;gap:16px;}
+  .ov-stats{grid-template-columns:repeat(3,1fr);width:100%;}
+}
+
+/* -- Subject accuracy bars -- */
+.sub-bars{display:flex;flex-direction:column;gap:10px;}
+.sb-row{display:flex;align-items:center;gap:10px;}
+.sb-label{width:105px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:46px;text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+/* -- Trend Chart -- */
+.trend-wrap{position:relative;min-height:220px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.trend-wrap::-webkit-scrollbar{height:4px;}.trend-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--muted);text-align:center;}
+.trend-empty .te-icon{font-size:40px;opacity:.4;}
+.trend-empty .te-msg{font-size:13px;line-height:1.5;max-width:320px;}
+.trend-bar-chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding:10px 0;min-width:min-content;}
+.trend-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:48px;width:48px;flex-shrink:0;}
+.trend-bar-outer{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative;}
+.trend-bar{width:100%;border-radius:6px 6px 2px 2px;transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;min-height:4px;}
+.trend-bar:hover{filter:brightness(1.2);}
+.trend-bar .tb-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.trend-bar:hover .tb-val{opacity:1;}
+.trend-label{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.trend-mode-label.daily{background:rgba(110,168,255,.12);color:#6ea8ff;}
+.trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
+
+/* -- Mastery Dashboard -- */
+.mastery-wrap{margin-top:8px;}
+.mastery-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.m-stat{padding:12px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);}
+.m-stat .ms-val{font-size:22px;font-weight:800;margin-bottom:2px;}
+.m-stat .ms-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+.m-stat.green .ms-val{color:#34d399;} .m-stat.yellow .ms-val{color:#fbbf24;} .m-stat.red .ms-val{color:#f87171;} .m-stat.blue .ms-val{color:#6ea8ff;} .m-stat.purple .ms-val{color:#a78bfa;}
+.coverage-ring{display:flex;align-items:center;gap:16px;padding:14px;border-radius:14px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);margin-bottom:14px;overflow:hidden;}
+.cov-canvas{width:90px;height:90px;flex-shrink:0;}
+.cov-info{flex:1;min-width:0;overflow:hidden;}
+.cov-title{font-size:13px;font-weight:700;color:var(--fg);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cov-sub{font-size:11px;color:var(--muted);line-height:1.6;word-break:break-word;}
+.subj-mastery{margin-top:14px;}
+.sm-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+.sm-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.sm-icon{font-size:14px;width:20px;text-align:center;}
+.sm-name{width:70px;font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-bar{flex:1;height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative;}
+.sm-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.sm-pct{width:34px;text-align:right;font-weight:700;font-size:11px;}
+
+/* -- Passage block for reading items -- */
+.quiz-passage{padding:14px 16px;border-radius:14px;background:rgba(110,168,255,.04);border:1px solid rgba(110,168,255,.10);font-size:14.5px;line-height:1.75;color:var(--muted);margin-bottom:14px;}
+.quiz-passage em{color:var(--text);font-style:italic;}
+
+/* -- Difficulty chips -- */
+.diff-dist{display:flex;gap:10px;margin-top:6px;}
+.diff-chip{flex:1;padding:14px 10px;border-radius:14px;text-align:center;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);}
+.diff-chip .dc-val{font-size:20px;font-weight:700;margin-bottom:2px;}
+.diff-chip .dc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+.diff-chip.easy .dc-val{color:#34d399;}
+.diff-chip.medium .dc-val{color:#fbbf24;}
+.diff-chip.hard .dc-val{color:#f87171;}
+
+/* -- Session History -- */
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding-right:4px;}
+.hist-list::-webkit-scrollbar{width:4px;}
+.hist-list::-webkit-scrollbar-track{background:transparent;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:12px;transition:background .1s;}
+.hist-row:hover{background:rgba(255,255,255,.04);}
+.hist-date{font-weight:600;min-width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hist-mode{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.hist-mode.daily{background:rgba(110,168,255,.1);color:#6ea8ff;}
+.hist-mode.practice{background:rgba(139,92,246,.1);color:#a78bfa;}
+.hist-score{margin-left:auto;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.hist-detail{color:var(--muted);font-size:11px;}
+
+/* -- Reset Button -- */
+.reset-zone{margin-top:20px;text-align:center;}
+.reset-btn{padding:10px 20px;border-radius:12px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.reset-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);}
+
+/* -- Tab label responsive -- */
+.tab-short{display:none;}
+@media(max-width:540px){.tab-full{display:none;}.tab-short{display:inline;}}
+@media(max-width:640px){
+  .quiz-panel{padding:16px;}
+  .streak-bar{gap:10px;}
+  .subj-grid{grid-template-columns:1fr 1fr;}
+  .diff-dist{flex-wrap:wrap;}
+  .diff-chip{min-width:calc(50% - 5px);}
+  .mastery-stats{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .coverage-ring{flex-direction:column;text-align:center;}
+  .sm-name{width:55px;font-size:10px;}
+  .tab-nav{overflow-x:hidden;}
+  .hide-mobile{display:none!important;}
+}
+
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .5s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+
+.btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;padding:10px 20px;border-radius:10px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:.01em;transition:all .18s;}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-mesh"><div class="strand"></div><div class="strand"></div><div class="strand"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn hide-mobile" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+  <a class="btn primary" href="/tools/wwii-battlefield-medicine.html">WWII Reference</a>
+</div>
+</header>
+
+<div class="wrap">
+  <!-- Tab Nav -->
+  <nav class="tab-nav anim-up">
+    <button class="tab-btn active" data-tab="timeline"><span class="tab-full">The Timeline</span><span class="tab-short">Timeline</span></button>
+    <button class="tab-btn" data-tab="threads"><span class="tab-full">Threads</span><span class="tab-short">Threads</span></button>
+    <button class="tab-btn" data-tab="eras"><span class="tab-full">Eras and Regions</span><span class="tab-short">Eras</span></button>
+    <button class="tab-btn" data-tab="mine"><span class="tab-full">My Chronology</span><span class="tab-short">Mine</span></button>
+    <button class="tab-btn" data-tab="method"><span class="tab-full">Using Chronology</span><span class="tab-short">Method</span></button>
+  </nav>
+
+  <!-- VIEW: TIMELINE -->
+  <div class="view active" id="viewTimeline">
+    <div class="daily-hero anim-up d1">
+      <h1>World History <span class="grad">Timeline</span></h1>
+      <p class="sub">Trace events across six continents and five thousand years. Filter by era, region, or theme and the chronology rebuilds around what you asked for.</p>
+    </div>
+
+    <div class="phase-filter anim-up d2">
+      <span class="pf-label">Era:</span>
+      <button class="pf-btn active" data-era="All">All</button>
+      <button class="pf-btn" data-era="Ancient">Ancient</button>
+      <button class="pf-btn" data-era="Classical">Classical</button>
+      <button class="pf-btn" data-era="Medieval">Medieval</button>
+      <button class="pf-btn" data-era="Early Modern">Early Modern</button>
+      <button class="pf-btn" data-era="Modern">Modern</button>
+      <button class="pf-btn" data-era="Contemporary">Contemporary</button>
+    </div>
+
+    <div class="phase-filter anim-up d2" style="margin-top:-6px">
+      <span class="pf-label">Region:</span>
+      <span id="regionBtns"></span>
+    </div>
+
+    <div class="phase-filter anim-up d2" style="margin-top:-6px">
+      <span class="pf-label">Theme:</span>
+      <span id="themeBtns"></span>
+    </div>
+
+    <div class="row" style="gap:10px;margin:14px 0;flex-wrap:wrap">
+      <input class="input" id="whFind" type="search" placeholder="Search the timeline" style="max-width:280px" />
+      <span class="pill tiny" id="whCount"><b>Showing:</b><span class="muted"> 0</span></span>
+      <button class="btn" id="whReset" type="button">Reset filters</button>
+    </div>
+
+    <div class="wh-line" id="whList"></div>
+  </div>
+
+  <!-- VIEW: THREADS -->
+  <div class="view" id="viewThreads">
+    <div class="daily-hero">
+      <h1>Historical <span class="grad">Threads</span></h1>
+      <p class="sub">Eight long arguments that run across centuries. Each one gathers its events into a sequence and states what the sequence shows.</p>
+    </div>
+    <div id="threadList"></div>
+  </div>
+
+  <!-- VIEW: ERAS -->
+  <div class="view" id="viewEras">
+    <div class="daily-hero">
+      <h1>Eras and <span class="grad">Regions</span></h1>
+      <p class="sub">What each label means, where it came from, and why applying a European periodisation to the whole world is a choice rather than a fact.</p>
+    </div>
+    <div class="analytics-grid">
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(110,168,255,.1);color:#6ea8ff;">E</span>The six eras used here</h3>
+        <div id="eraList"></div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(139,92,246,.1);color:#8b5cf6;">R</span>Coverage by region</h3>
+        <div class="sub-bars" id="regionBars"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: MINE -->
+  <div class="view" id="viewMine">
+    <div class="daily-hero">
+      <h1>My <span class="grad">Chronology</span></h1>
+      <p class="sub">Add your own events and they merge into the timeline alongside the curated ones. Everything stays in your browser.</p>
+    </div>
+    <div class="an-card full">
+      <div class="row" style="gap:10px;flex-wrap:wrap">
+        <input class="input" id="myName" type="text" placeholder="Event" style="flex:1;min-width:200px" />
+        <input class="input" id="myYear" type="number" placeholder="Year" style="max-width:120px" />
+        <select class="input" id="myEra" style="max-width:170px"></select>
+        <select class="input" id="myRegion" style="max-width:190px"></select>
+        <button class="btn primary" id="myAdd" type="button">Add</button>
+      </div>
+      <div class="row" style="gap:10px;margin-top:10px;flex-wrap:wrap">
+        <input class="input" id="myNote" type="text" placeholder="Why it matters, optional" style="flex:1;min-width:200px" />
+        <button class="btn" id="myExport" type="button">Export</button>
+        <button class="btn" id="myClear" type="button">Clear mine</button>
+        <span class="tiny muted" id="myMsg"></span>
+      </div>
+      <div class="tiny muted" style="margin-top:10px">Use a negative year for BC. For example enter -1279 for 1279 BC.</div>
+    </div>
+    <div class="wh-line" id="myList" style="margin-top:18px"></div>
+  </div>
+
+  <!-- VIEW: METHOD -->
+  <div class="view" id="viewMethod">
+    <div class="daily-hero">
+      <h1>Using <span class="grad">Chronology</span></h1>
+      <p class="sub">Seven things to know before an essay leans on a date, a period label, or a sequence.</p>
+    </div>
+    <div id="methodList"></div>
+    <div class="quiz-explain show" style="margin-top:16px">The rule underneath all seven. A chronology is an argument about what belongs together and what follows from what, not a neutral list. Every timeline including this one selects, and the selection is where the interpretation lives. Say what yours leaves out.</div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">World History Timeline - an interactive chronology across six continents</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. Copyright ReportMedic.</div>
+</div>
+</footer>
+<script>
+var WH = {};
+
+WH.eras = [
+{id:"Ancient",      from:-3500, to:-800,
+ def:"From the earliest cities and writing systems to the eve of the classical world. Defined by the appearance of states, monumental building, and record keeping in Mesopotamia, Egypt, the Indus valley, and northern China.",
+ caution:"The starting point is a choice about what counts as history, and it privileges societies that left written records over those that did not."},
+{id:"Classical",    from:-800, to:500,
+ def:"The period of the Mediterranean city states and their successor empires, the Persian empire, Mauryan and Gupta India, and Han China. Marked by codified law, systematic philosophy, and states of unprecedented reach.",
+ caution:"The label is drawn from European admiration for Greece and Rome and fits other regions awkwardly. Han China and Mauryan India are not classical in their own terms."},
+{id:"Medieval",     from:500, to:1450,
+ def:"Between the fragmentation of the western Roman empire and the maritime expansions. The period of the Islamic caliphates, Tang and Song China, the Mongol empires, and the West African trading states.",
+ caution:"Middle Ages describes a European gap between two periods Europeans admired. Applied globally it implies a stagnation that most of the world did not experience."},
+{id:"Early Modern", from:1450, to:1800,
+ def:"Maritime expansion, the Columbian exchange, gunpowder empires from the Ottomans to the Mughals, printing, and the beginnings of industrial and political revolution.",
+ caution:"Modern implies a destination and treats one trajectory as the norm. The label works better for describing connection between regions than for describing progress."},
+{id:"Modern",       from:1800, to:1945,
+ def:"Industrialisation, empire at its greatest extent, mass politics, and two world wars. A period in which processes beginning in one region reshaped conditions everywhere.",
+ caution:"Much of what this period calls modernity was experienced elsewhere as colonisation, and a chronology built around European industrial dates will misplace that experience."},
+{id:"Contemporary", from:1945, to:2030,
+ def:"Decolonisation, the Cold War and its end, globalisation, and the digital transformation. Close enough that the significance of many events is still contested.",
+ caution:"Recent events lack the settled interpretation older ones have acquired. Treat any claim about what a recent event meant as provisional."}
+];
+
+WH.regions = ["Africa","Americas","East Asia","Europe","Middle East","South Asia","Oceania","Global"];
+WH.themes  = ["State formation","War and conflict","Religion and belief","Trade and economy","Science and technology","Ideas and rights","Empire and colonisation","Disease and demography"];
+
+WH.events = [
+{y:-3200, t:"Writing appears in Mesopotamia and Egypt", r:"Middle East", e:"Ancient", th:"Science and technology",
+ s:"Independent development of cuneiform and hieroglyphic systems creates the first durable records, which is why history as a discipline begins here rather than earlier."},
+{y:-3100, t:"Unification of Upper and Lower Egypt", r:"Africa", e:"Ancient", th:"State formation",
+ s:"One of the earliest territorial states, with an administrative apparatus that would survive in recognisable form for three thousand years."},
+{y:-2600, t:"Indus valley cities reach their height", r:"South Asia", e:"Ancient", th:"State formation",
+ s:"Planned cities with drainage and standardised weights, and a script that remains undeciphered, which limits what can be said about their politics."},
+{y:-2560, t:"The Great Pyramid is completed", r:"Africa", e:"Ancient", th:"State formation",
+ s:"Evidence of organisational capacity rather than of coercion alone, and the largest stone structure in the world for millennia."},
+{y:-1754, t:"The Code of Hammurabi is inscribed", r:"Middle East", e:"Ancient", th:"Ideas and rights",
+ s:"Not the first law code but the most complete early one, notable for prescribing penalties that vary by the social class of the parties."},
+{y:-1279, t:"Ramesses II accedes in Egypt", r:"Africa", e:"Ancient", th:"State formation",
+ s:"A reign of exceptional length and building output, and the source of a treaty with the Hittites that is the earliest surviving international agreement of its kind."},
+{y:-1046, t:"The Zhou displace the Shang in China", r:"East Asia", e:"Ancient", th:"State formation",
+ s:"Introduces the Mandate of Heaven, a doctrine that made rulership conditional on conduct and supplied a justification for every later dynastic change."},
+{y:-753, t:"Traditional founding date of Rome", r:"Europe", e:"Classical", th:"State formation",
+ s:"A legendary date rather than an archaeological one, and useful chiefly as a marker of how Romans understood their own beginning."},
+{y:-551, t:"Confucius is born", r:"East Asia", e:"Classical", th:"Ideas and rights",
+ s:"His teaching on obligation, hierarchy, and cultivation became the organising framework of Chinese administration for two thousand years."},
+{y:-539, t:"Cyrus takes Babylon", r:"Middle East", e:"Classical", th:"Empire and colonisation",
+ s:"The Achaemenid empire becomes the largest state the world had seen, governed through satrapies and a policy of local religious tolerance."},
+{y:-508, t:"Athenian democratic reforms", r:"Europe", e:"Classical", th:"Ideas and rights",
+ s:"Direct participation by a citizen body that excluded women, resident foreigners, and the enslaved. Its influence is real and its franchise was narrow."},
+{y:-490, t:"The Greco-Persian wars begin in earnest", r:"Europe", e:"Classical", th:"War and conflict",
+ s:"A conflict later constructed by Greek writers into a foundational story about freedom against despotism, and read that way in Europe for centuries."},
+{y:-323, t:"Death of Alexander", r:"Middle East", e:"Classical", th:"Empire and colonisation",
+ s:"His empire fragments into successor kingdoms, spreading Greek administration and language across Egypt and western Asia for three hundred years."},
+{y:-268, t:"Ashoka accedes in Mauryan India", r:"South Asia", e:"Classical", th:"Ideas and rights",
+ s:"His edicts, inscribed on rock and pillar across the subcontinent, are among the earliest state declarations of a moral programme."},
+{y:-221, t:"Qin unification of China", r:"East Asia", e:"Classical", th:"State formation",
+ s:"Standardisation of script, weights, and axle widths creates an administrative template that outlasted the dynasty by two millennia."},
+{y:-146, t:"Rome destroys Carthage", r:"Europe", e:"Classical", th:"War and conflict",
+ s:"Removes the last Mediterranean rival and converts a regional republic into an imperial power, with consequences for its own constitution."},
+{y:-27,  t:"Augustus establishes the principate", r:"Europe", e:"Classical", th:"State formation",
+ s:"Republican forms retained while power concentrated in one person, a solution that stabilised the state and made its later crises succession crises."},
+{y:30,   t:"Beginnings of Christianity", r:"Middle East", e:"Classical", th:"Religion and belief",
+ s:"A movement within Judaism that spread through the eastern Mediterranean along Roman roads and trade routes before becoming an imperial religion."},
+{y:105,  t:"Paper manufacture recorded in Han China", r:"East Asia", e:"Classical", th:"Science and technology",
+ s:"A cheap writing surface that took a thousand years to reach western Europe, and which transformed administration wherever it arrived."},
+{y:313,  t:"Toleration of Christianity in the Roman empire", r:"Europe", e:"Classical", th:"Religion and belief",
+ s:"Converts a persecuted movement into a favoured one, beginning the fusion of church and state power that shaped European politics for centuries."},
+{y:476,  t:"The last western Roman emperor is deposed", r:"Europe", e:"Medieval", th:"State formation",
+ s:"A conventional marker rather than a rupture. The eastern empire continued for a thousand years and Roman institutions persisted in the west in altered form."},
+{y:622,  t:"The Hijra and the founding of the Muslim community", r:"Middle East", e:"Medieval", th:"Religion and belief",
+ s:"The start of the Islamic calendar and of a political community whose expansion reshaped three continents within a century."},
+{y:751,  t:"Battle of Talas", r:"East Asia", e:"Medieval", th:"Trade and economy",
+ s:"Halts Tang expansion westward and is traditionally credited with transmitting paper making toward the Islamic world and eventually Europe."},
+{y:800,  t:"Charlemagne crowned emperor", r:"Europe", e:"Medieval", th:"State formation",
+ s:"An attempt to revive imperial authority in the west that established a template of Christian kingship later rulers competed to claim."},
+{y:960,  t:"Song dynasty founded in China", r:"East Asia", e:"Medieval", th:"Science and technology",
+ s:"A period of commercial expansion, printing, paper money, and technical innovation that some historians describe as an economic revolution."},
+{y:1054, t:"The East-West schism", r:"Europe", e:"Medieval", th:"Religion and belief",
+ s:"Formalises a division between Latin and Greek Christianity that had developed over centuries and shaped the politics of eastern Europe permanently."},
+{y:1206, t:"Temujin proclaimed Genghis Khan", r:"East Asia", e:"Medieval", th:"Empire and colonisation",
+ s:"The beginning of the largest contiguous land empire in history, which lowered the cost of travel across Eurasia and intensified exchange of goods, ideas, and disease."},
+{y:1215, t:"Magna Carta", r:"Europe", e:"Medieval", th:"Ideas and rights",
+ s:"A settlement between a king and his barons, later reinterpreted as a general constitutional principle in ways its authors would not have recognised."},
+{y:1324, t:"Mansa Musa's pilgrimage", r:"Africa", e:"Medieval", th:"Trade and economy",
+ s:"Makes the wealth of Mali visible across the Mediterranean world and marks the height of the trans-Saharan gold trade."},
+{y:1347, t:"The Black Death reaches Europe", r:"Global", e:"Medieval", th:"Disease and demography",
+ s:"Mortality on a scale that raised the value of surviving labour, weakened manorial obligation, and reshaped the rural economy for generations."},
+{y:1405, t:"Zheng He's voyages begin", r:"East Asia", e:"Medieval", th:"Trade and economy",
+ s:"Fleets far larger than any European expedition of the period, ended by a policy decision rather than by failure, which is the interesting question about them."},
+{y:1453, t:"Constantinople falls to the Ottomans", r:"Middle East", e:"Early Modern", th:"Empire and colonisation",
+ s:"Ends the eastern Roman empire and establishes Ottoman control of the routes between Europe and Asia, one of several pressures behind Atlantic exploration."}
+];
+
+WH.events = WH.events.concat([
+{y:1492, t:"Columbus reaches the Caribbean", r:"Americas", e:"Early Modern", th:"Empire and colonisation",
+ s:"Begins sustained contact between hemispheres, and with it the Columbian exchange of crops, animals, people, and the epidemics that killed a large majority of the indigenous population."},
+{y:1517, t:"The Reformation begins", r:"Europe", e:"Early Modern", th:"Religion and belief",
+ s:"Printing turned a theological dispute into a mass movement within months, fracturing western Christendom and reshaping European politics for a century and a half."},
+{y:1526, t:"Mughal empire founded in India", r:"South Asia", e:"Early Modern", th:"Empire and colonisation",
+ s:"A gunpowder empire that governed a religiously plural subcontinent through a revenue system later inherited and adapted by the British."},
+{y:1588, t:"The Spanish Armada fails", r:"Europe", e:"Early Modern", th:"War and conflict",
+ s:"Weather and logistics mattered as much as tactics, and the campaign is a useful case study in how a defeat becomes a national founding story."},
+{y:1600, t:"English East India Company chartered", r:"South Asia", e:"Early Modern", th:"Trade and economy",
+ s:"A private company granted monopoly trading rights that would acquire territory, armies, and eventually a subcontinent, which raises the question of who was governing whom."},
+{y:1607, t:"First permanent English settlement in North America", r:"Americas", e:"Early Modern", th:"Empire and colonisation",
+ s:"Begins the pattern of settler colonisation in North America, distinct from the extractive model in much of the Spanish and Portuguese empires."},
+{y:1618, t:"The Thirty Years War begins", r:"Europe", e:"Early Modern", th:"War and conflict",
+ s:"A confessional conflict that became a struggle over the European balance of power, ending in a settlement that shaped the modern idea of state sovereignty."},
+{y:1687, t:"Newton publishes the Principia", r:"Europe", e:"Early Modern", th:"Science and technology",
+ s:"Unifies terrestrial and celestial motion under one mathematical framework, and becomes the model of what a scientific explanation should look like."},
+{y:1750, t:"Industrial mechanisation gathers pace in Britain", r:"Europe", e:"Early Modern", th:"Science and technology",
+ s:"Accessible coal and iron, capital from commerce, agricultural surplus, and access to markets combined in one place. Each factor existed elsewhere and the combination did not."},
+{y:1776, t:"United States Declaration of Independence", r:"Americas", e:"Early Modern", th:"Ideas and rights",
+ s:"Asserts universal principles in a society that maintained slavery, a contradiction contemporaries noticed and which shaped the following century."},
+{y:1789, t:"The French Revolution begins", r:"Europe", e:"Early Modern", th:"Ideas and rights",
+ s:"Establishes a template of popular sovereignty, mass mobilisation, and revolutionary violence that every subsequent revolution measured itself against."},
+{y:1791, t:"The Haitian Revolution begins", r:"Americas", e:"Modern", th:"Ideas and rights",
+ s:"The only successful large-scale revolt by enslaved people to create an independent state, and the sharpest test of whether revolutionary principles were meant universally."},
+{y:1804, t:"Napoleon crowned emperor", r:"Europe", e:"Modern", th:"War and conflict",
+ s:"Spreads the legal and administrative reforms of the revolution across Europe by conquest, while ending its republican politics at home."},
+{y:1839, t:"The First Opium War begins", r:"East Asia", e:"Modern", th:"Empire and colonisation",
+ s:"A war fought to force a market open, beginning a century China describes as one of humiliation and establishing the treaty port system."},
+{y:1848, t:"Revolutions across Europe", r:"Europe", e:"Modern", th:"Ideas and rights",
+ s:"Almost all failed within two years, and almost all of their demands were conceded within fifty, which is the interesting thing about them."},
+{y:1857, t:"The Indian Rebellion", r:"South Asia", e:"Modern", th:"Empire and colonisation",
+ s:"Ends company rule and transfers India to the Crown, hardening racial administration and shaping the nationalist movement that followed."},
+{y:1859, t:"Darwin publishes On the Origin of Species", r:"Europe", e:"Modern", th:"Science and technology",
+ s:"Supplies a mechanism for biological change that reorganised the life sciences, and was almost immediately misapplied to social and racial arguments it does not support."},
+{y:1865, t:"The American Civil War ends", r:"Americas", e:"Modern", th:"War and conflict",
+ s:"Abolishes slavery and leaves unresolved the question of what freedom would mean in practice, which the following century answered slowly and incompletely."},
+{y:1869, t:"The Suez Canal opens", r:"Middle East", e:"Modern", th:"Trade and economy",
+ s:"Cuts the sea route between Europe and Asia dramatically and becomes a strategic asset that shaped imperial and later Cold War policy."},
+{y:1884, t:"The Berlin Conference on Africa", r:"Africa", e:"Modern", th:"Empire and colonisation",
+ s:"European powers agree rules for claiming African territory with no African participation, and the borders drawn there ignored existing political geography."},
+{y:1868, t:"The Meiji Restoration", r:"East Asia", e:"Modern", th:"State formation",
+ s:"A deliberate programme of industrial and institutional transformation that made Japan the first non-western industrial power within a generation."},
+{y:1914, t:"The First World War begins", r:"Global", e:"Modern", th:"War and conflict",
+ s:"Alliance systems, mobilisation timetables, and imperial rivalry converted a regional crisis into a continental one, then a global one through empire."},
+{y:1917, t:"The Russian Revolutions", r:"Europe", e:"Modern", th:"Ideas and rights",
+ s:"Produces the first state founded on Marxist principles and a model that shaped anti-colonial movements and Cold War alignments for seventy years."},
+{y:1918, t:"The influenza pandemic", r:"Global", e:"Modern", th:"Disease and demography",
+ s:"Killed more people than the war it followed, and its comparative absence from public memory is a case study in how societies choose what to commemorate."},
+{y:1929, t:"The Wall Street crash and the Depression", r:"Global", e:"Modern", th:"Trade and economy",
+ s:"A financial collapse that became a global economic one, and the conditions in which several democracies gave way to authoritarian government."},
+{y:1933, t:"Hitler becomes Chancellor", r:"Europe", e:"Modern", th:"State formation",
+ s:"A constitutional appointment followed by the rapid dismantling of the constitution, which is why the sequence rather than the election is the thing to study."},
+{y:1939, t:"The Second World War begins in Europe", r:"Global", e:"Modern", th:"War and conflict",
+ s:"Conflict in Asia was already under way, and the choice of start date is itself a statement about whose war is being described."},
+{y:1945, t:"Atomic bombs used on Hiroshima and Nagasaki", r:"East Asia", e:"Contemporary", th:"Science and technology",
+ s:"Ends the war and opens the nuclear age, and the debate over necessity has continued without resolution since the following month."},
+{y:1945, t:"The United Nations is founded", r:"Global", e:"Contemporary", th:"Ideas and rights",
+ s:"An attempt to build collective security with a Security Council veto that reflected the power distribution of 1945 and constrains it still."},
+{y:1947, t:"Indian independence and partition", r:"South Asia", e:"Contemporary", th:"Empire and colonisation",
+ s:"Independence for a fifth of humanity accompanied by mass displacement and violence, and a border whose consequences remain live."},
+{y:1948, t:"The Universal Declaration of Human Rights", r:"Global", e:"Contemporary", th:"Ideas and rights",
+ s:"A non-binding statement that became the reference point for every later human rights instrument, adopted while several signatories held colonies."},
+{y:1949, t:"The People's Republic of China is proclaimed", r:"East Asia", e:"Contemporary", th:"State formation",
+ s:"Concludes a civil war interrupted by foreign invasion and creates the state that would become the century's largest political and economic transformation."},
+{y:1950, t:"The Korean War begins", r:"East Asia", e:"Contemporary", th:"War and conflict",
+ s:"The first armed confrontation of the Cold War, ending in an armistice rather than a treaty, which is why the conflict is formally unresolved."},
+{y:1957, t:"Ghana becomes independent", r:"Africa", e:"Contemporary", th:"Empire and colonisation",
+ s:"The first sub-Saharan colony to achieve independence, beginning a decade in which most of the continent followed."},
+{y:1957, t:"Sputnik launched", r:"Global", e:"Contemporary", th:"Science and technology",
+ s:"Opens the space race and, more consequentially, demonstrates a delivery capability that reshaped nuclear strategy."},
+{y:1969, t:"First crewed Moon landing", r:"Global", e:"Contemporary", th:"Science and technology",
+ s:"The culmination of a programme driven by strategic competition, and the point at which the political rationale for it began to weaken."},
+{y:1989, t:"The Berlin Wall opens", r:"Europe", e:"Contemporary", th:"State formation",
+ s:"A sequence of misunderstandings and crowd pressure rather than a decision, and the visible marker of a collapse already under way across the bloc."},
+{y:1991, t:"The Soviet Union dissolves", r:"Europe", e:"Contemporary", th:"State formation",
+ s:"Ends the Cold War order and creates fifteen states, several with unresolved borders and populations that have shaped conflict since."},
+{y:1994, t:"The Rwandan genocide", r:"Africa", e:"Contemporary", th:"War and conflict",
+ s:"Roughly a hundred days of mass killing while an international presence stood by, and the reference case in every subsequent debate about intervention."},
+{y:1994, t:"End of apartheid in South Africa", r:"Africa", e:"Contemporary", th:"Ideas and rights",
+ s:"A negotiated transition rather than a military one, and the truth and reconciliation process that followed became a model examined worldwide."},
+{y:1991, t:"The World Wide Web is released publicly", r:"Global", e:"Contemporary", th:"Science and technology",
+ s:"A protocol layered on an existing network that made information retrieval general, and whose social consequences arrived decades after the technical ones."},
+{y:2001, t:"The September 11 attacks", r:"Americas", e:"Contemporary", th:"War and conflict",
+ s:"Triggers two decades of military intervention, a large expansion of surveillance powers, and a reordering of security policy across many states."},
+{y:2008, t:"The global financial crisis", r:"Global", e:"Contemporary", th:"Trade and economy",
+ s:"A failure originating in mortgage lending that transmitted worldwide through interlinked finance, with political consequences still unfolding."}
+]);
+
+WH.threads = [
+{t:"How states learn to record", ids:[-3200,-1754,-221,105,1687],
+ body:"Writing, codified law, standardisation, cheap paper, and systematic method are steps in one long process: the increasing ability of a state or a discipline to record, compare, and act on information. Each step lowers the cost of coordination, and each is followed by an expansion of what the recording body attempts to govern."},
+{t:"Empire as a technology of extraction", ids:[-539,1206,1526,1600,1857,1884],
+ body:"Empires differ enormously in method and in tolerance, and they converge on one function: moving resources from a periphery to a centre. Comparing the Achaemenid satrapy, the Mongol tribute system, Mughal revenue, and the chartered company shows four solutions to the same administrative problem, and the last of them is the one that turned a trading licence into a government."},
+{t:"Disease as a historical force", ids:[1347,1492,1918],
+ body:"Three episodes in which pathogens did more to reshape societies than any policy of the period. Each produced labour scarcity or population collapse that altered the balance of power between groups, and in each case the political consequences outlasted the epidemic by generations."},
+{t:"The uneven arrival of rights language", ids:[-268,1215,1776,1789,1791,1948],
+ body:"Declarations of principle appear repeatedly and are almost always narrower in practice than in wording. The interesting question is not whether they were hypocritical, which they generally were, but how the gap between the stated principle and its application became a lever that later movements used."},
+{t:"Connection before globalisation", ids:[751,1324,1405,1453,1492,1869],
+ body:"Long-distance exchange predates European maritime expansion by millennia, and the routes shifted rather than appeared. Trans-Saharan gold, Indian Ocean shipping, and overland Eurasian trade were substantial before 1492, which complicates any account that treats global connection as beginning with Atlantic voyages."},
+{t:"Why industrialisation happened where it did", ids:[960,1750,1868,1839],
+ body:"Song China had many of the technical preconditions centuries earlier and did not industrialise. Britain combined coal, capital, agricultural surplus, and market access. Japan then did it deliberately as state policy. The comparison is the strongest argument that no single factor explains it."},
+{t:"The century of total war", ids:[1914,1917,1929,1933,1939,1945],
+ body:"Two wars separated by an economic collapse, with the settlement of the first supplying conditions for the second. Read as one sequence rather than as separate events, the period is an argument about how economic distress and unresolved grievance convert into political catastrophe."},
+{t:"Decolonisation and what followed", ids:[1947,1957,1991,1994],
+ body:"Empires ended within a generation, faster than almost anyone predicted, and the successor states inherited borders drawn for administrative convenience. Much of the conflict of the following decades traces to that inheritance rather than to the moment of independence itself."}
+];
+
+WH.method = [
+{t:"A date is a claim about when something became visible", body:"Most historical processes have no start date. A revolution, an industrialisation, or a collapse becomes datable only when it produces an event someone recorded. Treat a date as the moment a process surfaced rather than the moment it began, and say so when the distinction matters to your argument."},
+{t:"Period labels carry an argument", body:"Ancient, medieval, and modern are European categories built from a European story of decline and recovery. Applying them globally imports that story. You may still use them, and the strongest essays name the label as a convention rather than presenting it as a fact about the world."},
+{t:"Start dates are choices about whose story is being told", body:"Dating the Second World War from 1939 makes it a European war that later spread. Dating it from the conflict in Asia gives a different narrative with different protagonists. Neither is wrong and the choice should be conscious."},
+{t:"Simultaneity is not connection", body:"Two events in the same decade on different continents may have no relationship whatsoever. A timeline makes them look adjacent, which is a property of the format rather than of history. Assert a link only where you can show a mechanism."},
+{t:"Beware the tidy turning point", body:"Dramatic single dates are usually retrospective constructions. The fall of an empire in a given year, or the end of an era, almost always describes a process that took decades and was invisible to the people living through it."},
+{t:"Ask what the chronology omits", body:"Every timeline selects, and the selection encodes an interpretation. Whole regions, and almost all of the lives of ordinary people, are absent from most chronologies including this one. Naming the omission in an essay is a strength rather than a confession."},
+{t:"Recent events have unsettled meanings", body:"Interpretations of events within living memory are still being negotiated, and the sources available are shaped by parties with current interests. Write about them with more hedging than you would use for the eighteenth century, and say why."}
+];
+
+/* ================================================================ */
+(function(){
+  "use strict";
+  var KEY="rm_wh_mine_v1";
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function put(v){ try{ localStorage.setItem(KEY, JSON.stringify(v)); }catch(e){} }
+  function getMine(){ try{ var r=localStorage.getItem(KEY); return r?JSON.parse(r):[]; }catch(e){ return []; } }
+  function flash(id,msg){ var el=$(id); if(!el) return; el.textContent=msg; setTimeout(function(){ el.textContent=""; },2600); }
+  function yearLabel(y){ return y<0 ? Math.abs(y)+" BC" : String(y); }
+  function download(name,text){
+    var b=new Blob([text],{type:"text/plain;charset=utf-8"});
+    var u=URL.createObjectURL(b); var a=document.createElement("a");
+    a.href=u; a.download=name; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(u);
+  }
+
+  var MINE=getMine();
+  var fEra="All", fRegion="All", fTheme="All";
+
+  function allEvents(){
+    return WH.events.concat(MINE.map(function(m){
+      return {y:m.y,t:m.t,r:m.r,e:m.e,th:"Your own",s:m.s||"",mine:true};
+    }));
+  }
+
+  function renderPills(){
+    $("regionBtns").innerHTML='<button class="pf-btn active" data-region="All">All</button>'+
+      WH.regions.map(function(r){ return '<button class="pf-btn" data-region="'+esc(r)+'">'+esc(r)+"</button>"; }).join("");
+    $("themeBtns").innerHTML='<button class="pf-btn active" data-theme="All">All</button>'+
+      WH.themes.map(function(t){ return '<button class="pf-btn" data-theme="'+esc(t)+'">'+esc(t)+"</button>"; }).join("");
+    $("regionBtns").querySelectorAll("[data-region]").forEach(function(b){
+      b.addEventListener("click", function(){
+        $("regionBtns").querySelectorAll(".pf-btn").forEach(function(x){x.classList.remove("active");});
+        b.classList.add("active"); fRegion=b.getAttribute("data-region"); renderTimeline();
+      });
+    });
+    $("themeBtns").querySelectorAll("[data-theme]").forEach(function(b){
+      b.addEventListener("click", function(){
+        $("themeBtns").querySelectorAll(".pf-btn").forEach(function(x){x.classList.remove("active");});
+        b.classList.add("active"); fTheme=b.getAttribute("data-theme"); renderTimeline();
+      });
+    });
+  }
+
+  function eventCard(v){
+    return '<div class="wh-ev"><div class="wh-y">'+esc(yearLabel(v.y))+"</div>"+
+      '<div class="wh-t">'+esc(v.t)+(v.mine?' <span class="wh-band">yours</span>':"")+"</div>"+
+      (v.s?'<div class="wh-meta" style="line-height:1.7;font-size:13.5px;color:var(--muted)">'+esc(v.s)+"</div>":"")+
+      '<div style="margin-top:8px"><span class="wh-band">'+esc(v.e)+'</span><span class="wh-band">'+esc(v.r)+
+      '</span><span class="wh-band">'+esc(v.th)+"</span></div></div>";
+  }
+
+  function renderTimeline(){
+    var q=($("whFind").value||"").toLowerCase();
+    var list=allEvents().filter(function(v){
+      if(fEra!=="All" && v.e!==fEra) return false;
+      if(fRegion!=="All" && v.r!==fRegion) return false;
+      if(fTheme!=="All" && v.th!==fTheme) return false;
+      if(q && (v.t+" "+v.s+" "+v.r+" "+v.th).toLowerCase().indexOf(q)<0) return false;
+      return true;
+    }).sort(function(a,b){ return a.y-b.y; });
+
+    var html="", lastEra=null;
+    list.forEach(function(v){
+      if(v.e!==lastEra){ html+='<div class="wh-groups">'+esc(v.e)+"</div>"; lastEra=v.e; }
+      html+=eventCard(v);
+    });
+    $("whList").innerHTML = html || '<div class="trend-empty"><div class="te-msg">Nothing matches those filters. A combination with no events is itself informative about what this chronology covers.</div></div>';
+    $("whCount").innerHTML="<b>Showing:</b><span class='muted'> "+list.length+" of "+allEvents().length+"</span>";
+  }
+
+  function renderThreads(){
+    $("threadList").innerHTML = WH.threads.map(function(t){
+      var evs=WH.events.filter(function(v){ return t.ids.indexOf(v.y)>=0; })
+                       .sort(function(a,b){ return a.y-b.y; });
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        '<h3><span class="icon" style="background:rgba(110,168,255,.1);color:#6ea8ff;">T</span>'+esc(t.t)+"</h3>"+
+        '<div class="quiz-explain show" style="margin-bottom:14px">'+esc(t.body)+"</div>"+
+        '<div class="wh-line">'+evs.map(eventCard).join("")+"</div></div>";
+    }).join("");
+  }
+
+  function renderEras(){
+    $("eraList").innerHTML = WH.eras.map(function(e){
+      var n=WH.events.filter(function(v){ return v.e===e.id; }).length;
+      return '<div class="lit-row"><div class="lbl">'+esc(e.id)+"</div><div>"+
+        '<div class="tiny muted" style="margin-bottom:6px">'+yearLabel(e.from)+" to "+yearLabel(e.to)+" . "+n+" events</div>"+
+        esc(e.def)+
+        '<div class="quiz-explain show" style="margin-top:10px"><strong>Handle with care.</strong> '+esc(e.caution)+"</div></div></div>";
+    }).join("");
+
+    var max=Math.max.apply(null, WH.regions.map(function(r){
+      return WH.events.filter(function(v){ return v.r===r; }).length;
+    }));
+    $("regionBars").innerHTML = WH.regions.map(function(r){
+      var n=WH.events.filter(function(v){ return v.r===r; }).length;
+      var pct=max? Math.round(n/max*100):0;
+      var col=n>=12?"#34d399":(n>=7?"#fbbf24":"#f87171");
+      return '<div class="sb-row"><div class="sb-label">'+esc(r)+"</div>"+
+        '<div class="sb-track"><div class="sb-fill" style="width:'+Math.max(pct,6)+'%;background:'+col+'">'+n+"</div></div>"+
+        '<div class="sb-val">'+n+"</div></div>";
+    }).join("")+
+    '<div class="quiz-explain show" style="margin-top:14px">The imbalance in this chart is a property of the chronology, not of history. European events are over-represented here as they are in most general timelines, partly because of surviving records and partly because of who compiled them. Notice it, and say so if you use this page as a source.</div>';
+  }
+
+  function mineText(){
+    var out=["My chronology",""];
+    MINE.slice().sort(function(a,b){return a.y-b.y;}).forEach(function(m){
+      out.push("  "+yearLabel(m.y)+"   "+m.t+"   ["+m.e+", "+m.r+"]");
+      if(m.s) out.push("        "+m.s);
+    });
+    if(!MINE.length) out.push("Nothing added yet.");
+    return out.join("\n");
+  }
+
+  function renderMine(){
+    var list=MINE.slice().sort(function(a,b){return a.y-b.y;});
+    $("myList").innerHTML = list.length
+      ? list.map(function(m,i){
+          return '<div class="wh-ev"><div class="row" style="justify-content:space-between;align-items:flex-start">'+
+            "<div><div class='wh-y'>"+esc(yearLabel(m.y))+"</div><div class='wh-t'>"+esc(m.t)+"</div>"+
+            (m.s?"<div class='wh-meta' style='line-height:1.7;font-size:13.5px'>"+esc(m.s)+"</div>":"")+
+            "<div style='margin-top:8px'><span class='wh-band'>"+esc(m.e)+"</span><span class='wh-band'>"+esc(m.r)+"</span></div></div>"+
+            '<button class="btn" data-mdel="'+MINE.indexOf(m)+'" style="padding:5px 10px;font-size:12px">Remove</button>'+
+            "</div></div>";
+        }).join("")
+      : '<div class="trend-empty"><div class="te-msg">Nothing added yet. Anything you add here also appears in the main timeline.</div></div>';
+    $("myList").querySelectorAll("[data-mdel]").forEach(function(b){
+      b.addEventListener("click", function(){
+        MINE.splice(parseInt(b.getAttribute("data-mdel"),10),1);
+        put(MINE); renderMine(); renderTimeline();
+      });
+    });
+  }
+
+  function renderMethod(){
+    $("methodList").innerHTML='<div class="an-card full">'+ WH.method.map(function(m,i){
+      return '<div class="lit-row"><div class="lbl">'+(i+1)+"</div><div><strong>"+esc(m.t)+
+        '</strong><div style="margin-top:6px;color:var(--muted)">'+esc(m.body)+"</div></div></div>";
+    }).join("")+"</div>";
+  }
+
+  function switchTab(name){
+    document.querySelectorAll(".tab-btn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-tab")===name);
+    });
+    var map={timeline:"viewTimeline",threads:"viewThreads",eras:"viewEras",mine:"viewMine",method:"viewMethod"};
+    document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+    var el=$(map[name]); if(el) el.classList.add("active");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    document.querySelector(".tab-nav").addEventListener("click", function(e){
+      var b=e.target.closest(".tab-btn"); if(!b) return;
+      switchTab(b.getAttribute("data-tab"));
+    });
+    document.querySelectorAll("[data-era]").forEach(function(b){
+      b.addEventListener("click", function(){
+        document.querySelectorAll("[data-era]").forEach(function(x){x.classList.remove("active");});
+        b.classList.add("active"); fEra=b.getAttribute("data-era"); renderTimeline();
+      });
+    });
+    WH.eras.forEach(function(e){
+      var o=document.createElement("option"); o.value=e.id; o.textContent=e.id; $("myEra").appendChild(o);
+    });
+    WH.regions.forEach(function(r){
+      var o=document.createElement("option"); o.value=r; o.textContent=r; $("myRegion").appendChild(o);
+    });
+    $("whFind").addEventListener("input", renderTimeline);
+    $("whReset").addEventListener("click", function(){
+      fEra="All"; fRegion="All"; fTheme="All"; $("whFind").value="";
+      document.querySelectorAll("[data-era]").forEach(function(x){ x.classList.toggle("active", x.getAttribute("data-era")==="All"); });
+      renderPills(); renderTimeline();
+    });
+    $("myAdd").addEventListener("click", function(){
+      var t=$("myName").value.trim(), y=parseInt($("myYear").value,10);
+      if(t.length<2){ flash("myMsg","Name the event first."); return; }
+      if(isNaN(y)){ flash("myMsg","Add a year. Use a negative number for BC."); return; }
+      MINE.push({t:t,y:y,e:$("myEra").value,r:$("myRegion").value,s:$("myNote").value.trim()});
+      put(MINE);
+      $("myName").value=""; $("myYear").value=""; $("myNote").value="";
+      renderMine(); renderTimeline(); flash("myMsg","Added to your chronology.");
+    });
+    $("myExport").addEventListener("click", function(){
+      download("my-chronology.txt", mineText()); flash("myMsg","Exported.");
+    });
+    $("myClear").addEventListener("click", function(){
+      if(!confirm("Clear every event you added?")) return;
+      MINE=[]; put(MINE); renderMine(); renderTimeline();
+    });
+
+    renderPills();
+    renderTimeline();
+    renderThreads();
+    renderEras();
+    renderMine();
+    renderMethod();
+  });
+})();
+</script>
+
+</body>
+</html>
