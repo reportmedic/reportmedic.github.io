@@ -1,0 +1,747 @@
+---
+layout: default
+title: Football Match Planner
+description: Build an opposition dossier and a match plan. Profile their shape and threats, choose an approach with honest trade-offs, and organise set pieces properly.
+permalink: /tools/football-match-planner.html
+body_class: tool-page
+---
+
+<style>
+  .fb-hero{padding:56px 0 28px;border-bottom:1px solid var(--line)}
+  .fb-eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);font-weight:700}
+  .fb-title{font-size:clamp(30px,4.4vw,46px);line-height:1.08;letter-spacing:-.02em;margin:12px 0 10px}
+  .fb-sub{font-size:17px;color:var(--muted);max-width:66ch;margin:0}
+  .fb-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .fb-badge{font-size:12px;font-weight:600;padding:6px 11px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:var(--tint)}
+  .fb-tabs{position:sticky;top:0;z-index:12;background:rgba(255,255,255,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .fb-row{display:flex;gap:4px;overflow-x:auto;padding:10px 0;scrollbar-width:none}
+  .fb-row::-webkit-scrollbar{display:none}
+  .fb-btn{flex:0 0 auto;font:inherit;font-size:14px;font-weight:600;color:var(--muted);background:none;border:1px solid transparent;border-radius:999px;padding:8px 14px;cursor:pointer;white-space:nowrap}
+  .fb-btn:hover{background:var(--tint);color:var(--text)}
+  .fb-btn.is-active{background:var(--text);color:#fff}
+  .fb-panel{display:none;padding:34px 0 60px}
+  .fb-panel.is-active{display:block}
+  .fb-head{margin:0 0 6px;font-size:24px;letter-spacing:-.01em}
+  .fb-lede{color:var(--muted);max-width:72ch;margin:0 0 22px;font-size:15.5px;line-height:1.7}
+  .fb-card{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);padding:20px;box-shadow:var(--shadow)}
+  .fb-grid{display:grid;gap:16px}
+  .fb-grid.two{grid-template-columns:repeat(auto-fit,minmax(310px,1fr))}
+  .fb-grid.three{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  .fb-grid.four{grid-template-columns:repeat(auto-fit,minmax(165px,1fr))}
+  .fb-in,.fb-sel,.fb-txt{font:inherit;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text)}
+  .fb-txt{min-height:80px;resize:vertical;line-height:1.6}
+  .fb-in:focus,.fb-sel:focus,.fb-txt:focus{outline:3px solid var(--focus);outline-offset:1px;border-color:var(--blue)}
+  .fb-b{font:inherit;font-weight:600;font-size:14px;padding:9px 14px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--text);cursor:pointer}
+  .fb-b:hover{background:var(--tint)}
+  .fb-b.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+  .fb-b.primary:hover{background:var(--blue2)}
+  .fb-b.sm{font-size:13px;padding:6px 10px}
+  .fb-flex{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .fb-muted{color:var(--muted);font-size:13.5px}
+  .fb-tiny{font-size:12px;color:var(--muted2)}
+  .fb-chip{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--tint);border:1px solid var(--line);color:var(--muted);margin:2px 4px 2px 0}
+  .fb-acc{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:10px;background:#fff}
+  .fb-acc-b{font:inherit;width:100%;text-align:left;background:none;border:0;padding:16px 18px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;align-items:center;color:var(--text)}
+  .fb-acc-b:hover{background:var(--tint)}
+  .fb-acc-t{font-weight:700;font-size:16.5px}
+  .fb-acc-k{font-size:12px;color:var(--muted2);font-weight:600;white-space:nowrap}
+  .fb-acc-body{display:none;padding:0 18px 18px;border-top:1px solid var(--line)}
+  .fb-acc.is-open .fb-acc-body{display:block}
+  .fb-acc-body p{line-height:1.75;margin:14px 0 0;font-size:15px}
+  .fb-note{border-left:3px solid var(--blue);background:var(--tint);border-radius:0 12px 12px 0;padding:13px 15px;font-size:14px;line-height:1.65;margin-top:14px}
+  .fb-cost{border-left:3px solid #d97706;background:rgba(217,119,6,.07);border-radius:0 12px 12px 0;padding:13px 15px;font-size:14px;line-height:1.7;margin-top:12px}
+  .fb-stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+  .fb-stat-c{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--tint)}
+  .fb-stat-n{font-size:24px;font-weight:800;letter-spacing:-.02em}
+  .fb-stat-l{font-size:12px;color:var(--muted2);font-weight:600}
+  .fb-empty{padding:26px;text-align:center;color:var(--muted)}
+  .fb-field{position:relative;width:100%;max-width:420px;margin:0 auto;aspect-ratio:2/3;border:2px solid var(--line);border-radius:12px;background:linear-gradient(180deg,var(--tint),#fff)}
+  .fb-field:before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:var(--line)}
+  .fb-field:after{content:"";position:absolute;left:50%;top:50%;width:80px;height:80px;border:2px solid var(--line);border-radius:50%;transform:translate(-50%,-50%)}
+  .fb-dot{position:absolute;width:30px;height:30px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);box-shadow:0 2px 6px rgba(0,0,0,.2)}
+  .fb-check{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)}
+  .fb-check:last-child{border-bottom:0}
+  .fb-check input{width:18px;height:18px;margin-top:2px;accent-color:var(--blue);flex:0 0 auto}
+  .fb-check label{font-size:14.5px;line-height:1.5;cursor:pointer}
+  .fb-check .fb-why{display:block;font-size:12.5px;color:var(--muted2);margin-top:2px}
+  .fb-done label{text-decoration:line-through;color:var(--muted2)}
+</style>
+
+<section class="fb-hero">
+  <div class="container">
+    <div class="fb-eyebrow">VaultBook Study Library</div>
+    <h1 class="fb-title">The opposition planner</h1>
+    <p class="fb-sub">Build a dossier on any opponent and turn it into a plan you can actually deliver. Record their shape and patterns, work out which threats you can contain and what containing each one costs you elsewhere, pick an approach with its trade-offs stated, and organise set pieces properly. Everything stays on your device.</p>
+    <div class="fb-badges">
+      <span class="fb-badge">Opposition dossier</span>
+      <span class="fb-badge">12 threat profiles</span>
+      <span class="fb-badge">Approach selector</span>
+      <span class="fb-badge">Shape builder</span>
+      <span class="fb-badge">Set piece organisation</span>
+      <span class="fb-badge">Export the plan</span>
+    </div>
+  </div>
+</section>
+
+<div class="fb-tabs">
+  <div class="container">
+    <div class="fb-row" role="tablist" aria-label="Planner tools">
+      <button class="fb-btn is-active" data-tab="dossier" role="tab" aria-selected="true">Dossier</button>
+      <button class="fb-btn" data-tab="threats" role="tab" aria-selected="false">Threats</button>
+      <button class="fb-btn" data-tab="approach" role="tab" aria-selected="false">Approach</button>
+      <button class="fb-btn" data-tab="shape" role="tab" aria-selected="false">Shape</button>
+      <button class="fb-btn" data-tab="setpieces" role="tab" aria-selected="false">Set pieces</button>
+      <button class="fb-btn" data-tab="plan" role="tab" aria-selected="false">The plan</button>
+    </div>
+  </div>
+</div>
+
+<section class="fb-panel is-active" id="fp-dossier">
+  <div class="container">
+    <h2 class="fb-head">Dossier</h2>
+    <p class="fb-lede">Twelve questions that produce a usable opposition profile. Answer what you know and leave the rest blank, because an honest gap is more useful in the meeting than a guess that gets treated as fact.</p>
+
+    <div class="fb-card" style="margin-bottom:18px">
+      <div class="fb-grid three">
+        <div>
+          <label class="fb-tiny" for="fbOpp">Opponent</label>
+          <input class="fb-in" id="fbOpp" type="text" placeholder="Who you are playing" style="margin-top:5px">
+        </div>
+        <div>
+          <label class="fb-tiny" for="fbDate">Fixture date</label>
+          <input class="fb-in" id="fbDate" type="date" style="margin-top:5px">
+        </div>
+        <div>
+          <label class="fb-tiny" for="fbVenue">Venue</label>
+          <select class="fb-sel" id="fbVenue" style="margin-top:5px">
+            <option>Home</option><option>Away</option><option>Neutral</option>
+          </select>
+        </div>
+      </div>
+      <div class="fb-flex" style="margin-top:12px">
+        <button class="fb-b primary" id="fbSave" type="button">Save dossier</button>
+        <button class="fb-b" id="fbExportD" type="button">Export</button>
+        <button class="fb-b" id="fbClearD" type="button">Clear</button>
+        <span class="fb-tiny" id="fbDMsg"></span>
+      </div>
+    </div>
+
+    <div class="fb-stat" style="margin-bottom:18px">
+      <div class="fb-stat-c"><div class="fb-stat-n" id="fbAnswered">0</div><div class="fb-stat-l">Questions answered</div></div>
+      <div class="fb-stat-c"><div class="fb-stat-n" id="fbThreats">0</div><div class="fb-stat-l">Threats selected</div></div>
+      <div class="fb-stat-c"><div class="fb-stat-n" id="fbApproach">-</div><div class="fb-stat-l">Approach</div></div>
+      <div class="fb-stat-c"><div class="fb-stat-n" id="fbSet">0</div><div class="fb-stat-l">Set piece items</div></div>
+    </div>
+
+    <div id="fbQuestions"></div>
+  </div>
+</section>
+
+<section class="fb-panel" id="fp-threats">
+  <div class="container">
+    <h2 class="fb-head">Threats</h2>
+    <p class="fb-lede">Twelve opponent types, described by what they do rather than by who they are, so the profiles work against any team. Each gives the danger, how to contain it, and the cost of containing it, because every containment decision opens something else.</p>
+
+    <div class="fb-flex" style="margin-bottom:16px">
+      <input class="fb-in" id="fbThreatFind" type="search" placeholder="Filter threats" style="max-width:260px">
+      <select class="fb-sel" id="fbThreatZone" style="max-width:210px"><option value="">Any zone</option></select>
+      <span class="fb-tiny" id="fbThreatCount"></span>
+    </div>
+
+    <div id="fbThreatList"></div>
+
+    <div class="fb-note" style="margin-top:16px">The most common planning error is treating containment as free. Doubling a wide threat pulls a midfielder across and opens the space they were occupying. Dropping deep against a runner in behind concedes the territory a press would have denied. Write the cost down next to every decision, because the cost is what the opponent will attack.</div>
+  </div>
+</section>
+
+<section class="fb-panel" id="fp-approach">
+  <div class="container">
+    <h2 class="fb-head">Approach</h2>
+    <p class="fb-lede">Six ways to set up against a stronger, equal, or weaker side. Each states what it asks of your players, what it gives up, and the conditions under which it stops working.</p>
+    <div id="fbApproachList"></div>
+    <div class="fb-note" style="margin-top:16px">Choose the approach your squad can actually execute for ninety minutes rather than the one that beats the opponent on paper. A high press held by a team without the fitness to sustain it becomes a badly organised medium block after an hour, which is worse than starting there deliberately.</div>
+  </div>
+</section>
+
+<section class="fb-panel" id="fp-shape">
+  <div class="container">
+    <h2 class="fb-head">Shape</h2>
+    <p class="fb-lede">Pick a starting shape and see it laid out, along with what it gives you and what it structurally concedes. No shape is neutral, and knowing which spaces yours leaves open is more useful than knowing what it covers.</p>
+
+    <div class="fb-flex" style="margin-bottom:18px">
+      <select class="fb-sel" id="fbShapePick" style="max-width:230px"></select>
+      <span class="fb-tiny" id="fbShapeMsg"></span>
+    </div>
+
+    <div class="fb-grid two">
+      <div class="fb-card">
+        <div class="fb-field" id="fbField"></div>
+        <div class="fb-tiny" style="text-align:center;margin-top:10px">Your goal at the bottom, attacking upward.</div>
+      </div>
+      <div class="fb-card">
+        <div style="font-weight:700;font-size:17px;margin-bottom:6px" id="fbShapeName"></div>
+        <div id="fbShapeBody"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="fb-panel" id="fp-setpieces">
+  <div class="container">
+    <h2 class="fb-head">Set pieces</h2>
+    <p class="fb-lede">The part of the game a coach can genuinely install in a week, and the part most often left to habit. Work through both halves and tick what you have actually organised rather than what you assume everyone knows.</p>
+
+    <div class="fb-flex" style="margin-bottom:16px">
+      <span class="fb-tiny" id="fbSetCount"></span>
+      <button class="fb-b" id="fbSetReset" type="button">Untick everything</button>
+      <button class="fb-b" id="fbSetExport" type="button">Export checklist</button>
+      <span class="fb-tiny" id="fbSetMsg"></span>
+    </div>
+
+    <div id="fbSetList"></div>
+  </div>
+</section>
+
+<section class="fb-panel" id="fp-plan">
+  <div class="container">
+    <h2 class="fb-head">The plan</h2>
+    <p class="fb-lede">Dossier, threats, approach, shape and set pieces in one sheet you can export and hand to a staff group. Notes live in your browser only, so export before clearing your browsing data.</p>
+
+    <div class="fb-flex" style="margin-bottom:16px">
+      <button class="fb-b primary" id="fbExpAll" type="button">Export everything</button>
+      <button class="fb-b" id="fbCopyAll" type="button">Copy to clipboard</button>
+      <button class="fb-b" id="fbWipeAll" type="button">Clear all</button>
+      <span class="fb-tiny" id="fbPlanMsg"></span>
+    </div>
+
+    <div id="fbPreview"></div>
+  </div>
+</section>
+
+<section class="section" style="border-top:1px solid var(--line)">
+  <div class="container">
+    <div class="fb-grid three">
+      <div class="fb-card">
+        <div class="card-kicker">Keep every dossier</div>
+        <div class="card-title" style="margin:6px 0">One vault for the season</div>
+        <p class="card-text">VaultBook holds your opposition dossiers, clips, notes, and session plans in a single encrypted workspace with AES-256 per-entry passwords, deep file indexing across PDF and Office formats, and AI smart search that answers questions across everything you have saved.</p>
+        <a class="btn btn-primary" href="{{ '/download/' | relative_url }}">Get VaultBook</a>
+      </div>
+      <div class="fb-card">
+        <div class="card-kicker">More tools</div>
+        <div class="card-title" style="margin:6px 0">The library keeps growing</div>
+        <p class="card-text">New planners and study companions are added to the VaultBook library over time, each built the same way: the reference, the trackers, and the note tools together in one page that works offline.</p>
+        <a class="btn btn-ghost" href="{{ '/blog/' | relative_url }}">Read the blog</a>
+      </div>
+      <div class="fb-card">
+        <div class="card-kicker">Private by design</div>
+        <div class="card-title" style="margin:6px 0">Nothing leaves this page</div>
+        <p class="card-text">Your dossier, plan and checklists stay in your own browser storage. There is no upload, no account, and no server processing anywhere in this tool.</p>
+        <a class="btn btn-ghost" href="{{ '/security/' | relative_url }}">How security works</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+var FB = {};
+
+FB.questions = [
+{id:"q1",  t:"What shape do they start in, and what does it become in possession?",
+ hint:"Almost every side changes shape between phases. The starting formation on a team sheet is the least useful number in the dossier."},
+{id:"q2",  t:"Where do they build from, and who is the first receiver?",
+ hint:"Identify the player the ball goes to when they want to settle. Everything about pressing them starts with whether you can cut that pass."},
+{id:"q3",  t:"Which side do they attack down more often, and why?",
+ hint:"A bias is usually structural, produced by a full back who pushes on, an inverted winger, or a midfielder drifting. Name the cause, not just the side."},
+{id:"q4",  t:"How do they progress past a midfield line?",
+ hint:"Through it, around it, or over it. Each requires a different answer and a team that only has one method can be forced into the others."},
+{id:"q5",  t:"What is their pressing trigger?",
+ hint:"Most sides press on a specific cue rather than continuously. A backward pass, a touch toward the touchline, or a particular receiver."},
+{id:"q6",  t:"How high is their defensive line, and who covers behind it?",
+ hint:"A high line without recovery pace is the most exploitable structure in football. Establish both parts before planning to attack it."},
+{id:"q7",  t:"What happens the moment they lose the ball?",
+ hint:"Counter-press, drop, or foul. The transition response tells you whether your best chance is the first five seconds after winning it."},
+{id:"q8",  t:"Who takes their set pieces, and what is the delivery pattern?",
+ hint:"Foot, trajectory, and target zone. A side with one deliverer and one pattern can be defended far more specifically."},
+{id:"q9",  t:"How do they defend set pieces, zonal, man, or mixed?",
+ hint:"Determines whether your routines should attack a zone's edges or occupy specific markers."},
+{id:"q10", t:"Which individual changes the game if allowed to receive between the lines?",
+ hint:"There is usually exactly one. Naming them focuses the whole plan, and pretending there are four means you contain none of them."},
+{id:"q11", t:"What has beaten them in their last few matches?",
+ hint:"Look for the repeated method rather than the scoreline. If three sides hurt them the same way, that is a structural weakness rather than a bad day."},
+{id:"q12", t:"What do they do when they are behind with twenty minutes left?",
+ hint:"Substitution patterns and shape changes are predictable and rarely planned for. Knowing their chase mode lets you prepare for it before it happens."}
+];
+
+FB.zones = ["Wide areas","Between the lines","In behind","Central midfield","Defensive third","Set pieces"];
+
+FB.threats = [
+{id:"t1", name:"The inside forward who cuts in", zone:"Wide areas",
+ danger:"Starts wide, moves onto the stronger foot, and attacks the space between full back and centre back. The danger is not the dribble itself but the shooting angle it creates once they reach the half space.",
+ contain:"Show them down the line rather than inside. That means the full back defends with an angled body position and the near midfielder screens the inside pass rather than following the ball. Doubling only works if the cover is pre-agreed, because arriving late creates the exact overload they want.",
+ cost:"Your midfielder is now occupied wide, which opens the central space they just vacated. Expect the opponent's midfield to attack it, and decide in advance who fills it."},
+{id:"t2", name:"The overlapping full back", zone:"Wide areas",
+ danger:"Provides width so the winger can come inside, and arrives late into crossing positions where nobody has picked them up. The threat is the combination rather than either player alone.",
+ contain:"Your winger has to track, which is a fitness and discipline problem more than a tactical one. The alternative is a back five, which handles it structurally rather than asking one player to do it for ninety minutes.",
+ cost:"Tracking pins your winger deep and removes your outlet in transition. You will win the ball with nobody ahead of it, so plan a different release route."},
+{id:"t3", name:"The receiver between the lines", zone:"Between the lines",
+ danger:"Finds the space in front of your defence and behind your midfield, turns, and everything opens. Usually the single most consequential player on the pitch when allowed to face forward.",
+ contain:"Either a midfielder drops to screen the space permanently, or a centre back steps up to meet them before they turn. Both work and they must be chosen deliberately, because half-doing each produces the gap you were trying to close.",
+ cost:"Screening costs you a midfielder in the press. Stepping up costs you the space behind your defence. There is no free option here and pretending otherwise is how the plan fails."},
+{id:"t4", name:"The runner in behind", zone:"In behind",
+ danger:"Times movement off the shoulder and attacks the space a high line leaves. A single pass can eliminate your entire midfield.",
+ contain:"Drop the line, which removes the space, or push the press up so the pass cannot be played with the head up. Both are coherent. What fails is a high line with a passive press, which leaves the space open and the passer unhurried.",
+ cost:"Dropping the line concedes territory and invites pressure. Your midfield will be far from the opponent's build, so your press becomes ineffective and you should plan to defend for longer spells."},
+{id:"t5", name:"The deep playmaker", zone:"Central midfield",
+ danger:"Sits in front of their defence and sets the tempo. Not a goal threat, but every dangerous sequence starts with them having time.",
+ contain:"Assign a forward to occupy them in the press rather than marking them man for man across the pitch. Cutting the passing lane into them is usually more effective than chasing them.",
+ cost:"Your press loses a body, so their centre backs get more time on the ball. Acceptable if their centre backs are not comfortable progressing, and dangerous if they are."},
+{id:"t6", name:"The target forward", zone:"Defensive third",
+ danger:"Holds the ball with defenders behind them, brings runners into play, and wins the first contact from long passes. Turns pressure into territory instantly.",
+ contain:"Defend in front rather than behind, and win the second ball rather than the first. The first contact is frequently unwinnable, so the plan should be about who arrives for the knockdown.",
+ cost:"Defending in front concedes the flick on. You need a midfielder committed to the second ball, which pulls them out of your defensive shape."},
+{id:"t7", name:"The counter-attacking transition", zone:"In behind",
+ danger:"Not a player but a moment. They concede possession deliberately, absorb, and attack the space your committed players leave. The most efficient way for an underdog to win.",
+ contain:"Rest defence. Decide before kickoff how many players stay behind the ball when you attack, and hold to it even when a goal is needed.",
+ cost:"Fewer bodies committed forward means less attacking pressure. Against a deep block this can mean a sterile evening, and that trade has to be accepted consciously."},
+{id:"t8", name:"The overload on one side", zone:"Wide areas",
+ danger:"They flood one flank to draw your defence across, then switch. The goal comes from the switch rather than from the overload.",
+ contain:"Ball-side compactness with a disciplined far-side player who holds their position rather than following the ball. That player must be told explicitly, because instinct pulls everyone toward the ball.",
+ cost:"The far side stays open by design, so you must be able to defend the switch with a slide rather than by having a body there already. Practise the slide or the plan is theoretical."},
+{id:"t9", name:"The set piece specialist", zone:"Set pieces",
+ danger:"One player whose delivery converts a corner count into a goal expectation. Set pieces are the phase where a weaker side most often beats a stronger one.",
+ contain:"Reduce concessions first, because the best defence against a corner is not conceding it. Then organise properly, with named responsibilities for the near post, the six yard box, the edge, and the short option.",
+ cost:"Nothing tactical, only training time. This is the highest return investment available to a coach and it is routinely underspent."},
+{id:"t10", name:"The pressing forward line", zone:"Defensive third",
+ danger:"They press your build and force errors in your own third, where a mistake becomes a chance immediately. The threat is your own turnover rather than their creativity.",
+ contain:"Have a rehearsed out. Either a goalkeeper who can play through the press, a reliable long option to a target, or a designated wide release. Deciding in the moment is how goals are conceded.",
+ cost:"Going long concedes possession territory and hands them the ball back. That is acceptable if you win second balls, and it is a plan rather than a failure if you have said so beforehand."},
+{id:"t11", name:"The late-arriving midfielder", zone:"Between the lines",
+ danger:"Arrives into the box after the defence has been drawn toward the ball. Unmarked because they were behind play when marking assignments were made.",
+ contain:"Someone must be given the job of tracking runners from deep rather than marking a zone. It is a specific instruction and it is rarely given.",
+ cost:"That player cannot also press or join attacks, so you lose a body in both phases. Choose who it is on the basis of discipline rather than of talent."},
+{id:"t12", name:"The ball-playing centre back", zone:"Central midfield",
+ danger:"Steps into midfield with the ball and creates a spare player, breaking your press before it starts. Frequently ignored in planning because they are a defender.",
+ contain:"Press with a shape that curves them onto their weaker side rather than one that closes them head on. A forward pressing straight at them simply gets played around.",
+ cost:"An angled press leaves one route open by design. Make sure the route you leave open is one you can defend, and tell the player behind it what is coming."}
+];
+
+FB.approaches = [
+{id:"a1", name:"High press", vs:"Against a side that builds short and is uncomfortable going long",
+ asks:"Fitness across the front five, coordinated triggers, and a defensive line pushed high enough to keep the pitch short. The whole team must move as one unit or it is not a press, it is chasing.",
+ gives:"The space behind your defence, permanently. You are betting that the pass into it cannot be played accurately because the passer is under pressure.",
+ breaks:"When it is not sustained. A press that drops off after an hour leaves a high line with no pressure on the ball, which is the worst combination available. It also breaks against a goalkeeper who can pass through it."},
+{id:"a2", name:"Medium block", vs:"Against most opponents, most of the time",
+ asks:"Discipline in holding a line around the halfway area and patience in not being drawn out by the ball. Less physically demanding than a press and more demanding of concentration.",
+ gives:"Their defenders get time on the ball in their own half. If they can progress from there without being pressed, you will spend a long time defending.",
+ breaks:"When individuals step out of the line to chase, which opens the gaps the block exists to close. One player breaking shape undoes ten holding it."},
+{id:"a3", name:"Low block", vs:"Against a clearly stronger side, or to protect a lead",
+ asks:"Enormous concentration and the acceptance of very little of the ball. Every player must know their zone and resist the urge to press.",
+ gives:"Territory and possession, almost entirely. You are conceding that they will have the ball in your half and betting they cannot break a compact defence.",
+ breaks:"Against sides comfortable at range, and against set pieces, which a low block concedes constantly. It also breaks psychologically if you fall behind, because the plan then has no attacking mode."},
+{id:"a4", name:"Man-oriented pressing", vs:"Against a side that depends on two or three specific players to progress",
+ asks:"Individual duels across the pitch and players comfortable defending in space. Simple to explain and physically brutal to deliver.",
+ gives:"Structure. Once players follow opponents, the shape distorts, and one dribble past a marker breaks the whole system rather than one line of it.",
+ breaks:"Against rotation. A side that swaps positions deliberately will pull your markers into each other and create the free man the system exists to prevent."},
+{id:"a5", name:"Direct with a target", vs:"Against a high pressing side, or with a physical mismatch to exploit",
+ asks:"A forward who can hold or win the first contact, and midfielders who arrive for the second ball rather than admiring the first.",
+ gives:"Possession share and territory in the build phase. You will look like the worse side on the statistics and that is not the same as being it.",
+ breaks:"When nobody supports the target, at which point every long pass returns immediately and your defence never gets a rest. It also breaks if the first contact is consistently lost."},
+{id:"a6", name:"Control through possession", vs:"Against a side that is dangerous in transition",
+ asks:"Technical security under pressure across the whole team, and full backs comfortable holding position rather than overlapping constantly.",
+ gives:"Nothing structurally, and everything if you lose the ball badly. This approach lives or dies on turnovers in your own half.",
+ breaks:"Against a well organised low block, where possession without penetration becomes a slow strangling of your own tempo. It also breaks against a counter-press if your rest defence is thin."}
+];
+
+FB.shapes = [
+{id:"s442", name:"4-4-2",
+ pos:[[50,92],[20,74],[40,76],[60,76],[80,74],[16,50],[38,52],[62,52],[84,50],[40,24],[60,24]],
+ gives:"Two banks of four give clear zonal responsibility and easy compactness. Two forwards press centre backs naturally and support each other in transition.",
+ concedes:"The space between the lines, because there is no natural occupant of it. A side with a good number ten will find it repeatedly unless a midfielder is told explicitly to screen."},
+{id:"s433", name:"4-3-3",
+ pos:[[50,92],[18,74],[38,76],[62,76],[82,74],[50,60],[32,48],[68,48],[18,26],[50,22],[82,26]],
+ gives:"Width high up, three central midfielders for control, and a front three that presses a back four cleanly. The most balanced modern default.",
+ concedes:"Space beside the single holding midfielder when the two ahead push on. Full backs are also isolated one against one when the wide forwards do not track."},
+{id:"s4231", name:"4-2-3-1",
+ pos:[[50,92],[18,74],[38,76],[62,76],[82,74],[38,58],[62,58],[20,38],[50,38],[80,38],[50,20]],
+ gives:"Two holding midfielders protect the space in front of the defence, and an attacking midfielder occupies the space that troubles a 4-4-2. Very stable defensively.",
+ concedes:"Isolation of the lone forward, who can be outnumbered by two centre backs, and a gap between the attacking band and the forward if the ten does not support."},
+{id:"s352", name:"3-5-2",
+ pos:[[50,92],[30,76],[50,78],[70,76],[10,54],[35,52],[50,58],[65,52],[90,54],[40,24],[60,24]],
+ gives:"Numerical superiority in central midfield and wing backs who provide width without a full back leaving a back four. Strong against two forwards.",
+ concedes:"The wing backs, who must cover the whole flank and are a fitness bet. If they are pinned back it becomes a five at the back with no width in attack."},
+{id:"s532", name:"5-3-2",
+ pos:[[50,92],[12,70],[32,78],[50,80],[68,78],[88,70],[32,52],[50,54],[68,52],[40,26],[60,26]],
+ gives:"Maximum defensive coverage across the width of the pitch, spare centre back to cover in behind, and a compact central three. The most reliable underdog shape.",
+ concedes:"Attacking presence almost entirely. With five defenders and three midfielders holding, you are dependent on two forwards and set pieces for goals."},
+{id:"s4141", name:"4-1-4-1",
+ pos:[[50,92],[18,74],[38,76],[62,76],[82,74],[50,62],[18,44],[40,42],[60,42],[82,44],[50,20]],
+ gives:"A dedicated screen in front of the defence and a bank of four that can press or drop as a unit. Excellent at closing the space between the lines.",
+ concedes:"Distance between the midfield four and the lone forward, which makes sustained pressure hard and can leave the forward chasing alone."}
+];
+
+FB.setpieces = [
+{cat:"Defending corners", items:[
+ {t:"Decide zonal, man, or mixed, and say so out loud", why:"Most goals conceded from corners come from a mixed system nobody has actually defined, where two players each assume the other has the runner"},
+ {t:"Name the near post defender", why:"The near post flick is the most common corner goal and it is the easiest to defend if one person owns it"},
+ {t:"Name the player on the six yard line", why:"Stops the goalkeeper being blocked and covers the ball that beats everyone"},
+ {t:"Name who picks up the edge of the box", why:"The cleared ball returning from the edge is the second most common source of a corner goal"},
+ {t:"Agree who defends the short corner", why:"Two players, agreed in advance. A short corner defended by nobody is a free two against one"},
+ {t:"Agree the outlet on the clearance", why:"A corner cleared to nobody comes straight back. Name the player who breaks and the one who finds them"}
+]},
+{cat:"Attacking corners", items:[
+ {t:"Fix the delivery type and rehearse it", why:"One consistent delivery that everyone can time beats variety that nobody can read"},
+ {t:"Assign roles rather than positions", why:"Blocker, near post runner, back post runner, edge of box. Roles survive a defence that shifts, positions do not"},
+ {t:"Plan the second phase before the first", why:"Most corner goals come from the second ball, and most teams have planned only the first"},
+ {t:"Decide the rest defence for every corner", why:"A corner is the moment you are most exposed to a counter. Two back and one on the edge is a minimum"},
+ {t:"Have one alternative routine", why:"A second option prevents a well drilled defence solving you after twenty minutes"}
+]},
+{cat:"Free kicks", items:[
+ {t:"Set the wall size by distance and angle, not by habit", why:"A wall that is too large leaves the goalkeeper covering more goal than they can reach"},
+ {t:"Name who organises the wall and who counts it", why:"The player setting it cannot also see it. This is a two person job every time"},
+ {t:"Cover the ball under the wall", why:"The low free kick under a jumping wall is a recurring goal and a lying defender behind it removes the option entirely"},
+ {t:"Plan the crossed free kick as a corner routine", why:"A wide free kick is a corner with a better angle, and it deserves the same organisation rather than an improvised delivery"}
+]},
+{cat:"Throw-ins and restarts", items:[
+ {t:"Have a rehearsed attacking throw in the final third", why:"The most frequent restart in the game and the least practised. A single routine here yields more possessions than any other set piece"},
+ {t:"Decide the defensive throw response", why:"Long throws into the box are a genuine weapon and require the same organisation as a corner"},
+ {t:"Agree the goalkeeper distribution rule", why:"Short to build or long to compete. Deciding it during the match is how possession is lost in your own third"}
+]}
+];
+</script>
+
+<script>
+(function(){
+  "use strict";
+  var K_D="vb_fb_dossier_v1", K_T="vb_fb_threats_v1", K_A="vb_fb_approach_v1", K_S="vb_fb_set_v1";
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function put(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  function get(k,f){ try{ var r=localStorage.getItem(k); return r?JSON.parse(r):f; }catch(e){ return f; } }
+  function flash(id,m){ var el=$(id); if(!el) return; el.textContent=m; setTimeout(function(){el.textContent="";},2600); }
+  function download(name,text){
+    var b=new Blob([text],{type:"text/plain;charset=utf-8"});
+    var u=URL.createObjectURL(b); var a=document.createElement("a");
+    a.href=u; a.download=name; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(u);
+  }
+  function threatById(id){ for(var i=0;i<FB.threats.length;i++){ if(FB.threats[i].id===id) return FB.threats[i]; } return null; }
+  function shapeById(id){ for(var i=0;i<FB.shapes.length;i++){ if(FB.shapes[i].id===id) return FB.shapes[i]; } return FB.shapes[0]; }
+
+  var D = get(K_D, {});
+  var T = get(K_T, {});
+  var A = get(K_A, {shape:"s433", approach:null});
+  var SP = get(K_S, {});
+
+  /* ---------- tabs ---------- */
+  function initTabs(){
+    var btns=document.querySelectorAll(".fb-btn[data-tab]");
+    Array.prototype.forEach.call(btns, function(b){
+      b.addEventListener("click", function(){
+        Array.prototype.forEach.call(btns, function(x){
+          x.classList.remove("is-active"); x.setAttribute("aria-selected","false");
+        });
+        b.classList.add("is-active"); b.setAttribute("aria-selected","true");
+        Array.prototype.forEach.call(document.querySelectorAll(".fb-panel"), function(p){ p.classList.remove("is-active"); });
+        var t=$("fp-"+b.getAttribute("data-tab"));
+        if(t) t.classList.add("is-active");
+        if(b.getAttribute("data-tab")==="plan") renderPlan();
+        window.scrollTo({ top:0, behavior:"smooth" });
+      });
+    });
+  }
+
+  /* ---------- dossier ---------- */
+  function renderQuestions(){
+    $("fbQuestions").innerHTML = FB.questions.map(function(q){
+      return '<div class="fb-card" style="margin-bottom:12px;padding:16px">'+
+        '<div style="font-weight:700;font-size:15px">'+esc(q.t)+"</div>"+
+        '<div class="fb-tiny" style="margin:5px 0 9px;line-height:1.6">'+esc(q.hint)+"</div>"+
+        '<textarea class="fb-txt" data-q="'+q.id+'" style="min-height:70px" placeholder="What you know, or leave blank">'+
+        esc(D[q.id]||"")+"</textarea></div>";
+    }).join("");
+    $("fbQuestions").querySelectorAll("textarea[data-q]").forEach(function(t){
+      t.addEventListener("input", function(){
+        D[t.getAttribute("data-q")]=t.value;
+        put(K_D,D); renderStats();
+      });
+    });
+  }
+
+  function renderStats(){
+    var n=FB.questions.filter(function(q){ return (D[q.id]||"").trim().length>1; }).length;
+    var th=Object.keys(T).filter(function(k){ return T[k]; }).length;
+    var sp=Object.keys(SP).filter(function(k){ return SP[k]; }).length;
+    var ap=A.approach ? FB.approaches.filter(function(x){return x.id===A.approach;})[0] : null;
+    $("fbAnswered").textContent=n;
+    $("fbThreats").textContent=th;
+    $("fbApproach").textContent= ap ? ap.name : "-";
+    $("fbSet").textContent=sp;
+  }
+
+  function dossierText(){
+    var out=["Opposition dossier"];
+    if(D.opp) out.push("Opponent: "+D.opp);
+    if(D.date) out.push("Date: "+D.date);
+    if(D.venue) out.push("Venue: "+D.venue);
+    out.push("");
+    FB.questions.forEach(function(q){
+      if(!(D[q.id]||"").trim()) return;
+      out.push(q.t);
+      out.push("  "+D[q.id]);
+      out.push("");
+    });
+    if(out.length<=4) out.push("Nothing recorded yet.");
+    return out.join("\n");
+  }
+
+  function initDossier(){
+    if(D.opp) $("fbOpp").value=D.opp;
+    if(D.date) $("fbDate").value=D.date;
+    if(D.venue) $("fbVenue").value=D.venue;
+    ["fbOpp","fbDate","fbVenue"].forEach(function(id){
+      $(id).addEventListener("input", function(){
+        D[id==="fbOpp"?"opp":(id==="fbDate"?"date":"venue")]=$(id).value;
+        put(K_D,D);
+      });
+    });
+    $("fbSave").addEventListener("click", function(){ put(K_D,D); flash("fbDMsg","Saved on this device."); });
+    $("fbExportD").addEventListener("click", function(){
+      download("opposition-dossier.txt", dossierText()); flash("fbDMsg","Exported.");
+    });
+    $("fbClearD").addEventListener("click", function(){
+      if(!confirm("Clear the dossier answers?")) return;
+      D={}; put(K_D,D); $("fbOpp").value=""; $("fbDate").value="";
+      renderQuestions(); renderStats();
+    });
+    renderQuestions();
+  }
+
+  /* ---------- threats ---------- */
+  function renderThreats(){
+    var q=($("fbThreatFind").value||"").toLowerCase();
+    var z=$("fbThreatZone").value;
+    var html="", n=0;
+    FB.threats.forEach(function(t){
+      var hay=(t.name+" "+t.zone+" "+t.danger+" "+t.contain+" "+t.cost).toLowerCase();
+      if(q && hay.indexOf(q)<0) return;
+      if(z && t.zone!==z) return;
+      n++;
+      var on=!!T[t.id];
+      html += '<div class="fb-acc'+(on?" is-open":"")+'"><button class="fb-acc-b" type="button" data-th="'+t.id+'">'+
+        '<span class="fb-acc-t">'+esc(t.name)+(on?' <span class="fb-chip">in the plan</span>':"")+"</span>"+
+        '<span class="fb-acc-k">'+esc(t.zone)+"</span></button>"+
+        '<div class="fb-acc-body">'+
+        "<p><strong>The danger.</strong> "+esc(t.danger)+"</p>"+
+        "<p><strong>How to contain it.</strong> "+esc(t.contain)+"</p>"+
+        '<div class="fb-cost"><strong>What it costs you.</strong> '+esc(t.cost)+"</div>"+
+        '<div class="fb-flex" style="margin-top:12px">'+
+        '<button class="fb-b '+(on?"":"primary")+' sm" type="button" data-pick="'+t.id+'">'+
+        (on?"Remove from the plan":"Add to the plan")+"</button></div></div></div>";
+    });
+    $("fbThreatList").innerHTML = html || '<div class="fb-empty">No threat matches that filter.</div>';
+    $("fbThreatCount").textContent=n+" of "+FB.threats.length+" profiles";
+    $("fbThreatList").querySelectorAll("button[data-th]").forEach(function(b){
+      b.addEventListener("click", function(){ b.parentNode.classList.toggle("is-open"); });
+    });
+    $("fbThreatList").querySelectorAll("button[data-pick]").forEach(function(b){
+      b.addEventListener("click", function(){
+        var id=b.getAttribute("data-pick");
+        T[id]=!T[id]; put(K_T,T); renderThreats(); renderStats();
+      });
+    });
+  }
+
+  function threatsText(){
+    var picked=FB.threats.filter(function(t){ return T[t.id]; });
+    if(!picked.length) return "Threats\n\nNone selected.";
+    var out=["Threats to contain",""];
+    picked.forEach(function(t){
+      out.push(t.name+"   ["+t.zone+"]");
+      out.push("  Danger:  "+t.danger);
+      out.push("  Contain: "+t.contain);
+      out.push("  Cost:    "+t.cost);
+      out.push("");
+    });
+    return out.join("\n");
+  }
+
+  function initThreats(){
+    FB.zones.forEach(function(z){
+      var o=document.createElement("option"); o.value=z; o.textContent=z; $("fbThreatZone").appendChild(o);
+    });
+    $("fbThreatFind").addEventListener("input", renderThreats);
+    $("fbThreatZone").addEventListener("change", renderThreats);
+    renderThreats();
+  }
+
+  /* ---------- approach ---------- */
+  function renderApproaches(){
+    $("fbApproachList").innerHTML = FB.approaches.map(function(a){
+      var on = A.approach===a.id;
+      return '<div class="fb-acc'+(on?" is-open":"")+'"><button class="fb-acc-b" type="button" data-ap="'+a.id+'">'+
+        '<span class="fb-acc-t">'+esc(a.name)+(on?' <span class="fb-chip">chosen</span>':"")+"</span>"+
+        '<span class="fb-acc-k">'+esc(a.vs)+"</span></button>"+
+        '<div class="fb-acc-body">'+
+        "<p><strong>What it asks of your players.</strong> "+esc(a.asks)+"</p>"+
+        '<div class="fb-cost"><strong>What it gives up.</strong> '+esc(a.gives)+"</div>"+
+        "<p><strong>When it stops working.</strong> "+esc(a.breaks)+"</p>"+
+        '<div class="fb-flex" style="margin-top:12px">'+
+        '<button class="fb-b '+(on?"":"primary")+' sm" type="button" data-choose="'+a.id+'">'+
+        (on?"Chosen":"Choose this approach")+"</button></div></div></div>";
+    }).join("");
+    $("fbApproachList").querySelectorAll("button[data-ap]").forEach(function(b){
+      b.addEventListener("click", function(){ b.parentNode.classList.toggle("is-open"); });
+    });
+    $("fbApproachList").querySelectorAll("button[data-choose]").forEach(function(b){
+      b.addEventListener("click", function(){
+        var id=b.getAttribute("data-choose");
+        A.approach = A.approach===id ? null : id;
+        put(K_A,A); renderApproaches(); renderStats();
+      });
+    });
+  }
+
+  /* ---------- shape ---------- */
+  function renderShape(){
+    var s=shapeById(A.shape);
+    $("fbField").innerHTML = s.pos.map(function(p,i){
+      return '<div class="fb-dot" style="left:'+p[0]+'%;top:'+p[1]+'%">'+(i+1)+"</div>";
+    }).join("");
+    $("fbShapeName").textContent=s.name;
+    $("fbShapeBody").innerHTML =
+      '<p style="line-height:1.75;font-size:14.5px;margin:0 0 12px"><strong>What it gives you.</strong> '+esc(s.gives)+"</p>"+
+      '<div class="fb-cost"><strong>What it structurally concedes.</strong> '+esc(s.concedes)+"</div>";
+  }
+
+  function initShape(){
+    FB.shapes.forEach(function(s){
+      var o=document.createElement("option"); o.value=s.id; o.textContent=s.name; $("fbShapePick").appendChild(o);
+    });
+    $("fbShapePick").value=A.shape;
+    $("fbShapePick").addEventListener("change", function(){
+      A.shape=$("fbShapePick").value; put(K_A,A); renderShape(); flash("fbShapeMsg","Shape saved.");
+    });
+    renderShape();
+  }
+
+  /* ---------- set pieces ---------- */
+  function setKey(c,i){ return "s"+c+"-"+i; }
+  function setCount(){ var n=0; for(var k in SP){ if(SP[k]) n++; } return n; }
+
+  function renderSet(){
+    var html="", total=0;
+    FB.setpieces.forEach(function(g,c){
+      var rows="";
+      g.items.forEach(function(it,i){
+        total++;
+        var k=setKey(c,i), on=!!SP[k];
+        rows += '<div class="fb-check'+(on?" fb-done":"")+'">'+
+          '<input type="checkbox" id="sp-'+k+'" data-sp="'+k+'"'+(on?" checked":"")+">"+
+          '<label for="sp-'+k+'">'+esc(it.t)+
+          '<span class="fb-why">'+esc(it.why)+"</span></label></div>";
+      });
+      html += '<div class="fb-card" style="margin-bottom:14px;padding:18px">'+
+        '<div style="font-weight:700;margin-bottom:10px;font-size:16px">'+esc(g.cat)+"</div>"+rows+"</div>";
+    });
+    $("fbSetList").innerHTML=html;
+    $("fbSetCount").textContent=setCount()+" of "+total+" organised";
+    $("fbSetList").querySelectorAll("input[data-sp]").forEach(function(cb){
+      cb.addEventListener("change", function(){
+        SP[cb.getAttribute("data-sp")]=cb.checked;
+        put(K_S,SP); renderSet(); renderStats();
+      });
+    });
+  }
+
+  function setText(){
+    var out=["Set piece checklist",""];
+    FB.setpieces.forEach(function(g,c){
+      out.push(g.cat);
+      g.items.forEach(function(it,i){ out.push("  ["+(SP[setKey(c,i)]?"x":" ")+"] "+it.t); });
+      out.push("");
+    });
+    return out.join("\n");
+  }
+
+  function initSet(){
+    renderSet();
+    $("fbSetReset").addEventListener("click", function(){
+      if(!confirm("Untick every set piece item?")) return;
+      SP={}; put(K_S,SP); renderSet(); renderStats();
+    });
+    $("fbSetExport").addEventListener("click", function(){
+      download("set-piece-checklist.txt", setText()); flash("fbSetMsg","Exported.");
+    });
+  }
+
+  /* ---------- plan ---------- */
+  function everything(){
+    var s=shapeById(A.shape);
+    var ap=A.approach ? FB.approaches.filter(function(x){return x.id===A.approach;})[0] : null;
+    var out=[dossierText(), "", "=".repeat(58), "", threatsText(), "", "=".repeat(58), "", "Approach and shape", ""];
+    out.push("  Shape: "+s.name);
+    out.push("    Gives:    "+s.gives);
+    out.push("    Concedes: "+s.concedes);
+    out.push("");
+    if(ap){
+      out.push("  Approach: "+ap.name);
+      out.push("    Suits:    "+ap.vs);
+      out.push("    Asks:     "+ap.asks);
+      out.push("    Gives up: "+ap.gives);
+      out.push("    Breaks:   "+ap.breaks);
+    } else {
+      out.push("  Approach: not chosen yet");
+    }
+    out.push("");
+    out.push("=".repeat(58));
+    out.push("");
+    out.push(setText());
+    return out.join("\n");
+  }
+
+  function renderPlan(){
+    $("fbPreview").innerHTML='<div class="fb-card"><div style="font-weight:700;margin-bottom:10px">Preview</div>'+
+      '<pre style="white-space:pre-wrap;font-size:13px;line-height:1.6;margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">'+
+      esc(everything().slice(0,4000))+"</pre></div>";
+  }
+
+  function initPlan(){
+    $("fbExpAll").addEventListener("click", function(){
+      download("match-plan.txt", everything()); flash("fbPlanMsg","Exported.");
+    });
+    $("fbCopyAll").addEventListener("click", function(){
+      var text=everything();
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(
+          function(){ flash("fbPlanMsg","Copied."); },
+          function(){ flash("fbPlanMsg","Copy failed, use Export instead."); });
+      } else { flash("fbPlanMsg","Copy not supported here, use Export instead."); }
+    });
+    $("fbWipeAll").addEventListener("click", function(){
+      if(!confirm("Clear the dossier, threats, approach and set piece checklist?")) return;
+      D={}; T={}; A={shape:"s433",approach:null}; SP={};
+      put(K_D,D); put(K_T,T); put(K_A,A); put(K_S,SP);
+      $("fbOpp").value=""; $("fbDate").value=""; $("fbShapePick").value="s433";
+      renderQuestions(); renderThreats(); renderApproaches(); renderShape(); renderSet(); renderStats(); renderPlan();
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    initTabs();
+    initDossier();
+    initThreats();
+    renderApproaches();
+    initShape();
+    initSet();
+    initPlan();
+    renderStats();
+    renderPlan();
+  });
+})();
+</script>
