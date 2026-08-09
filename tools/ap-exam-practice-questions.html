@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the AP Exam Practice tool.</p><a href="https://reportmedic.org/tools/ap-exam-practice-questions.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="AP exam practice questions across twelve subjects, with daily challenges, subject drills, scoring strategy and performance analytics. Free, no signup."/>
+<title>AP Exam Practice Questions - Drills with Analytics - ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+/* ── Animated Background ── */
+.bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12;animation:meshDrift 20s ease-in-out infinite alternate;}
+.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);top:-15%;right:-10%;}
+.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#a78bfa,#6ea8ff);bottom:-10%;left:-5%;animation-delay:-7s;animation-duration:25s;}
+.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#7cf7d4,#f59e0b);top:50%;left:40%;animation-delay:-14s;animation-duration:28s;}
+@keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg) scale(1);}100%{transform:translate(40px,-30px) rotate(15deg) scale(1.1);}}
+
+/* ── Tabs Nav ── */
+.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:24px;overflow-x:auto;}
+.tab-btn{flex:1;min-width:fit-content;padding:12px 20px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;letter-spacing:.01em;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(110,168,255,.18),rgba(124,247,212,.12));color:var(--text);box-shadow:0 2px 16px rgba(110,168,255,.12),inset 0 1px 0 rgba(255,255,255,.06);}
+
+/* ── Views ── */
+.view{display:none;}
+.view.active{display:block;}
+
+/* ── Hero ── */
+.daily-hero{text-align:center;padding:32px 0 16px;}
+.daily-hero h1{font-size:clamp(26px,4.5vw,38px);font-weight:700;letter-spacing:-.02em;line-height:1.15;}
+.daily-hero h1 .grad{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:10px;line-height:1.5;letter-spacing:.01em;}
+
+/* ── Streak Banner ── */
+.streak-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 26px;flex-wrap:wrap;}
+.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);backdrop-filter:blur(8px);font-size:13px;font-weight:600;transition:transform .15s;}
+.streak-pill:hover{transform:translateY(-1px);}
+.streak-pill .fire{font-size:20px;}
+.streak-pill .sval{font-size:18px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-pill .sval.green{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-dots{display:flex;gap:5px;}
+.streak-dots .dot{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;color:var(--muted);}
+.streak-dots .dot.done{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(124,247,212,.1));border-color:rgba(16,185,129,.25);color:#34d399;}
+.streak-dots .dot.today{border-color:rgba(110,168,255,.45);box-shadow:0 0 14px rgba(110,168,255,.15);}
+
+/* ── Phase Filter ── */
+.phase-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.phase-filter .pf-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px;}
+.pf-btn{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;}
+.pf-btn:hover{border-color:rgba(255,255,255,.22);color:var(--text);}
+.pf-btn.active{background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.35);color:#6ea8ff;}
+
+/* ── Quiz Container ── */
+.quiz-panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:26px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
+.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
+.quiz-progress{display:flex;gap:4px;margin-bottom:18px;}
+.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.06);transition:background .3s;}
+.quiz-progress .pip.done{background:linear-gradient(90deg,#10b981,#7cf7d4);}
+.quiz-progress .pip.wrong{background:#ef4444;}
+.quiz-progress .pip.current{background:rgba(110,168,255,.4);animation:pipPulse 1.5s ease infinite;}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.1);color:#6ea8ff;border:1px solid rgba(110,168,255,.15);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);color:var(--muted);}
+.quiz-meta .qphase{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid rgba(124,247,212,.2);background:rgba(124,247,212,.06);color:#7cf7d4;}
+.quiz-meta .qdiff{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.quiz-meta .qdiff.easy{border:1px solid rgba(52,211,153,.2);background:rgba(52,211,153,.06);color:#34d399;}
+.quiz-meta .qdiff.medium{border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.06);color:#fbbf24;}
+.quiz-meta .qdiff.hard{border:1px solid rgba(248,113,113,.2);background:rgba(248,113,113,.06);color:#f87171;}
+.quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.quiz-meta .timer svg{color:rgba(110,168,255,.6);}
+
+.quiz-question{font-size:16.5px;line-height:1.7;font-weight:600;margin-bottom:18px;letter-spacing:.005em;}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s;}
+.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.06);}
+.qo.selected .letter{border-color:#6ea8ff;background:#6ea8ff;color:#061021;}
+.qo.correct{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);}
+.qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
+.qo.disabled{pointer-events:none;opacity:.65;}
+.qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
+
+.quiz-explain{margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(124,247,212,.035);border:1px solid rgba(124,247,212,.1);font-size:13.5px;line-height:1.7;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;letter-spacing:.01em;}
+.qa-btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;}
+.qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+.qa-btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);}
+
+/* ── Results Card ── */
+.result-card{text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;}
+.result-card .big-score{font-size:64px;font-weight:700;line-height:1;margin-bottom:8px;}
+.result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
+.result-mini .rm{padding:16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.result-mini .rm .rv{font-size:20px;font-weight:700;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* ── Subject Practice Grid ── */
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.subj-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.subj-card .sc-icon{font-size:30px;margin-bottom:10px;}
+.subj-card .sc-name{font-size:14.5px;font-weight:700;margin-bottom:4px;letter-spacing:.01em;}
+.subj-card .sc-count{font-size:12px;color:var(--muted);}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .5s ease;}
+.subj-card[data-sub="AP Calculus AB"]::before,.subj-card[data-sub="AP Calculus AB"] .sc-fill{background:#34d399;}
+.subj-card[data-sub="AP Statistics"]::before,.subj-card[data-sub="AP Statistics"] .sc-fill{background:#14b8a6;}
+.subj-card[data-sub="AP Biology"]::before,.subj-card[data-sub="AP Biology"] .sc-fill{background:#4ade80;}
+.subj-card[data-sub="AP Chemistry"]::before,.subj-card[data-sub="AP Chemistry"] .sc-fill{background:#22d3ee;}
+.subj-card[data-sub="AP Environmental Science"]::before,.subj-card[data-sub="AP Environmental Science"] .sc-fill{background:#84cc16;}
+.subj-card[data-sub="AP US History"]::before,.subj-card[data-sub="AP US History"] .sc-fill{background:#6ea8ff;}
+.subj-card[data-sub="AP World History"]::before,.subj-card[data-sub="AP World History"] .sc-fill{background:#a78bfa;}
+.subj-card[data-sub="AP Human Geography"]::before,.subj-card[data-sub="AP Human Geography"] .sc-fill{background:#fb923c;}
+.subj-card[data-sub="AP Psychology"]::before,.subj-card[data-sub="AP Psychology"] .sc-fill{background:#e879f9;}
+.subj-card[data-sub="AP Macroeconomics"]::before,.subj-card[data-sub="AP Macroeconomics"] .sc-fill{background:#f59e0b;}
+.subj-card[data-sub="AP English Language"]::before,.subj-card[data-sub="AP English Language"] .sc-fill{background:#f472b6;}
+.subj-card[data-sub="AP English Literature"]::before,.subj-card[data-sub="AP English Literature"] .sc-fill{background:#38bdf8;}
+
+/* ── Analytics Dashboard ── */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
+.an-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.an-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);}
+.an-card.full{grid-column:1/-1;}
+.an-card h3{font-size:12.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* ── Overview Strip ── */
+.overview-strip{display:flex;align-items:center;gap:24px;}
+.ov-ring{position:relative;flex-shrink:0;width:100px;height:100px;}
+.ov-ring canvas{width:100px;height:100px;}
+.ov-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ov-ring-label .rv{font-size:22px;font-weight:700;line-height:1;}
+.ov-ring-label .rl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ov-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ov-stat{padding:12px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;}
+.ov-stat .os-val{font-size:18px;font-weight:700;line-height:1.2;font-family:'JetBrains Mono',monospace;}
+.ov-stat .os-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+@media(max-width:600px){
+  .overview-strip{flex-direction:column;gap:16px;}
+  .ov-stats{grid-template-columns:repeat(3,1fr);width:100%;}
+}
+
+/* ── Subject accuracy bars ── */
+.sub-bars{display:flex;flex-direction:column;gap:10px;}
+.sb-row{display:flex;align-items:center;gap:10px;}
+.sb-label{width:105px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:46px;text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+/* ── Trend Chart ── */
+.trend-wrap{position:relative;min-height:220px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.trend-wrap::-webkit-scrollbar{height:4px;}.trend-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--muted);text-align:center;}
+.trend-empty .te-icon{font-size:40px;opacity:.4;}
+.trend-empty .te-msg{font-size:13px;line-height:1.5;max-width:320px;}
+.trend-bar-chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding:10px 0;min-width:min-content;}
+.trend-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:48px;width:48px;flex-shrink:0;}
+.trend-bar-outer{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative;}
+.trend-bar{width:100%;border-radius:6px 6px 2px 2px;transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;min-height:4px;}
+.trend-bar:hover{filter:brightness(1.2);}
+.trend-bar .tb-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.trend-bar:hover .tb-val{opacity:1;}
+.trend-label{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.trend-mode-label.daily{background:rgba(110,168,255,.12);color:#6ea8ff;}
+.trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
+
+/* ── Mastery Dashboard ── */
+.mastery-wrap{margin-top:8px;}
+.mastery-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.m-stat{padding:12px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);}
+.m-stat .ms-val{font-size:22px;font-weight:800;margin-bottom:2px;}
+.m-stat .ms-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+.m-stat.green .ms-val{color:#34d399;} .m-stat.yellow .ms-val{color:#fbbf24;} .m-stat.red .ms-val{color:#f87171;} .m-stat.blue .ms-val{color:#6ea8ff;} .m-stat.purple .ms-val{color:#a78bfa;}
+.coverage-ring{display:flex;align-items:center;gap:16px;padding:14px;border-radius:14px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);margin-bottom:14px;overflow:hidden;}
+.cov-canvas{width:90px;height:90px;flex-shrink:0;}
+.cov-info{flex:1;min-width:0;overflow:hidden;}
+.cov-title{font-size:13px;font-weight:700;color:var(--fg);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cov-sub{font-size:11px;color:var(--muted);line-height:1.6;word-break:break-word;}
+.subj-mastery{margin-top:14px;}
+.sm-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+.sm-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.sm-icon{font-size:14px;width:20px;text-align:center;}
+.sm-name{width:70px;font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-bar{flex:1;height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative;}
+.sm-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.sm-pct{width:34px;text-align:right;font-weight:700;font-size:11px;}
+
+/* -- Passage block for reading items -- */
+.quiz-passage{padding:14px 16px;border-radius:14px;background:rgba(110,168,255,.04);border:1px solid rgba(110,168,255,.10);font-size:14.5px;line-height:1.75;color:var(--muted);margin-bottom:14px;}
+.quiz-passage em{color:var(--text);font-style:italic;}
+
+/* -- Difficulty chips -- */
+.diff-dist{display:flex;gap:10px;margin-top:6px;}
+.diff-chip{flex:1;padding:14px 10px;border-radius:14px;text-align:center;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);}
+.diff-chip .dc-val{font-size:20px;font-weight:700;margin-bottom:2px;}
+.diff-chip .dc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+.diff-chip.easy .dc-val{color:#34d399;}
+.diff-chip.medium .dc-val{color:#fbbf24;}
+.diff-chip.hard .dc-val{color:#f87171;}
+
+/* ── Session History ── */
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding-right:4px;}
+.hist-list::-webkit-scrollbar{width:4px;}
+.hist-list::-webkit-scrollbar-track{background:transparent;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:12px;transition:background .1s;}
+.hist-row:hover{background:rgba(255,255,255,.04);}
+.hist-date{font-weight:600;min-width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hist-mode{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.hist-mode.daily{background:rgba(110,168,255,.1);color:#6ea8ff;}
+.hist-mode.practice{background:rgba(139,92,246,.1);color:#a78bfa;}
+.hist-score{margin-left:auto;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.hist-detail{color:var(--muted);font-size:11px;}
+
+/* ── Reset Button ── */
+.reset-zone{margin-top:20px;text-align:center;}
+.reset-btn{padding:10px 20px;border-radius:12px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.reset-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);}
+
+/* ── Tab label responsive ── */
+.tab-short{display:none;}
+@media(max-width:540px){.tab-full{display:none;}.tab-short{display:inline;}}
+@media(max-width:640px){
+  .quiz-panel{padding:16px;}
+  .streak-bar{gap:10px;}
+  .subj-grid{grid-template-columns:1fr 1fr;}
+  .diff-dist{flex-wrap:wrap;}
+  .diff-chip{min-width:calc(50% - 5px);}
+  .mastery-stats{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .coverage-ring{flex-direction:column;text-align:center;}
+  .sm-name{width:55px;font-size:10px;}
+  .tab-nav{overflow-x:hidden;}
+  .hide-mobile{display:none!important;}
+}
+
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .5s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+
+.btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;padding:10px 20px;border-radius:10px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:.01em;transition:all .18s;}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-mesh"><div class="strand"></div><div class="strand"></div><div class="strand"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn hide-mobile" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+  <a class="btn primary" href="/tools/sat-practice-test-questions.html">SAT Practice</a>
+</div>
+</header>
+
+<div class="wrap">
+  <!-- Tab Nav -->
+  <nav class="tab-nav anim-up">
+    <button class="tab-btn active" data-tab="daily">Daily <span class="tab-full">Challenge</span><span class="tab-short">Set</span></button>
+    <button class="tab-btn" data-tab="practice"><span class="tab-full">Section Practice</span><span class="tab-short">Sections</span></button>
+    <button class="tab-btn" data-tab="strategy"><span class="tab-full">Scoring and Strategy</span><span class="tab-short">Scoring</span></button>
+    <button class="tab-btn" data-tab="analytics"><span class="tab-full">Performance Analytics</span><span class="tab-short">Analytics</span></button>
+  </nav>
+
+  <!-- VIEW: DAILY -->
+  <div class="view active" id="viewDaily">
+    <div class="daily-hero anim-up d1">
+      <h1>AP Daily <span class="grad">Challenge</span></h1>
+      <p class="sub">Ten fresh questions every day drawn from twelve AP subjects. Build the streak, build the score.</p>
+    </div>
+    <div class="streak-bar anim-up d2">
+      <div class="streak-pill"><span>Streak</span><span class="sval" id="streakVal">0</span></div>
+      <div class="streak-pill"><span>Today</span><span class="sval green" id="todayScore">-</span></div>
+      <div class="streak-dots" id="streakDots"></div>
+    </div>
+    <div id="quizArea" class="anim-up d3"></div>
+  </div>
+
+  <!-- VIEW: SECTION PRACTICE -->
+  <div class="view" id="viewPractice">
+    <div class="daily-hero">
+      <h1>Subject <span class="grad">Drill</span></h1>
+      <p class="sub">Work one exam at a time. Pick the subject you are sitting and drill ten questions.</p>
+    </div>
+    <div class="phase-filter">
+      <span class="pf-label">Filter by Group:</span>
+      <button class="pf-btn active" data-phase="All">All Subjects</button>
+      <button class="pf-btn" data-phase="Math and Science">Math and Science</button>
+      <button class="pf-btn" data-phase="History and Social Science">History and Social Science</button>
+      <button class="pf-btn" data-phase="English">English</button>
+    </div>
+    <div class="subj-grid" id="subjGrid"></div>
+    <div id="practiceQuizArea" style="margin-top:20px;"></div>
+  </div>
+
+  <!-- VIEW: STRATEGY -->
+  <div class="view" id="viewStrategy">
+    <div class="daily-hero">
+      <h1>Scoring and <span class="grad">Strategy</span></h1>
+      <p class="sub">How the 1 to 5 scale is actually built, what the free response half rewards, and where candidates lose marks they had already earned.</p>
+    </div>
+    <div class="analytics-grid">
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(110,168,255,.1);color:#6ea8ff;">T</span>Pacing calculator</h3>
+        <div class="ov-stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">
+          <div class="ov-stat"><div class="os-val"><input id="pcQ" type="number" min="1" value="55" style="width:100%;background:transparent;border:none;color:inherit;font:inherit;text-align:center"></div><div class="os-label">Questions</div></div>
+          <div class="ov-stat"><div class="os-val"><input id="pcM" type="number" min="1" value="55" style="width:100%;background:transparent;border:none;color:inherit;font:inherit;text-align:center"></div><div class="os-label">Minutes</div></div>
+          <div class="ov-stat"><div class="os-val" id="pcOut">71s</div><div class="os-label">Per question</div></div>
+        </div>
+        <div class="quiz-explain show" id="pcNote"></div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(52,211,153,.1);color:#34d399;">G</span>Guessing arithmetic on the multiple choice</h3>
+        <div class="diff-dist">
+          <div class="diff-chip easy"><div class="dc-val">25%</div><div class="dc-label">Blind guess</div></div>
+          <div class="diff-chip medium"><div class="dc-val">33%</div><div class="dc-label">One eliminated</div></div>
+          <div class="diff-chip hard"><div class="dc-val">50%</div><div class="dc-label">Two eliminated</div></div>
+        </div>
+        <div class="quiz-explain show" style="margin-top:12px">There is no deduction for a wrong answer on the multiple choice section, so a blank is a guaranteed zero while a guess carries positive expected value. With four options a blind guess is worth a quarter of a mark, eliminating one lifts it to a third, and eliminating two makes it a coin flip. Fill every answer. On the free response side the equivalent rule is to write something for every part, because rubrics award points for correct steps even when the final answer is wrong, and an empty part can earn nothing at all.</div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(245,158,11,.1);color:#f59e0b;">S</span>Where points are actually lost</h3>
+        <div id="lossList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: ANALYTICS -->
+  <div class="view" id="viewAnalytics">
+    <div class="daily-hero">
+      <h1>Performance <span class="grad">Analytics</span></h1>
+      <p class="sub">Your readiness report across every subject: accuracy, trends, and weak spots. All data stays in your browser.</p>
+    </div>
+    <div class="analytics-grid" id="analyticsGrid">
+      <div class="an-card full">
+        <div class="overview-strip">
+          <div class="ov-ring">
+            <canvas id="ringCanvas" width="100" height="100"></canvas>
+            <div class="ov-ring-label"><div class="rv" id="ringVal">-</div><div class="rl">accuracy</div></div>
+          </div>
+          <div class="ov-stats" id="quickStats"></div>
+        </div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(139,92,246,.1);color:#8b5cf6;">D</span>Subject-wise accuracy</h3>
+        <div class="sub-bars" id="subBars"></div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(245,158,11,.1);color:#f59e0b;">T</span>Accuracy trend, last 10 sessions</h3>
+        <div class="trend-wrap" id="trendWrap"></div>
+      </div>
+      <div class="an-card">
+        <h3><span class="icon" style="background:rgba(110,168,255,.1);color:#6ea8ff;">H</span>Session history</h3>
+        <div class="hist-list" id="histList"></div>
+      </div>
+      <div class="an-card">
+        <h3><span class="icon" style="background:rgba(245,158,11,.1);color:#f59e0b;">M</span>Mastery dashboard</h3>
+        <div id="diffDist"></div>
+      </div>
+      <div class="an-card full" id="weakCard">
+        <h3><span class="icon" style="background:rgba(239,68,68,.1);color:#f87171;">W</span>Weak areas, focus here</h3>
+        <div id="weakAreas"></div>
+      </div>
+    </div>
+    <div class="reset-zone">
+      <button class="reset-btn" onclick="if(confirm('This will erase ALL your practice data, scores, and streaks. Cannot be undone. Continue?')){localStorage.removeItem('rm_ap_practice');location.reload();}">Reset All Progress</button>
+    </div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">AP Exam Practice Questions - original items across twelve subjects</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. Copyright ReportMedic.</div>
+</div>
+</footer>
+
+<script>
+const BANK=[
+{phase:"Math and Science",sub:"AP Calculus AB",diff:"easy",
+ q:"What is the derivative of f(x) = 3x to the fourth power?",
+ opts:["12x cubed","3x cubed","12x to the fourth","4x cubed"],
+ ans:0,exp:"The power rule multiplies by the exponent and reduces it by one, so 3 times 4 gives 12 and the exponent drops to 3. Forgetting to reduce the exponent gives the third option."},
+
+{phase:"Math and Science",sub:"AP Calculus AB",diff:"easy",
+ q:"What is the limit of (x squared - 9) divided by (x - 3) as x approaches 3?",
+ opts:["0","3","6","undefined"],
+ ans:2,exp:"Direct substitution gives the indeterminate form 0 over 0, so factor first. The numerator is (x - 3)(x + 3), and cancelling leaves x + 3, which approaches 6. The function is undefined at 3 but the limit still exists."},
+
+{phase:"Math and Science",sub:"AP Calculus AB",diff:"medium",
+ q:"If f(x) = x cubed - 6x squared + 5, at what value of x does f have a local minimum?",
+ opts:["0","4","2","6"],
+ ans:1,exp:"The derivative is 3x squared - 12x, which is zero at x = 0 and x = 4. The second derivative is 6x - 12, negative at 0 and positive at 4, so x = 4 is the local minimum."},
+
+{phase:"Math and Science",sub:"AP Calculus AB",diff:"medium",
+ q:"What is the definite integral of 2x from x = 1 to x = 4?",
+ opts:["15","30","8","12"],
+ ans:0,exp:"The antiderivative of 2x is x squared. Evaluating gives 16 minus 1, which is 15. Forgetting to subtract the lower bound gives 16."},
+
+{phase:"Math and Science",sub:"AP Calculus AB",diff:"medium",
+ q:"A particle has position s(t) = t cubed - 3t squared. What is its velocity at t = 2?",
+ opts:["0","6","-12","12"],
+ ans:0,exp:"Velocity is the derivative of position, which is 3t squared - 6t. At t = 2 that is 12 minus 12, which is 0. The particle is momentarily at rest."},
+
+{phase:"Math and Science",sub:"AP Calculus AB",diff:"hard",
+ q:"What is the derivative of f(x) = x squared times the sine of x?",
+ opts:["2x times the cosine of x","2x sine x plus x squared cosine x","2x cosine x plus sine x","x squared cosine x"],
+ ans:1,exp:"The product rule gives the derivative of the first times the second plus the first times the derivative of the second. That is 2x sine x plus x squared cosine x. Differentiating each factor separately and multiplying is the common error."},
+
+{phase:"Math and Science",sub:"AP Calculus AB",diff:"hard",
+ q:"If y = (3x + 1) to the fifth power, what is dy/dx?",
+ opts:["5(3x + 1) to the fourth","15(3x + 1) to the fourth","3(3x + 1) to the fourth","5(3x + 1) to the fourth times 3x"],
+ ans:1,exp:"The chain rule gives 5 times the inner expression to the fourth, multiplied by the derivative of the inner expression, which is 3. So the answer is 15 times (3x + 1) to the fourth. Omitting the inner derivative gives the first option."},
+
+{phase:"Math and Science",sub:"AP Calculus AB",diff:"medium",
+ q:"The Mean Value Theorem requires which conditions on the interval from a to b?",
+ opts:["Continuity on the closed interval and differentiability on the open interval","Differentiability everywhere including the endpoints","Continuity only","The function must be increasing"],
+ ans:0,exp:"The theorem needs continuity on the closed interval and differentiability on the open interval. Requiring differentiability at the endpoints is stricter than necessary, and continuity alone is not sufficient."},
+
+{phase:"Math and Science",sub:"AP Calculus AB",diff:"hard",
+ q:"What is the average value of f(x) = 4x on the interval from 0 to 3?",
+ opts:["6","18","12","2"],
+ ans:0,exp:"Average value is the integral over the interval divided by the interval length. The integral of 4x from 0 to 3 is 2x squared evaluated there, which is 18. Dividing by 3 gives 6."},
+
+{phase:"Math and Science",sub:"AP Calculus AB",diff:"medium",
+ q:"If f is continuous on the closed interval from a to b and F is an antiderivative of f, the definite integral of f from a to b equals which expression?",
+ opts:["F(b) - F(a)","f(b) - f(a)","F(a) - F(b)","F(b) times F(a)"],
+ ans:0,exp:"This is the Fundamental Theorem of Calculus. The definite integral equals the antiderivative evaluated at the upper limit minus its value at the lower limit. Reversing the order changes the sign of the result."}
+];
+
+BANK.push.apply(BANK,[
+{phase:"Math and Science",sub:"AP Statistics",diff:"easy",
+ q:"A study randomly assigns participants to a treatment or a control group. What does this design permit?",
+ opts:["A causal conclusion about the treatment","Generalisation to the whole population","Neither causation nor generalisation","Elimination of all variability"],
+ ans:0,exp:"Random assignment balances confounding variables across groups, which licenses a causal conclusion. Generalisation requires random selection from the population, which is a separate condition and is not stated here."},
+
+{phase:"Math and Science",sub:"AP Statistics",diff:"easy",
+ q:"A distribution has a mean of 70 and a standard deviation of 5. What is the z-score of an observation of 82?",
+ opts:["2.4","1.2","12","0.4"],
+ ans:0,exp:"The z-score is the observation minus the mean divided by the standard deviation, so 12 divided by 5, which is 2.4. Dividing by the mean instead of the standard deviation is the usual error."},
+
+{phase:"Math and Science",sub:"AP Statistics",diff:"medium",
+ q:"Increasing the sample size while holding the confidence level fixed has what effect on a confidence interval?",
+ opts:["It widens the interval","It narrows the interval","It leaves the width unchanged","It shifts the centre of the interval"],
+ ans:1,exp:"The margin of error is inversely proportional to the square root of the sample size, so a larger sample produces a narrower interval. The centre depends on the sample statistic and is not systematically moved by sample size."},
+
+{phase:"Math and Science",sub:"AP Statistics",diff:"medium",
+ q:"A p-value of 0.03 in a test at the 0.05 significance level supports which conclusion?",
+ opts:["The null hypothesis is true","There is convincing evidence against the null hypothesis","The alternative hypothesis is proven","The result occurred by chance 3 percent of the time"],
+ ans:1,exp:"A p-value below the significance level provides convincing evidence against the null hypothesis. It does not prove the alternative, and it is the probability of a result this extreme assuming the null is true, not the probability that chance caused it."},
+
+{phase:"Math and Science",sub:"AP Statistics",diff:"medium",
+ q:"A data set has values 3, 5, 5, 7, 20. Which measure of centre is most resistant to the outlier?",
+ opts:["The mean","The median","The range","The standard deviation"],
+ ans:1,exp:"The median is 5 and is unaffected by how extreme the largest value is. The mean rises to 8 because of the 20, and range and standard deviation are measures of spread rather than centre and are both highly sensitive to it."},
+
+{phase:"Math and Science",sub:"AP Statistics",diff:"hard",
+ q:"In a Type I error, what has occurred?",
+ opts:["A true null hypothesis was rejected","A false null hypothesis was not rejected","The sample size was too small","The confidence level was set incorrectly"],
+ ans:0,exp:"A Type I error is rejecting a null hypothesis that is actually true, and its probability equals the significance level. Failing to reject a false null hypothesis is a Type II error."},
+
+{phase:"Math and Science",sub:"AP Statistics",diff:"medium",
+ q:"A scatterplot shows a correlation coefficient of -0.92. What does this describe?",
+ opts:["A weak negative linear relationship","A strong negative linear relationship","A strong positive linear relationship","No relationship"],
+ ans:1,exp:"The sign shows direction and the magnitude shows strength. A value near negative one indicates a strong negative linear association. Correlation measures only linear association and says nothing about causation."},
+
+{phase:"Math and Science",sub:"AP Statistics",diff:"hard",
+ q:"A fair six-sided die is rolled twice. What is the probability that both rolls show a six?",
+ opts:["1/36","1/12","1/6","2/6"],
+ ans:0,exp:"The rolls are independent, so the probabilities multiply. One sixth times one sixth is one thirty-sixth. Adding the probabilities would apply to mutually exclusive events rather than independent ones."},
+
+{phase:"Math and Science",sub:"AP Statistics",diff:"medium",
+ q:"A sampling method asks for volunteers through a website. What is the principal problem?",
+ opts:["The sample is too small","Voluntary response introduces bias toward those with strong opinions","The method is too expensive","Randomisation was used incorrectly"],
+ ans:1,exp:"Voluntary response samples over-represent people motivated enough to respond, which usually means those with strong views. Increasing the size of such a sample does not remove the bias, it only makes the biased estimate more precise."},
+
+{phase:"Math and Science",sub:"AP Statistics",diff:"hard",
+ q:"According to the Central Limit Theorem, what happens to the sampling distribution of the sample mean as sample size grows?",
+ opts:["It becomes approximately normal regardless of the population shape","It matches the shape of the population exactly","It becomes uniform","Its mean approaches zero"],
+ ans:0,exp:"The theorem states that the sampling distribution of the mean approaches a normal shape as the sample size grows, whatever the population distribution looks like. Its mean stays equal to the population mean rather than approaching zero."}
+]);
+
+BANK.push.apply(BANK,[
+{phase:"Math and Science",sub:"AP Biology",diff:"easy",
+ q:"Which process produces the majority of ATP in a eukaryotic cell under aerobic conditions?",
+ opts:["Glycolysis","Oxidative phosphorylation","Fermentation","The Calvin cycle"],
+ ans:1,exp:"Oxidative phosphorylation at the inner mitochondrial membrane produces far more ATP than glycolysis or the citric acid cycle. Glycolysis yields a small net amount, fermentation regenerates NAD plus without additional ATP, and the Calvin cycle consumes ATP rather than making it."},
+
+{phase:"Math and Science",sub:"AP Biology",diff:"easy",
+ q:"In DNA replication, which enzyme unwinds the double helix?",
+ opts:["DNA polymerase","Helicase","Ligase","Primase"],
+ ans:1,exp:"Helicase separates the strands by breaking hydrogen bonds. DNA polymerase adds nucleotides, ligase joins fragments on the lagging strand, and primase lays down the RNA primer that polymerase requires."},
+
+{phase:"Math and Science",sub:"AP Biology",diff:"medium",
+ q:"Two heterozygous parents for a simple dominant trait have offspring. What proportion is expected to show the recessive phenotype?",
+ opts:["One quarter","One half","Three quarters","None"],
+ ans:0,exp:"A cross of two heterozygotes gives a genotype ratio of one homozygous dominant, two heterozygous, one homozygous recessive. Only the homozygous recessive shows the recessive phenotype, which is one in four."},
+
+{phase:"Math and Science",sub:"AP Biology",diff:"medium",
+ q:"What is the primary role of the light-dependent reactions of photosynthesis?",
+ opts:["To fix carbon dioxide into sugar","To generate ATP and NADPH","To release carbon dioxide","To break down glucose"],
+ ans:1,exp:"The light-dependent reactions capture light energy to produce ATP and NADPH and release oxygen from water. Carbon fixation into sugar happens in the Calvin cycle using those products."},
+
+{phase:"Math and Science",sub:"AP Biology",diff:"medium",
+ q:"A cell is placed in a solution and water moves out of it. The solution is best described as",
+ opts:["hypotonic to the cell","isotonic to the cell","hypertonic to the cell","impermeable"],
+ ans:2,exp:"Water moves toward the higher solute concentration. If water leaves the cell, the surrounding solution has more solute, making it hypertonic. A hypotonic solution would cause water to enter the cell instead."},
+
+{phase:"Math and Science",sub:"AP Biology",diff:"hard",
+ q:"Natural selection acts most directly on which of the following?",
+ opts:["Genotypes","Phenotypes","Individual alleles in isolation","Populations as single units"],
+ ans:1,exp:"Selection acts on phenotypes, the observable traits that affect survival and reproduction. Allele frequencies change as a consequence, which is why evolution is described at the population level while selection operates on individuals."},
+
+{phase:"Math and Science",sub:"AP Biology",diff:"medium",
+ q:"Which structure is present in prokaryotic cells?",
+ opts:["Nucleus","Mitochondria","Ribosomes","Endoplasmic reticulum"],
+ ans:2,exp:"Prokaryotes have ribosomes, though smaller than eukaryotic ones. They lack a membrane-bound nucleus, mitochondria, and endoplasmic reticulum, all of which are eukaryotic features."},
+
+{phase:"Math and Science",sub:"AP Biology",diff:"hard",
+ q:"An enzyme's activity falls sharply when the pH moves far from its optimum. What is the most likely explanation?",
+ opts:["The substrate is depleted","The enzyme's three-dimensional shape is altered","The reaction becomes exothermic","The activation energy decreases"],
+ ans:1,exp:"Extreme pH disrupts the hydrogen bonding and ionic interactions that maintain protein structure, altering the active site so the substrate no longer binds well. Enzymes lower activation energy rather than raising it, and denaturation does not deplete substrate."},
+
+{phase:"Math and Science",sub:"AP Biology",diff:"medium",
+ q:"During which phase of mitosis do sister chromatids separate?",
+ opts:["Prophase","Metaphase","Anaphase","Telophase"],
+ ans:2,exp:"Sister chromatids are pulled to opposite poles during anaphase. They align at the equator in metaphase, chromosomes condense in prophase, and nuclear envelopes reform in telophase."},
+
+{phase:"Math and Science",sub:"AP Biology",diff:"hard",
+ q:"In a population at Hardy-Weinberg equilibrium, which condition must hold?",
+ opts:["Natural selection is acting strongly","There is no migration, mutation, or selection and mating is random","The population is very small","Allele frequencies change each generation"],
+ ans:1,exp:"Equilibrium requires no selection, no mutation, no migration, random mating, and a large population. It is a null model, and departures from the predicted frequencies indicate that one of those forces is operating."}
+]);
+
+BANK.push.apply(BANK,[
+{phase:"Math and Science",sub:"AP Chemistry",diff:"easy",
+ q:"How many moles are in 36 grams of water, given a molar mass of 18 grams per mole?",
+ opts:["1","2","18","36"],
+ ans:1,exp:"Moles equal mass divided by molar mass, so 36 divided by 18 gives 2 moles. Multiplying instead of dividing is the standard error on this calculation."},
+
+{phase:"Math and Science",sub:"AP Chemistry",diff:"easy",
+ q:"What is the oxidation number of sulfur in the sulfate ion, SO4 with a 2 minus charge?",
+ opts:["+4","+6","-2","+2"],
+ ans:1,exp:"Each oxygen is -2, giving -8 in total. The overall charge is -2, so sulfur must be +6 to balance. Setting up the sum rather than guessing is what makes these reliable."},
+
+{phase:"Math and Science",sub:"AP Chemistry",diff:"medium",
+ q:"Which intermolecular force is strongest among the following?",
+ opts:["London dispersion","Dipole-dipole","Hydrogen bonding","Ion-induced dipole"],
+ ans:2,exp:"Hydrogen bonding is the strongest of the intermolecular forces listed and occurs when hydrogen is bonded to nitrogen, oxygen, or fluorine. It is why water has an unusually high boiling point for its molar mass."},
+
+{phase:"Math and Science",sub:"AP Chemistry",diff:"medium",
+ q:"Adding a catalyst to a reaction at equilibrium has what effect?",
+ opts:["It shifts the equilibrium toward products","It increases the equilibrium constant","It speeds both forward and reverse reactions equally","It lowers the yield"],
+ ans:2,exp:"A catalyst lowers the activation energy for both directions equally, so equilibrium is reached faster but its position and the equilibrium constant are unchanged. Only temperature changes the constant."},
+
+{phase:"Math and Science",sub:"AP Chemistry",diff:"medium",
+ q:"A solution has a hydrogen ion concentration of 1 times 10 to the power -4 molar. What is its pH?",
+ opts:["4","-4","10","0.0001"],
+ ans:0,exp:"pH is the negative logarithm of the hydrogen ion concentration, so the pH is 4. This solution is acidic, since values below 7 indicate acidity at standard conditions."},
+
+{phase:"Math and Science",sub:"AP Chemistry",diff:"hard",
+ q:"According to Le Chatelier's principle, increasing pressure on a gaseous equilibrium shifts it in which direction?",
+ opts:["Toward the side with more moles of gas","Toward the side with fewer moles of gas","It has no effect","Toward the reactants always"],
+ ans:1,exp:"The system relieves the applied stress by reducing the number of gas particles, so it shifts toward the side with fewer moles of gas. If both sides have equal moles, pressure has no effect."},
+
+{phase:"Math and Science",sub:"AP Chemistry",diff:"medium",
+ q:"Which quantum designation describes the shape of an orbital?",
+ opts:["The principal quantum number","The angular momentum quantum number","The magnetic quantum number","The spin quantum number"],
+ ans:1,exp:"The angular momentum quantum number determines orbital shape, distinguishing s, p, d, and f. The principal number gives energy level and size, the magnetic number gives orientation, and spin describes the electron itself."},
+
+{phase:"Math and Science",sub:"AP Chemistry",diff:"hard",
+ q:"A reaction has a negative enthalpy change and a positive entropy change. What can be concluded about spontaneity?",
+ opts:["Spontaneous at all temperatures","Spontaneous only at high temperature","Spontaneous only at low temperature","Never spontaneous"],
+ ans:0,exp:"Gibbs free energy is enthalpy minus temperature times entropy. With negative enthalpy and positive entropy both terms make the free energy change negative regardless of temperature, so the reaction is always spontaneous."},
+
+{phase:"Math and Science",sub:"AP Chemistry",diff:"medium",
+ q:"How many grams of sodium chloride are needed for 500 millilitres of a 2 molar solution, given a molar mass of about 58.5 grams per mole?",
+ opts:["58.5","117","29.25","234"],
+ ans:0,exp:"Moles equal molarity times volume in litres, so 2 times 0.5 gives 1 mole. One mole of sodium chloride is about 58.5 grams. Forgetting to convert millilitres to litres gives a figure a thousand times too large."},
+
+{phase:"Math and Science",sub:"AP Chemistry",diff:"hard",
+ q:"Which statement best describes a limiting reactant?",
+ opts:["The reactant present in the smallest mass","The reactant that is completely consumed first","The reactant with the highest molar mass","The reactant that remains after the reaction"],
+ ans:1,exp:"The limiting reactant is the one fully consumed first, which caps the amount of product formed. It is identified by comparing mole ratios against the balanced equation rather than by comparing masses directly."}
+]);
+
+BANK.push.apply(BANK,[
+{phase:"Math and Science",sub:"AP Environmental Science",diff:"easy",
+ q:"Which gas contributes most to the enhanced greenhouse effect from human activity by total quantity emitted?",
+ opts:["Methane","Carbon dioxide","Nitrous oxide","Ozone"],
+ ans:1,exp:"Carbon dioxide is emitted in by far the greatest quantity and persists in the atmosphere for a very long time. Methane traps more heat per molecule but is released in much smaller amounts and breaks down faster."},
+
+{phase:"Math and Science",sub:"AP Environmental Science",diff:"easy",
+ q:"What is the primary cause of eutrophication in a freshwater lake?",
+ opts:["Excess nutrient runoff, particularly nitrogen and phosphorus","Loss of sunlight","Increased water temperature alone","Removal of predatory fish"],
+ ans:0,exp:"Nutrient runoff from fertiliser and sewage drives algal blooms. When the algae die, decomposition consumes dissolved oxygen and creates hypoxic conditions that kill fish. Temperature can worsen it but is not the primary cause."},
+
+{phase:"Math and Science",sub:"AP Environmental Science",diff:"medium",
+ q:"Roughly what proportion of energy is transferred between successive trophic levels?",
+ opts:["Ten percent","Fifty percent","Ninety percent","One percent"],
+ ans:0,exp:"The rule of ten holds that about a tenth of the energy at one trophic level becomes biomass at the next, the rest being lost as heat and through metabolism. This is why food chains rarely extend beyond four or five levels."},
+
+{phase:"Math and Science",sub:"AP Environmental Science",diff:"medium",
+ q:"A population growing without resource limits follows which pattern?",
+ opts:["Logistic growth","Exponential growth","Linear growth","Declining growth"],
+ ans:1,exp:"Unlimited resources produce exponential growth, a J-shaped curve. Logistic growth is S-shaped and occurs when the population approaches the carrying capacity of its environment and growth slows."},
+
+{phase:"Math and Science",sub:"AP Environmental Science",diff:"medium",
+ q:"Which energy source produces no direct greenhouse gas emissions during electricity generation but creates long-lived radioactive waste?",
+ opts:["Natural gas","Nuclear fission","Coal","Biomass"],
+ ans:1,exp:"Nuclear fission generates electricity without combustion, so there are no direct carbon emissions, but spent fuel remains hazardous for a very long time. The other three all release carbon dioxide when burned."},
+
+{phase:"Math and Science",sub:"AP Environmental Science",diff:"hard",
+ q:"Which practice most directly reduces soil erosion on sloped farmland?",
+ opts:["Deep ploughing along the slope","Contour ploughing across the slope","Removing hedgerows","Increasing irrigation volume"],
+ ans:1,exp:"Ploughing across the slope creates ridges that slow water flow and hold soil in place. Ploughing down the slope creates channels that accelerate runoff, and removing hedgerows exposes more soil to wind and water."},
+
+{phase:"Math and Science",sub:"AP Environmental Science",diff:"medium",
+ q:"Stratospheric ozone depletion was driven principally by which class of compound?",
+ opts:["Carbon dioxide","Chlorofluorocarbons","Sulfur dioxide","Nitrates"],
+ ans:1,exp:"Chlorofluorocarbons release chlorine in the stratosphere, and each chlorine atom destroys many ozone molecules catalytically. Sulfur dioxide contributes to acid deposition rather than ozone loss, and carbon dioxide affects the lower atmosphere."},
+
+{phase:"Math and Science",sub:"AP Environmental Science",diff:"hard",
+ q:"A species that has a disproportionately large effect on its ecosystem relative to its abundance is called",
+ opts:["an indicator species","a keystone species","an invasive species","a pioneer species"],
+ ans:1,exp:"A keystone species holds the structure of a community together despite low abundance, and its removal causes cascading change. An indicator species signals environmental conditions, and a pioneer species colonises bare ground during succession."},
+
+{phase:"Math and Science",sub:"AP Environmental Science",diff:"medium",
+ q:"What is the main environmental drawback of large hydroelectric dams?",
+ opts:["High greenhouse gas emissions during operation","Disruption of river ecosystems and sediment flow","Radioactive waste production","Very low energy output"],
+ ans:1,exp:"Dams block fish migration, trap sediment that would otherwise nourish downstream floodplains and deltas, and flood habitat upstream. Operation itself produces very little direct emission, and output is typically large."},
+
+{phase:"Math and Science",sub:"AP Environmental Science",diff:"hard",
+ q:"The tragedy of the commons describes which situation?",
+ opts:["A shared resource degraded because individual users bear only part of the cost","A resource protected by strict private ownership","A government monopoly on a resource","A resource that regenerates faster than it is used"],
+ ans:0,exp:"When a resource is open to all, each user captures the full benefit of taking more while sharing the cost of depletion with everyone, so individually rational choices produce collective ruin. Fisheries and grazing land are the standard examples."}
+]);
+
+BANK.push.apply(BANK,[
+{phase:"History and Social Science",sub:"AP US History",diff:"easy",
+ q:"The Northwest Ordinance of 1787 is most significant for establishing which principle?",
+ opts:["A process for territories to become states on equal footing","Permanent federal ownership of western land","The right of states to secede","A national banking system"],
+ ans:0,exp:"The ordinance created an orderly path by which territories could organise and enter the Union as equals rather than as dependencies. It also prohibited slavery in the territory, which shaped later sectional conflict."},
+
+{phase:"History and Social Science",sub:"AP US History",diff:"easy",
+ q:"Marbury v. Madison established which doctrine?",
+ opts:["Federal supremacy over state banks","Judicial review","Separate but equal","Executive privilege"],
+ ans:1,exp:"The decision established the Supreme Court's power to declare acts of Congress unconstitutional. Federal supremacy over state taxation of a national bank came later in McCulloch v. Maryland."},
+
+{phase:"History and Social Science",sub:"AP US History",diff:"medium",
+ q:"Which best describes the effect of the Missouri Compromise of 1820?",
+ opts:["It ended slavery in the territories","It preserved a balance between free and slave states while setting a line for future territories","It repealed the three-fifths clause","It admitted California as a free state"],
+ ans:1,exp:"Missouri entered as a slave state and Maine as free, holding the Senate balance, and slavery was barred north of a specified latitude in the remaining Louisiana Purchase. California entered later under the Compromise of 1850."},
+
+{phase:"History and Social Science",sub:"AP US History",diff:"medium",
+ q:"The primary economic argument for high protective tariffs in the early nineteenth century came from which region?",
+ opts:["The South","The Northeast","The West","The territories"],
+ ans:1,exp:"Northeastern manufacturers wanted protection from cheaper British goods. Southern planters opposed tariffs because they raised the cost of imports while inviting retaliation against cotton exports, which produced the nullification crisis."},
+
+{phase:"History and Social Science",sub:"AP US History",diff:"medium",
+ q:"Reconstruction-era Black Codes were designed primarily to",
+ opts:["extend voting rights to freedpeople","restrict the economic and personal freedom of freedpeople","fund public education in the South","enforce the Fourteenth Amendment"],
+ ans:1,exp:"Black Codes restricted labour contracts, movement, and property rights in order to recreate a controlled workforce after emancipation. Congressional response to them helped drive the Fourteenth Amendment and Radical Reconstruction."},
+
+{phase:"History and Social Science",sub:"AP US History",diff:"hard",
+ q:"Which development best explains the rise of Progressive Era regulation?",
+ opts:["Declining industrial output","Concentration of corporate power and urban social problems","A shrinking federal government","The end of immigration"],
+ ans:1,exp:"Rapid industrial concentration, unsafe working conditions, and urban crowding generated demand for antitrust action, food and drug regulation, and municipal reform. Immigration rose rather than ended during this period."},
+
+{phase:"History and Social Science",sub:"AP US History",diff:"medium",
+ q:"The New Deal's most durable structural legacy is generally considered to be",
+ opts:["the end of the Great Depression","a permanently expanded federal role in economic security","the balancing of the federal budget","the elimination of unemployment"],
+ ans:1,exp:"Programmes such as social insurance, bank deposit guarantees, and securities regulation permanently enlarged federal responsibility. Historians generally credit wartime mobilisation rather than the New Deal with ending the depression itself."},
+
+{phase:"History and Social Science",sub:"AP US History",diff:"hard",
+ q:"Containment as a Cold War strategy was premised on which assumption?",
+ opts:["Soviet expansion could be checked without direct war until internal change occurred","Immediate military rollback was necessary","Economic ties would eliminate rivalry","The United Nations would resolve the conflict"],
+ ans:0,exp:"Containment held that firm resistance at the perimeter would prevent expansion while internal pressures eventually moderated Soviet behaviour. Rollback was the rival proposal and was not adopted as general policy."},
+
+{phase:"History and Social Science",sub:"AP US History",diff:"medium",
+ q:"Brown v. Board of Education overturned the precedent set by which case?",
+ opts:["Dred Scott v. Sandford","Plessy v. Ferguson","Korematsu v. United States","Schenck v. United States"],
+ ans:1,exp:"Plessy had upheld separate but equal facilities in 1896. Brown held that separate educational facilities are inherently unequal, dismantling the constitutional basis for legal segregation in schools."},
+
+{phase:"History and Social Science",sub:"AP US History",diff:"hard",
+ q:"Which factor most directly enabled the Great Migration of the early twentieth century?",
+ opts:["Northern industrial labour demand combined with southern racial violence and agricultural distress","Federal relocation programmes","The end of segregation in the South","A decline in northern manufacturing"],
+ ans:0,exp:"Wartime labour shortages in northern industry pulled workers north while sharecropping, boll weevil damage, and racial terror pushed them out of the South. There was no federal relocation programme driving the movement."}
+]);
+
+BANK.push.apply(BANK,[
+{phase:"History and Social Science",sub:"AP World History",diff:"easy",
+ q:"The Silk Roads are best characterised as",
+ opts:["a single paved highway","a network of overland and maritime routes exchanging goods, ideas, and disease","a military supply line only","a purely maritime trade system"],
+ ans:1,exp:"The Silk Roads were a shifting network of routes rather than one road, and they carried religions, technologies, and pathogens alongside luxury goods. Maritime routes complemented the overland links rather than replacing them."},
+
+{phase:"History and Social Science",sub:"AP World History",diff:"easy",
+ q:"The Columbian Exchange refers to",
+ opts:["a treaty dividing the New World","the transfer of crops, animals, people, and diseases between hemispheres","a European trading company","a Spanish administrative system"],
+ ans:1,exp:"The exchange moved maize, potatoes, and cassava east and wheat, sugar, and livestock west, alongside catastrophic disease transfer to the Americas. The treaty dividing claims was Tordesillas, a separate matter."},
+
+{phase:"History and Social Science",sub:"AP World History",diff:"medium",
+ q:"Which factor most enabled European maritime expansion in the fifteenth and sixteenth centuries?",
+ opts:["A unified European state","Navigational and shipbuilding advances combined with state competition","The absence of competing powers","Complete immunity to tropical disease"],
+ ans:1,exp:"Improvements such as the sternpost rudder, lateen rigging, and better instruments made long voyages possible, while rivalry between competing monarchies funded them. Europe was politically fragmented rather than unified, which sharpened that competition."},
+
+{phase:"History and Social Science",sub:"AP World History",diff:"medium",
+ q:"The Mongol Empire's most significant long-term effect on Eurasia was",
+ opts:["permanent political unification","intensified exchange across previously separated regions","the destruction of all trade","the isolation of China"],
+ ans:1,exp:"Mongol control over vast stretches of Eurasia lowered the cost and risk of long-distance travel, intensifying trade and transmission of ideas and disease. The political unity fragmented within a few generations."},
+
+{phase:"History and Social Science",sub:"AP World History",diff:"medium",
+ q:"Industrialisation first developed in Britain partly because of",
+ opts:["a shortage of coal","accessible coal and iron, capital from trade, and agricultural surplus","a small labour force","the absence of overseas markets"],
+ ans:1,exp:"Britain combined abundant accessible coal, iron ore, capital accumulated from commerce, an agricultural revolution freeing labour, and access to markets and raw materials. Each factor alone was insufficient, and the combination was rare."},
+
+{phase:"History and Social Science",sub:"AP World History",diff:"hard",
+ q:"Which best explains the decline of the Atlantic slave trade in the nineteenth century?",
+ opts:["A sudden fall in demand for sugar","A combination of abolitionist movements, slave resistance, and shifting economic interests","The exhaustion of African populations","A single international treaty"],
+ ans:1,exp:"Abolition resulted from sustained moral campaigning, resistance and revolt including in Haiti, and a shift in economic advantage toward wage labour and industrial production. No single treaty ended it, and enforcement took decades."},
+
+{phase:"History and Social Science",sub:"AP World History",diff:"medium",
+ q:"The Berlin Conference of 1884 to 1885 is significant because it",
+ opts:["granted independence to African states","set rules among European powers for claiming African territory","ended the slave trade","created the League of Nations"],
+ ans:1,exp:"European powers agreed procedures for recognising claims in Africa, accelerating partition. No African representatives participated, and the borders drawn there ignored existing political and ethnic geography with long consequences."},
+
+{phase:"History and Social Science",sub:"AP World History",diff:"hard",
+ q:"Which development most directly undermined European empires after 1945?",
+ opts:["The strengthening of European economies","Wartime exhaustion combined with organised nationalist movements","The absence of nationalist sentiment","A decline in global trade"],
+ ans:1,exp:"European powers emerged from the war economically drained and militarily overstretched, while nationalist movements that had organised during the interwar and war years pressed effectively for independence."},
+
+{phase:"History and Social Science",sub:"AP World History",diff:"medium",
+ q:"The spread of Buddhism from India across Asia occurred principally through",
+ opts:["military conquest","trade routes, missionary activity, and state patronage","forced conversion by empires","maritime exploration only"],
+ ans:1,exp:"Merchants carried the religion along trade routes, monks travelled deliberately to teach, and rulers adopted and sponsored it for legitimacy. Conquest played a very small role compared with commerce and patronage."},
+
+{phase:"History and Social Science",sub:"AP World History",diff:"hard",
+ q:"Which statement best describes the effect of the Black Death on fourteenth-century Europe?",
+ opts:["Labour became cheaper and serfdom strengthened","Labour scarcity raised wages and weakened traditional obligations","Population growth accelerated","Trade networks were unaffected"],
+ ans:1,exp:"Massive mortality left survivors with scarce labour to sell, raising real wages and weakening manorial obligations despite legal attempts to freeze wages. The demographic shock reshaped the rural economy for generations."}
+]);
+
+BANK.push.apply(BANK,[
+{phase:"History and Social Science",sub:"AP Human Geography",diff:"easy",
+ q:"The demographic transition model predicts that as a country develops, birth rates",
+ opts:["rise then fall after death rates fall","fall before death rates fall","remain constant","rise permanently"],
+ ans:0,exp:"In the model death rates fall first as sanitation and medicine improve, producing rapid growth, and birth rates fall later as urbanisation, education, and changing family economics take effect. That lag is what creates the population surge."},
+
+{phase:"History and Social Science",sub:"AP Human Geography",diff:"easy",
+ q:"Which term describes the movement of people from rural areas into cities?",
+ opts:["Suburbanisation","Urbanisation","Counterurbanisation","Gentrification"],
+ ans:1,exp:"Urbanisation is the growth of the urban share of population, typically through rural to urban migration and natural increase. Counterurbanisation is the reverse flow, and gentrification is a change of population within an existing urban area."},
+
+{phase:"History and Social Science",sub:"AP Human Geography",diff:"medium",
+ q:"Von Thunen's model explains agricultural land use primarily in terms of",
+ opts:["soil quality","transport cost and distance to market","climate zones","government subsidy"],
+ ans:1,exp:"The model holds that perishable and heavy goods with high transport costs locate nearest the market, with extensive production further out. It isolates distance as the variable by assuming uniform soil and climate."},
+
+{phase:"History and Social Science",sub:"AP Human Geography",diff:"medium",
+ q:"A primate city is best defined as",
+ opts:["the capital of a country","a city more than twice the size of the next largest in its country","the oldest city in a region","a city with a major port"],
+ ans:1,exp:"Primacy describes a disproportionately dominant city, conventionally at least twice the size of the second city. It often concentrates political, economic, and cultural functions, and it need not be the capital."},
+
+{phase:"History and Social Science",sub:"AP Human Geography",diff:"medium",
+ q:"Which is an example of a centripetal force in a state?",
+ opts:["Deep regional linguistic division","A shared national identity and unifying institutions","Contested borders","Uneven economic development"],
+ ans:1,exp:"Centripetal forces bind a state together, and shared identity, symbols, and effective institutions are the classic examples. The other three are centrifugal, pulling a state apart."},
+
+{phase:"History and Social Science",sub:"AP Human Geography",diff:"hard",
+ q:"The gravity model predicts interaction between two places based on",
+ opts:["population size and distance","climate and terrain","language and religion","political system"],
+ ans:0,exp:"Interaction is predicted to increase with the product of the two populations and decrease with distance between them. It underpins estimates of migration, trade, and communication flows."},
+
+{phase:"History and Social Science",sub:"AP Human Geography",diff:"medium",
+ q:"Which best describes a formal region?",
+ opts:["An area unified by a measurable shared characteristic","An area defined by a functional centre and its hinterland","An area defined by perception","An area with no defined boundary"],
+ ans:0,exp:"A formal region shares a measurable trait such as language, climate, or crop type. A functional region is organised around a node, and a perceptual region exists in people's mental maps rather than in measurement."},
+
+{phase:"History and Social Science",sub:"AP Human Geography",diff:"hard",
+ q:"Push and pull factors in migration are best distinguished by",
+ opts:["distance travelled","whether they originate at the source or the destination","legal status of the migrant","duration of the move"],
+ ans:1,exp:"Push factors operate at the origin, driving people away, while pull factors operate at the destination, drawing them in. Most migration decisions involve both acting together rather than one alone."},
+
+{phase:"History and Social Science",sub:"AP Human Geography",diff:"medium",
+ q:"Which agricultural practice is most associated with the Green Revolution?",
+ opts:["Shifting cultivation","High-yield seed varieties with intensive fertiliser and irrigation","Subsistence pastoralism","Terrace farming"],
+ ans:1,exp:"The Green Revolution combined selectively bred high-yield varieties with heavy fertiliser, pesticide, and irrigation inputs, sharply raising cereal output. Its critics point to water depletion, input cost, and reduced crop diversity."},
+
+{phase:"History and Social Science",sub:"AP Human Geography",diff:"hard",
+ q:"Gentrification is most precisely defined as",
+ opts:["any new construction in a city","the reinvestment in a neighbourhood accompanied by displacement of existing lower income residents","the movement of population to suburbs","the decline of an inner urban area"],
+ ans:1,exp:"The term requires both reinvestment and the displacement that rising rents and property values produce. New construction alone is not gentrification, and suburban movement is a separate process."}
+]);
+
+BANK.push.apply(BANK,[
+{phase:"History and Social Science",sub:"AP Psychology",diff:"easy",
+ q:"In classical conditioning, the neutral stimulus becomes a conditioned stimulus after",
+ opts:["being paired repeatedly with an unconditioned stimulus","being followed by a reward","being punished","being ignored"],
+ ans:0,exp:"Repeated pairing with a stimulus that already produces a response causes the neutral stimulus to elicit that response on its own. Reward-based learning is operant conditioning, which works on consequences rather than pairing."},
+
+{phase:"History and Social Science",sub:"AP Psychology",diff:"easy",
+ q:"Which brain structure is most associated with the formation of new long-term memories?",
+ opts:["Cerebellum","Hippocampus","Amygdala","Medulla"],
+ ans:1,exp:"The hippocampus consolidates new explicit memories for long-term storage. The amygdala processes emotional salience, the cerebellum handles procedural learning and coordination, and the medulla regulates autonomic functions."},
+
+{phase:"History and Social Science",sub:"AP Psychology",diff:"medium",
+ q:"A variable ratio reinforcement schedule produces which pattern of behaviour?",
+ opts:["Low and steady responding","High and persistent responding resistant to extinction","Responding only immediately after reinforcement","No learning at all"],
+ ans:1,exp:"Reinforcement after an unpredictable number of responses produces high steady rates that persist long after reinforcement stops, because the learner cannot tell whether the next response will pay. It is the schedule behind gambling behaviour."},
+
+{phase:"History and Social Science",sub:"AP Psychology",diff:"medium",
+ q:"The fundamental attribution error describes the tendency to",
+ opts:["overestimate situational causes of others' behaviour","overestimate dispositional causes of others' behaviour","ignore one's own behaviour","overvalue statistical evidence"],
+ ans:1,exp:"Observers tend to attribute other people's behaviour to character while attributing their own to circumstance. The asymmetry arises partly because we can see our own situation and only the other person's actions."},
+
+{phase:"History and Social Science",sub:"AP Psychology",diff:"medium",
+ q:"In a study, the variable manipulated by the researcher is called",
+ opts:["the dependent variable","the independent variable","the confounding variable","the control"],
+ ans:1,exp:"The independent variable is manipulated, the dependent variable is measured for change, a confounding variable varies alongside the independent variable and muddies interpretation, and a control provides a comparison baseline."},
+
+{phase:"History and Social Science",sub:"AP Psychology",diff:"hard",
+ q:"Which finding best illustrates the misinformation effect?",
+ opts:["Memory improves with rehearsal","Post-event information alters a witness's recollection","People recall the first items in a list best","Emotional events are remembered vividly"],
+ ans:1,exp:"Information encountered after an event, including the wording of a question, can be incorporated into memory and change what a witness reports. This is why leading questions are a serious problem in eyewitness testimony."},
+
+{phase:"History and Social Science",sub:"AP Psychology",diff:"medium",
+ q:"Which neurotransmitter is most closely associated with reward and movement, and is depleted in Parkinson's disease?",
+ opts:["Serotonin","Dopamine","Acetylcholine","GABA"],
+ ans:1,exp:"Dopamine pathways underlie reward processing and motor control, and degeneration of dopamine-producing neurons produces the motor symptoms of Parkinson's disease. Serotonin is associated with mood and GABA is the main inhibitory transmitter."},
+
+{phase:"History and Social Science",sub:"AP Psychology",diff:"hard",
+ q:"Cognitive dissonance theory predicts that when behaviour conflicts with belief, a person will most likely",
+ opts:["change the behaviour immediately","adjust the belief to reduce discomfort","ignore the conflict entirely","increase the conflict deliberately"],
+ ans:1,exp:"Dissonance is uncomfortable and beliefs are usually easier to adjust than actions already taken. This is why people frequently come to endorse positions after acting in line with them rather than before."},
+
+{phase:"History and Social Science",sub:"AP Psychology",diff:"medium",
+ q:"Which memory phenomenon describes better recall of items at the beginning and end of a list?",
+ opts:["The spacing effect","The serial position effect","Proactive interference","State-dependent memory"],
+ ans:1,exp:"The serial position effect combines primacy, where early items have been rehearsed into long-term memory, and recency, where late items remain in working memory. Middle items suffer from both disadvantages."},
+
+{phase:"History and Social Science",sub:"AP Psychology",diff:"hard",
+ q:"A double-blind procedure controls primarily for",
+ opts:["sampling error","experimenter and participant expectancy effects","measurement precision","statistical power"],
+ ans:1,exp:"Keeping both participants and those interacting with them unaware of condition assignment prevents expectations from shaping behaviour or observation. It does not address sampling, precision, or power, which require different design choices."}
+]);
+
+BANK.push.apply(BANK,[
+{phase:"History and Social Science",sub:"AP Macroeconomics",diff:"easy",
+ q:"Gross domestic product measures",
+ opts:["the total value of final goods and services produced within a country in a period","the total wealth held by a country's residents","government spending only","the value of all transactions including intermediate goods"],
+ ans:0,exp:"GDP counts final goods and services to avoid double counting intermediate inputs, and it measures a flow over a period rather than a stock of wealth. Government spending is one component, not the whole."},
+
+{phase:"History and Social Science",sub:"AP Macroeconomics",diff:"easy",
+ q:"If nominal GDP rises 6 percent and the price level rises 4 percent, real GDP has risen approximately",
+ opts:["10 percent","2 percent","1.5 percent","24 percent"],
+ ans:1,exp:"Real growth is approximately nominal growth minus inflation, so 6 minus 4 gives about 2 percent. The approximation is close for small rates and less accurate for large ones."},
+
+{phase:"History and Social Science",sub:"AP Macroeconomics",diff:"medium",
+ q:"An expansionary monetary policy typically involves",
+ opts:["raising the policy interest rate","lowering the policy interest rate and increasing the money supply","raising reserve requirements","cutting government spending"],
+ ans:1,exp:"A central bank expands by lowering rates and increasing money supply, which encourages borrowing and investment. Cutting government spending is contractionary fiscal policy, a different instrument with a different authority."},
+
+{phase:"History and Social Science",sub:"AP Macroeconomics",diff:"medium",
+ q:"If the marginal propensity to consume is 0.8, what is the simple spending multiplier?",
+ opts:["1.25","5","0.2","8"],
+ ans:1,exp:"The multiplier is one divided by one minus the marginal propensity to consume, so one divided by 0.2, which is 5. A higher propensity to consume produces a larger multiplier because each round of spending leaks less."},
+
+{phase:"History and Social Science",sub:"AP Macroeconomics",diff:"medium",
+ q:"Structural unemployment arises primarily from",
+ opts:["a downturn in the business cycle","a mismatch between worker skills and available jobs","normal job searching between positions","seasonal variation"],
+ ans:1,exp:"Structural unemployment reflects a lasting mismatch of skills or location and persists even in a strong economy. Cyclical unemployment follows the business cycle and frictional unemployment covers ordinary job search."},
+
+{phase:"History and Social Science",sub:"AP Macroeconomics",diff:"hard",
+ q:"Crowding out describes which effect?",
+ opts:["Government borrowing raising interest rates and reducing private investment","Imports displacing domestic goods","Firms exiting a competitive market","Consumers saving more during a recession"],
+ ans:0,exp:"Heavy government borrowing can raise the interest rate, making private investment more expensive and reducing it. The strength of the effect depends on how close the economy is to full capacity."},
+
+{phase:"History and Social Science",sub:"AP Macroeconomics",diff:"medium",
+ q:"According to the Phillips curve relationship in the short run, lower unemployment is associated with",
+ opts:["lower inflation","higher inflation","no change in inflation","falling output"],
+ ans:1,exp:"The short-run relationship is a tradeoff, with tighter labour markets pushing wages and prices up. In the long run the curve is generally treated as vertical at the natural rate, so the tradeoff does not persist."},
+
+{phase:"History and Social Science",sub:"AP Macroeconomics",diff:"hard",
+ q:"A country running a persistent current account deficit must, by accounting identity,",
+ opts:["run a capital account surplus","have a balanced budget","export more than it imports","have zero foreign investment"],
+ ans:0,exp:"The balance of payments must balance, so a current account deficit is matched by a capital and financial account surplus, meaning net inflows of foreign capital. A deficit means imports exceed exports, not the reverse."},
+
+{phase:"History and Social Science",sub:"AP Macroeconomics",diff:"medium",
+ q:"Which is a leakage from the circular flow of income?",
+ opts:["Investment","Government spending","Saving","Exports"],
+ ans:2,exp:"Saving, taxation, and imports are leakages that remove spending from the domestic flow. Investment, government spending, and exports are injections that add to it, and equilibrium requires the two sets to balance."},
+
+{phase:"History and Social Science",sub:"AP Macroeconomics",diff:"hard",
+ q:"Cost-push inflation is best characterised by",
+ opts:["rising prices with rising output","rising prices with falling output","falling prices with rising output","stable prices"],
+ ans:1,exp:"A negative supply shock raises production costs, shifting short-run aggregate supply left and producing higher prices alongside lower output, which is stagflation. Demand-pull inflation raises prices and output together."}
+]);
+
+BANK.push.apply(BANK,[
+{phase:"English",sub:"AP English Language",diff:"easy",
+ pas:"Every generation believes it invented urgency. Ours simply built machines to broadcast it, and then mistook the volume for evidence.",
+ q:"Which rhetorical strategy is most evident in the passage?",
+ opts:["Extended analogy","Concession followed by a redefining turn","Direct citation of authority","Narrative anecdote"],
+ ans:1,exp:"The writer grants a general claim about every generation, then narrows to a specific and critical characterisation of the present one. The turn does the argumentative work, and the concession makes it harder to dismiss as hostility."},
+
+{phase:"English",sub:"AP English Language",diff:"easy",
+ q:"In rhetorical analysis, ethos refers principally to",
+ opts:["emotional appeal","logical structure","the credibility and character of the speaker","the occasion of the speech"],
+ ans:2,exp:"Ethos concerns the speaker's authority and trustworthiness as constructed within the text. Pathos is emotional appeal, logos is reasoning, and the occasion is kairos."},
+
+{phase:"English",sub:"AP English Language",diff:"medium",
+ pas:"The report concluded that the programme was ineffective. It also noted, in a footnote, that funding had been withdrawn in the second month.",
+ q:"The second sentence functions primarily to",
+ opts:["confirm the conclusion","undercut the conclusion by supplying a competing explanation","introduce a new topic","summarise the report"],
+ ans:1,exp:"A programme defunded in its second month cannot fairly be judged ineffective, so the footnote supplies an alternative explanation for the outcome. Placing it in a footnote is itself part of the effect the sentence describes."},
+
+{phase:"English",sub:"AP English Language",diff:"medium",
+ q:"A writer who concedes an opposing point before refuting it is using",
+ opts:["a straw man","concession and refutation","circular reasoning","an appeal to authority"],
+ ans:1,exp:"Stating the opposing view fairly and then answering it strengthens credibility and pre-empts objection. A straw man misrepresents the opposing view in order to defeat it more easily, which is the opposite move."},
+
+{phase:"English",sub:"AP English Language",diff:"medium",
+ pas:"We were promised convenience. We received dependency. We were promised connection. We received an audience.",
+ q:"Which device most shapes the passage?",
+ opts:["Anaphora with parallel antithesis","Extended metaphor","Rhetorical question","Understatement"],
+ ans:0,exp:"The repeated opening phrase is anaphora, and each pair sets a promise against a contrasting outcome in parallel construction. The accumulation is what produces the force rather than any single sentence."},
+
+{phase:"English",sub:"AP English Language",diff:"hard",
+ q:"Which choice best describes a qualifier in an argument?",
+ opts:["A statement limiting the scope or certainty of a claim","A restatement of the thesis","An emotional appeal","A citation of data"],
+ ans:0,exp:"Qualifiers such as usually, in most cases, or under these conditions narrow a claim so it can survive counterexamples. An unqualified universal claim is easier to state and far easier to refute."},
+
+{phase:"English",sub:"AP English Language",diff:"medium",
+ pas:"The senator's speech ran forty minutes and contained no proposal, no figure, and no date.",
+ q:"The sentence achieves its effect chiefly through",
+ opts:["hyperbole","the accumulation of specific absences","direct accusation","appeal to authority"],
+ ans:1,exp:"Listing three concrete things the speech lacked is more damaging than an assertion that it was empty, because the reader draws the conclusion. Specificity in the negative is the technique at work."},
+
+{phase:"English",sub:"AP English Language",diff:"hard",
+ q:"In a synthesis argument, sources should be used primarily to",
+ opts:["substitute for the writer's own claim","support and complicate a claim the writer has made","fill the required length","demonstrate wide reading"],
+ ans:1,exp:"Sources exist to advance an argument the writer owns, both by supporting it and by supplying the objections the writer must answer. An essay that merely summarises its sources has no argument to evaluate."},
+
+{phase:"English",sub:"AP English Language",diff:"medium",
+ q:"Which sentence contains a logical fallacy?",
+ opts:["The policy failed in three cities, so it may be poorly designed.","The policy failed in one city, so it will fail everywhere.","The policy has not been tested widely enough to judge.","The policy succeeded where funding was adequate."],
+ ans:1,exp:"Generalising from a single case to a universal claim is a hasty generalisation. The first option qualifies appropriately with may, and the other two make limited claims the evidence can support."},
+
+{phase:"English",sub:"AP English Language",diff:"hard",
+ pas:"It is not that the archive is incomplete. It is that the incompleteness is patterned, and the pattern is the argument.",
+ q:"The passage most directly claims that",
+ opts:["the archive should be discarded","what is missing from the archive is itself evidence","archives are always complete","the pattern is accidental"],
+ ans:1,exp:"The writer distinguishes random gaps from systematic ones and asserts that a systematic absence carries meaning. The second sentence explicitly denies that the pattern is accidental."}
+]);
+
+BANK.push.apply(BANK,[
+{phase:"English",sub:"AP English Literature",diff:"easy",
+ pas:"The house had learned to hold its breath. Doors closed without sound, the stair no longer complained, and even the clock had given up counting aloud.",
+ q:"The passage characterises the house primarily through",
+ opts:["personification of absence and silence","direct description of its architecture","dialogue between residents","historical background"],
+ ans:0,exp:"The house is given the capacity to learn, hold its breath, and give up, and each attributed action describes something that has stopped rather than something present. Personification is used to render absence."},
+
+{phase:"English",sub:"AP English Literature",diff:"easy",
+ q:"A poem's speaker should be understood as",
+ opts:["always the poet","a constructed voice that may differ from the poet","the reader","the subject of the poem"],
+ ans:1,exp:"The speaker is a persona created within the poem and can hold views the poet does not. Conflating the two is the most common error in student poetry analysis and closes off most of what a dramatic monologue is doing."},
+
+{phase:"English",sub:"AP English Literature",diff:"medium",
+ pas:"He counted the coins twice, then a third time, though he had known the total since the first.",
+ q:"The sentence most directly reveals the character's",
+ opts:["poverty","anxiety expressed through repeated action","generosity","confusion about arithmetic"],
+ ans:1,exp:"The narrator states that he already knew the total, so the recounting cannot be about information. Behaviour continued past its usefulness signals anxiety, and the clause after though is what makes the reading available."},
+
+{phase:"English",sub:"AP English Literature",diff:"medium",
+ q:"Dramatic irony occurs when",
+ opts:["a character says the opposite of what is meant","the audience knows something a character does not","an unexpected event occurs","the setting contradicts the mood"],
+ ans:1,exp:"Dramatic irony depends on a gap between audience knowledge and character knowledge, which charges ordinary lines with meaning the speaker cannot hear. Saying the opposite of what is meant is verbal irony."},
+
+{phase:"English",sub:"AP English Literature",diff:"medium",
+ pas:"Winter took the orchard first, then the road, then the names of the neighbours one by one.",
+ q:"The passage uses which technique to widen its scope?",
+ opts:["Alliteration","A progression from physical to human loss","Rhyme","Direct address"],
+ ans:1,exp:"The list moves from trees to a road to people's names, so each item is less tangible and more personal than the last. The escalation is what converts a weather description into a statement about a community."},
+
+{phase:"English",sub:"AP English Literature",diff:"hard",
+ q:"An unreliable narrator is best identified by",
+ opts:["a first-person perspective","internal contradictions or gaps between the narrator's account and other evidence in the text","use of past tense","a large number of characters"],
+ ans:1,exp:"Unreliability is established by the text supplying evidence against its own narrator, not merely by narration being first person. Most first-person narrators are perfectly reliable, so the perspective alone proves nothing."},
+
+{phase:"English",sub:"AP English Literature",diff:"medium",
+ q:"In a sonnet, the volta refers to",
+ opts:["the opening image","a turn in argument or feeling","the rhyme scheme","the final rhyming couplet"],
+ ans:1,exp:"The volta is the pivot where the poem changes direction, typically at the ninth line in an Italian sonnet or before the closing couplet in an English one. Locating it is usually the fastest route into the poem's argument."},
+
+{phase:"English",sub:"AP English Literature",diff:"hard",
+ pas:"She kept the letter unopened on the mantel for eleven years, and dusted around it.",
+ q:"The detail of dusting around the letter primarily conveys",
+ opts:["her tidiness","a sustained refusal that has become routine","her forgetfulness","the letter's physical fragility"],
+ ans:1,exp:"Dusting around the object means acknowledging it daily while continuing not to open it, so the avoidance is deliberate and maintained rather than accidental. Eleven years turns a decision into a habit."},
+
+{phase:"English",sub:"AP English Literature",diff:"medium",
+ q:"Free indirect discourse is best described as",
+ opts:["dialogue in quotation marks","third-person narration that carries a character's idiom and perspective","a first-person diary form","an omniscient summary"],
+ ans:1,exp:"The narration stays in third person while adopting the character's vocabulary and judgements, so the reader occupies the character's viewpoint without a shift in grammatical person. It allows irony that pure first person cannot produce."},
+
+{phase:"English",sub:"AP English Literature",diff:"hard",
+ q:"When analysing a poem's form, the most productive question is",
+ opts:["whether the poem rhymes","what the formal choice makes possible or difficult for the poem's argument","how many lines it has","when it was written"],
+ ans:1,exp:"Form is only interesting once it is connected to meaning, so the useful question is what a constraint enables or prevents. Cataloguing rhyme scheme and line count without that connection is description rather than analysis."}
+]);
+
+const SUBJECTS=['AP Calculus AB','AP Statistics','AP Biology','AP Chemistry','AP Environmental Science','AP US History','AP World History','AP Human Geography','AP Psychology','AP Macroeconomics','AP English Language','AP English Literature'];
+const SUBJ_ICON={'AP Calculus AB':'CAL','AP Statistics':'STA','AP Biology':'BIO','AP Chemistry':'CHM','AP Environmental Science':'ENV','AP US History':'USH','AP World History':'WHI','AP Human Geography':'HUG','AP Psychology':'PSY','AP Macroeconomics':'MAC','AP English Language':'LNG','AP English Literature':'LIT'};
+const SUBJ_PHASE={'AP Calculus AB':'Math and Science','AP Statistics':'Math and Science','AP Biology':'Math and Science','AP Chemistry':'Math and Science','AP Environmental Science':'Math and Science','AP US History':'History and Social Science','AP World History':'History and Social Science','AP Human Geography':'History and Social Science','AP Psychology':'History and Social Science','AP Macroeconomics':'History and Social Science','AP English Language':'English','AP English Literature':'English'};
+
+const LOSSES=[
+{t:"Leaving a free response part blank",b:"Rubrics award points for correct steps, correct setup, and correct reasoning even when the final answer is wrong. An attempted part can earn most of its points. A blank part earns none, and it is the single largest source of avoidable loss on the whole exam."},
+{t:"Answering the question you prepared for",b:"Under pressure candidates write the essay they revised rather than the one in front of them. Underline the command verb and the specific subject in the prompt, and check your opening paragraph against both before you continue."},
+{t:"Ignoring the command verb",b:"Identify, describe, explain, and evaluate demand different things and are scored differently. An explanation offered where an evaluation was asked for caps the mark regardless of quality, because the rubric has no line to award it against."},
+{t:"Writing without evidence",b:"On document and data based questions the rubric requires specific evidence rather than general knowledge. A confident paragraph with no cited example scores below a plainer one that names its source."},
+{t:"Spending too long on the first free response",b:"Each question is worth its own points and time spent perfecting one cannot be recovered on another. Allocate minutes to each part before you start writing and move when the allocation runs out."},
+{t:"Treating the multiple choice as the hard half",b:"Many candidates over-prepare recall and under-prepare written reasoning, then find the free response section carries a large share of the composite. Practise writing under timed conditions, not only answering questions."},
+{t:"Never seeing a real rubric",b:"Published scoring guidelines show exactly what earns a point and what does not. Reading two of them for your subject changes how you write more than any additional content revision."},
+{t:"Guessing without eliminating",b:"There is no penalty for a wrong multiple choice answer, so every blank is a wasted quarter mark. Eliminating one option raises a guess to a third of a mark and eliminating two makes it a coin flip."}
+];
+
+/* ---------- storage ---------- */
+const KEY='rm_ap_practice';
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){ return {}; } }
+function save(d){ try{ localStorage.setItem(KEY,JSON.stringify(d)); }catch(e){} }
+let DB=load();
+if(!DB.sessions) DB.sessions=[];
+if(!DB.subStats) DB.subStats={};
+if(!DB.diffStats) DB.diffStats={easy:{c:0,t:0},medium:{c:0,t:0},hard:{c:0,t:0}};
+if(!DB.seen) DB.seen={};
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function todayKey(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+/* Deterministic daily selection so the set is the same all day */
+function seedFromString(s){ var h=2166136261; for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+function seededPick(arr,n,seed){
+  var idx=arr.map(function(_,i){return i;});
+  var s=seed;
+  for(var i=idx.length-1;i>0;i--){
+    s=(Math.imul(s,1103515245)+12345)>>>0;
+    var j=s%(i+1);
+    var t=idx[i]; idx[i]=idx[j]; idx[j]=t;
+  }
+  return idx.slice(0,n).map(function(i){return arr[i];});
+}
+function shuffle(a){ var r=a.slice(); for(var i=r.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=r[i]; r[i]=r[j]; r[j]=t; } return r; }
+
+/* ---------- quiz engine ---------- */
+let Q={list:[],i:0,correct:0,answered:false,mode:'daily',sub:null,startedAt:0,marks:[]};
+
+function startQuiz(list,mode,sub,mount){
+  Q={list:list,i:0,correct:0,answered:false,mode:mode,sub:sub||null,startedAt:Date.now(),marks:[]};
+  renderQ(mount);
+}
+
+function renderQ(mount){
+  var el=document.getElementById(mount);
+  if(Q.i>=Q.list.length){ renderResult(mount); return; }
+  var q=Q.list[Q.i];
+  var pips='';
+  for(var p=0;p<Q.list.length;p++){
+    var cls = p<Q.i ? (Q.marks[p]?'done':'wrong') : (p===Q.i?'current':'');
+    pips+='<div class="pip '+cls+'"></div>';
+  }
+  var opts='';
+  var letters=['A','B','C','D'];
+  for(var o=0;o<q.opts.length;o++){
+    opts+='<div class="qo" data-o="'+o+'"><div class="letter">'+letters[o]+'</div><div>'+esc(q.opts[o])+'</div></div>';
+  }
+  el.innerHTML='<div class="quiz-panel">'+
+    '<div class="quiz-progress">'+pips+'</div>'+
+    '<div class="quiz-meta">'+
+      '<span class="qnum">Q'+(Q.i+1)+' of '+Q.list.length+'</span>'+
+      '<span class="qsub">'+esc(q.sub)+'</span>'+
+      '<span class="qphase">'+esc(q.phase)+'</span>'+
+      '<span class="qdiff '+q.diff+'">'+q.diff+'</span>'+
+    '</div>'+
+    (q.pas?'<div class="quiz-passage">'+esc(q.pas).replace(/\n/g,'<br>')+'</div>':'')+
+    '<div class="quiz-question">'+esc(q.q)+'</div>'+
+    '<div class="quiz-opts">'+opts+'</div>'+
+    '<div class="quiz-explain" id="qExp"></div>'+
+    '<div class="quiz-actions"><button class="qa-btn primary" id="qNext" style="display:none">'+
+      (Q.i===Q.list.length-1?'See results':'Next question')+'</button>'+
+      '<button class="qa-btn ghost" id="qSkip">Skip</button></div>'+
+    '</div>';
+
+  el.querySelectorAll('.qo').forEach(function(node){
+    node.addEventListener('click',function(){ answer(parseInt(node.getAttribute('data-o'),10),mount); });
+  });
+  document.getElementById('qSkip').addEventListener('click',function(){ answer(-1,mount); });
+  document.getElementById('qNext').addEventListener('click',function(){ Q.i++; renderQ(mount); });
+}
+
+function answer(choice,mount){
+  if(Q.answered) return;
+  Q.answered=true;
+  var q=Q.list[Q.i];
+  var ok = choice===q.ans;
+  Q.marks[Q.i]=ok;
+  if(ok) Q.correct++;
+
+  if(!DB.subStats[q.sub]) DB.subStats[q.sub]={c:0,t:0};
+  DB.subStats[q.sub].t++; if(ok) DB.subStats[q.sub].c++;
+  DB.diffStats[q.diff].t++; if(ok) DB.diffStats[q.diff].c++;
+  DB.seen[q.q]=true;
+  save(DB);
+
+  document.querySelectorAll('#'+mount+' .qo').forEach(function(node){
+    var o=parseInt(node.getAttribute('data-o'),10);
+    node.classList.add('disabled');
+    if(o===q.ans) node.classList.add('correct');
+    else if(o===choice) node.classList.add('wrong');
+  });
+  var exp=document.getElementById('qExp');
+  exp.innerHTML='<strong>'+(ok?'Correct.':(choice===-1?'Skipped.':'Not quite.'))+'</strong> '+esc(q.exp);
+  exp.classList.add('show');
+  document.getElementById('qNext').style.display='inline-block';
+  document.getElementById('qSkip').style.display='none';
+  Q.answered=false;
+  Q.locked=true;
+  document.querySelectorAll('#'+mount+' .qo').forEach(function(n){ n.style.pointerEvents='none'; });
+}
+
+function renderResult(mount){
+  var pct=Math.round(Q.correct/Q.list.length*100);
+  var cls = pct>=80?'great':(pct>=50?'ok':'poor');
+  var mins=Math.max(1,Math.round((Date.now()-Q.startedAt)/60000));
+  var wrongSubs={};
+  Q.list.forEach(function(q,i){ if(!Q.marks[i]) wrongSubs[q.sub]=(wrongSubs[q.sub]||0)+1; });
+
+  DB.sessions.push({d:todayKey(),mode:Q.mode,sub:Q.sub,n:Q.list.length,c:Q.correct,pct:pct,ts:Date.now()});
+  if(Q.mode==='daily'){
+    DB.lastDaily=todayKey();
+    DB.dailyScore=Q.correct+'/'+Q.list.length;
+    DB.streak=computeStreak();
+  }
+  save(DB);
+
+  var rows=Object.keys(wrongSubs).sort(function(a,b){return wrongSubs[b]-wrongSubs[a];})
+    .map(function(k){ return '<div class="sm-row"><span class="sm-icon">'+SUBJ_ICON[k]+'</span><span class="sm-name" style="width:auto;flex:1">'+esc(k)+'</span><span class="sm-pct">'+wrongSubs[k]+'</span></div>'; }).join('');
+
+  document.getElementById(mount).innerHTML='<div class="quiz-panel"><div class="result-card">'+
+    '<div class="big-score '+cls+'">'+pct+'%</div>'+
+    '<div class="rlabel">'+Q.correct+' of '+Q.list.length+' correct</div>'+
+    '<div class="result-mini">'+
+      '<div class="rm"><div class="rv">'+Q.correct+'</div><div class="rl">Correct</div></div>'+
+      '<div class="rm"><div class="rv">'+(Q.list.length-Q.correct)+'</div><div class="rl">Missed</div></div>'+
+      '<div class="rm"><div class="rv">'+mins+'m</div><div class="rl">Time</div></div>'+
+    '</div>'+
+    (rows?'<div class="subj-mastery" style="text-align:left"><div class="sm-title">Missed by domain</div>'+rows+'</div>':'')+
+    '<div class="quiz-actions" style="justify-content:center;margin-top:18px">'+
+      '<button class="qa-btn primary" id="qAgain">Try another set</button>'+
+      '<button class="qa-btn ghost" id="qStats">See analytics</button>'+
+    '</div></div></div>';
+
+  document.getElementById('qAgain').addEventListener('click',function(){
+    if(Q.mode==='daily') buildDaily(); else buildPractice(Q.sub);
+  });
+  document.getElementById('qStats').addEventListener('click',function(){ switchTab('analytics'); });
+  renderStreak();
+}
+
+function computeStreak(){
+  var days={}; DB.sessions.filter(function(s){return s.mode==='daily';}).forEach(function(s){ days[s.d]=true; });
+  var n=0, d=new Date();
+  for(var i=0;i<400;i++){
+    var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(days[k]) n++; else if(i>0) break; else { d.setDate(d.getDate()-1); continue; }
+    d.setDate(d.getDate()-1);
+  }
+  return n;
+}
+
+/* ---------- daily ---------- */
+function buildDaily(){
+  var seed=seedFromString(todayKey());
+  var perDomain=[];
+  SUBJECTS.forEach(function(s,ix){
+    var pool=BANK.filter(function(q){return q.sub===s;});
+    perDomain=perDomain.concat(seededPick(pool,2,seed+ix*7919).slice(0,2));
+  });
+  var list=seededPick(perDomain,10,seed);
+  startQuiz(list,'daily',null,'quizArea');
+}
+
+function renderStreak(){
+  document.getElementById('streakVal').textContent=DB.streak||0;
+  document.getElementById('todayScore').textContent=(DB.lastDaily===todayKey()&&DB.dailyScore)?DB.dailyScore:'-';
+  var dots='', d=new Date();
+  var done={}; DB.sessions.filter(function(s){return s.mode==='daily';}).forEach(function(s){ done[s.d]=true; });
+  var labels=['S','M','T','W','T','F','S'];
+  for(var i=6;i>=0;i--){
+    var dd=new Date(); dd.setDate(d.getDate()-i);
+    var k=dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0');
+    var cls='dot'+(done[k]?' done':'')+(i===0?' today':'');
+    dots+='<div class="'+cls+'">'+labels[dd.getDay()]+'</div>';
+  }
+  document.getElementById('streakDots').innerHTML=dots;
+}
+
+/* ---------- practice ---------- */
+function renderSubjGrid(phase){
+  var grid=document.getElementById('subjGrid');
+  var html='';
+  SUBJECTS.forEach(function(s){
+    if(phase&&phase!=='All'&&SUBJ_PHASE[s]!==phase) return;
+    var total=BANK.filter(function(q){return q.sub===s;}).length;
+    var st=DB.subStats[s]||{c:0,t:0};
+    var pct=st.t?Math.round(st.c/st.t*100):0;
+    html+='<div class="subj-card" data-sub="'+esc(s)+'">'+
+      '<div class="sc-icon">'+SUBJ_ICON[s]+'</div>'+
+      '<div class="sc-name">'+esc(s)+'</div>'+
+      '<div class="sc-count">'+total+' questions'+(st.t?' . '+pct+'% accuracy':'')+'</div>'+
+      '<div class="sc-bar"><div class="sc-fill" style="width:'+pct+'%"></div></div>'+
+      '</div>';
+  });
+  grid.innerHTML=html;
+  grid.querySelectorAll('.subj-card').forEach(function(c){
+    c.addEventListener('click',function(){ buildPractice(c.getAttribute('data-sub')); });
+  });
+}
+
+function buildPractice(sub){
+  var pool=BANK.filter(function(q){return q.sub===sub;});
+  var fresh=pool.filter(function(q){return !DB.seen[q.q];});
+  var use=fresh.length>=10?fresh:pool;
+  var list=shuffle(use).slice(0,Math.min(10,use.length));
+  startQuiz(list,'practice',sub,'practiceQuizArea');
+  document.getElementById('practiceQuizArea').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ---------- strategy ---------- */
+function renderStrategy(){
+  function calc(){
+    var q=Math.max(1,parseInt(document.getElementById('pcQ').value,10)||1);
+    var m=Math.max(1,parseInt(document.getElementById('pcM').value,10)||1);
+    var s=m*60/q;
+    document.getElementById('pcOut').textContent=Math.round(s)+'s';
+    var note='At '+Math.round(s)+' seconds per question you can afford roughly '+
+      Math.floor(s/15)+' quarter-minute checks per item. ';
+    note+= s<45 ? 'That is tight. Answer what you know first and return to the rest rather than working in order.'
+      : (s<75 ? 'That is workable if you do not linger. Set a personal limit and move on when you hit it.'
+      : 'That is comfortable. Use the margin to re-read the stem before selecting, and remember the free response section is scored on the same composite.');
+    document.getElementById('pcNote').textContent=note;
+  }
+  document.getElementById('pcQ').addEventListener('input',calc);
+  document.getElementById('pcM').addEventListener('input',calc);
+  calc();
+  document.getElementById('lossList').innerHTML=LOSSES.map(function(l){
+    return '<div class="hist-row" style="align-items:flex-start;flex-direction:column;gap:4px">'+
+      '<div style="font-weight:700;font-size:13.5px">'+esc(l.t)+'</div>'+
+      '<div class="hist-detail" style="line-height:1.7">'+esc(l.b)+'</div></div>';
+  }).join('');
+}
+
+/* ---------- analytics ---------- */
+function drawRing(pct){
+  var c=document.getElementById('ringCanvas'); if(!c||!c.getContext) return;
+  var x=c.getContext('2d'); x.clearRect(0,0,100,100);
+  x.lineWidth=9; x.lineCap='round';
+  x.strokeStyle='rgba(255,255,255,.07)';
+  x.beginPath(); x.arc(50,50,40,0,Math.PI*2); x.stroke();
+  if(pct>0){
+    var g=x.createLinearGradient(0,0,100,100);
+    g.addColorStop(0,'#6ea8ff'); g.addColorStop(1,'#7cf7d4');
+    x.strokeStyle=g;
+    x.beginPath(); x.arc(50,50,40,-Math.PI/2,-Math.PI/2+Math.PI*2*(pct/100)); x.stroke();
+  }
+}
+
+function renderAnalytics(){
+  var tot=0,cor=0;
+  Object.keys(DB.subStats).forEach(function(k){ tot+=DB.subStats[k].t; cor+=DB.subStats[k].c; });
+  var pct=tot?Math.round(cor/tot*100):0;
+  document.getElementById('ringVal').textContent=tot?pct+'%':'-';
+  drawRing(pct);
+
+  document.getElementById('quickStats').innerHTML=
+    '<div class="ov-stat"><div class="os-val">'+tot+'</div><div class="os-label">Answered</div></div>'+
+    '<div class="ov-stat"><div class="os-val">'+cor+'</div><div class="os-label">Correct</div></div>'+
+    '<div class="ov-stat"><div class="os-val">'+DB.sessions.length+'</div><div class="os-label">Sessions</div></div>';
+
+  document.getElementById('subBars').innerHTML=SUBJECTS.map(function(s){
+    var st=DB.subStats[s]||{c:0,t:0};
+    var p=st.t?Math.round(st.c/st.t*100):0;
+    var col=p>=75?'#34d399':(p>=50?'#fbbf24':'#f87171');
+    return '<div class="sb-row"><div class="sb-label">'+esc(s)+'</div>'+
+      '<div class="sb-track"><div class="sb-fill" style="width:'+(st.t?Math.max(p,8):0)+'%;background:'+col+'">'+(st.t?p+'%':'')+'</div></div>'+
+      '<div class="sb-val">'+(st.t?st.c+'/'+st.t:'-')+'</div></div>';
+  }).join('');
+
+  var last=DB.sessions.slice(-10);
+  if(!last.length){
+    document.getElementById('trendWrap').innerHTML='<div class="trend-empty"><div class="te-icon">-</div>'+
+      '<div class="te-msg">No sessions yet. Complete a daily set or a section drill and your trend appears here.</div></div>';
+  } else {
+    document.getElementById('trendWrap').innerHTML='<div class="trend-bar-chart">'+last.map(function(s){
+      var col=s.pct>=75?'#34d399':(s.pct>=50?'#fbbf24':'#f87171');
+      return '<div class="trend-col"><div class="trend-bar-outer">'+
+        '<div class="trend-bar" style="height:'+Math.max(s.pct,4)+'%;background:'+col+'">'+
+        '<span class="tb-val">'+s.pct+'%</span></div></div>'+
+        '<div class="trend-mode-label '+s.mode+'">'+s.mode+'</div>'+
+        '<div class="trend-label">'+s.d.slice(5)+'</div></div>';
+    }).join('')+'</div>';
+  }
+
+  var hist=DB.sessions.slice().reverse().slice(0,12);
+  document.getElementById('histList').innerHTML = hist.length ? hist.map(function(s){
+    return '<div class="hist-row"><span class="hist-date">'+esc(s.d)+'</span>'+
+      '<span class="hist-mode '+s.mode+'">'+s.mode+'</span>'+
+      '<span class="hist-detail">'+esc(s.sub||'mixed')+'</span>'+
+      '<span class="hist-score">'+s.c+'/'+s.n+'</span></div>';
+  }).join('') : '<div class="trend-empty"><div class="te-msg">No sessions recorded yet.</div></div>';
+
+  var d=DB.diffStats;
+  var mastered=0,shaky=0,weak=0;
+  SUBJECTS.forEach(function(s){
+    var st=DB.subStats[s]; if(!st||!st.t) return;
+    var p=st.c/st.t;
+    if(p>=0.8) mastered++; else if(p>=0.5) shaky++; else weak++;
+  });
+  var covered=SUBJECTS.filter(function(s){ return DB.subStats[s]&&DB.subStats[s].t; }).length;
+  document.getElementById('diffDist').innerHTML=
+    '<div class="mastery-stats">'+
+      '<div class="m-stat green"><div class="ms-val">'+mastered+'</div><div class="ms-lbl">Mastered</div></div>'+
+      '<div class="m-stat yellow"><div class="ms-val">'+shaky+'</div><div class="ms-lbl">Shaky</div></div>'+
+      '<div class="m-stat red"><div class="ms-val">'+weak+'</div><div class="ms-lbl">Weak</div></div>'+
+    '</div>'+
+    '<div class="diff-dist">'+['easy','medium','hard'].map(function(k){
+      var s=d[k]; var p=s.t?Math.round(s.c/s.t*100):0;
+      return '<div class="diff-chip '+k+'"><div class="dc-val">'+(s.t?p+'%':'-')+'</div><div class="dc-label">'+k+'</div></div>';
+    }).join('')+'</div>'+
+    '<div class="cov-info" style="margin-top:12px"><div class="cov-sub">Domains attempted: '+covered+' of '+SUBJECTS.length+'</div></div>';
+
+  var weakList=SUBJECTS.map(function(s){
+    var st=DB.subStats[s]; if(!st||st.t<3) return null;
+    return {s:s,p:st.c/st.t,t:st.t};
+  }).filter(Boolean).filter(function(x){return x.p<0.75;}).sort(function(a,b){return a.p-b.p;});
+
+  document.getElementById('weakAreas').innerHTML = weakList.length ? weakList.map(function(x){
+    return '<div class="sm-row"><span class="sm-icon">'+SUBJ_ICON[x.s]+'</span>'+
+      '<span class="sm-name" style="width:auto;flex:1">'+esc(x.s)+'</span>'+
+      '<div class="sm-bar"><div class="sm-fill" style="width:'+Math.round(x.p*100)+'%;background:#f87171"></div></div>'+
+      '<span class="sm-pct">'+Math.round(x.p*100)+'%</span></div>';
+  }).join('') : '<div class="cov-sub">Answer at least three questions in a domain and any weak areas will be listed here.</div>';
+}
+
+/* ---------- tabs ---------- */
+function switchTab(name){
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.toggle('active',b.getAttribute('data-tab')===name); });
+  var map={daily:'viewDaily',practice:'viewPractice',strategy:'viewStrategy',analytics:'viewAnalytics'};
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  var el=document.getElementById(map[name]); if(el) el.classList.add('active');
+  if(name==='analytics') renderAnalytics();
+  if(name==='practice') renderSubjGrid(document.querySelector('.pf-btn.active').getAttribute('data-phase'));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ---------- hash routing ----------
+   Older published articles deep link to this page for a specific section.
+   Supported: #daily #practice #math #reading-writing #timing #analytics
+   A math or reading hash opens Section Practice with that filter applied. */
+function applyHash(){
+  var h=(window.location.hash||'').replace(/^#/,'').toLowerCase();
+  if(!h) return;
+  var phaseFor={ 'math':'Math and Science', 'science':'Math and Science', 'math-science':'Math and Science',
+                 'history':'History and Social Science', 'social-science':'History and Social Science',
+                 'english':'English' };
+  if(phaseFor[h]){
+    switchTab('practice');
+    var want=phaseFor[h];
+    document.querySelectorAll('.pf-btn').forEach(function(b){
+      var on = b.getAttribute('data-phase')===want;
+      b.classList.toggle('active',on);
+    });
+    renderSubjGrid(want);
+    return;
+  }
+  var tabFor={ 'daily':'daily', 'practice':'practice', 'sections':'practice',
+               'timing':'strategy', 'strategy':'strategy', 'scoring':'strategy',
+               'analytics':'analytics', 'progress':'analytics' };
+  if(tabFor[h]) switchTab(tabFor[h]);
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelector('.tab-nav').addEventListener('click',function(e){
+    var btn=e.target.closest('.tab-btn'); if(!btn) return;
+    switchTab(btn.getAttribute('data-tab'));
+  });
+  document.querySelectorAll('.pf-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.pf-btn').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active');
+      renderSubjGrid(b.getAttribute('data-phase'));
+    });
+  });
+  DB.streak=computeStreak();
+  renderStreak();
+  buildDaily();
+  renderSubjGrid('All');
+  renderStrategy();
+  renderAnalytics();
+  applyHash();
+});
+window.addEventListener('hashchange', applyHash);
+</script>
+
+</body>
+</html>
