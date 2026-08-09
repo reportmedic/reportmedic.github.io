@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the Shakespeare Character Explorer.</p><a href="https://reportmedic.org/tools/shakespeare-character-explorer.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="Explore Shakespeare character by character. Function, arc, foils, the relationship web, common misreadings and essay angles across the major tragedies."/>
+<title>Shakespeare Character Explorer - Function, Foils and Relationships - ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+/* -- Animated Background -- */
+.bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12;animation:meshDrift 20s ease-in-out infinite alternate;}
+.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);top:-15%;right:-10%;}
+.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#a78bfa,#6ea8ff);bottom:-10%;left:-5%;animation-delay:-7s;animation-duration:25s;}
+.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#7cf7d4,#f59e0b);top:50%;left:40%;animation-delay:-14s;animation-duration:28s;}
+@keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg) scale(1);}100%{transform:translate(40px,-30px) rotate(15deg) scale(1.1);}}
+
+/* -- Tabs Nav -- */
+.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:24px;overflow-x:auto;}
+.tab-btn{flex:1;min-width:fit-content;padding:12px 20px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;letter-spacing:.01em;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(110,168,255,.18),rgba(124,247,212,.12));color:var(--text);box-shadow:0 2px 16px rgba(110,168,255,.12),inset 0 1px 0 rgba(255,255,255,.06);}
+
+/* -- Views -- */
+.view{display:none;}
+.view.active{display:block;}
+
+/* -- Hero -- */
+.daily-hero{text-align:center;padding:32px 0 16px;}
+.daily-hero h1{font-size:clamp(26px,4.5vw,38px);font-weight:700;letter-spacing:-.02em;line-height:1.15;}
+.daily-hero h1 .grad{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:10px;line-height:1.5;letter-spacing:.01em;}
+
+/* -- Streak Banner -- */
+.streak-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 26px;flex-wrap:wrap;}
+.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);backdrop-filter:blur(8px);font-size:13px;font-weight:600;transition:transform .15s;}
+.streak-pill:hover{transform:translateY(-1px);}
+.streak-pill .fire{font-size:20px;}
+.streak-pill .sval{font-size:18px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-pill .sval.green{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-dots{display:flex;gap:5px;}
+.streak-dots .dot{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;color:var(--muted);}
+.streak-dots .dot.done{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(124,247,212,.1));border-color:rgba(16,185,129,.25);color:#34d399;}
+.streak-dots .dot.today{border-color:rgba(110,168,255,.45);box-shadow:0 0 14px rgba(110,168,255,.15);}
+
+/* -- Phase Filter -- */
+.phase-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.phase-filter .pf-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px;}
+.pf-btn{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;}
+.pf-btn:hover{border-color:rgba(255,255,255,.22);color:var(--text);}
+.pf-btn.active{background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.35);color:#6ea8ff;}
+
+/* -- Quiz Container -- */
+.quiz-panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:26px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
+.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
+.quiz-progress{display:flex;gap:4px;margin-bottom:18px;}
+.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.06);transition:background .3s;}
+.quiz-progress .pip.done{background:linear-gradient(90deg,#10b981,#7cf7d4);}
+.quiz-progress .pip.wrong{background:#ef4444;}
+.quiz-progress .pip.current{background:rgba(110,168,255,.4);animation:pipPulse 1.5s ease infinite;}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.1);color:#6ea8ff;border:1px solid rgba(110,168,255,.15);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);color:var(--muted);}
+.quiz-meta .qphase{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid rgba(124,247,212,.2);background:rgba(124,247,212,.06);color:#7cf7d4;}
+.quiz-meta .qdiff{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.quiz-meta .qdiff.easy{border:1px solid rgba(52,211,153,.2);background:rgba(52,211,153,.06);color:#34d399;}
+.quiz-meta .qdiff.medium{border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.06);color:#fbbf24;}
+.quiz-meta .qdiff.hard{border:1px solid rgba(248,113,113,.2);background:rgba(248,113,113,.06);color:#f87171;}
+.quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.quiz-meta .timer svg{color:rgba(110,168,255,.6);}
+
+.quiz-question{font-size:16.5px;line-height:1.7;font-weight:600;margin-bottom:18px;letter-spacing:.005em;}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s;}
+.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.06);}
+.qo.selected .letter{border-color:#6ea8ff;background:#6ea8ff;color:#061021;}
+.qo.correct{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);}
+.qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
+.qo.disabled{pointer-events:none;opacity:.65;}
+.qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
+
+.quiz-explain{margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(124,247,212,.035);border:1px solid rgba(124,247,212,.1);font-size:13.5px;line-height:1.7;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;letter-spacing:.01em;}
+.qa-btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;}
+.qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+.qa-btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);}
+
+/* -- Results Card -- */
+.result-card{text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;}
+.result-card .big-score{font-size:64px;font-weight:700;line-height:1;margin-bottom:8px;}
+.result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
+.result-mini .rm{padding:16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.result-mini .rm .rv{font-size:20px;font-weight:700;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* -- Subject Practice Grid -- */
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.subj-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.subj-card .sc-icon{font-size:30px;margin-bottom:10px;}
+.subj-card .sc-name{font-size:14.5px;font-weight:700;margin-bottom:4px;letter-spacing:.01em;}
+.subj-card .sc-count{font-size:12px;color:var(--muted);}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .5s ease;}
+.sh-card{border:1px solid var(--border);border-radius:15px;background:rgba(255,255,255,.03);padding:15px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.sh-card:hover{border-color:rgba(255,255,255,.22);transform:translateY(-2px);}
+.sh-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.sh-card[data-play="hamlet"]::before{background:#6ea8ff;}
+.sh-card[data-play="othello"]::before{background:#f87171;}
+.sh-card[data-play="lear"]::before{background:#fbbf24;}
+.sh-card[data-play="macbeth"]::before{background:#a78bfa;}
+.sh-nm{font-size:15.5px;font-weight:700;line-height:1.4;}
+.sh-rl{font-size:11.5px;color:var(--muted);margin-top:4px;}
+.sh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:11px;}
+.sh-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.sh-row{display:grid;grid-template-columns:160px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14.5px;line-height:1.8;}
+.sh-row:last-child{border-bottom:0;}
+.sh-row .lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;padding-top:3px;}
+@media(max-width:660px){.sh-row{grid-template-columns:1fr;gap:5px;}}
+.sh-tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);margin:3px 5px 0 0;}
+.sh-tag.link{cursor:pointer;background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.28);color:#6ea8ff;}
+.sh-tag.link:hover{background:rgba(110,168,255,.22);}
+.sh-edge{display:grid;grid-template-columns:1fr 130px 1fr;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13.5px;}
+.sh-edge:last-child{border-bottom:0;}
+.sh-edge .mid{text-align:center;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--brand2);}
+.sh-edge .who{font-weight:600;}
+@media(max-width:640px){.sh-edge{grid-template-columns:1fr;gap:3px;}.sh-edge .mid{text-align:left;}}
+.sh-warn{border-left:3px solid #ffb35c;background:rgba(255,179,92,.07);border-radius:0 12px 12px 0;padding:13px 15px;font-size:13.5px;line-height:1.8;}
+.sh-note{border-left:3px solid var(--brand);background:rgba(255,255,255,.04);border-radius:0 12px 12px 0;padding:13px 15px;font-size:13.5px;line-height:1.8;}
+.sh-code{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:15px;overflow-x:auto;white-space:pre;color:#a7c7f0;}
+.ri-cell{padding:12px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.03);text-align:center;}
+.ri-cell .cv{font-size:19px;font-weight:800;}
+.ri-cell .cl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:3px;}
+.bn-text{line-height:1.9;}
+.ri-warnbox{border-left:3px solid #ffb35c;background:rgba(255,179,92,.07);border-radius:0 12px 12px 0;padding:14px 16px;font-size:13.5px;line-height:1.75;}
+.lit-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.lit-detail h3{font-size:20px;margin-bottom:4px;}
+.lit-detail .meta{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+.lit-detail p{line-height:1.75;font-size:14.5px;margin-bottom:12px;}
+.lit-row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.lit-row:last-child{border-bottom:0;}
+.lit-row .lbl{font-weight:700;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px;}
+@media(max-width:640px){.lit-row{grid-template-columns:1fr;gap:4px;}}
+.cmp-grid{display:grid;grid-template-columns:170px 1fr 1fr;gap:10px;align-items:start;}
+.cmp-grid > div{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.cmp-grid .cmp-lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;}
+.cmp-grid .cmp-head{font-weight:700;font-size:15px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.14);}
+@media(max-width:760px){.cmp-grid{grid-template-columns:1fr;}.cmp-grid .cmp-lbl{padding-bottom:0;border-bottom:0;}}
+.theme-chip{display:inline-block;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:rgba(110,168,255,.10);border:1px solid rgba(110,168,255,.20);color:#6ea8ff;margin:3px 5px 3px 0;cursor:pointer;}
+.theme-chip.on{background:var(--brand);border-color:var(--brand);color:#08111f;}
+
+/* -- Analytics Dashboard -- */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
+.an-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.an-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);}
+.an-card.full{grid-column:1/-1;}
+.an-card h3{font-size:12.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* -- Overview Strip -- */
+.overview-strip{display:flex;align-items:center;gap:24px;}
+.ov-ring{position:relative;flex-shrink:0;width:100px;height:100px;}
+.ov-ring canvas{width:100px;height:100px;}
+.ov-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ov-ring-label .rv{font-size:22px;font-weight:700;line-height:1;}
+.ov-ring-label .rl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ov-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ov-stat{padding:12px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;}
+.ov-stat .os-val{font-size:18px;font-weight:700;line-height:1.2;font-family:'JetBrains Mono',monospace;}
+.ov-stat .os-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+@media(max-width:600px){
+  .overview-strip{flex-direction:column;gap:16px;}
+  .ov-stats{grid-template-columns:repeat(3,1fr);width:100%;}
+}
+
+/* -- Subject accuracy bars -- */
+.sub-bars{display:flex;flex-direction:column;gap:10px;}
+.sb-row{display:flex;align-items:center;gap:10px;}
+.sb-label{width:105px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:46px;text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+/* -- Trend Chart -- */
+.trend-wrap{position:relative;min-height:220px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.trend-wrap::-webkit-scrollbar{height:4px;}.trend-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--muted);text-align:center;}
+.trend-empty .te-icon{font-size:40px;opacity:.4;}
+.trend-empty .te-msg{font-size:13px;line-height:1.5;max-width:320px;}
+.trend-bar-chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding:10px 0;min-width:min-content;}
+.trend-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:48px;width:48px;flex-shrink:0;}
+.trend-bar-outer{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative;}
+.trend-bar{width:100%;border-radius:6px 6px 2px 2px;transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;min-height:4px;}
+.trend-bar:hover{filter:brightness(1.2);}
+.trend-bar .tb-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.trend-bar:hover .tb-val{opacity:1;}
+.trend-label{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.trend-mode-label.daily{background:rgba(110,168,255,.12);color:#6ea8ff;}
+.trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
+
+/* -- Mastery Dashboard -- */
+.mastery-wrap{margin-top:8px;}
+.mastery-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.m-stat{padding:12px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);}
+.m-stat .ms-val{font-size:22px;font-weight:800;margin-bottom:2px;}
+.m-stat .ms-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+.m-stat.green .ms-val{color:#34d399;} .m-stat.yellow .ms-val{color:#fbbf24;} .m-stat.red .ms-val{color:#f87171;} .m-stat.blue .ms-val{color:#6ea8ff;} .m-stat.purple .ms-val{color:#a78bfa;}
+.coverage-ring{display:flex;align-items:center;gap:16px;padding:14px;border-radius:14px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);margin-bottom:14px;overflow:hidden;}
+.cov-canvas{width:90px;height:90px;flex-shrink:0;}
+.cov-info{flex:1;min-width:0;overflow:hidden;}
+.cov-title{font-size:13px;font-weight:700;color:var(--fg);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cov-sub{font-size:11px;color:var(--muted);line-height:1.6;word-break:break-word;}
+.subj-mastery{margin-top:14px;}
+.sm-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+.sm-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.sm-icon{font-size:14px;width:20px;text-align:center;}
+.sm-name{width:70px;font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-bar{flex:1;height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative;}
+.sm-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.sm-pct{width:34px;text-align:right;font-weight:700;font-size:11px;}
+
+/* -- Passage block for reading items -- */
+.quiz-passage{padding:14px 16px;border-radius:14px;background:rgba(110,168,255,.04);border:1px solid rgba(110,168,255,.10);font-size:14.5px;line-height:1.75;color:var(--muted);margin-bottom:14px;}
+.quiz-passage em{color:var(--text);font-style:italic;}
+
+/* -- Difficulty chips -- */
+.diff-dist{display:flex;gap:10px;margin-top:6px;}
+.diff-chip{flex:1;padding:14px 10px;border-radius:14px;text-align:center;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);}
+.diff-chip .dc-val{font-size:20px;font-weight:700;margin-bottom:2px;}
+.diff-chip .dc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+.diff-chip.easy .dc-val{color:#34d399;}
+.diff-chip.medium .dc-val{color:#fbbf24;}
+.diff-chip.hard .dc-val{color:#f87171;}
+
+/* -- Session History -- */
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding-right:4px;}
+.hist-list::-webkit-scrollbar{width:4px;}
+.hist-list::-webkit-scrollbar-track{background:transparent;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:12px;transition:background .1s;}
+.hist-row:hover{background:rgba(255,255,255,.04);}
+.hist-date{font-weight:600;min-width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hist-mode{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.hist-mode.daily{background:rgba(110,168,255,.1);color:#6ea8ff;}
+.hist-mode.practice{background:rgba(139,92,246,.1);color:#a78bfa;}
+.hist-score{margin-left:auto;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.hist-detail{color:var(--muted);font-size:11px;}
+
+/* -- Reset Button -- */
+.reset-zone{margin-top:20px;text-align:center;}
+.reset-btn{padding:10px 20px;border-radius:12px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.reset-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);}
+
+/* -- Tab label responsive -- */
+.tab-short{display:none;}
+@media(max-width:540px){.tab-full{display:none;}.tab-short{display:inline;}}
+@media(max-width:640px){
+  .quiz-panel{padding:16px;}
+  .streak-bar{gap:10px;}
+  .subj-grid{grid-template-columns:1fr 1fr;}
+  .diff-dist{flex-wrap:wrap;}
+  .diff-chip{min-width:calc(50% - 5px);}
+  .mastery-stats{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .coverage-ring{flex-direction:column;text-align:center;}
+  .sm-name{width:55px;font-size:10px;}
+  .tab-nav{overflow-x:hidden;}
+  .hide-mobile{display:none!important;}
+}
+
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .5s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+
+.btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;padding:10px 20px;border-radius:10px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:.01em;transition:all .18s;}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-mesh"><div class="strand"></div><div class="strand"></div><div class="strand"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn hide-mobile" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+  <a class="btn primary" href="/tools/classic-literature-study-guide.html">Literature Guide</a>
+</div>
+</header>
+
+<div class="wrap">
+  <!-- Tab Nav -->
+  <nav class="tab-nav anim-up">
+    <button class="tab-btn active" data-tab="chars"><span class="tab-full">Characters</span><span class="tab-short">Characters</span></button>
+    <button class="tab-btn" data-tab="web"><span class="tab-full">Relationship Web</span><span class="tab-short">Web</span></button>
+    <button class="tab-btn" data-tab="foils"><span class="tab-full">Foils and Parallels</span><span class="tab-short">Foils</span></button>
+    <button class="tab-btn" data-tab="plays"><span class="tab-full">The Plays</span><span class="tab-short">Plays</span></button>
+    <button class="tab-btn" data-tab="method"><span class="tab-full">Essay Method</span><span class="tab-short">Method</span></button>
+    <button class="tab-btn" data-tab="extend"><span class="tab-full">Extending This</span><span class="tab-short">Extend</span></button>
+  </nav>
+
+  <!-- VIEW: CHARACTERS -->
+  <div class="view active" id="viewChars">
+    <div class="daily-hero anim-up d1">
+      <h1>Shakespeare <span class="grad">Character Explorer</span></h1>
+      <p class="sub">Every figure gets the same treatment: what they are for structurally, how they change, who they are set against, and the reading that usually goes wrong.</p>
+    </div>
+
+    <div class="phase-filter anim-up d2">
+      <span class="pf-label">Play:</span>
+      <span id="playBtns"></span>
+    </div>
+    <div class="phase-filter anim-up d2" style="margin-top:-6px">
+      <span class="pf-label">Role:</span>
+      <span id="roleBtns"></span>
+    </div>
+
+    <div class="row" style="gap:10px;margin:14px 0;flex-wrap:wrap">
+      <input class="input" id="shFind" type="search" placeholder="Search names, functions and themes" style="max-width:300px" />
+      <span class="pill tiny" id="shCount"></span>
+      <button class="btn" id="shReset" type="button">Reset filters</button>
+    </div>
+
+    <div class="sh-grid anim-up d3" id="shGrid"></div>
+    <div id="shDetail"></div>
+  </div>
+
+  <!-- VIEW: WEB -->
+  <div class="view" id="viewWeb">
+    <div class="daily-hero">
+      <h1>Relationship <span class="grad">Web</span></h1>
+      <p class="sub">Every connection in the play, typed by what it actually is. Filter by relationship to see the whole pattern of schemes, services and counter-moves at once.</p>
+    </div>
+    <div class="phase-filter">
+      <span class="pf-label">Play:</span>
+      <span id="webPlayBtns"></span>
+    </div>
+    <div class="phase-filter" style="margin-top:-6px">
+      <span class="pf-label">Kind:</span>
+      <span id="webKindBtns"></span>
+    </div>
+    <div class="row" style="gap:10px;margin:14px 0;flex-wrap:wrap">
+      <span class="pill tiny" id="webCount"></span>
+    </div>
+    <div id="webList"></div>
+    <div class="sh-note" style="margin-top:16px">A relationship map is only useful once the edges are typed. Two characters connected is not information. One character deceiving another while a third serves them and a fourth mirrors the first is a structure, and that structure is usually the argument an essay needs.</div>
+  </div>
+
+  <!-- VIEW: FOILS -->
+  <div class="view" id="viewFoils">
+    <div class="daily-hero">
+      <h1>Foils and <span class="grad">Parallels</span></h1>
+      <p class="sub">Shakespeare builds meaning by pairing. Each pair below isolates one quality, and naming the quality is what turns a comparison into an argument.</p>
+    </div>
+    <div id="foilList"></div>
+  </div>
+
+  <!-- VIEW: PLAYS -->
+  <div class="view" id="viewPlays">
+    <div class="daily-hero">
+      <h1>The <span class="grad">Plays</span></h1>
+      <p class="sub">Structure, sources, and the question each play is built around, with a count of what this explorer currently covers.</p>
+    </div>
+    <div id="playList"></div>
+  </div>
+
+  <!-- VIEW: METHOD -->
+  <div class="view" id="viewMethod">
+    <div class="daily-hero">
+      <h1>Essay <span class="grad">Method</span></h1>
+      <p class="sub">Nine moves for writing about a Shakespeare character, and the failures each one prevents.</p>
+    </div>
+    <div id="methodList"></div>
+  </div>
+
+  <!-- VIEW: EXTEND -->
+  <div class="view" id="viewExtend">
+    <div class="daily-hero">
+      <h1>Extending <span class="grad">This</span></h1>
+      <p class="sub">Everything on this page comes from four arrays. Adding a play, a character, a relationship or a foil pair is appending one object, and nothing else needs to change.</p>
+    </div>
+    <div id="extendList"></div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">Shakespeare Character Explorer - function, foils and the relationship web</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. Copyright ReportMedic.</div>
+</div>
+</footer>
+
+<script>
+/* ============================================================================
+   SHAKESPEARE CHARACTER EXPLORER - DATA
+   ----------------------------------------------------------------------------
+   Everything this page renders comes from the four arrays below. To extend it,
+   append objects. Nothing in the application code needs to change.
+
+   SH.plays      one object per play
+   SH.characters one object per character, keyed to a play by its id
+   SH.edges      one object per relationship, keyed to two character ids
+   SH.foils      one object per deliberate pairing
+
+   Schemas are documented in full on the Extending This tab of the page itself,
+   so a future editor can read them without opening the source.
+   ========================================================================== */
+
+var SH = {};
+
+/* PLAY SCHEMA
+   id        short lowercase key, used by characters and edges
+   title     display title
+   genre     Tragedy, Comedy, History, Romance, Problem play
+   period    approximate composition window, stated loosely
+   setting   where the action takes place
+   question  the question the play is built around, phrased so it is arguable
+   structure how the play is shaped, one or two sentences
+   sources   what Shakespeare worked from
+   colour    optional, a CSS colour used for the card stripe        */
+SH.plays = [
+{id:"hamlet", title:"Hamlet", genre:"Tragedy", period:"around 1600", setting:"Elsinore, Denmark",
+ question:"What does a person owe to a demand made by the dead?",
+ structure:"A revenge play whose entire second act is delay, which is the innovation. The convention required action and Shakespeare wrote a protagonist who examines the demand instead, so the audience spends the play inside a decision rather than watching one.",
+ sources:"A Norse legend recorded by Saxo Grammaticus, transmitted through a French retelling and an earlier lost English play."},
+{id:"othello", title:"Othello", genre:"Tragedy", period:"around 1604", setting:"Venice, then Cyprus",
+ question:"How little evidence does it take to destroy a person who wants to believe the worst?",
+ structure:"The tightest plot Shakespeare wrote. It runs on a single deception with almost no subplot, and the compression is what makes the speed of the collapse plausible and unbearable.",
+ sources:"A prose tale by Cinthio, substantially altered, with the villain given a name, a motive problem, and most of the lines."},
+{id:"lear", title:"King Lear", genre:"Tragedy", period:"around 1605", setting:"Ancient Britain",
+ question:"Is there any order in the universe that rewards goodness, and what follows if there is not?",
+ structure:"Two plots running in parallel, a king and his daughters against an earl and his sons, each illuminating the other. The doubling is the argument: what happens once is character, what happens twice is a world.",
+ sources:"An older anonymous play on the Leir story, with the subplot drawn from Sidney's Arcadia and the ending deliberately darkened."},
+{id:"macbeth", title:"Macbeth", genre:"Tragedy", period:"around 1606", setting:"Scotland",
+ question:"Does a prophecy describe a future or create one?",
+ structure:"The shortest of the major tragedies and the fastest. The crime happens early, so the play is not about whether he does it but about what doing it costs, which inverts the usual structure of a tragedy.",
+ sources:"Holinshed's Chronicles, with the historical Macbeth's long and reasonably successful reign compressed and blackened."}
+];
+
+/* CHARACTER SCHEMA
+   id        short lowercase key, unique across all plays
+   play      a play id from SH.plays
+   name      display name
+   role      Protagonist, Antagonist, Foil, Confidant, Catalyst, Authority,
+             Witness, Subordinate, Chorus figure
+   line      one line shown on the card, under the name
+   function  what the character is for structurally, not who they are
+   arc       how they change, or the argument that they do not
+   scenes    array of key moments, described rather than quoted
+   themes    array of theme keys, free text
+   misread   the reading students most often give and why it is thin
+   angle     an arguable essay position with the counter attached
+   note      optional extra observation                            */
+SH.characters = [];
+
+SH.characters = SH.characters.concat([
+/* ---------------------------------------------------------------- HAMLET */
+{id:"hamlet", play:"hamlet", name:"Hamlet", role:"Protagonist",
+ line:"Prince of Denmark, and the play's own critic",
+ function:"He is the play's method rather than only its subject. Every convention of revenge tragedy is put to him and he examines it aloud, so the audience receives the genre and its critique at the same time.",
+ arc:"Moves from a demand he cannot verify, through a test he designs himself, to an acceptance of contingency in the final act that reads either as maturity or as exhaustion depending on the production.",
+ scenes:["First soliloquy, before the Ghost appears, establishing that the grief precedes the demand",
+         "The play within the play, which is his own designed experiment on Claudius",
+         "The prayer scene, where he has the opportunity and constructs a reason not to take it",
+         "The graveyard, where death stops being a question and becomes a physical fact",
+         "The final acceptance before the duel, the clearest statement of the change in him"],
+ themes:["revenge","action and delay","performance","mortality","doubt"],
+ misread:"That he simply cannot make up his mind. The delay is argued for at length and the reasons he gives are serious, so treating it as a defect of temperament skips the entire content of the play.",
+ angle:"Argue that the delay is epistemological rather than psychological: he will not act on testimony he cannot verify, and the play agrees with him by making him design a test. The counter is the prayer scene, where he has verification and still does not act, and any strong essay has to handle it."},
+{id:"claudius", play:"hamlet", name:"Claudius", role:"Antagonist",
+ line:"A competent king who committed one murder",
+ function:"He is the play's argument against a simple villain. He governs well, handles a foreign crisis without a war, and is the only character other than Hamlet given a genuine interior scene.",
+ arc:"From control to improvisation. Each plan he makes after the play scene is worse than the last, and the final one kills the wrong person twice.",
+ scenes:["The opening court scene, a masterclass in political management",
+         "The prayer scene, where the audience learns he cannot repent because he will not give up what he gained",
+         "The recruitment of Laertes, where he stops governing and starts scheming"],
+ themes:["power","guilt","governance","surveillance"],
+ misread:"As a straightforward usurper. The play gives him competence and a conscience precisely so that the moral question is harder than it looks.",
+ angle:"Argue that Claudius is the better king and the worse man, and that the play knows it. The counter is that his competence is inseparable from the surveillance he runs on his own court."},
+{id:"gertrude", play:"hamlet", name:"Gertrude", role:"Authority",
+ line:"Queen, mother, and the play's largest silence",
+ function:"She is the space where the play declines to supply information. Her knowledge of the murder is never established, which forces every reader into an interpretation and makes that interpretation visible as a choice.",
+ arc:"Ambiguous by design. The closet scene is the only point where she is confronted directly, and her response can be played as shock at the accusation or shock at being found out.",
+ scenes:["The opening court, where she urges Hamlet toward normality",
+         "The closet scene, the only direct confrontation and the whole of her evidence",
+         "The final scene, where she drinks knowingly or unknowingly depending on the reading"],
+ themes:["complicity","sexuality","silence","judgement"],
+ misread:"As either innocent or guilty. The point is that the text will not settle it, and a reading that pretends otherwise is importing certainty the play withholds.",
+ angle:"Argue about what her silence is for rather than what it conceals. A play that will not tell you what a mother knew is making an argument about how little the men around her ever ask."},
+{id:"ophelia", play:"hamlet", name:"Ophelia", role:"Subordinate",
+ line:"Instructed by every man in her life",
+ function:"She demonstrates the cost of the court's surveillance on someone with no power to resist it. Father, brother and prince all direct her, and the play gives her no private scene until she has lost her reason.",
+ arc:"From obedience to a madness that is the only speech she is permitted, and which is full of things the court would rather not hear.",
+ scenes:["The instruction scenes with Laertes and Polonius, back to back, which stage the pattern",
+         "The nunnery scene, in which she is used as bait with her father listening",
+         "The mad scenes, where she distributes flowers and says what nobody else will"],
+ themes:["obedience","surveillance","madness","gender"],
+ misread:"As a passive victim who exists to be pitied. Her mad scenes contain the play's sharpest social observations and are given to her deliberately.",
+ angle:"Argue that her madness is the only condition under which the play allows her to speak freely, and that what she says in it is accurate. The counter is that reading madness as truth-telling risks romanticising her destruction."},
+{id:"polonius", play:"hamlet", name:"Polonius", role:"Authority",
+ line:"Counsellor, spy, and comic until he is not",
+ function:"He is the mechanism of the court's surveillance and the play's demonstration that the comic and the sinister are the same activity seen from different angles.",
+ arc:"None. He is consistent from first scene to last, and that consistency is what makes his death a structural turn rather than a character one.",
+ scenes:["The advice to Laertes, a catalogue of maxims delivered by a man who follows none of them",
+         "The instruction to spy on his own son in Paris",
+         "The arras, where his habit of listening kills him"],
+ themes:["surveillance","authority","family","performance"],
+ misread:"As a fool for comic relief. He runs an intelligence operation on his own children and the prince, and the play kills him in the act of doing it.",
+ angle:"Argue that his comedy is the play's method of making surveillance palatable until the moment it is not. The counter is that his maxims are frequently sound, which complicates a purely critical reading."},
+{id:"laertes", play:"hamlet", name:"Laertes", role:"Foil",
+ line:"The revenger who does not hesitate",
+ function:"The play's control experiment. He is given the same situation, a murdered father, and acts at once, which lets the audience see exactly what Hamlet's delay consists of and what it costs.",
+ arc:"From straightforward fury to being used, and finally to a recognition in the last scene that arrives too late to save anyone.",
+ scenes:["The return from France and the storming of the court, direct action within minutes",
+         "The recruitment by Claudius, where his certainty makes him usable",
+         "The final exchange of forgiveness, the only moment he sees the shape of what happened"],
+ themes:["revenge","honour","manipulation","haste"],
+ misread:"As simply the impulsive one. His speed is presented as admirable in the moment and disastrous in outcome, and the play refuses to endorse either him or Hamlet fully.",
+ angle:"Argue that the play sets up Laertes to make delay look like cowardice and then shows haste producing a worse result. The counter is that Hamlet's delay also kills several people who would otherwise have lived."},
+{id:"horatio", play:"hamlet", name:"Horatio", role:"Confidant",
+ line:"The only person Hamlet trusts, and the play's witness",
+ function:"He exists so that there is one uncorrupted relationship in the play and one person left alive to tell it. Without him the story has no transmitter and the ending has no point.",
+ arc:"Deliberately none. His constancy is the fixed point against which everyone else's change is measured.",
+ scenes:["The battlements, where he confirms the Ghost so the audience knows it is not delusion",
+         "The play scene, where he is asked to observe Claudius, making him a second pair of eyes",
+         "The final scene, where he is prevented from dying so that he can report"],
+ themes:["friendship","witness","constancy","truth"],
+ misread:"As a minor functionary. He is the reason the play can end with a story surviving rather than with silence, and Hamlet's dying concern is precisely that.",
+ angle:"Argue that Horatio is the play's answer to its own question about whether anything survives. The counter is that a report is not the same as understanding, and the play does not show us what he actually says."},
+{id:"fortinbras", play:"hamlet", name:"Fortinbras", role:"Foil",
+ line:"The third son of a killed father, and the one who inherits",
+ function:"The outer frame of the revenge structure. Three young men lose fathers, and he is the one who acts on a national scale, arrives last, and takes the throne none of them were fighting over.",
+ arc:"Offstage almost entirely, which is the point. His trajectory is uninterrupted precisely because the play never enters his head.",
+ scenes:["The opening exposition, where his threat justifies the militarised court",
+         "The army crossing Denmark for a worthless patch of ground, which prompts Hamlet's last soliloquy",
+         "The arrival at the end, where he claims the kingdom over a stage of bodies"],
+ themes:["revenge","action","nationhood","irony"],
+ misread:"As a straightforward model of decisive action. He is admirable in Hamlet's account and the play shows him spending lives for ground not worth farming.",
+ angle:"Argue that the ending is ironic rather than restorative: the play's most thoughtless man inherits everything. The counter is that Denmark plainly needs a functioning ruler and he is the only one left."},
+{id:"ghost", play:"hamlet", name:"The Ghost", role:"Catalyst",
+ line:"A demand whose authority is never settled",
+ function:"It sets the plot in motion and is deliberately left unverified. Whether it is the father, a devil, or a projection is a question the play raises explicitly and never closes.",
+ arc:"From imperious to almost tender in the closet scene, where it appears to protect Gertrude rather than to press the revenge.",
+ scenes:["The battlements, seen by several people, which rules out simple hallucination",
+         "The full account of the murder, delivered only to Hamlet with no other witness",
+         "The closet scene, where only Hamlet sees it, which reopens every doubt"],
+ themes:["doubt","authority","the supernatural","memory"],
+ misread:"As reliable because it turns out to be right about the murder. Being correct is not the same as being trustworthy, and Hamlet's own test exists because he understands that.",
+ angle:"Argue that the play's central problem is a demand from an unverifiable source, which makes it a play about evidence rather than about revenge. The counter is that the play scene does verify Claudius, after which the epistemological problem is solved and the delay continues."},
+{id:"rosguil", play:"hamlet", name:"Rosencrantz and Guildenstern", role:"Subordinate",
+ line:"Two friends recruited to watch a third",
+ function:"They demonstrate how ordinary the court's surveillance is. They are not villains, they are simply available, and the play treats their deaths as an aside.",
+ arc:"None individually, which is the joke. They are interchangeable to the king, to the audience, and eventually to Hamlet.",
+ scenes:["The recruitment, in which they agree without much thought",
+         "The recorder scene, where Hamlet names exactly what they are doing",
+         "The offstage report of their execution, delivered in a single line"],
+ themes:["surveillance","complicity","friendship","indifference"],
+ misread:"As comic incompetents. The play makes them ordinary in order to show that a surveillance state runs on people who are not especially bad.",
+ angle:"Argue that Hamlet's untroubled disposal of them is a genuine moral cost the play declines to dwell on. The counter is that they had accepted a commission that would have killed him."}
+]);
+
+SH.characters = SH.characters.concat([
+/* --------------------------------------------------------------- OTHELLO */
+{id:"othello", play:"othello", name:"Othello", role:"Protagonist",
+ line:"A general who has never been at home anywhere",
+ function:"He is the play's test of whether a man admired entirely for his public function can survive a private accusation. His authority is real and it rests on nothing personal, which is what Iago exploits.",
+ arc:"From the most self-possessed speaker in the play to a man who cannot finish a sentence, and back to formal command in the final speech, which is either recovery or performance.",
+ scenes:["The address to the Venetian senate, complete command of the room",
+         "The temptation scene, where the language begins to fragment",
+         "The final speech, in which he reasserts the public self and tells his own story"],
+ themes:["jealousy","race","reputation","belonging","self-narration"],
+ misread:"As simply credulous. He asks for evidence repeatedly and Iago manufactures it, and the play spends its central act showing exactly how much work the deception requires.",
+ angle:"Argue that his vulnerability is social rather than temperamental: an outsider whose standing is entirely public has no private ground to stand on when the accusation is private. The counter is that the play also gives him a temperament that moves quickly to absolutes."},
+{id:"iago", play:"othello", name:"Iago", role:"Antagonist",
+ line:"The most spoken character in the play, and the least explained",
+ function:"He is the audience's guide and the play's poison at once. He has more lines than Othello and speaks to us directly, which implicates the audience in enjoying the destruction.",
+ arc:"Deliberately none. He is the same at the end as the beginning, and his final refusal to explain himself is the play's last withheld thing.",
+ scenes:["The opening scene, in which he tells Roderigo exactly what he is",
+         "The temptation scene, a masterclass in suggestion without a single stated lie",
+         "The final refusal, where he declines to give a reason and is taken away to be tortured"],
+ themes:["motive","deception","language","misogyny","resentment"],
+ misread:"As motiveless. He gives several motives and they are inconsistent, which is different from having none, and the inconsistency is the interesting fact.",
+ angle:"Argue that the multiplicity of stated motives is itself the characterisation: a man who improvises reasons for what he was going to do anyway. The counter is that his professional grievance in the first scene is concrete and never actually refuted."},
+{id:"desdemona", play:"othello", name:"Desdemona", role:"Protagonist",
+ line:"Chose her own marriage and is destroyed for it",
+ function:"She establishes at the outset that she acts for herself, which makes the play's disposal of her an indictment rather than a fate. Her agency is asserted in public before it is taken away in private.",
+ arc:"From decisive public self-assertion to bewildered incomprehension, because the accusation is never actually put to her in terms she can answer.",
+ scenes:["The senate scene, where she defends her own marriage before the state",
+         "The willow scene with Emilia, the only conversation in the play between two women",
+         "The final scene, in which she is killed and briefly speaks again to protect him"],
+ themes:["agency","obedience","reputation","gender","incomprehension"],
+ misread:"As passive or as a pure victim. She defies her father in public and argues her case to the senate, and the play removes her power gradually rather than showing her without any.",
+ angle:"Argue that the tragedy is the closing of a space that was briefly open: a woman is permitted public agency in Venice and none at all in Cyprus. The counter is that her final line protecting Othello can be read as reasserting exactly the obedience the play seemed to critique."},
+{id:"emilia", play:"othello", name:"Emilia", role:"Witness",
+ line:"Complicit, then the only person who speaks",
+ function:"She is the play's conscience arriving too late. She hands over the handkerchief, and she is also the one who breaks the silence at the end at the cost of her life.",
+ arc:"The sharpest arc in the play. From casual complicity with a husband she does not much like, to a defiance that names everything in front of everyone.",
+ scenes:["Taking the handkerchief, an ordinary small act with enormous consequence",
+         "The willow scene, where she states a case about the double standard applied to women",
+         "The final revelation, where she refuses to be silenced by her husband or anyone else"],
+ themes:["complicity","gender","truth","courage","marriage"],
+ misread:"As a servant character with a late plot function. Her speech in the willow scene is one of the most direct feminist arguments in the canon and it is placed deliberately.",
+ angle:"Argue that Emilia is the play's real moral centre and that its structure keeps her from being heard until it no longer matters. The counter is that she withheld the truth about the handkerchief for a long time when speaking would have cost her little."},
+{id:"cassio", play:"othello", name:"Cassio", role:"Subordinate",
+ line:"The promotion that starts everything",
+ function:"He is the instrument rather than an agent. Almost everything Iago does is done through him, and he never learns what is happening until the play is over.",
+ arc:"From a careless young officer to a man who has lost his reputation and cares about nothing else, which makes him easy to move.",
+ scenes:["The drinking scene, where a known weakness is used against him",
+         "The lament for his reputation, which tells Iago exactly which lever to pull",
+         "The conversation about Bianca, staged so Othello hears it as being about Desdemona"],
+ themes:["reputation","class","instrumentality","honour"],
+ misread:"As bland. His obsession with reputation is precisely the quality that makes him usable, and it mirrors Othello's own.",
+ angle:"Argue that Cassio and Othello share the same vulnerability, a self built entirely of public standing, and that Iago runs the same operation on both. The counter is that Cassio survives, which suggests the difference between them matters more than the similarity."},
+{id:"roderigo", play:"othello", name:"Roderigo", role:"Subordinate",
+ line:"Funds the plot and is told the truth throughout",
+ function:"He is the audience's earliest evidence that Iago is what he says he is, and a running demonstration of how a man can be robbed steadily while being told exactly what is happening.",
+ arc:"From hopeful dupe to a man who finally suspects and is killed within minutes of saying so.",
+ scenes:["The opening scene, in which Iago states his method openly to him",
+         "The repeated selling of jewels, which is simple theft dressed as strategy",
+         "The confrontation, where he demands answers and is murdered for it"],
+ themes:["gullibility","money","manipulation","class"],
+ misread:"As a comic gull. He is the play's demonstration that being told the truth about a manipulator is not protection against them.",
+ angle:"Argue that Roderigo exists to show the audience that Iago's method does not depend on concealment. The counter is that Roderigo is uniquely stupid, which may make him a weak model for anything general."},
+{id:"brabantio", play:"othello", name:"Brabantio", role:"Authority",
+ line:"A senator whose friend becomes unacceptable as a son-in-law",
+ function:"He supplies the play's opening statement of the racial and social order that Othello has apparently transcended, and demonstrates in a few minutes how conditional that transcendence is.",
+ arc:"From outrage to a defeated warning that echoes through the rest of the play.",
+ scenes:["The night alarm, where he arrives with torches and accusations of witchcraft",
+         "The senate scene, where the state overrules him for reasons of war",
+         "The parting warning, the line Iago will later use as the seed of the whole deception"],
+ themes:["race","patriarchy","the state","reputation"],
+ misread:"As a minor obstacle removed in act one. His parting line is the first statement of the idea Iago builds the tragedy on."},
+{id:"bianca", play:"othello", name:"Bianca", role:"Subordinate",
+ line:"Loves Cassio, is used as a prop, and is blamed",
+ function:"She completes the play's spectrum of how women are regarded, and she is present at the exact moment the deception turns visual.",
+ arc:"Brief and pointed. She is dismissed by everyone and is the only character who openly resents being treated as she is.",
+ scenes:["The handkerchief handed to her, which puts the object in the worst possible place",
+         "The conversation Othello overhears and misreads",
+         "The accusation after the ambush, where she is blamed on no evidence at all"],
+ themes:["gender","class","reputation","scapegoating"],
+ misread:"As incidental. The play uses her to show that the standard applied to Desdemona is applied to every woman in it, only more casually."},
+
+/* ------------------------------------------------------------- KING LEAR */
+{id:"lear", play:"lear", name:"Lear", role:"Protagonist",
+ line:"Gives away power and expects to keep its effects",
+ function:"He is the experiment. The play strips a man of office, family, shelter and reason in sequence to find out what remains, and the answer arrives too late to be useful to him.",
+ arc:"The most complete arc in the canon: from a king who mistakes flattery for love, through madness on the heath, to a brief and devastating clarity.",
+ scenes:["The love test, a transaction disguised as a question",
+         "The reduction of his retinue, a negotiation in which each daughter bids him lower",
+         "The storm, where he begins to think about people other than himself for the first time",
+         "The reunion with Cordelia, the play's only tenderness",
+         "The final entrance carrying her body, which refuses every consolation"],
+ themes:["authority","blindness","nature","justice","suffering"],
+ misread:"As a study in senility. The love test is a political act with a rational purpose, and his error is about the nature of love rather than about his faculties.",
+ angle:"Argue that his madness produces his only accurate perceptions, and that the play makes clarity conditional on the loss of everything. The counter is that this romanticises suffering, and the ending gives him nothing for what he has learned."},
+{id:"cordelia", play:"lear", name:"Cordelia", role:"Foil",
+ line:"Refuses to perform love and loses everything for it",
+ function:"She establishes the play's distinction between speech and substance in its first scene, and then leaves the stage for most of the play so that her absence can be felt.",
+ arc:"Almost none, which is deliberate. She is right at the start and right at the end, and the play kills her anyway, which is the whole problem it poses.",
+ scenes:["The refusal, an act of integrity that is also politically catastrophic",
+         "The return with an army, which is loyalty rather than ambition",
+         "The reunion, brief and unqualified",
+         "The death offstage, arriving after the audience has been allowed to hope"],
+ themes:["truth","language","love","justice"],
+ misread:"As stubborn or as a saint. Her refusal is a considered position about what love is, and the play is precise that it also destroys her family.",
+ angle:"Argue that her death is the play's rejection of a morally ordered universe, since no reading makes it necessary. The counter is that the folio and quarto endings differ, which complicates any claim about authorial intention."},
+{id:"goneril", play:"lear", name:"Goneril", role:"Antagonist",
+ line:"The eldest, and the one with a strategy",
+ function:"She is the play's demonstration that cruelty can be procedurally reasonable. Her early complaints about her father's retinue are, on their own terms, not unfounded.",
+ arc:"From calculated management to a passion for Edmund that destroys her judgement and finally her.",
+ scenes:["The love speech, fluent and empty",
+         "The reduction of the retinue, argued in the language of household management",
+         "The poisoning of her sister and her own death offstage"],
+ themes:["power","language","desire","cruelty"],
+ misread:"As pure evil from the first line. Her initial case about a hundred disorderly knights is stronger than Lear's response to it, and the play lets us notice."},
+{id:"regan", play:"lear", name:"Regan", role:"Antagonist",
+ line:"Follows her sister and then outbids her",
+ function:"She shows escalation. Whatever Goneril proposes, she goes further, which converts a family dispute into atrocity by increments.",
+ arc:"From imitation to independent cruelty, culminating in her participation in the blinding.",
+ scenes:["The bidding down of the retinue, where she goes below her sister's offer",
+         "The blinding of Gloucester, in which she is an active participant",
+         "The rivalry over Edmund, which ends in her being poisoned"],
+ themes:["cruelty","rivalry","escalation","power"],
+ misread:"As interchangeable with Goneril. Regan escalates and Goneril plans, and the difference matters in every scene they share."},
+{id:"edmund", play:"lear", name:"Edmund", role:"Antagonist",
+ line:"Illegitimate, articulate, and entirely candid with the audience",
+ function:"He is the play's argument with its own cosmology. He rejects the idea that stars or birth determine anything, and the play then gives him a great deal of success before killing him.",
+ arc:"From ambition to a final unexplained attempt to save Cordelia, which is either a deathbed conversion or a bid for significance.",
+ scenes:["The opening soliloquy, a direct assault on legitimacy and astrology",
+         "The forging of the letter, which sets the subplot moving",
+         "The duel with Edgar and the attempted reversal of the execution order"],
+ themes:["legitimacy","nature","ambition","self-making"],
+ misread:"As a simple villain. He argues a coherent position about arbitrary social hierarchy that the play never actually refutes.",
+ angle:"Argue that Edmund is right about legitimacy and wrong about everything he does with the insight. The counter is that the play's structure punishes him, which may amount to a refutation after all."},
+{id:"edgar", play:"lear", name:"Edgar", role:"Foil",
+ line:"Survives by becoming nobody",
+ function:"He carries the subplot's answer to the main plot's question. Where Lear is stripped involuntarily, Edgar strips himself deliberately and it is what saves him.",
+ arc:"The longest transformation in the play, from credulous brother, through the assumed madness of Poor Tom, to the figure who inherits at the end.",
+ scenes:["The flight and the decision to become Poor Tom",
+         "The heath, where his performed madness meets Lear's real one",
+         "The cliff at Dover, where he stages a miracle to keep his father alive",
+         "The final duel, fought unnamed and armoured"],
+ themes:["identity","disguise","endurance","filial duty"],
+ misread:"As a passive good son. His management of his father's suicide attempt is an elaborate deliberate deception, and the ethics of it are genuinely arguable.",
+ angle:"Argue that Edgar's endurance is the play's only positive proposal, and that it consists of surrendering identity rather than asserting it. The counter is that his concealment from his father is prolonged well past necessity and arguably kills him."},
+{id:"gloucester", play:"lear", name:"Gloucester", role:"Protagonist",
+ line:"The parallel father, who sees only once blinded",
+ function:"He doubles Lear so that the play's argument is structural rather than personal. What happens to one man is misfortune; the same thing happening twice is a claim about the world.",
+ arc:"From credulity and superstition, through physical blinding, to a clarity that is explicitly figured as sight.",
+ scenes:["The casual public discussion of Edmund's illegitimacy in the first scene",
+         "The blinding, the most violent scene Shakespeare staged",
+         "The cliff at Dover, where his son's deception keeps him alive"],
+ themes:["blindness","credulity","fate","despair"],
+ misread:"As a subplot. The parallel is the argument, and the blinding is the play's central image made literal."},
+{id:"kent", play:"lear", name:"Kent", role:"Confidant",
+ line:"Banished for honesty, returns in disguise to serve anyway",
+ function:"He is loyalty defined as service rather than as agreement. He tells Lear the truth, is exiled for it, and comes back to do the work regardless.",
+ arc:"None by design. His constancy is the measure against which the play's betrayals register.",
+ scenes:["The intervention in the love test, the only person who says it plainly",
+         "The return in disguise, choosing service over vindication",
+         "The final scene, where he indicates he will not outlive his master"],
+ themes:["loyalty","truth","service","disguise"],
+ misread:"As a supporting functionary. He is the play's counterexample to the idea that plain speech is useless."},
+{id:"fool", play:"lear", name:"The Fool", role:"Chorus figure",
+ line:"Licensed to say what nobody else can, until he vanishes",
+ function:"He is the play's commentary track and its conscience, permitted to state the error directly because his role licenses it.",
+ arc:"From sharp mockery to something closer to grief, and then an unexplained disappearance from the play entirely.",
+ scenes:["The early scenes of relentless pointed mockery of the division of the kingdom",
+         "The storm, where the joking thins into something more like care",
+         "The final exit, unexplained, roughly when Lear's madness becomes complete"],
+ themes:["truth","madness","licence","loyalty"],
+ misread:"As comic relief. Almost everything he says is an accurate statement of what Lear has done, delivered in the only register the king will tolerate.",
+ angle:"Argue that the Fool disappears once his function is redundant, because Lear's own madness has begun telling the truth. The counter is that the disappearance is more plausibly explained by doubling in the original company."}
+]);
+
+SH.characters = SH.characters.concat([
+/* --------------------------------------------------------------- MACBETH */
+{id:"macbeth", play:"macbeth", name:"Macbeth", role:"Protagonist",
+ line:"Knows exactly what he is doing and does it anyway",
+ function:"He is the play's study of a conscience that functions perfectly and changes nothing. He argues himself out of the murder in a full soliloquy and commits it in the next scene.",
+ arc:"From a man tormented by an imagined dagger to one who cannot feel the death of his wife. The play charts the cost of each killing in diminishing feeling.",
+ scenes:["The dagger soliloquy, in which imagination is already doing the work",
+         "The banquet, where guilt becomes public and visible",
+         "The response to his wife's death, the flattest speech he is given",
+         "The final fight, where he knows the prophecy has failed and fights regardless"],
+ themes:["ambition","conscience","prophecy","masculinity","time"],
+ misread:"As a man corrupted by his wife or by the witches. He is thinking about the crown before either intervenes, and the play gives him the argument against it in his own voice.",
+ angle:"Argue that the play's horror is that conscience is fully operational and completely ineffective. The counter is that his conscience does eventually destroy him, which is a form of efficacy."},
+{id:"ladymacbeth", play:"macbeth", name:"Lady Macbeth", role:"Catalyst",
+ line:"The play's strongest will, spent first",
+ function:"She supplies the resolve her husband lacks and is destroyed by the aftermath he survives. The play splits the crime between two people and gives the consequences unequally.",
+ arc:"The inverse of her husband's. She begins in complete control and ends unable to stop washing her hands, while he hardens as she breaks.",
+ scenes:["The letter and the invocation, where she asks to be emptied of feeling",
+         "The taunting of Macbeth, which reframes murder as a test of manhood",
+         "The banquet, where she manages the room while he collapses",
+         "The sleepwalking scene, in which the suppressed material returns entirely"],
+ themes:["ambition","gender","guilt","control","the unconscious"],
+ misread:"As the driving villain. She is absent from the murders after the first and has no part in the worst of them, and the play gives her the more complete punishment.",
+ angle:"Argue that the play divides the crime and the guilt unequally along gendered lines, giving her the resolve and then the collapse. The counter is that she asks explicitly to be unsexed, which makes her complicit in that framing."},
+{id:"banquo", play:"macbeth", name:"Banquo", role:"Foil",
+ line:"Hears the same prophecy and waits",
+ function:"The control case. He receives a prophecy at the same moment and does nothing about it, which isolates the variable and shows that the witches did not compel anything.",
+ arc:"From wariness to a suspicion he keeps to himself, and the play kills him just as he begins to voice it.",
+ scenes:["The first meeting with the witches, where he asks the sharper questions",
+         "The soliloquy in which he suspects Macbeth and says nothing publicly",
+         "The murder and the return as a ghost only Macbeth can see"],
+ themes:["prophecy","restraint","complicity","succession"],
+ misread:"As simply the good counterpart. His silence about a murder he suspects is a form of complicity, and the play plants it deliberately.",
+ angle:"Argue that Banquo's restraint is not innocence, because he suspects and stays quiet while the benefit accrues to his line. The counter is that suspicion without evidence gives him nothing he could safely act on."},
+{id:"macduff", play:"macbeth", name:"Macduff", role:"Foil",
+ line:"Leaves his family to save the country and loses them",
+ function:"He is the play's alternative model of masculinity and its cost. His grief is staged in full and he is instructed to convert it into action, which he resists first.",
+ arc:"From absence and suspicion, through the destruction of his household, to a revenge that is presented as legitimate where Macbeth's ambition was not.",
+ scenes:["The refusal to attend the coronation, the first open dissent",
+         "The testing scene in England, a long deliberate examination of loyalty",
+         "The news of his family, where he insists on feeling it as a man before acting",
+         "The final combat, where the prophecy's wording undoes Macbeth"],
+ themes:["masculinity","grief","country","revenge"],
+ misread:"As a straightforward hero. He leaves his wife and children undefended in a country he knows is dangerous, and the play makes his wife say so.",
+ angle:"Argue that Macduff's line about feeling grief as a man is the play's answer to Lady Macbeth's definition of manhood. The counter is that he still resolves it in violence, which is what she was demanding all along."},
+{id:"malcolm", play:"macbeth", name:"Malcolm", role:"Authority",
+ line:"Survives by suspecting everyone, including himself",
+ function:"He is the restoration of order, and the play is careful to show that order is restored by a man who tests his allies by lying to them.",
+ arc:"From flight, which looks like cowardice and is prudence, to a calculated assumption of legitimate rule.",
+ scenes:["The immediate flight after his father's murder, correctly reading the danger",
+         "The testing of Macduff, in which he claims monstrous vices to check the response",
+         "The final assumption of the crown and the orderly distribution of titles"],
+ themes:["legitimacy","trust","statecraft","succession"],
+ misread:"As a bland restoration figure. The testing scene shows a young man who has learned that a country full of murderers requires verification before trust.",
+ angle:"Argue that the play's restored order is founded on deception, and that Malcolm is competent precisely because he has absorbed the lesson of the tyranny. The counter is that the deception is defensive and the play plainly endorses him."},
+{id:"duncan", play:"macbeth", name:"Duncan", role:"Authority",
+ line:"Trusting, generous, and dead by act two",
+ function:"He establishes the legitimate order that the play then destroys, and his openness is presented both as a virtue and as the vulnerability that kills him.",
+ arc:"None. He exists to be killed, and everything after measures the distance from him.",
+ scenes:["The rewarding of Macbeth, generosity that supplies the opportunity",
+         "The remark that there is no art to read the mind in the face, moments before meeting Macbeth",
+         "The murder, kept offstage so the audience experiences it through the murderers"],
+ themes:["kingship","trust","order","hospitality"],
+ misread:"As merely a plot device. His line about faces and minds is the play's thesis stated by its victim before the fact."},
+{id:"witches", play:"macbeth", name:"The Weird Sisters", role:"Catalyst",
+ line:"Tell the truth in a form designed to mislead",
+ function:"They pose the play's central question about whether prophecy describes or produces. Everything they say turns out true and every use Macbeth makes of it is disastrous.",
+ arc:"None. They are a constant, and the change is entirely in how Macbeth hears them.",
+ scenes:["The first prophecy, delivered to two men who react completely differently",
+         "The apparitions, which give assurances phrased to be misunderstood",
+         "The absence from the final act, so that the ending belongs to human choices"],
+ themes:["fate","language","ambiguity","the supernatural"],
+ misread:"As the cause of the tragedy. They make no one do anything, and Banquo is the play's proof of that.",
+ angle:"Argue that the witches are a linguistic problem rather than a supernatural one, since their power lies entirely in ambiguous phrasing. The counter is that the apparitions show knowledge no natural agent could have."},
+{id:"ladymacduff", play:"macbeth", name:"Lady Macduff", role:"Witness",
+ line:"One scene, and the play's clearest moral statement",
+ function:"She exists to make the tyranny concrete. The play moves from murders of kings and rivals to the killing of a woman and a child on stage, and she is given the argument first.",
+ arc:"Compressed into a single scene: from anger at her husband's departure to defiance of her killers.",
+ scenes:["The conversation with her son, ordinary domestic talk placed just before the atrocity",
+         "The naming of her husband's flight as a form of abandonment",
+         "The murder, staged rather than reported"],
+ themes:["innocence","abandonment","tyranny","family"],
+ misread:"As a brief pathetic interlude. Her complaint about her husband is the sharpest criticism of Macduff the play contains and it is never answered."},
+{id:"ross", play:"macbeth", name:"Ross", role:"Witness",
+ line:"Present at almost everything, committed to nothing",
+ function:"He is the play's political weathervane and its messenger. He carries news between scenes and adapts to whoever holds power, which is how most people survive a tyranny.",
+ arc:"Ambiguous, and some productions read him as complicit in the Macduff killings on the strength of his timing.",
+ scenes:["The delivery of the new title to Macbeth, which appears to confirm the prophecy",
+         "The visit to Lady Macduff shortly before the murderers arrive",
+         "The delivery of the news of the family's death to Macduff in England"],
+ themes:["survival","complicity","information","adaptation"],
+ misread:"As a neutral messenger. His movements are suspiciously well timed and the play never accounts for them, which is why the doubt is worth writing about."}
+]);
+
+/* EDGE SCHEMA
+   from, to  character ids. Direction matters for asymmetric kinds.
+   kind      one of the keys in SH.edgeKinds below
+   note      what the relationship consists of, one sentence      */
+SH.edgeKinds = [
+{id:"deceives",  label:"deceives",      dir:true},
+{id:"serves",    label:"serves",        dir:true},
+{id:"commands",  label:"commands",      dir:true},
+{id:"mirrors",   label:"mirrors",       dir:false},
+{id:"opposes",   label:"opposes",       dir:false},
+{id:"loves",     label:"loves",         dir:true},
+{id:"kills",     label:"kills",         dir:true},
+{id:"suspects",  label:"suspects",      dir:true},
+{id:"family",    label:"family of",     dir:false},
+{id:"instructs", label:"instructs",     dir:true}
+];
+
+SH.edges = [
+/* Hamlet */
+{from:"claudius", to:"hamlet", kind:"deceives", note:"Conceals the murder while publicly positioning himself as a concerned stepfather."},
+{from:"claudius", to:"hamlet", kind:"kills", note:"The poisoned cup and blade in the final scene are his design."},
+{from:"hamlet", to:"claudius", kind:"suspects", note:"Suspicion arrives with the Ghost and is only verified by the play scene."},
+{from:"ghost", to:"hamlet", kind:"instructs", note:"Issues the demand that starts the plot and is never independently corroborated."},
+{from:"hamlet", to:"gertrude", kind:"family", note:"The closet scene is their only direct confrontation in the play."},
+{from:"gertrude", to:"claudius", kind:"loves", note:"The marriage the play never explains and never condemns outright."},
+{from:"polonius", to:"ophelia", kind:"instructs", note:"Directs her to refuse Hamlet and later uses her as bait."},
+{from:"polonius", to:"laertes", kind:"instructs", note:"Advises him at length and then sends a spy after him to France."},
+{from:"laertes", to:"ophelia", kind:"family", note:"Instructs her about Hamlet minutes before their father does the same."},
+{from:"hamlet", to:"ophelia", kind:"loves", note:"Asserted at her grave and denied to her face, and the play does not resolve which is true."},
+{from:"hamlet", to:"polonius", kind:"kills", note:"Through the arras, mistaking him for Claudius, which sets the second half in motion."},
+{from:"laertes", to:"hamlet", kind:"mirrors", note:"Same situation, opposite response, which is the play's clearest structural contrast."},
+{from:"fortinbras", to:"hamlet", kind:"mirrors", note:"The third bereaved son, acting on a national scale and offstage."},
+{from:"horatio", to:"hamlet", kind:"serves", note:"The only relationship in the play with no concealed purpose."},
+{from:"claudius", to:"rosguil", kind:"commands", note:"Recruits them to observe Hamlet, which they accept without much thought."},
+{from:"hamlet", to:"rosguil", kind:"kills", note:"Rewrites the commission so that the execution falls on them instead."},
+{from:"claudius", to:"laertes", kind:"deceives", note:"Redirects Laertes' fury toward Hamlet and away from himself."},
+{from:"polonius", to:"claudius", kind:"serves", note:"Runs the court's surveillance and dies in the act of doing it."},
+
+/* Othello */
+{from:"iago", to:"othello", kind:"deceives", note:"The central deception, conducted almost entirely through suggestion rather than stated lies."},
+{from:"iago", to:"roderigo", kind:"deceives", note:"Robs him steadily while telling him openly what kind of man he is."},
+{from:"iago", to:"cassio", kind:"deceives", note:"Engineers the drunkenness, the disgrace, and the overheard conversation."},
+{from:"iago", to:"emilia", kind:"commands", note:"Uses his wife to obtain the handkerchief without telling her why."},
+{from:"iago", to:"othello", kind:"serves", note:"Holds the position of ensign throughout, which is what makes the access possible."},
+{from:"othello", to:"desdemona", kind:"loves", note:"Genuine at the outset, and the play is precise about how fast it is dismantled."},
+{from:"othello", to:"desdemona", kind:"kills", note:"In her bed, framed by him as justice rather than as murder."},
+{from:"emilia", to:"desdemona", kind:"serves", note:"The willow scene is the only conversation between two women in the play."},
+{from:"iago", to:"emilia", kind:"kills", note:"Stabs her when she refuses to be silenced in the final scene."},
+{from:"iago", to:"roderigo", kind:"kills", note:"Kills him during the botched ambush to close off the one witness who suspected."},
+{from:"roderigo", to:"desdemona", kind:"loves", note:"The unrequited pursuit that funds the entire plot."},
+{from:"cassio", to:"bianca", kind:"loves", note:"Casual on his side, and she is blamed for the ambush on no evidence."},
+{from:"brabantio", to:"desdemona", kind:"family", note:"Disowns her before the senate and dies of it offstage."},
+{from:"brabantio", to:"othello", kind:"opposes", note:"His parting warning about a daughter who deceived her father becomes Iago's seed."},
+{from:"cassio", to:"othello", kind:"mirrors", note:"Both build a self entirely from public reputation, and Iago runs the same operation on each."},
+{from:"emilia", to:"iago", kind:"opposes", note:"Named him publicly at the cost of her life, the play's one act of unqualified courage."},
+
+/* King Lear */
+{from:"lear", to:"cordelia", kind:"family", note:"The love test and the disinheritance, in the play's first scene."},
+{from:"lear", to:"goneril", kind:"family", note:"Divides the kingdom to her and is reduced by her within two acts."},
+{from:"lear", to:"regan", kind:"family", note:"She bids his retinue lower than her sister does, which is the play's method of escalation."},
+{from:"goneril", to:"regan", kind:"opposes", note:"Allied against their father and rivals over Edmund, which destroys them both."},
+{from:"goneril", to:"regan", kind:"kills", note:"Poisons her sister over Edmund before taking her own life."},
+{from:"edmund", to:"edgar", kind:"deceives", note:"The forged letter that convinces Gloucester his legitimate son plots against him."},
+{from:"edmund", to:"gloucester", kind:"deceives", note:"Betrays his father to Cornwall and receives the earldom for it."},
+{from:"gloucester", to:"edgar", kind:"family", note:"Condemns him on a forgery and is saved by him without knowing it."},
+{from:"edgar", to:"gloucester", kind:"serves", note:"Leads his blinded father in disguise and stages the cliff to prevent his suicide."},
+{from:"kent", to:"lear", kind:"serves", note:"Banished for honesty and returns in disguise to do the work anyway."},
+{from:"fool", to:"lear", kind:"serves", note:"Licensed to state the error plainly, which nobody else may do."},
+{from:"lear", to:"gloucester", kind:"mirrors", note:"Two fathers, two sets of children, one deceived by speech and the other by writing."},
+{from:"edgar", to:"edmund", kind:"opposes", note:"The subplot's central rivalry, settled by an anonymous duel in the final act."},
+{from:"edmund", to:"goneril", kind:"loves", note:"Encourages both sisters simultaneously, which is what kills them."},
+{from:"edmund", to:"regan", kind:"loves", note:"The other half of the same calculation."},
+{from:"cordelia", to:"lear", kind:"serves", note:"Returns with an army out of loyalty rather than ambition, and dies for it."},
+
+/* Macbeth */
+{from:"witches", to:"macbeth", kind:"instructs", note:"Deliver a prophecy that is true in every particular and misleading in every use."},
+{from:"witches", to:"banquo", kind:"instructs", note:"Same prophecy, different man, no crime, which is the play's control experiment."},
+{from:"ladymacbeth", to:"macbeth", kind:"instructs", note:"Reframes the murder as a test of manhood at the exact moment he has decided against it."},
+{from:"macbeth", to:"duncan", kind:"kills", note:"Offstage, so the audience experiences it entirely through the murderers' state."},
+{from:"macbeth", to:"banquo", kind:"kills", note:"By hired murderers, and without telling his wife, which marks the change in him."},
+{from:"macbeth", to:"ladymacduff", kind:"kills", note:"Staged rather than reported, which converts the tyranny from political to visceral."},
+{from:"banquo", to:"macbeth", kind:"suspects", note:"Suspects the murder in soliloquy and says nothing publicly while the benefit accrues to his line."},
+{from:"banquo", to:"macbeth", kind:"mirrors", note:"Identical prophecy and opposite conduct, which isolates the variable exactly."},
+{from:"macduff", to:"macbeth", kind:"opposes", note:"From the refusal to attend the coronation to the final combat."},
+{from:"macduff", to:"macbeth", kind:"kills", note:"The prophecy's wording fails precisely at the moment it is tested."},
+{from:"malcolm", to:"macduff", kind:"deceives", note:"Claims monstrous vices in the England scene to test whether Macduff is genuine."},
+{from:"duncan", to:"malcolm", kind:"family", note:"Names him heir, which is the obstacle Macbeth identifies immediately."},
+{from:"macduff", to:"ladymacduff", kind:"family", note:"Leaves her undefended, and she is given the criticism of it before she is killed."},
+{from:"ross", to:"macduff", kind:"serves", note:"Carries the news of the family's death, having visited them shortly before it happened."},
+{from:"macbeth", to:"ladymacbeth", kind:"mirrors", note:"Inverse arcs. She begins in control and breaks, he begins in torment and hardens."}
+];
+
+/* FOIL SCHEMA
+   a, b       character ids
+   isolates   the single quality the pairing exposes
+   body       how the pairing works and what it lets you argue      */
+SH.foils = [
+{a:"hamlet", b:"laertes", isolates:"Deliberation against haste",
+ body:"Identical situations, opposite responses. Laertes acts within minutes of returning and is manipulated into serving the murderer he came to punish. Hamlet examines the demand for three acts and gets almost everyone killed by a different route. The pairing exists so that neither response can be endorsed, and any essay that praises one has to account for the other's outcome."},
+{a:"hamlet", b:"fortinbras", isolates:"Thought against action at scale",
+ body:"The third bereaved son, kept almost entirely offstage so that the audience never sees him think. He spends lives for a patch of ground not worth farming, and inherits a kingdom at the end. Whether the ending is restorative or bleakly ironic turns entirely on how you read this pairing."},
+{a:"othello", b:"cassio", isolates:"A self built from public reputation",
+ body:"Iago runs essentially the same operation on both, attacking the public standing each has instead of an interior life. Cassio's lament for his reputation tells Iago exactly which lever works, and it is the same lever. That Cassio survives and Othello does not is where the argument gets interesting."},
+{a:"desdemona", b:"emilia", isolates:"Idealism against experience",
+ body:"The willow scene is the only conversation between two women in the play and it stages two accounts of marriage: one that cannot imagine infidelity and one that has thought carefully about the double standard. The play kills the idealist first and then the realist for speaking."},
+{a:"iago", b:"othello", isolates:"Language as instrument against language as identity",
+ body:"Othello's authority rests on his ability to narrate himself, demonstrated before the senate. Iago's method is to take that instrument away, and the temptation scene charts the fragmentation of Othello's syntax in real time. The final speech is Othello attempting to reclaim it."},
+{a:"lear", b:"gloucester", isolates:"Two routes to the same blindness",
+ body:"One father is deceived by speech and the other by writing, one loses his mind and the other his eyes, and both see clearly only after the loss. The doubling converts a personal catastrophe into a claim about the world, which is why the subplot is not a subplot."},
+{a:"edgar", b:"edmund", isolates:"Identity surrendered against identity asserted",
+ body:"Edmund insists on making himself against the accident of birth and dies for it. Edgar survives by becoming nobody, and inherits. The play appears to endorse Edgar, and it never actually refutes Edmund's argument about the arbitrariness of legitimacy, which leaves the ending less settled than it looks."},
+{a:"cordelia", b:"goneril", isolates:"Substance against performance",
+ body:"The first scene stages the play's whole problem in ninety seconds. One daughter performs love fluently and receives a kingdom, another declines to perform it and is disinherited. Everything afterwards is the consequence of a father who could not tell the difference."},
+{a:"macbeth", b:"banquo", isolates:"What a prophecy does to different men",
+ body:"The cleanest controlled experiment in the canon. Same witches, same moment, same prophecy, and one man murders a king while the other waits. Banquo is the reason no reading can claim the witches compelled anything."},
+{a:"macbeth", b:"macduff", isolates:"Two definitions of manhood",
+ body:"Lady Macbeth defines manhood as the willingness to act. Macduff, told to take his family's murder like a man, insists first on feeling it like one. The play appears to endorse Macduff, and then has him resolve it in combat anyway, which complicates the endorsement."},
+{a:"macbeth", b:"ladymacbeth", isolates:"Inverse trajectories of guilt",
+ body:"She begins with total resolve and ends unable to stop washing her hands. He begins tormented by an imagined dagger and ends unable to feel her death. The play divides one crime between two people and distributes the consequences unequally, which is worth arguing about along gendered lines."},
+{a:"malcolm", b:"macbeth", isolates:"Legitimate rule founded on suspicion",
+ body:"Malcolm restores order and does it by lying to his own ally to test him. The play presents the restoration as good and is careful to show what the tyranny has taught the man restoring it."}
+];
+
+SH.method = [
+{t:"Ask what the character is for before asking who they are",
+ body:"Every figure occupies a structural position: they supply information, they contrast with someone, they carry a theme, they force a decision. Naming the function first stops an essay becoming a summary of what a person did, and it is the move that separates analysis from retelling."},
+{t:"Treat minor characters as arguments, not decoration",
+ body:"Shakespeare rarely includes a figure without a job. Fortinbras exists to make Hamlet's delay visible. Banquo exists to prove the witches compelled nothing. An essay about a subordinate character is frequently easier to make original than one about a protagonist, because the field is less crowded."},
+{t:"Find the pairing and name the quality it isolates",
+ body:"Foils are constructed to hold everything constant except one variable. Once you can say precisely which variable a pairing exposes, the comparison stops being a list of similarities and becomes an argument about what the play is testing."},
+{t:"Track what the character does not say",
+ body:"Gertrude's knowledge of the murder is never established. Iago refuses to explain himself at the end. These silences are deliberate constructions and they are frequently the most arguable material in a play, because the text will not settle them and you must."},
+{t:"Distinguish the character's account from the play's",
+ body:"Hamlet admires Fortinbras. The play shows Fortinbras spending lives for worthless ground. Reading a protagonist's judgement as the play's own is the single most common error in student writing about Shakespeare, and catching it produces an argument immediately."},
+{t:"Use scene position as evidence",
+ body:"Where a scene sits is an authorial decision carrying meaning. Lady Macduff's domestic conversation is placed immediately before her murder. Ophelia's two instruction scenes run back to back. Placement is evidence you can point to without needing to quote anything."},
+{t:"Handle the strongest objection to your reading",
+ body:"Every angle in this explorer comes with its counter attached, because a reading that has not survived opposition has not been tested. Naming the best case against your position and answering it is what the higher bands actually reward."},
+{t:"Beware the reading that flatters the character",
+ body:"Sympathetic readings of Hamlet's delay, Edgar's deception of his father, or Macduff's abandonment of his family all require you to look away from something the play stages deliberately. If your reading needs a scene not to exist, the reading is the problem."},
+{t:"Distinguish the text from a production",
+ body:"Gertrude's knowing or not knowing when she drinks, the Fool's disappearance, and Ross's suspicious timing are all decisions a director must make and the text leaves open. Arguing for one is legitimate. Presenting it as what the play says is not."}
+];
+
+SH.extend = [
+{t:"Where the data lives",
+ code:"SH.plays       one object per play\nSH.characters  one object per character\nSH.edges       one object per relationship\nSH.foils       one object per deliberate pairing\nSH.edgeKinds   the vocabulary of relationship types\nSH.method      the essay method entries",
+ body:"Everything on this page renders from these arrays. There is no other source of content, and the application code makes no assumptions about how many entries any array holds. Adding a play with twenty characters requires no code changes at all."},
+{t:"Adding a play",
+ code:'{id:"tempest", title:"The Tempest", genre:"Romance",\n period:"around 1611", setting:"An island",\n question:"What does a man owe those he has power over?",\n structure:"...", sources:"..."}',
+ body:"Append to SH.plays. The id becomes the key that characters and edges refer to, so choose something short and lowercase and do not change it afterwards. A filter button for the new play appears automatically on the Characters and Relationship Web tabs."},
+{t:"Adding a character",
+ code:'{id:"prospero", play:"tempest", name:"Prospero",\n role:"Protagonist",\n line:"One line shown on the card",\n function:"What the character is for structurally",\n arc:"How they change, or the case that they do not",\n scenes:["Moment one","Moment two","Moment three"],\n themes:["power","forgiveness"],\n misread:"The reading students usually give, and why it is thin",\n angle:"An arguable position with its counter attached"}',
+ body:"Append to SH.characters. Ids must be unique across every play. The role field drives the Role filter, and any new role value creates its own button without further work. Aim for at least three entries in scenes, because the detail panel looks thin below that."},
+{t:"Adding a relationship",
+ code:'{from:"prospero", to:"caliban", kind:"commands",\n note:"One sentence on what the relationship consists of."}',
+ body:"Append to SH.edges. Both ids must exist in SH.characters or the entry is skipped and reported in the console rather than breaking the page. Use an existing kind from SH.edgeKinds where one fits, and add a new kind only when none does."},
+{t:"Adding a relationship kind",
+ code:'{id:"betrays", label:"betrays", dir:true}',
+ body:"Append to SH.edgeKinds. Set dir to true when direction matters, as with deceives or kills, and false for symmetric relationships such as mirrors or family. The Kind filter picks up the new entry automatically."},
+{t:"Adding a foil pairing",
+ code:'{a:"prospero", b:"caliban",\n isolates:"The single quality the pairing exposes",\n body:"How the pairing works and what it lets you argue."}',
+ body:"Append to SH.foils. The isolates field is the important one: a pairing that cannot name the single variable it holds up is usually two characters who happen to be in the same play rather than a constructed contrast."},
+{t:"House style for the writing",
+ code:"function   structural, not biographical\narc        what changes, or the case that nothing does\nmisread    the common reading and why it is thin\nangle      a position PLUS the strongest counter",
+ body:"Keeping the angle field honest is what makes this explorer different from a summary site. Every angle carries the best objection to itself, because a reading that has not been tested against opposition is a position rather than an argument. Resist the temptation to add an angle without a counter."},
+{t:"Suggested order of expansion",
+ code:"1  Romeo and Juliet, Julius Caesar\n2  The Tempest, Much Ado, Twelfth Night\n3  Richard III, Henry IV Part One\n4  Measure for Measure, The Winter's Tale",
+ body:"The four great tragedies are covered because they carry the heaviest study demand. Romeo and Juliet and Julius Caesar are the highest value additions next, since they appear on more syllabuses than any of the comedies. The histories reward a different treatment because their foils run across plays rather than within one."}
+];
+</script>
+
+<script>
+(function(){
+  "use strict";
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function charById(id){ for(var i=0;i<SH.characters.length;i++){ if(SH.characters[i].id===id) return SH.characters[i]; } return null; }
+  function playById(id){ for(var i=0;i<SH.plays.length;i++){ if(SH.plays[i].id===id) return SH.plays[i]; } return null; }
+  function playTitle(id){ var p=playById(id); return p?p.title:id; }
+  function charName(id){ var c=charById(id); return c?c.name:id; }
+  function kindLabel(id){ for(var i=0;i<SH.edgeKinds.length;i++){ if(SH.edgeKinds[i].id===id) return SH.edgeKinds[i].label; } return id; }
+
+  /* Invalid references are skipped rather than allowed to break the page,
+     and reported to the console so a future editor can find them. */
+  var validEdges = SH.edges.filter(function(e){
+    var ok = charById(e.from) && charById(e.to) && kindLabel(e.kind)!==undefined;
+    if(!ok) console.warn("Shakespeare Explorer: skipping edge with unknown reference", e);
+    return ok;
+  });
+  var validFoils = SH.foils.filter(function(f){
+    var ok = charById(f.a) && charById(f.b);
+    if(!ok) console.warn("Shakespeare Explorer: skipping foil with unknown reference", f);
+    return ok;
+  });
+
+  var roles = SH.characters.map(function(c){ return c.role; }).filter(function(v,i,a){ return a.indexOf(v)===i; }).sort();
+
+  var fPlay="All", fRole="All", openId=null;
+  var wPlay="All", wKind="All";
+
+  /* ---------- characters ---------- */
+  function renderCharFilters(){
+    $("playBtns").innerHTML='<button class="pf-btn'+(fPlay==="All"?" active":"")+'" data-cp="All">All</button>'+
+      SH.plays.map(function(p){
+        var n=SH.characters.filter(function(c){ return c.play===p.id; }).length;
+        return '<button class="pf-btn'+(fPlay===p.id?" active":"")+'" data-cp="'+esc(p.id)+'">'+esc(p.title)+" ("+n+")</button>";
+      }).join("");
+    $("roleBtns").innerHTML='<button class="pf-btn'+(fRole==="All"?" active":"")+'" data-cr="All">All</button>'+
+      roles.map(function(r){
+        return '<button class="pf-btn'+(fRole===r?" active":"")+'" data-cr="'+esc(r)+'">'+esc(r)+"</button>";
+      }).join("");
+    $("playBtns").querySelectorAll("[data-cp]").forEach(function(b){
+      b.addEventListener("click", function(){ fPlay=b.getAttribute("data-cp"); renderCharFilters(); renderGrid(); });
+    });
+    $("roleBtns").querySelectorAll("[data-cr]").forEach(function(b){
+      b.addEventListener("click", function(){ fRole=b.getAttribute("data-cr"); renderCharFilters(); renderGrid(); });
+    });
+  }
+
+  function renderGrid(){
+    var q=($("shFind").value||"").toLowerCase();
+    var list=SH.characters.filter(function(c){
+      if(fPlay!=="All" && c.play!==fPlay) return false;
+      if(fRole!=="All" && c.role!==fRole) return false;
+      if(q){
+        var hay=(c.name+" "+c.line+" "+c.function+" "+c.arc+" "+c.role+" "+
+                 playTitle(c.play)+" "+(c.themes||[]).join(" ")).toLowerCase();
+        if(hay.indexOf(q)<0) return false;
+      }
+      return true;
+    });
+    $("shGrid").innerHTML = list.length ? list.map(function(c){
+      return '<div class="sh-card" data-play="'+esc(c.play)+'" data-open="'+esc(c.id)+'">'+
+        '<div class="sh-nm">'+esc(c.name)+"</div>"+
+        '<div class="sh-rl">'+esc(c.role)+" . "+esc(playTitle(c.play))+"</div>"+
+        '<div class="sh-rl" style="margin-top:7px;color:var(--text);opacity:.75">'+esc(c.line)+"</div></div>";
+    }).join("") : '<div class="trend-empty"><div class="te-msg">No character matches those filters.</div></div>';
+    $("shCount").innerHTML="<b>Showing:</b><span class='muted'> "+list.length+" of "+SH.characters.length+"</span>";
+    $("shGrid").querySelectorAll("[data-open]").forEach(function(el){
+      el.addEventListener("click", function(){ openChar(el.getAttribute("data-open")); });
+    });
+  }
+
+  function edgesFor(id){
+    return validEdges.filter(function(e){ return e.from===id || e.to===id; });
+  }
+
+  function openChar(id){
+    var c=charById(id); if(!c) return;
+    openId=id;
+    var rel=edgesFor(id).map(function(e){
+      var other = e.from===id ? e.to : e.from;
+      var dirTxt = e.from===id ? kindLabel(e.kind) : "is "+kindLabel(e.kind)+" by";
+      return '<div class="sh-edge"><div class="who">'+esc(c.name)+"</div>"+
+        '<div class="mid">'+esc(dirTxt)+"</div>"+
+        '<div class="who"><span class="sh-tag link" data-goto="'+esc(other)+'">'+esc(charName(other))+"</span>"+
+        '<div class="tiny muted" style="margin-top:4px;line-height:1.65">'+esc(e.note)+"</div></div></div>";
+    }).join("");
+
+    var pairs=validFoils.filter(function(f){ return f.a===id || f.b===id; }).map(function(f){
+      var other = f.a===id ? f.b : f.a;
+      return '<span class="sh-tag link" data-goto="'+esc(other)+'">'+esc(charName(other))+" . "+esc(f.isolates)+"</span>";
+    }).join("");
+
+    $("shDetail").innerHTML='<div class="sh-detail">'+
+      '<div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px">'+
+      "<div><h3 style='font-size:22px'>"+esc(c.name)+"</h3>"+
+      "<div class='sh-rl' style='font-size:13px'>"+esc(c.role)+" . "+esc(playTitle(c.play))+" . "+esc(c.line)+"</div></div>"+
+      '<button class="btn" id="shClose" type="button" style="padding:5px 11px;font-size:12px">&times;</button></div>'+
+      '<div style="margin-top:16px">'+
+      '<div class="sh-row"><div class="lbl">Function</div><div>'+esc(c.function)+"</div></div>"+
+      '<div class="sh-row"><div class="lbl">Arc</div><div>'+esc(c.arc)+"</div></div>"+
+      '<div class="sh-row"><div class="lbl">Key moments</div><div>'+
+      (c.scenes||[]).map(function(s,i){ return "<div style='padding:3px 0'>"+(i+1)+". "+esc(s)+"</div>"; }).join("")+"</div></div>"+
+      '<div class="sh-row"><div class="lbl">Common misreading</div><div><div class="sh-warn">'+esc(c.misread)+"</div></div></div>"+
+      (c.angle?'<div class="sh-row"><div class="lbl">Essay angle</div><div><div class="sh-note">'+esc(c.angle)+"</div></div></div>":"")+
+      (pairs?'<div class="sh-row"><div class="lbl">Paired with</div><div>'+pairs+"</div></div>":"")+
+      '<div class="sh-row"><div class="lbl">Themes</div><div>'+
+      (c.themes||[]).map(function(t){ return '<span class="sh-tag">'+esc(t)+"</span>"; }).join("")+"</div></div>"+
+      (rel?'<div class="sh-row"><div class="lbl">Relationships</div><div>'+rel+"</div></div>":"")+
+      "</div></div>";
+
+    $("shClose").addEventListener("click", function(){ openId=null; $("shDetail").innerHTML=""; });
+    $("shDetail").querySelectorAll("[data-goto]").forEach(function(el){
+      el.addEventListener("click", function(){ openChar(el.getAttribute("data-goto")); });
+    });
+    $("shDetail").scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+
+  /* ---------- relationship web ---------- */
+  function renderWebFilters(){
+    $("webPlayBtns").innerHTML='<button class="pf-btn'+(wPlay==="All"?" active":"")+'" data-wp="All">All</button>'+
+      SH.plays.map(function(p){
+        return '<button class="pf-btn'+(wPlay===p.id?" active":"")+'" data-wp="'+esc(p.id)+'">'+esc(p.title)+"</button>";
+      }).join("");
+    var kinds=validEdges.map(function(e){ return e.kind; }).filter(function(v,i,a){ return a.indexOf(v)===i; });
+    $("webKindBtns").innerHTML='<button class="pf-btn'+(wKind==="All"?" active":"")+'" data-wk="All">All</button>'+
+      kinds.map(function(k){
+        var n=validEdges.filter(function(e){ return e.kind===k; }).length;
+        return '<button class="pf-btn'+(wKind===k?" active":"")+'" data-wk="'+esc(k)+'">'+esc(kindLabel(k))+" ("+n+")</button>";
+      }).join("");
+    $("webPlayBtns").querySelectorAll("[data-wp]").forEach(function(b){
+      b.addEventListener("click", function(){ wPlay=b.getAttribute("data-wp"); renderWebFilters(); renderWeb(); });
+    });
+    $("webKindBtns").querySelectorAll("[data-wk]").forEach(function(b){
+      b.addEventListener("click", function(){ wKind=b.getAttribute("data-wk"); renderWebFilters(); renderWeb(); });
+    });
+  }
+
+  function renderWeb(){
+    var list=validEdges.filter(function(e){
+      var pl=charById(e.from).play;
+      if(wPlay!=="All" && pl!==wPlay) return false;
+      if(wKind!=="All" && e.kind!==wKind) return false;
+      return true;
+    });
+    var byPlay={};
+    list.forEach(function(e){ var p=charById(e.from).play; (byPlay[p]=byPlay[p]||[]).push(e); });
+    var html="";
+    SH.plays.forEach(function(p){
+      if(!byPlay[p.id]) return;
+      html += '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(110,168,255,.1);color:#6ea8ff;'>W</span>"+esc(p.title)+
+        " <span class='sh-tag'>"+byPlay[p.id].length+" connections</span></h3>"+
+        byPlay[p.id].map(function(e){
+          return '<div class="sh-edge">'+
+            '<div class="who"><span class="sh-tag link" data-wgoto="'+esc(e.from)+'">'+esc(charName(e.from))+"</span></div>"+
+            '<div class="mid">'+esc(kindLabel(e.kind))+"</div>"+
+            '<div class="who"><span class="sh-tag link" data-wgoto="'+esc(e.to)+'">'+esc(charName(e.to))+"</span>"+
+            '<div class="tiny muted" style="margin-top:4px;line-height:1.65">'+esc(e.note)+"</div></div></div>";
+        }).join("")+"</div>";
+    });
+    $("webList").innerHTML = html || '<div class="trend-empty"><div class="te-msg">No connection matches those filters.</div></div>';
+    $("webCount").innerHTML="<b>Showing:</b><span class='muted'> "+list.length+" of "+validEdges.length+" connections</span>";
+    $("webList").querySelectorAll("[data-wgoto]").forEach(function(el){
+      el.addEventListener("click", function(){
+        switchTab("chars"); openChar(el.getAttribute("data-wgoto"));
+      });
+    });
+  }
+
+  /* ---------- foils, plays, method, extend ---------- */
+  function renderFoils(){
+    $("foilList").innerHTML = validFoils.map(function(f){
+      var a=charById(f.a), b=charById(f.b);
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(139,92,246,.1);color:#8b5cf6;'>F</span>"+
+        esc(a.name)+" and "+esc(b.name)+"</h3>"+
+        '<div class="sh-row"><div class="lbl">Play</div><div>'+esc(playTitle(a.play))+"</div></div>"+
+        '<div class="sh-row"><div class="lbl">Isolates</div><div><strong>'+esc(f.isolates)+"</strong></div></div>"+
+        '<div class="sh-row"><div class="lbl">The argument</div><div>'+esc(f.body)+"</div></div>"+
+        '<div class="sh-row"><div class="lbl">Open</div><div>'+
+        '<span class="sh-tag link" data-fgoto="'+esc(f.a)+'">'+esc(a.name)+"</span>"+
+        '<span class="sh-tag link" data-fgoto="'+esc(f.b)+'">'+esc(b.name)+"</span></div></div></div>";
+    }).join("");
+    $("foilList").querySelectorAll("[data-fgoto]").forEach(function(el){
+      el.addEventListener("click", function(){ switchTab("chars"); openChar(el.getAttribute("data-fgoto")); });
+    });
+  }
+
+  function renderPlays(){
+    $("playList").innerHTML = SH.plays.map(function(p){
+      var n=SH.characters.filter(function(c){ return c.play===p.id; }).length;
+      var e=validEdges.filter(function(x){ return charById(x.from).play===p.id; }).length;
+      var f=validFoils.filter(function(x){ return charById(x.a).play===p.id; }).length;
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(251,191,36,.1);color:#fbbf24;'>P</span>"+esc(p.title)+
+        " <span class='sh-tag'>"+esc(p.genre)+"</span><span class='sh-tag'>"+esc(p.period)+"</span></h3>"+
+        '<div class="sh-row"><div class="lbl">Setting</div><div>'+esc(p.setting)+"</div></div>"+
+        '<div class="sh-row"><div class="lbl">Central question</div><div><strong>'+esc(p.question)+"</strong></div></div>"+
+        '<div class="sh-row"><div class="lbl">Structure</div><div>'+esc(p.structure)+"</div></div>"+
+        '<div class="sh-row"><div class="lbl">Sources</div><div>'+esc(p.sources)+"</div></div>"+
+        '<div class="sh-row"><div class="lbl">Covered here</div><div>'+
+        '<span class="sh-tag">'+n+" characters</span><span class='sh-tag'>"+e+" connections</span>"+
+        "<span class='sh-tag'>"+f+" foil pairs</span></div></div></div>";
+    }).join("");
+  }
+
+  function renderMethod(){
+    $("methodList").innerHTML='<div class="an-card full">'+ SH.method.map(function(m,i){
+      return '<div class="sh-row"><div class="lbl">Move '+(i+1)+"</div><div><strong>"+esc(m.t)+
+        '</strong><div style="margin-top:6px;color:var(--muted)">'+esc(m.body)+"</div></div></div>";
+    }).join("")+"</div>";
+  }
+
+  function renderExtend(){
+    var counts='<div class="an-card full" style="margin-bottom:14px">'+
+      "<h3><span class='icon' style='background:rgba(52,211,153,.1);color:#34d399;'>C</span>Currently covered</h3>"+
+      '<div class="ov-stats" style="grid-template-columns:repeat(auto-fit,minmax(115px,1fr))">'+
+      '<div class="ri-cell"><div class="cv">'+SH.plays.length+'</div><div class="cl">Plays</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+SH.characters.length+'</div><div class="cl">Characters</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+validEdges.length+'</div><div class="cl">Connections</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+validFoils.length+'</div><div class="cl">Foil pairs</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+SH.edgeKinds.length+'</div><div class="cl">Relationship kinds</div></div>'+
+      "</div></div>";
+    $("extendList").innerHTML = counts + SH.extend.map(function(x){
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(110,168,255,.1);color:#6ea8ff;'>E</span>"+esc(x.t)+"</h3>"+
+        '<div style="font-size:14.5px;line-height:1.8;margin-bottom:12px;color:var(--muted)">'+esc(x.body)+"</div>"+
+        '<div class="sh-code">'+esc(x.code)+"</div></div>";
+    }).join("");
+  }
+
+  /* ---------- tabs ---------- */
+  function switchTab(name){
+    document.querySelectorAll(".tab-btn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-tab")===name);
+    });
+    var map={chars:"viewChars",web:"viewWeb",foils:"viewFoils",plays:"viewPlays",method:"viewMethod",extend:"viewExtend"};
+    document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+    var el=$(map[name]); if(el) el.classList.add("active");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    document.querySelector(".tab-nav").addEventListener("click", function(e){
+      var b=e.target.closest(".tab-btn"); if(!b) return;
+      switchTab(b.getAttribute("data-tab"));
+    });
+    $("shFind").addEventListener("input", renderGrid);
+    $("shReset").addEventListener("click", function(){
+      fPlay="All"; fRole="All"; $("shFind").value="";
+      renderCharFilters(); renderGrid();
+    });
+    renderCharFilters();
+    renderGrid();
+    renderWebFilters();
+    renderWeb();
+    renderFoils();
+    renderPlays();
+    renderMethod();
+    renderExtend();
+  });
+})();
+</script>
+
+</body>
+</html>
