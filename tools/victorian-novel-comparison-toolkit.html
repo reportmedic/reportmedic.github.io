@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the Victorian Novel Comparison Toolkit.</p><a href="https://reportmedic.org/tools/victorian-novel-comparison-toolkit.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="Compare any two Victorian novels across ten axes that actually differ, with curated pairings, the conditions that shaped the form and a reading map."/>
+<title>Victorian Novel Comparison Toolkit - Ten Axes - ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+/* -- Animated Background -- */
+.bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12;animation:meshDrift 20s ease-in-out infinite alternate;}
+.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);top:-15%;right:-10%;}
+.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#a78bfa,#6ea8ff);bottom:-10%;left:-5%;animation-delay:-7s;animation-duration:25s;}
+.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#7cf7d4,#f59e0b);top:50%;left:40%;animation-delay:-14s;animation-duration:28s;}
+@keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg) scale(1);}100%{transform:translate(40px,-30px) rotate(15deg) scale(1.1);}}
+
+/* -- Tabs Nav -- */
+.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:24px;overflow-x:auto;}
+.tab-btn{flex:1;min-width:fit-content;padding:12px 20px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;letter-spacing:.01em;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(110,168,255,.18),rgba(124,247,212,.12));color:var(--text);box-shadow:0 2px 16px rgba(110,168,255,.12),inset 0 1px 0 rgba(255,255,255,.06);}
+
+/* -- Views -- */
+.view{display:none;}
+.view.active{display:block;}
+
+/* -- Hero -- */
+.daily-hero{text-align:center;padding:32px 0 16px;}
+.daily-hero h1{font-size:clamp(26px,4.5vw,38px);font-weight:700;letter-spacing:-.02em;line-height:1.15;}
+.daily-hero h1 .grad{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:10px;line-height:1.5;letter-spacing:.01em;}
+
+/* -- Streak Banner -- */
+.streak-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 26px;flex-wrap:wrap;}
+.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);backdrop-filter:blur(8px);font-size:13px;font-weight:600;transition:transform .15s;}
+.streak-pill:hover{transform:translateY(-1px);}
+.streak-pill .fire{font-size:20px;}
+.streak-pill .sval{font-size:18px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-pill .sval.green{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-dots{display:flex;gap:5px;}
+.streak-dots .dot{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;color:var(--muted);}
+.streak-dots .dot.done{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(124,247,212,.1));border-color:rgba(16,185,129,.25);color:#34d399;}
+.streak-dots .dot.today{border-color:rgba(110,168,255,.45);box-shadow:0 0 14px rgba(110,168,255,.15);}
+
+/* -- Phase Filter -- */
+.phase-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.phase-filter .pf-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px;}
+.pf-btn{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;}
+.pf-btn:hover{border-color:rgba(255,255,255,.22);color:var(--text);}
+.pf-btn.active{background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.35);color:#6ea8ff;}
+
+/* -- Quiz Container -- */
+.quiz-panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:26px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
+.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
+.quiz-progress{display:flex;gap:4px;margin-bottom:18px;}
+.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.06);transition:background .3s;}
+.quiz-progress .pip.done{background:linear-gradient(90deg,#10b981,#7cf7d4);}
+.quiz-progress .pip.wrong{background:#ef4444;}
+.quiz-progress .pip.current{background:rgba(110,168,255,.4);animation:pipPulse 1.5s ease infinite;}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.1);color:#6ea8ff;border:1px solid rgba(110,168,255,.15);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);color:var(--muted);}
+.quiz-meta .qphase{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid rgba(124,247,212,.2);background:rgba(124,247,212,.06);color:#7cf7d4;}
+.quiz-meta .qdiff{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.quiz-meta .qdiff.easy{border:1px solid rgba(52,211,153,.2);background:rgba(52,211,153,.06);color:#34d399;}
+.quiz-meta .qdiff.medium{border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.06);color:#fbbf24;}
+.quiz-meta .qdiff.hard{border:1px solid rgba(248,113,113,.2);background:rgba(248,113,113,.06);color:#f87171;}
+.quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.quiz-meta .timer svg{color:rgba(110,168,255,.6);}
+
+.quiz-question{font-size:16.5px;line-height:1.7;font-weight:600;margin-bottom:18px;letter-spacing:.005em;}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s;}
+.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.06);}
+.qo.selected .letter{border-color:#6ea8ff;background:#6ea8ff;color:#061021;}
+.qo.correct{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);}
+.qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
+.qo.disabled{pointer-events:none;opacity:.65;}
+.qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
+
+.quiz-explain{margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(124,247,212,.035);border:1px solid rgba(124,247,212,.1);font-size:13.5px;line-height:1.7;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;letter-spacing:.01em;}
+.qa-btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;}
+.qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+.qa-btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);}
+
+/* -- Results Card -- */
+.result-card{text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;}
+.result-card .big-score{font-size:64px;font-weight:700;line-height:1;margin-bottom:8px;}
+.result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
+.result-mini .rm{padding:16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.result-mini .rm .rv{font-size:20px;font-weight:700;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* -- Subject Practice Grid -- */
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.subj-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.subj-card .sc-icon{font-size:30px;margin-bottom:10px;}
+.subj-card .sc-name{font-size:14.5px;font-weight:700;margin-bottom:4px;letter-spacing:.01em;}
+.subj-card .sc-count{font-size:12px;color:var(--muted);}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .5s ease;}
+.ri-gauge{height:12px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin:12px 0 6px;}
+.ri-gauge i{display:block;height:100%;transition:width .4s ease;}
+.eg-row{display:grid;grid-template-columns:170px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14.5px;line-height:1.8;}
+.eg-row:last-child{border-bottom:0;}
+.eg-row .lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;padding-top:3px;}
+@media(max-width:660px){.eg-row{grid-template-columns:1fr;gap:5px;}}
+.gb-card{border:1px solid var(--border);border-radius:15px;background:rgba(255,255,255,.03);padding:16px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.gb-card:hover{border-color:rgba(255,255,255,.22);transform:translateY(-2px);}
+.gb-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--brand);}
+.gb-card.done::before{background:#34d399;}
+.gb-q{font-size:14.5px;font-weight:600;line-height:1.6;}
+.gb-meta{font-size:11px;color:var(--muted);margin-top:9px;}
+.gb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:12px;}
+.gb-tag{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);margin:3px 5px 0 0;}
+.gb-tag.board{background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.28);color:#6ea8ff;}
+.gb-tag.type{background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.28);color:#a78bfa;}
+.gb-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.gb-good{border-left:3px solid #34d399;background:rgba(52,211,153,.07);border-radius:0 12px 12px 0;padding:13px 15px;font-size:13.5px;line-height:1.8;margin-top:10px;}
+.gb-bad{border-left:3px solid #f87171;background:rgba(248,113,113,.07);border-radius:0 12px 12px 0;padding:13px 15px;font-size:13.5px;line-height:1.8;margin-top:10px;}
+.gb-ao{display:grid;grid-template-columns:70px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13.5px;line-height:1.75;}
+.gb-ao:last-child{border-bottom:0;}
+.gb-ao .code{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--brand2);font-size:12.5px;}
+.eg-code{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:15px;overflow-x:auto;white-space:pre;color:#a7c7f0;}
+.eg-code{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:15px;overflow-x:auto;white-space:pre;color:#a7c7f0;}
+.eg-code{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:15px;overflow-x:auto;white-space:pre;color:#a7c7f0;}
+.eg-warn{border-left:3px solid #ffb35c;background:rgba(255,179,92,.07);border-radius:0 12px 12px 0;padding:13px 15px;font-size:13.5px;line-height:1.8;}
+.ri-cell{padding:12px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.03);text-align:center;}
+.ri-cell .cv{font-size:19px;font-weight:800;}
+.ri-cell .cl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:3px;}
+.bn-text{line-height:1.9;}
+.ri-warnbox{border-left:3px solid #ffb35c;background:rgba(255,179,92,.07);border-radius:0 12px 12px 0;padding:14px 16px;font-size:13.5px;line-height:1.75;}
+.lit-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.lit-detail h3{font-size:20px;margin-bottom:4px;}
+.lit-detail .meta{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+.lit-detail p{line-height:1.75;font-size:14.5px;margin-bottom:12px;}
+.lit-row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.lit-row:last-child{border-bottom:0;}
+.lit-row .lbl{font-weight:700;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px;}
+@media(max-width:640px){.lit-row{grid-template-columns:1fr;gap:4px;}}
+.cmp-grid{display:grid;grid-template-columns:170px 1fr 1fr;gap:10px;align-items:start;}
+.cmp-grid > div{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.cmp-grid .cmp-lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;}
+.cmp-grid .cmp-head{font-weight:700;font-size:15px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.14);}
+@media(max-width:760px){.cmp-grid{grid-template-columns:1fr;}.cmp-grid .cmp-lbl{padding-bottom:0;border-bottom:0;}}
+.theme-chip{display:inline-block;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:rgba(110,168,255,.10);border:1px solid rgba(110,168,255,.20);color:#6ea8ff;margin:3px 5px 3px 0;cursor:pointer;}
+.theme-chip.on{background:var(--brand);border-color:var(--brand);color:#08111f;}
+
+/* -- Analytics Dashboard -- */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
+.an-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.an-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);}
+.an-card.full{grid-column:1/-1;}
+.an-card h3{font-size:12.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* -- Overview Strip -- */
+.overview-strip{display:flex;align-items:center;gap:24px;}
+.ov-ring{position:relative;flex-shrink:0;width:100px;height:100px;}
+.ov-ring canvas{width:100px;height:100px;}
+.ov-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ov-ring-label .rv{font-size:22px;font-weight:700;line-height:1;}
+.ov-ring-label .rl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ov-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ov-stat{padding:12px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;}
+.ov-stat .os-val{font-size:18px;font-weight:700;line-height:1.2;font-family:'JetBrains Mono',monospace;}
+.ov-stat .os-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+@media(max-width:600px){
+  .overview-strip{flex-direction:column;gap:16px;}
+  .ov-stats{grid-template-columns:repeat(3,1fr);width:100%;}
+}
+
+/* -- Subject accuracy bars -- */
+.sub-bars{display:flex;flex-direction:column;gap:10px;}
+.sb-row{display:flex;align-items:center;gap:10px;}
+.sb-label{width:105px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:46px;text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+/* -- Trend Chart -- */
+.trend-wrap{position:relative;min-height:220px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.trend-wrap::-webkit-scrollbar{height:4px;}.trend-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--muted);text-align:center;}
+.trend-empty .te-icon{font-size:40px;opacity:.4;}
+.trend-empty .te-msg{font-size:13px;line-height:1.5;max-width:320px;}
+.trend-bar-chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding:10px 0;min-width:min-content;}
+.trend-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:48px;width:48px;flex-shrink:0;}
+.trend-bar-outer{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative;}
+.trend-bar{width:100%;border-radius:6px 6px 2px 2px;transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;min-height:4px;}
+.trend-bar:hover{filter:brightness(1.2);}
+.trend-bar .tb-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.trend-bar:hover .tb-val{opacity:1;}
+.trend-label{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.trend-mode-label.daily{background:rgba(110,168,255,.12);color:#6ea8ff;}
+.trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
+
+/* -- Mastery Dashboard -- */
+.mastery-wrap{margin-top:8px;}
+.mastery-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.m-stat{padding:12px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);}
+.m-stat .ms-val{font-size:22px;font-weight:800;margin-bottom:2px;}
+.m-stat .ms-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+.m-stat.green .ms-val{color:#34d399;} .m-stat.yellow .ms-val{color:#fbbf24;} .m-stat.red .ms-val{color:#f87171;} .m-stat.blue .ms-val{color:#6ea8ff;} .m-stat.purple .ms-val{color:#a78bfa;}
+.coverage-ring{display:flex;align-items:center;gap:16px;padding:14px;border-radius:14px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);margin-bottom:14px;overflow:hidden;}
+.cov-canvas{width:90px;height:90px;flex-shrink:0;}
+.cov-info{flex:1;min-width:0;overflow:hidden;}
+.cov-title{font-size:13px;font-weight:700;color:var(--fg);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cov-sub{font-size:11px;color:var(--muted);line-height:1.6;word-break:break-word;}
+.subj-mastery{margin-top:14px;}
+.sm-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+.sm-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.sm-icon{font-size:14px;width:20px;text-align:center;}
+.sm-name{width:70px;font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-bar{flex:1;height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative;}
+.sm-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.sm-pct{width:34px;text-align:right;font-weight:700;font-size:11px;}
+
+/* -- Passage block for reading items -- */
+.quiz-passage{padding:14px 16px;border-radius:14px;background:rgba(110,168,255,.04);border:1px solid rgba(110,168,255,.10);font-size:14.5px;line-height:1.75;color:var(--muted);margin-bottom:14px;}
+.quiz-passage em{color:var(--text);font-style:italic;}
+
+/* -- Difficulty chips -- */
+.diff-dist{display:flex;gap:10px;margin-top:6px;}
+.diff-chip{flex:1;padding:14px 10px;border-radius:14px;text-align:center;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);}
+.diff-chip .dc-val{font-size:20px;font-weight:700;margin-bottom:2px;}
+.diff-chip .dc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+.diff-chip.easy .dc-val{color:#34d399;}
+.diff-chip.medium .dc-val{color:#fbbf24;}
+.diff-chip.hard .dc-val{color:#f87171;}
+
+/* -- Session History -- */
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding-right:4px;}
+.hist-list::-webkit-scrollbar{width:4px;}
+.hist-list::-webkit-scrollbar-track{background:transparent;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:12px;transition:background .1s;}
+.hist-row:hover{background:rgba(255,255,255,.04);}
+.hist-date{font-weight:600;min-width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hist-mode{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.hist-mode.daily{background:rgba(110,168,255,.1);color:#6ea8ff;}
+.hist-mode.practice{background:rgba(139,92,246,.1);color:#a78bfa;}
+.hist-score{margin-left:auto;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.hist-detail{color:var(--muted);font-size:11px;}
+
+/* -- Reset Button -- */
+.reset-zone{margin-top:20px;text-align:center;}
+.reset-btn{padding:10px 20px;border-radius:12px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.reset-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);}
+
+/* -- Tab label responsive -- */
+.tab-short{display:none;}
+@media(max-width:540px){.tab-full{display:none;}.tab-short{display:inline;}}
+@media(max-width:640px){
+  .quiz-panel{padding:16px;}
+  .streak-bar{gap:10px;}
+  .subj-grid{grid-template-columns:1fr 1fr;}
+  .diff-dist{flex-wrap:wrap;}
+  .diff-chip{min-width:calc(50% - 5px);}
+  .mastery-stats{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .coverage-ring{flex-direction:column;text-align:center;}
+  .sm-name{width:55px;font-size:10px;}
+  .tab-nav{overflow-x:hidden;}
+  .hide-mobile{display:none!important;}
+}
+
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .5s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+
+.btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;padding:10px 20px;border-radius:10px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:.01em;transition:all .18s;}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-mesh"><div class="strand"></div><div class="strand"></div><div class="strand"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn hide-mobile" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+  <a class="btn primary" href="/tools/classic-literature-study-guide.html">Literature Guide</a>
+</div>
+</header>
+
+<div class="wrap">
+  <!-- Tab Nav -->
+  <nav class="tab-nav anim-up">
+    <button class="tab-btn active" data-tab="library"><span class="tab-full">The Novels</span><span class="tab-short">Novels</span></button>
+    <button class="tab-btn" data-tab="axes"><span class="tab-full">The Ten Axes</span><span class="tab-short">Axes</span></button>
+    <button class="tab-btn" data-tab="compare"><span class="tab-full">Compare Two</span><span class="tab-short">Compare</span></button>
+    <button class="tab-btn" data-tab="pairings"><span class="tab-full">Pairings Worth Making</span><span class="tab-short">Pairings</span></button>
+    <button class="tab-btn" data-tab="conditions"><span class="tab-full">Conditions of the Form</span><span class="tab-short">Conditions</span></button>
+    <button class="tab-btn" data-tab="extend"><span class="tab-full">Extending This</span><span class="tab-short">Extend</span></button>
+  </nav>
+
+  <!-- VIEW: LIBRARY -->
+  <div class="view active" id="viewLibrary">
+    <div class="daily-hero anim-up d1">
+      <h1>Victorian Novel <span class="grad">Comparison Toolkit</span></h1>
+      <p class="sub">Thirty four novels scored on ten axes that genuinely differ between them, so a comparison becomes an argument about a variable rather than a list of similarities. Tap a novel to open its full profile.</p>
+    </div>
+
+    <div class="phase-filter anim-up d2">
+      <span class="pf-label">Decade:</span><span id="decBtns"></span>
+    </div>
+    <div class="phase-filter anim-up d2" style="margin-top:-6px">
+      <span class="pf-label">Mode:</span><span id="modeBtns"></span>
+    </div>
+
+    <div class="row" style="gap:10px;margin:14px 0;flex-wrap:wrap">
+      <input class="input" id="vcFind" type="search" placeholder="Search titles, authors and subjects" style="max-width:300px" />
+      <span class="pill tiny" id="vcCount"></span>
+      <button class="btn" id="vcReset" type="button">Reset filters</button>
+    </div>
+
+    <div class="gb-grid anim-up d3" id="vcGrid"></div>
+    <div id="vcDetail"></div>
+  </div>
+
+  <!-- VIEW: AXES -->
+  <div class="view" id="viewAxes">
+    <div class="daily-hero">
+      <h1>The Ten <span class="grad">Axes</span></h1>
+      <p class="sub">Each axis is a real variable across the period, with its possible values, what a difference along it lets you argue, and the mistake it invites. Choose the axis before choosing the novels and the comparison writes itself.</p>
+    </div>
+    <div id="vcAxes"></div>
+    <div class="ri-warnbox" style="margin-top:16px">A comparison organised by theme produces a list of similarities. A comparison organised by axis produces an argument, because an axis has values and two novels sitting at different points on it are disagreeing about something. Pick the axis where your two novels differ most sharply and the essay has a spine before you write a word.</div>
+  </div>
+
+  <!-- VIEW: COMPARE -->
+  <div class="view" id="viewCompare">
+    <div class="daily-hero">
+      <h1>Compare <span class="grad">Two</span></h1>
+      <p class="sub">Any two novels, side by side on all ten axes, with the axes on which they agree and disagree separated automatically. The disagreements are where an essay lives.</p>
+    </div>
+
+    <div class="row" style="gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+      <select class="input" id="cmpA" style="max-width:290px"></select>
+      <span class="tiny muted">against</span>
+      <select class="input" id="cmpB" style="max-width:290px"></select>
+      <button class="btn" id="cmpSwap" type="button">Swap</button>
+      <button class="btn" id="cmpExport" type="button">Export comparison</button>
+      <span class="tiny muted" id="cmpMsg"></span>
+    </div>
+
+    <div class="analytics-grid" style="margin-bottom:16px">
+      <div class="an-card full">
+        <div class="ov-stats" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
+          <div class="ri-cell"><div class="cv" id="cmpSame">0</div><div class="cl">Axes they share</div></div>
+          <div class="ri-cell"><div class="cv" id="cmpDiff">0</div><div class="cl">Axes they differ</div></div>
+          <div class="ri-cell"><div class="cv" id="cmpGap">0</div><div class="cl">Years apart</div></div>
+          <div class="ri-cell"><div class="cv" id="cmpBest">-</div><div class="cl">Sharpest contrast</div></div>
+        </div>
+        <div class="ri-gauge"><i id="cmpBar" style="width:0%;background:#94a3b8"></i></div>
+        <div class="tiny muted" id="cmpRead">Choose two novels above.</div>
+      </div>
+    </div>
+
+    <div id="vcCompare"></div>
+  </div>
+
+  <!-- VIEW: PAIRINGS -->
+  <div class="view" id="viewPairings">
+    <div class="daily-hero">
+      <h1>Pairings Worth <span class="grad">Making</span></h1>
+      <p class="sub">Sixteen comparisons that produce a genuine argument, each naming the single variable it isolates and the question it opens. Not every pair of Victorian novels is worth setting side by side, and these are the ones that are.</p>
+    </div>
+    <div id="vcPairings"></div>
+  </div>
+
+  <!-- VIEW: CONDITIONS -->
+  <div class="view" id="viewConditions">
+    <div class="daily-hero">
+      <h1>Conditions of the <span class="grad">Form</span></h1>
+      <p class="sub">Ten material facts about how these books were written, sold and read. Each one shaped the novels in ways visible on the page, and knowing them turns context from decoration into evidence.</p>
+    </div>
+    <div id="vcConditions"></div>
+  </div>
+
+  <!-- VIEW: EXTEND -->
+  <div class="view" id="viewExtend">
+    <div class="daily-hero">
+      <h1>Extending <span class="grad">This</span></h1>
+      <p class="sub">Everything renders from five arrays. Adding a novel, an axis, a pairing or a condition is appending one object.</p>
+    </div>
+    <div id="extendList"></div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">Victorian Novel Comparison Toolkit - thirty four novels across ten axes</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. Copyright ReportMedic.</div>
+</div>
+</footer>
+
+<script>
+/* ============================================================================
+   VICTORIAN NOVEL COMPARISON TOOLKIT
+   VC.axes       the ten variables, each with its possible values
+   VC.novels     the library, each scored on every axis
+   VC.pairings   comparisons that produce a genuine argument
+   VC.conditions the material facts that shaped the form
+   VC.extend     schema documentation
+   ========================================================================== */
+
+var VC = {};
+
+/* AXIS SCHEMA: id, name, values[], what, argue, trap */
+VC.axes = [
+{id:"form", name:"Publication form", values:["Monthly serial","Weekly serial","Three volume","Single volume","Magazine serial"],
+ what:"How the book first reached readers. Monthly parts, weekly numbers in a magazine, or the three volume format the circulating libraries preferred.",
+ argue:"Form shapes structure directly. Weekly serialisation forces a hook every few thousand words, monthly parts allow longer arcs, and the three decker imposes a length authors sometimes had to pad to reach.",
+ trap:"Treating serialisation as a curiosity. It determines chapter endings, subplot density and the survival of characters an audience took to, and all of that is visible on the page."},
+{id:"narr", name:"Narrator stance", values:["Intrusive omniscient","Reticent omniscient","First person retrospective","Multiple documents"],
+ what:"Who is telling it and how visible they are. Some narrators address the reader directly and judge openly; others withdraw and let the arrangement carry the judgement.",
+ argue:"The stance determines where moral authority sits. An intrusive narrator supplies the verdict, a reticent one makes the reader produce it, and a documentary novel refuses to supply one at all.",
+ trap:"Calling a narrator omniscient and stopping. Degrees of intrusion vary enormously within the period and the difference between two omniscient narrators is often the whole comparison."},
+{id:"class", name:"Class trajectory", values:["Rise rewarded","Rise exposed as hollow","Fall","Static","Mobility denied"],
+ what:"What happens to a character who moves between classes, and whether the novel endorses the movement.",
+ argue:"The period is obsessed with mobility and deeply divided about it. Whether a novel rewards the climb, exposes it, or refuses it altogether is a political position taken in narrative form.",
+ trap:"Assuming all Victorian novels reward the industrious hero. Several of the most admired ones do the opposite and say so plainly."},
+{id:"marr", name:"The marriage plot", values:["Resolved happily","Withheld","Ironised","Fatal","Deferred or ambiguous"],
+ what:"Whether the novel ends in the marriage its structure has been promising, and what it does with the promise.",
+ argue:"The marriage plot is the period's default structure, so departures from it are always deliberate. A novel that withholds or poisons the ending is arguing with the form itself.",
+ trap:"Reading a marriage ending as automatically conservative. Several novels marry their heroine off on terms that the book has spent four hundred pages establishing as hers rather than his."},
+{id:"place", name:"Setting", values:["Metropolitan","Provincial town","Industrial north","Rural and agricultural","Gothic or isolated"],
+ what:"Where the novel puts its action, and what kind of society that place makes available.",
+ argue:"Place determines what social relations can be shown. A provincial town permits a whole society in one frame; a metropolis permits anonymity and coincidence; an industrial setting forces labour onto the page.",
+ trap:"Treating setting as backdrop. In this period a setting is a choice about which economy and which class relations the novel is willing to look at."},
+{id:"faith", name:"Religion", values:["Evangelical earnest","Doubt and loss","Secular ethics","Satirical toward institution","Largely absent"],
+ what:"How the novel handles belief, from earnest conviction to open doubt to the substitution of an ethics that needs no God.",
+ argue:"The century's crisis of faith is legible in fiction before it is respectable in public. A novel's position on this axis frequently dates it more precisely than its publication year does.",
+ trap:"Reading religious language as automatic piety. Many novels use the vocabulary of faith to carry an ethics that has quietly detached from it."},
+{id:"women", name:"Female agency", values:["Constrained and endorsed","Asserted and rewarded","Asserted and punished","Negotiated within limits","Interrogated openly"],
+ what:"How much the novel allows its women to determine, and what it does to them for determining it.",
+ argue:"Nearly every novel of the period has a position here whether or not it announces one, and the gap between a novel's stated sympathies and what it actually does to its women is frequently the most productive thing in it.",
+ trap:"Judging by the author's gender or by sympathy. A sympathetic portrayal that ends in punishment is a different position from one that ends in independence."},
+{id:"end", name:"Ending", values:["Comic resolution","Tragic","Ironic","Open","Restored order"],
+ what:"The shape of the close, independent of whether individual characters are happy.",
+ argue:"Endings are where a novel states its view of whether the world it has described is finally just. A comic resolution asserts one thing and an ironic close asserts another.",
+ trap:"Confusing a happy ending for a character with a comic resolution for the novel. A book can marry off its heroine and still leave its world unreformed."},
+{id:"mode", name:"Mode", values:["Realism","Sensation","Gothic","Satire","Naturalism","Social problem"],
+ what:"The novel's dominant register, from documentary realism through sensation and gothic to the harsher determinism of the century's end.",
+ argue:"Mode sets what counts as plausible. A sensation novel can use bigamy and false identity where a realist novel must find its crisis in ordinary life, and the difference is a claim about where drama actually is.",
+ trap:"Treating the modes as sealed. Many of the best novels of the period move between them, and the moment a realist novel reaches for gothic machinery is worth an essay on its own."},
+{id:"money", name:"Economic engine", values:["Inheritance","Trade and commerce","Industry","Land","Speculation and finance","Labour"],
+ what:"Where the money in the novel actually comes from, which is not always where the novel says it comes from.",
+ argue:"Following the money is the most reliable way into a Victorian novel's politics. A book funded by inheritance argues something different from one funded by a factory or by a share issue.",
+ trap:"Accepting the novel's own account. Several novels resolve their plots with an inheritance whose origin they decline to examine, and the declining is the finding."}
+];
+
+/* NOVEL SCHEMA
+   id, t (title), a (author), y (year), dec (decade), sub (one line),
+   ax {axis id: value}, note (what it is good for comparatively)     */
+VC.novels = [
+{id:"olivertwist", t:"Oliver Twist", a:"Charles Dickens", y:1838, dec:"1830s",
+ sub:"An orphan moves between the workhouse, the criminal underworld and respectability",
+ ax:{form:"Magazine serial", narr:"Intrusive omniscient", class:"Rise rewarded", marr:"Deferred or ambiguous",
+     place:"Metropolitan", faith:"Evangelical earnest", women:"Asserted and punished", end:"Restored order",
+     mode:"Social problem", money:"Inheritance"},
+ note:"The clearest early case of a novel attacking an institution while resolving its plot through inherited gentility, which is a tension worth setting against later industrial fiction."},
+{id:"janeeyre", t:"Jane Eyre", a:"Charlotte Bronte", y:1847, dec:"1840s",
+ sub:"An orphan governess refuses two proposals on opposite grounds and returns on her own terms",
+ ax:{form:"Three volume", narr:"First person retrospective", class:"Mobility denied", marr:"Deferred or ambiguous",
+     place:"Gothic or isolated", faith:"Doubt and loss", women:"Asserted and rewarded", end:"Comic resolution",
+     mode:"Gothic", money:"Inheritance"},
+ note:"The best available case for the argument that a marriage ending can be a feminist one, because the inheritance arrives first and the terms change with it."},
+{id:"wuthering", t:"Wuthering Heights", a:"Emily Bronte", y:1847, dec:"1840s",
+ sub:"Two households across a moor bound and ruined by an attachment that survives death",
+ ax:{form:"Three volume", narr:"Multiple documents", class:"Rise exposed as hollow", marr:"Fatal",
+     place:"Gothic or isolated", faith:"Largely absent", women:"Asserted and punished", end:"Ironic",
+     mode:"Gothic", money:"Land"},
+ note:"The period's most radical narrative structure. Everything arrives through a servant recalling decades to a visitor who understands none of it, and no corrective is ever supplied."},
+{id:"vanityfair", t:"Vanity Fair", a:"William Makepeace Thackeray", y:1848, dec:"1840s",
+ sub:"Two women of opposite temperament move through a society the narrator openly despises",
+ ax:{form:"Monthly serial", narr:"Intrusive omniscient", class:"Rise exposed as hollow", marr:"Ironised",
+     place:"Metropolitan", faith:"Satirical toward institution", women:"Interrogated openly", end:"Ironic",
+     mode:"Satire", money:"Speculation and finance"},
+ note:"Subtitled a novel without a hero, and it means it. The most sustained refusal of the period's moral machinery, delivered by a narrator who will not let the reader settle anywhere."},
+{id:"marybarton", t:"Mary Barton", a:"Elizabeth Gaskell", y:1848, dec:"1840s",
+ sub:"A Manchester working family through hunger, strike and a killing",
+ ax:{form:"Three volume", narr:"Reticent omniscient", class:"Mobility denied", marr:"Resolved happily",
+     place:"Industrial north", faith:"Evangelical earnest", women:"Negotiated within limits", end:"Restored order",
+     mode:"Social problem", money:"Labour"},
+ note:"The condition of England novel written from inside a working household rather than about one. Set it against any middle class treatment of the same crisis."},
+{id:"tenant", t:"The Tenant of Wildfell Hall", a:"Anne Bronte", y:1848, dec:"1840s",
+ sub:"A woman leaves a ruinous marriage, takes her child and supports herself by painting",
+ ax:{form:"Three volume", narr:"Multiple documents", class:"Static", marr:"Ironised",
+     place:"Provincial town", faith:"Evangelical earnest", women:"Asserted and rewarded", end:"Comic resolution",
+     mode:"Realism", money:"Land"},
+ note:"The most direct challenge to marital law in the period's fiction, written before the legal reforms that would have made its heroine's flight lawful."},
+{id:"davidcopp", t:"David Copperfield", a:"Charles Dickens", y:1850, dec:"1850s",
+ sub:"A childhood of loss and labour, a career in writing, and two marriages",
+ ax:{form:"Monthly serial", narr:"First person retrospective", class:"Rise rewarded", marr:"Resolved happily",
+     place:"Metropolitan", faith:"Secular ethics", women:"Constrained and endorsed", end:"Comic resolution",
+     mode:"Realism", money:"Trade and commerce"},
+ note:"The template retrospective first person of the period. Useful chiefly as the norm against which the later and more sceptical first person novels can be measured."},
+{id:"bleakhouse", t:"Bleak House", a:"Charles Dickens", y:1853, dec:"1850s",
+ sub:"An interminable chancery suit poisons everyone it touches across every class",
+ ax:{form:"Monthly serial", narr:"Multiple documents", class:"Rise exposed as hollow", marr:"Resolved happily",
+     place:"Metropolitan", faith:"Satirical toward institution", women:"Negotiated within limits", end:"Ironic",
+     mode:"Realism", money:"Inheritance"},
+ note:"Two narrators alternating throughout, one present tense and impersonal and one retrospective and first person. The formal experiment is the argument about how a society this large can be seen at all."},
+{id:"cranford", t:"Cranford", a:"Elizabeth Gaskell", y:1853, dec:"1850s",
+ sub:"The genteel women of a small town manage decline with elaborate courtesy",
+ ax:{form:"Magazine serial", narr:"First person retrospective", class:"Static", marr:"Withheld",
+     place:"Provincial town", faith:"Largely absent", women:"Asserted and rewarded", end:"Comic resolution",
+     mode:"Realism", money:"Land"},
+ note:"A novel almost without men and almost without plot, which makes it the best test case for what the period's fiction can do when the marriage plot is simply removed."},
+{id:"villette", t:"Villette", a:"Charlotte Bronte", y:1853, dec:"1850s",
+ sub:"An Englishwoman teaching abroad, narrating her own life while concealing much of it",
+ ax:{form:"Three volume", narr:"First person retrospective", class:"Mobility denied", marr:"Deferred or ambiguous",
+     place:"Gothic or isolated", faith:"Doubt and loss", women:"Interrogated openly", end:"Open",
+     mode:"Realism", money:"Labour"},
+ note:"A narrator who actively withholds from the reader, and an ending the author deliberately left ambiguous. The most modern seeming novel of the 1850s."},
+{id:"hardtimes", t:"Hard Times", a:"Charles Dickens", y:1854, dec:"1850s",
+ sub:"A utilitarian education and a factory town tested against what they cannot account for",
+ ax:{form:"Weekly serial", narr:"Intrusive omniscient", class:"Mobility denied", marr:"Fatal",
+     place:"Industrial north", faith:"Secular ethics", women:"Asserted and punished", end:"Ironic",
+     mode:"Social problem", money:"Industry"},
+ note:"Written in weekly numbers, which is why it is the shortest and most compressed of its author's mature novels. The form explains the structure directly."},
+{id:"northsouth", t:"North and South", a:"Elizabeth Gaskell", y:1855, dec:"1850s",
+ sub:"A southern clergyman's daughter moves to a manufacturing town and argues with a millowner",
+ ax:{form:"Weekly serial", narr:"Reticent omniscient", class:"Static", marr:"Resolved happily",
+     place:"Industrial north", faith:"Doubt and loss", women:"Asserted and rewarded", end:"Comic resolution",
+     mode:"Social problem", money:"Industry"},
+ note:"The industrial novel that gives the manufacturer a real case and lets the heroine change her mind honestly. Set it against Hard Times on the same subject in the same decade."},
+{id:"barchester", t:"Barchester Towers", a:"Anthony Trollope", y:1857, dec:"1850s",
+ sub:"Clerical politics in a cathedral city, conducted with complete seriousness over very little",
+ ax:{form:"Three volume", narr:"Intrusive omniscient", class:"Static", marr:"Resolved happily",
+     place:"Provincial town", faith:"Satirical toward institution", women:"Negotiated within limits", end:"Comic resolution",
+     mode:"Satire", money:"Land"},
+ note:"A narrator who tells the reader outright that the heroine will not marry the wrong man, which is a deliberate refusal of suspense and a good case study in what narrative authority costs."},
+{id:"adambede", t:"Adam Bede", a:"George Eliot", y:1859, dec:"1850s",
+ sub:"A rural community, a seduction, and a woman preacher who holds the moral centre",
+ ax:{form:"Three volume", narr:"Reticent omniscient", class:"Static", marr:"Resolved happily",
+     place:"Rural and agricultural", faith:"Evangelical earnest", women:"Asserted and punished", end:"Restored order",
+     mode:"Realism", money:"Land"},
+ note:"Contains the period's clearest statement of a realist programme, in a chapter where the narrator pauses to defend ordinary subjects against idealised ones."},
+{id:"mill", t:"The Mill on the Floss", a:"George Eliot", y:1860, dec:"1860s",
+ sub:"A clever girl in a provincial family that has no use for her cleverness",
+ ax:{form:"Three volume", narr:"Reticent omniscient", class:"Fall", marr:"Withheld",
+     place:"Provincial town", faith:"Doubt and loss", women:"Interrogated openly", end:"Tragic",
+     mode:"Realism", money:"Trade and commerce"},
+ note:"The best single case for the argument that the period's fiction knew exactly what it was doing to intelligent women and did it anyway."},
+{id:"womanwhite", t:"The Woman in White", a:"Wilkie Collins", y:1860, dec:"1860s",
+ sub:"An identity substitution, a conspiracy over property, and a woman confined",
+ ax:{form:"Weekly serial", narr:"Multiple documents", class:"Rise exposed as hollow", marr:"Resolved happily",
+     place:"Gothic or isolated", faith:"Largely absent", women:"Asserted and rewarded", end:"Restored order",
+     mode:"Sensation", money:"Inheritance"},
+ note:"Told entirely through witness statements, each narrator writing only what they could know. The most rigorous documentary structure of the period and a direct answer to the question of narrative authority."}
+];
+
+VC.novels = VC.novels.concat([
+{id:"greatexp", t:"Great Expectations", a:"Charles Dickens", y:1861, dec:"1860s",
+ sub:"A blacksmith's boy receives an anonymous fortune and discovers where it came from",
+ ax:{form:"Weekly serial", narr:"First person retrospective", class:"Rise exposed as hollow", marr:"Deferred or ambiguous",
+     place:"Metropolitan", faith:"Secular ethics", women:"Asserted and punished", end:"Open",
+     mode:"Realism", money:"Inheritance"},
+ note:"The same author's answer to his own earlier orphan novels. Here the inheritance is the problem rather than the resolution, and the source of it is the reader's moral test."},
+{id:"silas", t:"Silas Marner", a:"George Eliot", y:1861, dec:"1860s",
+ sub:"A weaver exiled by false accusation, robbed of his gold and given a child instead",
+ ax:{form:"Single volume", narr:"Reticent omniscient", class:"Static", marr:"Resolved happily",
+     place:"Rural and agricultural", faith:"Doubt and loss", women:"Constrained and endorsed", end:"Comic resolution",
+     mode:"Realism", money:"Labour"},
+ note:"Short, published in one volume against the prevailing three, and shaped much more tightly as a result. Useful for showing what the format did to length."},
+{id:"ladyaudley", t:"Lady Audley's Secret", a:"Mary Elizabeth Braddon", y:1862, dec:"1860s",
+ sub:"A beautiful young wife whose past is investigated by her husband's nephew",
+ ax:{form:"Magazine serial", narr:"Intrusive omniscient", class:"Rise exposed as hollow", marr:"Fatal",
+     place:"Provincial town", faith:"Largely absent", women:"Asserted and punished", end:"Restored order",
+     mode:"Sensation", money:"Inheritance"},
+ note:"The commercial peak of sensation fiction and the clearest example of a novel that lets a woman act decisively and then requires her to be pathologised for it."},
+{id:"ourmutual", t:"Our Mutual Friend", a:"Charles Dickens", y:1865, dec:"1860s",
+ sub:"A fortune made from refuse, a faked death, and a society sorted by money",
+ ax:{form:"Monthly serial", narr:"Intrusive omniscient", class:"Rise exposed as hollow", marr:"Resolved happily",
+     place:"Metropolitan", faith:"Secular ethics", women:"Negotiated within limits", end:"Ironic",
+     mode:"Realism", money:"Speculation and finance"},
+ note:"The last completed novel of its author and the most explicit about where money comes from. The fortune is literally built from waste and the novel never lets you forget it."},
+{id:"wivesdaughters", t:"Wives and Daughters", a:"Elizabeth Gaskell", y:1866, dec:"1860s",
+ sub:"A country doctor's daughter, a remarriage, and a provincial society observed closely",
+ ax:{form:"Magazine serial", narr:"Reticent omniscient", class:"Static", marr:"Deferred or ambiguous",
+     place:"Provincial town", faith:"Largely absent", women:"Interrogated openly", end:"Open",
+     mode:"Realism", money:"Land"},
+ note:"Left unfinished at the author's death, which makes its ending genuinely open rather than artfully so. The finest observation of provincial social gradation in the period."},
+{id:"moonstone", t:"The Moonstone", a:"Wilkie Collins", y:1868, dec:"1860s",
+ sub:"A jewel taken from India disappears from an English country house",
+ ax:{form:"Weekly serial", narr:"Multiple documents", class:"Static", marr:"Resolved happily",
+     place:"Provincial town", faith:"Satirical toward institution", women:"Negotiated within limits", end:"Restored order",
+     mode:"Sensation", money:"Inheritance"},
+ note:"Frequently called the first detective novel in English. Its multiple narrators are comic as well as evidential, and the colonial origin of the jewel is the frame the plot never quite escapes."},
+{id:"middlemarch", t:"Middlemarch", a:"George Eliot", y:1872, dec:"1870s",
+ sub:"A provincial town at the time of the first Reform Act, seen through several intertwined lives",
+ ax:{form:"Single volume", narr:"Reticent omniscient", class:"Static", marr:"Ironised",
+     place:"Provincial town", faith:"Secular ethics", women:"Interrogated openly", end:"Ironic",
+     mode:"Realism", money:"Land"},
+ note:"Published in eight parts on a scheme designed to escape the three volume format. The most complete social novel of the century and the standard against which the others are measured."},
+{id:"maddingcrowd", t:"Far from the Madding Crowd", a:"Thomas Hardy", y:1874, dec:"1870s",
+ sub:"A woman inherits a farm and is pursued by three men of very different kinds",
+ ax:{form:"Magazine serial", narr:"Reticent omniscient", class:"Static", marr:"Resolved happily",
+     place:"Rural and agricultural", faith:"Largely absent", women:"Asserted and rewarded", end:"Comic resolution",
+     mode:"Realism", money:"Land"},
+ note:"The most optimistic of its author's major novels, which makes it the essential control case for anyone arguing that his pessimism was temperamental rather than developed."},
+{id:"waywelive", t:"The Way We Live Now", a:"Anthony Trollope", y:1875, dec:"1870s",
+ sub:"A financier of unknown origin dominates London society on the strength of a railway scheme",
+ ax:{form:"Monthly serial", narr:"Intrusive omniscient", class:"Rise exposed as hollow", marr:"Ironised",
+     place:"Metropolitan", faith:"Satirical toward institution", women:"Negotiated within limits", end:"Ironic",
+     mode:"Satire", money:"Speculation and finance"},
+ note:"The period's sharpest novel about finance capital and credit, written after a stock market crisis and unusually direct about how little the money is real."},
+{id:"deronda", t:"Daniel Deronda", a:"George Eliot", y:1876, dec:"1870s",
+ sub:"An English gentleman discovers his origins while a woman he has advised makes a ruinous marriage",
+ ax:{form:"Single volume", narr:"Reticent omniscient", class:"Rise rewarded", marr:"Fatal",
+     place:"Metropolitan", faith:"Evangelical earnest", women:"Interrogated openly", end:"Open",
+     mode:"Realism", money:"Inheritance"},
+ note:"Two plots that critics have argued for a century do not belong together, which is itself the most interesting thing about it. The English half is the period's cruellest marriage narrative."},
+{id:"egoist", t:"The Egoist", a:"George Meredith", y:1879, dec:"1870s",
+ sub:"A landowner's self-regard examined through the women who try to escape marrying him",
+ ax:{form:"Three volume", narr:"Intrusive omniscient", class:"Static", marr:"Withheld",
+     place:"Provincial town", faith:"Largely absent", women:"Asserted and rewarded", end:"Comic resolution",
+     mode:"Satire", money:"Land"},
+ note:"A comedy in which the marriage plot's engine is turned on the man expecting to benefit from it. Difficult prose and worth the effort for the argument it makes about consent."},
+{id:"casterbridge", t:"The Mayor of Casterbridge", a:"Thomas Hardy", y:1886, dec:"1880s",
+ sub:"A man sells his wife at a fair, rises to civic eminence, and is undone by the past",
+ ax:{form:"Weekly serial", narr:"Reticent omniscient", class:"Fall", marr:"Ironised",
+     place:"Provincial town", faith:"Largely absent", women:"Constrained and endorsed", end:"Tragic",
+     mode:"Naturalism", money:"Trade and commerce"},
+ note:"A rise and fall structure in a period that mostly wrote rises. The subtitle calls it the story of a man of character, and whether the novel means that straight is arguable."},
+{id:"jekyll", t:"Strange Case of Dr Jekyll and Mr Hyde", a:"Robert Louis Stevenson", y:1886, dec:"1880s",
+ sub:"A respectable man's account of a division within himself, told through documents",
+ ax:{form:"Single volume", narr:"Multiple documents", class:"Static", marr:"Withheld",
+     place:"Metropolitan", faith:"Doubt and loss", women:"Constrained and endorsed", end:"Tragic",
+     mode:"Gothic", money:"Inheritance"},
+ note:"Almost no women appear, which is a structural fact worth writing about. A novel about respectability that removes the domestic sphere entirely."},
+{id:"dorian", t:"The Picture of Dorian Gray", a:"Oscar Wilde", y:1890, dec:"1890s",
+ sub:"A young man's portrait bears the consequences of a life he does not",
+ ax:{form:"Magazine serial", narr:"Reticent omniscient", class:"Static", marr:"Fatal",
+     place:"Metropolitan", faith:"Largely absent", women:"Constrained and endorsed", end:"Tragic",
+     mode:"Gothic", money:"Inheritance"},
+ note:"Revised and expanded after its magazine appearance drew hostility, with a preface added defending the position it was attacked for. The revision history is itself the essay."},
+{id:"tess", t:"Tess of the d'Urbervilles", a:"Thomas Hardy", y:1891, dec:"1890s",
+ sub:"A country girl destroyed by two men and by a moral code neither of them questions",
+ ax:{form:"Magazine serial", narr:"Reticent omniscient", class:"Mobility denied", marr:"Fatal",
+     place:"Rural and agricultural", faith:"Doubt and loss", women:"Asserted and punished", end:"Tragic",
+     mode:"Naturalism", money:"Labour"},
+ note:"Serialised in a bowdlerised form with scenes removed and restored for volume publication. The censorship history is documented and is direct evidence of what the magazines would not print."},
+{id:"grubstreet", t:"New Grub Street", a:"George Gissing", y:1891, dec:"1890s",
+ sub:"Writers in a literary market that rewards the commercial and starves the serious",
+ ax:{form:"Three volume", narr:"Reticent omniscient", class:"Fall", marr:"Fatal",
+     place:"Metropolitan", faith:"Largely absent", women:"Negotiated within limits", end:"Ironic",
+     mode:"Naturalism", money:"Trade and commerce"},
+ note:"A novel about the conditions of novel writing, published in the format it attacks. The most useful single text for understanding the period's literary economy from the inside."},
+{id:"jude", t:"Jude the Obscure", a:"Thomas Hardy", y:1895, dec:"1890s",
+ sub:"A stonemason who wants to study, a woman who will not marry conventionally, and the cost of both",
+ ax:{form:"Magazine serial", narr:"Reticent omniscient", class:"Mobility denied", marr:"Fatal",
+     place:"Provincial town", faith:"Doubt and loss", women:"Interrogated openly", end:"Tragic",
+     mode:"Naturalism", money:"Labour"},
+ note:"The reception was hostile enough that its author wrote no further novels. Set it against the same author's 1874 novel to see two decades of darkening in one career."},
+{id:"dracula", t:"Dracula", a:"Bram Stoker", y:1897, dec:"1890s",
+ sub:"An invasion from the east resisted by a group who record everything they do",
+ ax:{form:"Single volume", narr:"Multiple documents", class:"Static", marr:"Resolved happily",
+     place:"Gothic or isolated", faith:"Evangelical earnest", women:"Asserted and punished", end:"Restored order",
+     mode:"Gothic", money:"Land"},
+ note:"Assembled from journals, letters, telegrams and phonograph transcripts, with the technology of record keeping foregrounded. A gothic novel obsessed with modern information systems."}
+]);
+
+/* PAIRING SCHEMA: a, b, axis, isolates, question, body */
+VC.pairings = [
+{a:"hardtimes", b:"northsouth", axis:"money", isolates:"Whether the manufacturer is given a case",
+ question:"Can a novel oppose industrial conditions and still take the manufacturer seriously?",
+ body:"Two industrial novels published within a year, one of which caricatures the factory owner and one of which gives him arguments the heroine has to answer. The difference is not sympathy for workers, which both have, but whether the opposing position is allowed to be intelligent."},
+{a:"janeeyre", b:"wuthering", axis:"narr", isolates:"Who controls the account",
+ question:"What changes when a heroine narrates her own life against being narrated by others?",
+ body:"Published in the same year by sisters. One gives its heroine complete narrative control and direct address to the reader; the other filters everything through a servant and a visiting tenant. Both are about passion and constraint and they reach opposite conclusions about who may speak."},
+{a:"olivertwist", b:"greatexp", axis:"class", isolates:"What an inheritance means",
+ question:"Does the same author's later novel repudiate his earlier one?",
+ body:"Both are orphan narratives resolved by money from an unexpected source. In the early novel the fortune confirms an inherent gentility; in the later one it comes from a convict and the hero's shame at that is the moral centre. Twenty three years apart and the second reads as an answer to the first."},
+{a:"middlemarch", b:"mill", axis:"women", isolates:"What a provincial society does with an intelligent woman",
+ question:"Is the later novel more hopeful about the same problem?",
+ body:"The same author, twelve years apart, on the same question. One ends in drowning and the other in a marriage that is presented as a diminishment freely chosen. Which is bleaker is a genuinely open argument and the essay is in defending an answer."},
+{a:"tess", b:"maddingcrowd", axis:"end", isolates:"Whether the countryside is survivable",
+ question:"Did the author's view darken, or did the market change?",
+ body:"Seventeen years apart from the same author in the same region. One gives its heroine a farm and a marriage; the other destroys a woman for something done to her. The censorship the later novel met is part of the answer to why the darkening happened when it did."},
+{a:"ladyaudley", b:"womanwhite", axis:"women", isolates:"What sensation fiction does to a woman who acts",
+ question:"Is the acting woman a threat to be contained or an agent to be vindicated?",
+ body:"Both are sensation novels of the early 1860s built on false identity and confinement. One vindicates its resourceful women and restores them; the other pathologises its heroine and removes her. The genre supports both and the choice is the argument."},
+{a:"vanityfair", b:"waywelive", axis:"mode", isolates:"How satire handles money",
+ question:"What changed about financial satire across a generation?",
+ body:"Both attack a society organised around money and neither offers a hero. The earlier novel satirises inherited position and social climbing; the later one satirises credit itself, written after a crash, with a financier whose fortune may not exist at all."},
+{a:"bleakhouse", b:"moonstone", axis:"narr", isolates:"What multiple narration is for",
+ question:"Is documentary narration an evidential device or an epistemological one?",
+ body:"Both split the telling. One alternates two narrators of completely different kinds to show a society too large to see from one position; the other assembles witness statements to solve a crime. Same technique and entirely different purposes."},
+{a:"cranford", b:"barchester", axis:"marr", isolates:"What happens when the marriage plot is removed or announced away",
+ question:"Can a Victorian novel work without narrative suspense about a wedding?",
+ body:"One is a novel almost without men in which nothing much happens and it works. The other has a narrator who tells you the outcome in advance and dares you to keep reading. Two different solutions to the same structural problem."},
+{a:"tenant", b:"janeeyre", axis:"marr", isolates:"Whether a bad marriage can be left",
+ question:"How far apart are these two novels on the law?",
+ body:"Published within a year. One heroine leaves a ruinous marriage and supports herself; the other refuses a man because he is already married and returns only when the obstacle is removed by death. The legal position was the same for both authors and they answer it very differently."},
+{a:"jekyll", b:"dorian", axis:"faith", isolates:"Where late Victorian anxiety about the self is located",
+ question:"Is the divided self a moral problem or an aesthetic one?",
+ body:"Four years apart, both about a respectable man and a hidden life, both told partly through the reactions of others. One treats the division as a scientific and moral catastrophe; the other treats it as an aesthetic proposition and was attacked for exactly that."},
+{a:"marybarton", b:"grubstreet", axis:"money", isolates:"Whose labour a novel is willing to describe",
+ question:"What counts as work in the Victorian novel?",
+ body:"One shows industrial labour and hunger from inside a working household. The other shows intellectual labour and hunger from inside the literary market. Both are about being paid too little to live and neither society in them is willing to look at the other."},
+{a:"deronda", b:"middlemarch", axis:"marr", isolates:"How far a novel will go in punishing a bad marriage",
+ question:"Are these the same critique at different intensities?",
+ body:"The same author, four years apart. Both contain a young woman who marries badly and understands it too late. One outcome is a life narrowed and endured; the other is coercion of a kind the period rarely put on the page. The escalation is the finding."},
+{a:"dracula", b:"womanwhite", axis:"narr", isolates:"What the documentary novel does with technology",
+ question:"Why do both novels foreground the act of recording?",
+ body:"Nearly four decades apart and both assembled from documents. The later one adds typewriters, phonographs and telegrams, and its heroes defeat their antagonist partly by collating information better than he can. Information management as heroism is a late Victorian idea."},
+{a:"casterbridge", b:"jude", axis:"class", isolates:"Whether the barrier is fate or institution",
+ question:"Does the same author blame character or society?",
+ body:"One man is destroyed by something he did and cannot outrun; another is refused by institutions that will not admit him whatever he does. Nine years apart from the same author, and the second locates the obstacle outside the man in a way the first does not."},
+{a:"silas", b:"adambede", axis:"faith", isolates:"What replaces religious consolation",
+ question:"Where does moral order come from once belief is uncertain?",
+ body:"Both are rural novels by the same author within two years, both concerned with wrongdoing and repair. One resolves through a community's slow reabsorption of an outcast; the other through a preacher whose faith is presented as genuine. The difference is where the consolation is located."}
+];
+
+/* CONDITION SCHEMA: id, name, what, effect, evidence */
+VC.conditions = [
+{id:"c1", name:"The three volume novel",
+ what:"For most of the period the standard format for a new novel was three volumes at a fixed and high price, well beyond what most readers would pay outright.",
+ effect:"Length was set by the format rather than by the story. Authors padded to reach it and publishers resisted anything shorter, which is why so many novels of the period have subplots that could be removed without loss.",
+ evidence:"Novels published outside the format, whether in one volume or in parts, are usually noticeably tighter, and the difference is visible without any external knowledge."},
+{id:"c2", name:"The circulating libraries",
+ what:"Most readers did not buy novels, they borrowed them by annual subscription from a small number of large libraries which bought in bulk.",
+ effect:"A handful of buyers controlled what was commercially viable, and their preferences on length, price and propriety operated as an effective filter on what could be published at all.",
+ evidence:"The three volume format survived as long as it did because it suited the libraries' economics rather than any reader's, and it collapsed quickly in the 1890s once they withdrew support."},
+{id:"c3", name:"Serialisation in monthly parts",
+ what:"Many novels appeared first in monthly instalments, illustrated, at a low price, before any volume edition.",
+ effect:"Each part needed its own shape and a reason to buy the next, which produces recurring subplots, regular minor climaxes, and characters retained because readers liked them.",
+ evidence:"Part divisions are frequently still visible in the chapter structure of modern editions, and the rhythm of minor crises is the clearest internal trace of the original format."},
+{id:"c4", name:"Weekly serialisation in magazines",
+ what:"A faster alternative in which a novel appeared in weekly numbers in a periodical alongside other content.",
+ effect:"Far shorter instalments, so the hooks come more frequently and the whole novel tends to be more compressed. Weekly serialised novels are usually the shortest work in their author's mature output.",
+ evidence:"Compare any weekly serialised novel with a monthly one by the same author. The difference in length and density is substantial and it is a production fact rather than an artistic choice."},
+{id:"c5", name:"Magazine propriety and censorship",
+ what:"Periodical editors required content suitable for family reading, and negotiated cuts with authors before publication.",
+ effect:"Scenes were removed, softened or rewritten for serial appearance and sometimes restored for the volume edition, so two versions of the same novel can differ materially.",
+ evidence:"Several major novels of the 1890s have documented serial and volume differences, and the restored passages are frequently the ones critics now consider essential."},
+{id:"c6", name:"The reading public and literacy",
+ what:"Literacy rose substantially across the century, and cheap reprints, railway bookstalls and periodicals widened the audience well beyond the subscribing classes.",
+ effect:"A far larger and more socially varied readership than at the start of the century, which supported both the earnest social novel and the sensation fiction that alarmed reviewers.",
+ evidence:"The commercial success of sensation fiction in the 1860s was itself treated as evidence of a changed and less controllable readership, and the reviews of the period say so directly."},
+{id:"c7", name:"Married women and property",
+ what:"For most of the period a married woman's property and earnings passed to her husband, and legal separation and custody were extremely difficult to obtain.",
+ effect:"The marriage plot is not a romantic convention but an economic and legal one. A heroine's marriage decision is a decision about whether she will own anything again.",
+ evidence:"Novels in which a woman leaves a marriage and supports herself were written against the law rather than within it, and reviewers of the time understood them as arguments."},
+{id:"c8", name:"Reform and the franchise",
+ what:"Successive reform acts extended the vote across the century, each preceded by extensive public argument about which classes were fit to exercise it.",
+ effect:"Novels set at the time of a reform crisis are frequently about representation in a double sense, and the question of who may speak for whom recurs in their narrative structures.",
+ evidence:"Several major novels are set deliberately a generation before their publication date, at a reform moment, which allows them to write about a settled crisis rather than a live one."},
+{id:"c9", name:"Religious doubt",
+ what:"Geological and biological science, and biblical scholarship, made educated doubt respectable in a way it had not been, across a period that remained publicly devout.",
+ effect:"Fiction registers the shift earlier and more freely than public discourse, and several major novels work out an ethics that no longer requires a theological foundation.",
+ evidence:"The change is traceable within single authors' careers, with earlier novels using religious framing and later ones locating moral authority in human sympathy instead."},
+{id:"c10", name:"The collapse of the three decker",
+ what:"In the mid 1890s the circulating libraries withdrew from the three volume format almost simultaneously and it ended within a season.",
+ effect:"Single volume novels at a lower price became the norm, which removed the length requirement and allowed the shorter, tighter fiction of the following decades.",
+ evidence:"The abruptness is the striking part. A format that had governed the English novel for most of the century disappeared in about a year once its commercial basis was withdrawn."}
+];
+
+VC.extend = [
+{t:"Where the data lives",
+ code:"VC.axes        the ten variables and their values\nVC.novels      the library, each scored on every axis\nVC.pairings    comparisons that produce an argument\nVC.conditions  the material facts that shaped the form\nVC.extend      this documentation",
+ body:"Every panel renders from these arrays. Decade and mode filters are generated from the novel data, so adding a novel from an uncovered decade creates its own filter without a code change."},
+{t:"Adding a novel",
+ code:'{id:"shirley", t:"Shirley", a:"Charlotte Bronte",\n y:1849, dec:"1840s",\n sub:"One line on what it is about",\n ax:{form:"Three volume", narr:"Reticent omniscient",\n     class:"Static", marr:"Resolved happily",\n     place:"Industrial north", faith:"Doubt and loss",\n     women:"Interrogated openly", end:"Comic resolution",\n     mode:"Social problem", money:"Industry"},\n note:"What it is good for comparatively"}',
+ body:"Append to VC.novels. Every one of the ten axes must be present and every value must appear in that axis's values list, or the entry is reported to the console and skipped. Scoring a novel on all ten is the discipline that makes the comparison tool work at all."},
+{t:"Adding an axis",
+ code:'{id:"child", name:"Childhood",\n values:["Formative","Idealised","Brutal","Absent"],\n what:"What the axis measures",\n argue:"What a difference along it lets you argue",\n trap:"The mistake it invites"}',
+ body:"Append to VC.axes, then add the new key to every novel in VC.novels. This is the only change that requires touching existing entries, which is why adding an axis should be a considered decision rather than a casual one."},
+{t:"Adding a pairing",
+ code:'{a:"tess", b:"marybarton", axis:"women",\n isolates:"The single variable the pairing holds up",\n question:"The question it opens",\n body:"How the comparison works"}',
+ body:"Append to VC.pairings. Both novel ids must exist. The isolates field is the whole point: a pairing that cannot name the one variable it holds constant against is two novels next to each other rather than a comparison."},
+{t:"Extending beyond the Victorian period",
+ code:"The five arrays are period neutral except\nVC.conditions, which is specific.\n\nThe axes work unchanged for:\n  Edwardian and modernist fiction\n  The nineteenth century novel in French\n  The American novel of the same period",
+ body:"Publication form, narrator stance, class trajectory and the rest are variables in any body of fiction. Only the conditions tab is specific to this publishing system, so covering another period means new novels, new conditions, and the same ten axes."},
+{t:"The editorial rule",
+ code:"axis    a variable with values, not a theme\nnote    what the novel is good for comparatively\nbody    describe, never quote",
+ body:"An axis must have discrete values that different novels genuinely occupy. Themes are not axes, because two novels can both be about class without disagreeing about anything. The test for a proposed axis is whether you can name at least three values and find a novel at each."},
+{t:"Suggested order of expansion",
+ code:"1  Novels by women beyond the six here\n2  The 1880s, currently the thinnest decade\n3  Poetry and the periodical essay as forms\n4  A reception axis: how each was reviewed\n5  A second period sharing the ten axes",
+ body:"The 1880s are underrepresented at two novels and are the obvious gap. A reception axis would be the most valuable addition conceptually, since how a novel was received on publication is frequently the sharpest evidence of what was controversial in it."}
+];
+</script>
+
+<script>
+(function(){
+  "use strict";
+  var K_C="rm_vc_cmp_v1";
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function put(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  function get(k,f){ try{ var r=localStorage.getItem(k); return r?JSON.parse(r):f; }catch(e){ return f; } }
+  function flash(id,m){ var el=$(id); if(!el) return; el.textContent=m; setTimeout(function(){el.textContent="";},2600); }
+  function download(name,text){
+    var b=new Blob([text],{type:"text/plain;charset=utf-8"});
+    var u=URL.createObjectURL(b); var a=document.createElement("a");
+    a.href=u; a.download=name; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(u);
+  }
+  function axById(id){ for(var i=0;i<VC.axes.length;i++){ if(VC.axes[i].id===id) return VC.axes[i]; } return null; }
+  function nById(id){ for(var i=0;i<NOV.length;i++){ if(NOV[i].id===id) return NOV[i]; } return null; }
+
+  /* A novel missing an axis or carrying an invalid value is skipped and
+     reported, so a partial addition cannot break the comparison tool. */
+  var NOV = VC.novels.filter(function(n){
+    var ok = VC.axes.every(function(a){
+      var v=n.ax[a.id];
+      return v && a.values.indexOf(v)>=0;
+    });
+    if(!ok) console.warn("Victorian toolkit: skipping "+n.id+", missing or invalid axis value");
+    return ok;
+  }).sort(function(a,b){ return a.y-b.y; });
+
+  var S=get(K_C,{});
+  var fDec="All", fMode="All", openId=null;
+
+  /* ---------- library ---------- */
+  function renderFilters(){
+    var decs=NOV.map(function(n){ return n.dec; }).filter(function(v,i,a){ return a.indexOf(v)===i; }).sort();
+    $("decBtns").innerHTML='<button class="pf-btn'+(fDec==="All"?" active":"")+'" data-d="All">All</button>'+
+      decs.map(function(d){
+        var n=NOV.filter(function(x){ return x.dec===d; }).length;
+        return '<button class="pf-btn'+(fDec===d?" active":"")+'" data-d="'+esc(d)+'">'+esc(d)+" ("+n+")</button>";
+      }).join("");
+    var modes=axById("mode").values.filter(function(m){ return NOV.some(function(n){ return n.ax.mode===m; }); });
+    $("modeBtns").innerHTML='<button class="pf-btn'+(fMode==="All"?" active":"")+'" data-m="All">All</button>'+
+      modes.map(function(m){
+        var n=NOV.filter(function(x){ return x.ax.mode===m; }).length;
+        return '<button class="pf-btn'+(fMode===m?" active":"")+'" data-m="'+esc(m)+'">'+esc(m)+" ("+n+")</button>";
+      }).join("");
+    $("decBtns").querySelectorAll("[data-d]").forEach(function(b){
+      b.addEventListener("click", function(){ fDec=b.getAttribute("data-d"); renderFilters(); renderGrid(); });
+    });
+    $("modeBtns").querySelectorAll("[data-m]").forEach(function(b){
+      b.addEventListener("click", function(){ fMode=b.getAttribute("data-m"); renderFilters(); renderGrid(); });
+    });
+  }
+
+  function renderGrid(){
+    var q=($("vcFind").value||"").toLowerCase();
+    var list=NOV.filter(function(n){
+      if(fDec!=="All" && n.dec!==fDec) return false;
+      if(fMode!=="All" && n.ax.mode!==fMode) return false;
+      if(q && (n.t+" "+n.a+" "+n.sub+" "+n.note+" "+
+               VC.axes.map(function(a){ return n.ax[a.id]; }).join(" ")).toLowerCase().indexOf(q)<0) return false;
+      return true;
+    });
+    $("vcGrid").innerHTML = list.length ? list.map(function(n){
+      return '<div class="gb-card" data-open="'+esc(n.id)+'">'+
+        '<div class="gb-q">'+esc(n.t)+"</div>"+
+        '<div class="gb-meta"><span class="gb-tag board">'+esc(n.a)+"</span>"+
+        '<span class="gb-tag type">'+n.y+"</span>"+
+        '<span class="gb-tag">'+esc(n.ax.mode)+"</span></div>"+
+        '<div class="gb-meta" style="color:var(--text);opacity:.72;line-height:1.6">'+esc(n.sub)+"</div></div>";
+    }).join("") : '<div class="trend-empty"><div class="te-msg">No novel matches those filters.</div></div>';
+    $("vcCount").innerHTML="<b>Showing:</b><span class='muted'> "+list.length+" of "+NOV.length+"</span>";
+    $("vcGrid").querySelectorAll("[data-open]").forEach(function(el){
+      el.addEventListener("click", function(){ openNovel(el.getAttribute("data-open")); });
+    });
+  }
+
+  function openNovel(id){
+    var n=nById(id); if(!n) return;
+    openId=id;
+    var pairs=VC.pairings.filter(function(p){ return p.a===id || p.b===id; }).map(function(p){
+      var other=nById(p.a===id ? p.b : p.a);
+      return other ? '<span class="gb-tag" style="cursor:pointer" data-pgoto="'+esc(other.id)+'">'+
+        esc(other.t)+" . "+esc(axById(p.axis).name)+"</span>" : "";
+    }).join("");
+    $("vcDetail").innerHTML='<div class="gb-detail">'+
+      '<div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px">'+
+      "<div><h3 style='font-size:22px'>"+esc(n.t)+"</h3>"+
+      "<div class='gb-meta' style='margin-top:4px'>"+esc(n.a)+" . "+n.y+" . "+esc(n.dec)+"</div></div>"+
+      '<button class="btn" id="vcClose" type="button" style="padding:5px 11px;font-size:12px">&times;</button></div>'+
+      '<div style="margin-top:16px">'+
+      '<div class="eg-row"><div class="lbl">In one line</div><div>'+esc(n.sub)+"</div></div>"+
+      VC.axes.map(function(a){
+        return '<div class="eg-row"><div class="lbl">'+esc(a.name)+"</div><div><strong>"+esc(n.ax[a.id])+"</strong></div></div>";
+      }).join("")+
+      '<div class="eg-row"><div class="lbl">Comparatively</div><div><div class="gb-good">'+esc(n.note)+"</div></div></div>"+
+      (pairs?'<div class="eg-row"><div class="lbl">Paired with</div><div>'+pairs+"</div></div>":"")+
+      "</div>"+
+      '<div class="row" style="gap:10px;margin-top:16px">'+
+      '<button class="btn primary" id="vcA" type="button">Set as first</button>'+
+      '<button class="btn" id="vcB" type="button">Set as second</button></div></div>';
+    $("vcClose").addEventListener("click", function(){ openId=null; $("vcDetail").innerHTML=""; });
+    $("vcA").addEventListener("click", function(){ S.a=id; put(K_C,S); switchTab("compare"); syncCompare(); });
+    $("vcB").addEventListener("click", function(){ S.b=id; put(K_C,S); switchTab("compare"); syncCompare(); });
+    $("vcDetail").querySelectorAll("[data-pgoto]").forEach(function(el){
+      el.addEventListener("click", function(){ openNovel(el.getAttribute("data-pgoto")); });
+    });
+    $("vcDetail").scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+
+  /* ---------- axes ---------- */
+  function renderAxes(){
+    $("vcAxes").innerHTML = VC.axes.map(function(a,i){
+      var counts=a.values.map(function(v){
+        var n=NOV.filter(function(x){ return x.ax[a.id]===v; }).length;
+        return '<span class="gb-tag">'+esc(v)+" ("+n+")</span>";
+      }).join("");
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(110,168,255,.1);color:#6ea8ff;'>"+(i+1)+"</span>"+esc(a.name)+"</h3>"+
+        '<div class="eg-row"><div class="lbl">What it measures</div><div>'+esc(a.what)+"</div></div>"+
+        '<div class="eg-row"><div class="lbl">Values</div><div>'+counts+"</div></div>"+
+        '<div class="eg-row"><div class="lbl">What it lets you argue</div><div><div class="gb-good">'+esc(a.argue)+"</div></div></div>"+
+        '<div class="eg-row"><div class="lbl">The trap</div><div><div class="gb-bad">'+esc(a.trap)+"</div></div></div></div>";
+    }).join("");
+  }
+
+  /* ---------- compare ---------- */
+  function syncCompare(){
+    if(S.a) $("cmpA").value=S.a;
+    if(S.b) $("cmpB").value=S.b;
+    renderCompare();
+  }
+
+  function renderCompare(){
+    var a=nById($("cmpA").value), b=nById($("cmpB").value);
+    if(!a || !b || a.id===b.id){
+      $("vcCompare").innerHTML='<div class="trend-empty"><div class="te-msg">Choose two different novels above.</div></div>';
+      $("cmpSame").textContent="0"; $("cmpDiff").textContent="0";
+      $("cmpGap").textContent="0"; $("cmpBest").textContent="-";
+      $("cmpBar").style.width="0%"; $("cmpBar").style.background="#94a3b8";
+      $("cmpRead").textContent = (a && b && a.id===b.id) ? "Those are the same novel." : "Choose two novels above.";
+      return;
+    }
+    var same=[], diff=[];
+    VC.axes.forEach(function(ax){
+      (a.ax[ax.id]===b.ax[ax.id] ? same : diff).push(ax);
+    });
+    var gap=Math.abs(a.y-b.y);
+    $("cmpSame").textContent=same.length;
+    $("cmpDiff").textContent=diff.length;
+    $("cmpGap").textContent=gap;
+    $("cmpBest").textContent = diff.length ? diff[0].name.split(" ")[0] : "-";
+    var pct=Math.round(diff.length/VC.axes.length*100);
+    var col = diff.length>=6 ? "#34d399" : (diff.length>=3 ? "#fbbf24" : "#f87171");
+    $("cmpBar").style.width=pct+"%"; $("cmpBar").style.background=col;
+    $("cmpRead").textContent = diff.length>=6
+      ? "They differ on "+diff.length+" of ten axes, which is plenty. Choose the one where the difference is sharpest and build the essay on it rather than trying to cover them all."
+      : (diff.length>=3
+         ? "They differ on "+diff.length+" axes and agree on "+same.length+". The agreements are the ground and the differences are the argument, so lead with a difference."
+         : "They agree on "+same.length+" of ten axes, which makes this a hard pairing. Two novels this alike will produce a list of similarities unless you can find something outside these axes.");
+
+    var rows=VC.axes.map(function(ax){
+      var d=a.ax[ax.id]!==b.ax[ax.id];
+      return '<div class="eg-row" style="'+(d?"background:rgba(52,211,153,.05)":"")+'">'+
+        '<div class="lbl">'+esc(ax.name)+(d?' <span class="gb-tag" style="margin-top:4px">differs</span>':"")+"</div>"+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
+        "<div>"+esc(a.ax[ax.id])+"</div><div>"+esc(b.ax[ax.id])+"</div></div></div>";
+    }).join("");
+
+    $("vcCompare").innerHTML='<div class="an-card full">'+
+      '<div class="eg-row" style="border-bottom:2px solid rgba(255,255,255,.14)">'+
+      '<div class="lbl">Axis</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
+      "<div><strong>"+esc(a.t)+"</strong><div class='gb-meta'>"+esc(a.a)+" . "+a.y+"</div></div>"+
+      "<div><strong>"+esc(b.t)+"</strong><div class='gb-meta'>"+esc(b.a)+" . "+b.y+"</div></div></div></div>"+
+      rows+
+      '<div class="gb-good" style="margin-top:14px"><strong>Where the essay is.</strong> '+
+      (diff.length
+        ? "They differ on "+diff.map(function(x){ return x.name.toLowerCase(); }).join(", ")+
+          ". Take the sharpest of those, state what each novel does with it, and the comparison has an argument rather than a list."
+        : "They occupy the same position on every axis here, which is itself a finding worth stating before looking outside the grid.")+
+      "</div></div>";
+  }
+
+  function cmpText(){
+    var a=nById($("cmpA").value), b=nById($("cmpB").value);
+    if(!a||!b||a.id===b.id) return "Choose two different novels first.";
+    var out=["Comparison", "", a.t+" ("+a.a+", "+a.y+")", "against", b.t+" ("+b.a+", "+b.y+")", ""];
+    VC.axes.forEach(function(ax){
+      var d=a.ax[ax.id]!==b.ax[ax.id];
+      out.push((d?"[differs] ":"[shared]  ")+ax.name);
+      out.push("     "+a.ax[ax.id]);
+      out.push("     "+b.ax[ax.id]);
+      out.push("");
+    });
+    out.push("Generated from a fixed comparison grid. The differences are where an argument lives.");
+    return out.join("\n");
+  }
+
+  /* ---------- pairings ---------- */
+  function renderPairings(){
+    $("vcPairings").innerHTML = VC.pairings.map(function(p){
+      var a=nById(p.a), b=nById(p.b), ax=axById(p.axis);
+      if(!a||!b||!ax) return "";
+      var shared = a.ax[p.axis]===b.ax[p.axis];
+      var diffs = VC.axes.filter(function(x){ return a.ax[x.id]!==b.ax[x.id]; });
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(167,139,250,.1);color:#a78bfa;'>P</span>"+
+        esc(a.t)+" and "+esc(b.t)+"</h3>"+
+        '<div class="gb-meta" style="margin-bottom:10px"><span class="gb-tag board">'+esc(ax.name)+"</span>"+
+        '<span class="gb-tag type">'+a.y+" and "+b.y+"</span>"+
+        '<span class="gb-tag">'+(shared ? "held constant" : "point of contrast")+"</span></div>"+
+        '<div class="eg-row"><div class="lbl">Focus axis</div><div>'+
+        (shared
+          ? "Both sit at <strong>"+esc(a.ax[p.axis])+"</strong>, so this axis is the control. What makes the comparison work is that they agree here and diverge elsewhere."
+          : "They differ here. <strong>"+esc(a.ax[p.axis])+"</strong> against <strong>"+esc(b.ax[p.axis])+"</strong>.")+
+        "</div></div>"+
+        '<div class="eg-row"><div class="lbl">Isolates</div><div><strong>'+esc(p.isolates)+"</strong></div></div>"+
+        '<div class="eg-row"><div class="lbl">The question</div><div>'+esc(p.question)+"</div></div>"+
+        '<div class="eg-row"><div class="lbl">How it works</div><div>'+esc(p.body)+"</div></div>"+
+        '<div class="eg-row"><div class="lbl">They diverge on</div><div>'+
+        (diffs.length ? diffs.map(function(x){ return '<span class="gb-tag">'+esc(x.name)+"</span>"; }).join("")
+                      : "<em>Nothing on this grid, which is itself the finding.</em>")+"</div></div>"+
+        '<div class="row" style="gap:10px;margin-top:12px">'+
+        '<button class="btn primary" data-load="'+esc(p.a)+"|"+esc(p.b)+'" type="button">Load this comparison</button></div></div>';
+    }).join("");
+    $("vcPairings").querySelectorAll("[data-load]").forEach(function(bt){
+      bt.addEventListener("click", function(){
+        var p=bt.getAttribute("data-load").split("|");
+        S.a=p[0]; S.b=p[1]; put(K_C,S);
+        switchTab("compare"); syncCompare();
+      });
+    });
+  }
+
+  /* ---------- conditions ---------- */
+  function renderConditions(){
+    $("vcConditions").innerHTML = VC.conditions.map(function(c,i){
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(251,191,36,.1);color:#fbbf24;'>"+(i+1)+"</span>"+esc(c.name)+"</h3>"+
+        '<div class="eg-row"><div class="lbl">What it was</div><div>'+esc(c.what)+"</div></div>"+
+        '<div class="eg-row"><div class="lbl">Effect on the novels</div><div>'+esc(c.effect)+"</div></div>"+
+        '<div class="eg-row"><div class="lbl">Visible evidence</div><div><div class="gb-good">'+esc(c.evidence)+"</div></div></div></div>";
+    }).join("");
+  }
+
+  /* ---------- extend ---------- */
+  function renderExtend(){
+    var counts='<div class="an-card full" style="margin-bottom:14px">'+
+      "<h3><span class='icon' style='background:rgba(52,211,153,.1);color:#34d399;'>C</span>Currently covered</h3>"+
+      '<div class="ov-stats" style="grid-template-columns:repeat(auto-fit,minmax(115px,1fr))">'+
+      '<div class="ri-cell"><div class="cv">'+NOV.length+'</div><div class="cl">Novels</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+VC.axes.length+'</div><div class="cl">Axes</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+VC.pairings.length+'</div><div class="cl">Pairings</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+VC.conditions.length+'</div><div class="cl">Conditions</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+(NOV.length*(NOV.length-1)/2)+'</div><div class="cl">Possible comparisons</div></div>'+
+      "</div></div>";
+    $("extendList").innerHTML = counts + VC.extend.map(function(x){
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(110,168,255,.1);color:#6ea8ff;'>E</span>"+esc(x.t)+"</h3>"+
+        '<div style="font-size:14.5px;line-height:1.8;margin-bottom:12px;color:var(--muted)">'+esc(x.body)+"</div>"+
+        '<div class="eg-code">'+esc(x.code)+"</div></div>";
+    }).join("");
+  }
+
+  /* ---------- tabs ---------- */
+  function switchTab(name){
+    document.querySelectorAll(".tab-btn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-tab")===name);
+    });
+    var map={library:"viewLibrary",axes:"viewAxes",compare:"viewCompare",
+             pairings:"viewPairings",conditions:"viewConditions",extend:"viewExtend"};
+    document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+    var el=$(map[name]); if(el) el.classList.add("active");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    document.querySelector(".tab-nav").addEventListener("click", function(e){
+      var b=e.target.closest(".tab-btn"); if(!b) return;
+      switchTab(b.getAttribute("data-tab"));
+    });
+    var opts=NOV.map(function(n){
+      return '<option value="'+esc(n.id)+'">'+esc(n.t)+" . "+esc(n.a)+" . "+n.y+"</option>";
+    }).join("");
+    $("cmpA").innerHTML=opts;
+    $("cmpB").innerHTML=opts;
+    $("cmpA").value = S.a || NOV[0].id;
+    $("cmpB").value = S.b || NOV[1].id;
+    $("cmpA").addEventListener("change", function(){ S.a=$("cmpA").value; put(K_C,S); renderCompare(); });
+    $("cmpB").addEventListener("change", function(){ S.b=$("cmpB").value; put(K_C,S); renderCompare(); });
+    $("cmpSwap").addEventListener("click", function(){
+      var t=$("cmpA").value; $("cmpA").value=$("cmpB").value; $("cmpB").value=t;
+      S.a=$("cmpA").value; S.b=$("cmpB").value; put(K_C,S); renderCompare();
+    });
+    $("cmpExport").addEventListener("click", function(){ download("victorian-comparison.txt", cmpText()); flash("cmpMsg","Exported."); });
+    $("vcFind").addEventListener("input", renderGrid);
+    $("vcReset").addEventListener("click", function(){
+      fDec="All"; fMode="All"; $("vcFind").value="";
+      renderFilters(); renderGrid();
+    });
+
+    renderFilters();
+    renderGrid();
+    renderAxes();
+    renderCompare();
+    renderPairings();
+    renderConditions();
+    renderExtend();
+  });
+})();
+</script>
+
+</body>
+</html>

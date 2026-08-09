@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the Citizen Kane Essay Practice tool.</p><a href="https://reportmedic.org/tools/citizen-kane-essay-practice.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="Essay questions on Citizen Kane in the style of the major film courses, with a planner, a sequence map by technique and what markers actually reward."/>
+<title>Citizen Kane Essay Practice - Questions and Planner - ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+/* -- Animated Background -- */
+.bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12;animation:meshDrift 20s ease-in-out infinite alternate;}
+.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);top:-15%;right:-10%;}
+.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#a78bfa,#6ea8ff);bottom:-10%;left:-5%;animation-delay:-7s;animation-duration:25s;}
+.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#7cf7d4,#f59e0b);top:50%;left:40%;animation-delay:-14s;animation-duration:28s;}
+@keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg) scale(1);}100%{transform:translate(40px,-30px) rotate(15deg) scale(1.1);}}
+
+/* -- Tabs Nav -- */
+.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:24px;overflow-x:auto;}
+.tab-btn{flex:1;min-width:fit-content;padding:12px 20px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;letter-spacing:.01em;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(110,168,255,.18),rgba(124,247,212,.12));color:var(--text);box-shadow:0 2px 16px rgba(110,168,255,.12),inset 0 1px 0 rgba(255,255,255,.06);}
+
+/* -- Views -- */
+.view{display:none;}
+.view.active{display:block;}
+
+/* -- Hero -- */
+.daily-hero{text-align:center;padding:32px 0 16px;}
+.daily-hero h1{font-size:clamp(26px,4.5vw,38px);font-weight:700;letter-spacing:-.02em;line-height:1.15;}
+.daily-hero h1 .grad{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:10px;line-height:1.5;letter-spacing:.01em;}
+
+/* -- Streak Banner -- */
+.streak-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 26px;flex-wrap:wrap;}
+.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);backdrop-filter:blur(8px);font-size:13px;font-weight:600;transition:transform .15s;}
+.streak-pill:hover{transform:translateY(-1px);}
+.streak-pill .fire{font-size:20px;}
+.streak-pill .sval{font-size:18px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-pill .sval.green{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-dots{display:flex;gap:5px;}
+.streak-dots .dot{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;color:var(--muted);}
+.streak-dots .dot.done{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(124,247,212,.1));border-color:rgba(16,185,129,.25);color:#34d399;}
+.streak-dots .dot.today{border-color:rgba(110,168,255,.45);box-shadow:0 0 14px rgba(110,168,255,.15);}
+
+/* -- Phase Filter -- */
+.phase-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.phase-filter .pf-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px;}
+.pf-btn{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;}
+.pf-btn:hover{border-color:rgba(255,255,255,.22);color:var(--text);}
+.pf-btn.active{background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.35);color:#6ea8ff;}
+
+/* -- Quiz Container -- */
+.quiz-panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:26px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
+.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
+.quiz-progress{display:flex;gap:4px;margin-bottom:18px;}
+.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.06);transition:background .3s;}
+.quiz-progress .pip.done{background:linear-gradient(90deg,#10b981,#7cf7d4);}
+.quiz-progress .pip.wrong{background:#ef4444;}
+.quiz-progress .pip.current{background:rgba(110,168,255,.4);animation:pipPulse 1.5s ease infinite;}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.1);color:#6ea8ff;border:1px solid rgba(110,168,255,.15);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);color:var(--muted);}
+.quiz-meta .qphase{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid rgba(124,247,212,.2);background:rgba(124,247,212,.06);color:#7cf7d4;}
+.quiz-meta .qdiff{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.quiz-meta .qdiff.easy{border:1px solid rgba(52,211,153,.2);background:rgba(52,211,153,.06);color:#34d399;}
+.quiz-meta .qdiff.medium{border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.06);color:#fbbf24;}
+.quiz-meta .qdiff.hard{border:1px solid rgba(248,113,113,.2);background:rgba(248,113,113,.06);color:#f87171;}
+.quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.quiz-meta .timer svg{color:rgba(110,168,255,.6);}
+
+.quiz-question{font-size:16.5px;line-height:1.7;font-weight:600;margin-bottom:18px;letter-spacing:.005em;}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s;}
+.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.06);}
+.qo.selected .letter{border-color:#6ea8ff;background:#6ea8ff;color:#061021;}
+.qo.correct{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);}
+.qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
+.qo.disabled{pointer-events:none;opacity:.65;}
+.qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
+
+.quiz-explain{margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(124,247,212,.035);border:1px solid rgba(124,247,212,.1);font-size:13.5px;line-height:1.7;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;letter-spacing:.01em;}
+.qa-btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;}
+.qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+.qa-btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);}
+
+/* -- Results Card -- */
+.result-card{text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;}
+.result-card .big-score{font-size:64px;font-weight:700;line-height:1;margin-bottom:8px;}
+.result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
+.result-mini .rm{padding:16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.result-mini .rm .rv{font-size:20px;font-weight:700;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* -- Subject Practice Grid -- */
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.subj-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.subj-card .sc-icon{font-size:30px;margin-bottom:10px;}
+.subj-card .sc-name{font-size:14.5px;font-weight:700;margin-bottom:4px;letter-spacing:.01em;}
+.subj-card .sc-count{font-size:12px;color:var(--muted);}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .5s ease;}
+.ri-gauge{height:12px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin:12px 0 6px;}
+.ri-gauge i{display:block;height:100%;transition:width .4s ease;}
+.eg-row{display:grid;grid-template-columns:170px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14.5px;line-height:1.8;}
+.eg-row:last-child{border-bottom:0;}
+.eg-row .lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;padding-top:3px;}
+@media(max-width:660px){.eg-row{grid-template-columns:1fr;gap:5px;}}
+.gb-card{border:1px solid var(--border);border-radius:15px;background:rgba(255,255,255,.03);padding:16px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.gb-card:hover{border-color:rgba(255,255,255,.22);transform:translateY(-2px);}
+.gb-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--brand);}
+.gb-card.done::before{background:#34d399;}
+.gb-q{font-size:14.5px;font-weight:600;line-height:1.6;}
+.gb-meta{font-size:11px;color:var(--muted);margin-top:9px;}
+.gb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:12px;}
+.gb-tag{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);margin:3px 5px 0 0;}
+.gb-tag.board{background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.28);color:#6ea8ff;}
+.gb-tag.type{background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.28);color:#a78bfa;}
+.gb-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.gb-good{border-left:3px solid #34d399;background:rgba(52,211,153,.07);border-radius:0 12px 12px 0;padding:13px 15px;font-size:13.5px;line-height:1.8;margin-top:10px;}
+.gb-bad{border-left:3px solid #f87171;background:rgba(248,113,113,.07);border-radius:0 12px 12px 0;padding:13px 15px;font-size:13.5px;line-height:1.8;margin-top:10px;}
+.gb-ao{display:grid;grid-template-columns:70px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13.5px;line-height:1.75;}
+.gb-ao:last-child{border-bottom:0;}
+.gb-ao .code{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--brand2);font-size:12.5px;}
+.eg-code{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:15px;overflow-x:auto;white-space:pre;color:#a7c7f0;}
+.eg-code{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:15px;overflow-x:auto;white-space:pre;color:#a7c7f0;}
+.eg-code{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:15px;overflow-x:auto;white-space:pre;color:#a7c7f0;}
+.eg-warn{border-left:3px solid #ffb35c;background:rgba(255,179,92,.07);border-radius:0 12px 12px 0;padding:13px 15px;font-size:13.5px;line-height:1.8;}
+.ri-cell{padding:12px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.03);text-align:center;}
+.ri-cell .cv{font-size:19px;font-weight:800;}
+.ri-cell .cl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:3px;}
+.bn-text{line-height:1.9;}
+.ri-warnbox{border-left:3px solid #ffb35c;background:rgba(255,179,92,.07);border-radius:0 12px 12px 0;padding:14px 16px;font-size:13.5px;line-height:1.75;}
+.lit-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.lit-detail h3{font-size:20px;margin-bottom:4px;}
+.lit-detail .meta{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+.lit-detail p{line-height:1.75;font-size:14.5px;margin-bottom:12px;}
+.lit-row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.lit-row:last-child{border-bottom:0;}
+.lit-row .lbl{font-weight:700;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px;}
+@media(max-width:640px){.lit-row{grid-template-columns:1fr;gap:4px;}}
+.cmp-grid{display:grid;grid-template-columns:170px 1fr 1fr;gap:10px;align-items:start;}
+.cmp-grid > div{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.cmp-grid .cmp-lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;}
+.cmp-grid .cmp-head{font-weight:700;font-size:15px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.14);}
+@media(max-width:760px){.cmp-grid{grid-template-columns:1fr;}.cmp-grid .cmp-lbl{padding-bottom:0;border-bottom:0;}}
+.theme-chip{display:inline-block;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:rgba(110,168,255,.10);border:1px solid rgba(110,168,255,.20);color:#6ea8ff;margin:3px 5px 3px 0;cursor:pointer;}
+.theme-chip.on{background:var(--brand);border-color:var(--brand);color:#08111f;}
+
+/* -- Analytics Dashboard -- */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
+.an-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.an-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);}
+.an-card.full{grid-column:1/-1;}
+.an-card h3{font-size:12.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* -- Overview Strip -- */
+.overview-strip{display:flex;align-items:center;gap:24px;}
+.ov-ring{position:relative;flex-shrink:0;width:100px;height:100px;}
+.ov-ring canvas{width:100px;height:100px;}
+.ov-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ov-ring-label .rv{font-size:22px;font-weight:700;line-height:1;}
+.ov-ring-label .rl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ov-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ov-stat{padding:12px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;}
+.ov-stat .os-val{font-size:18px;font-weight:700;line-height:1.2;font-family:'JetBrains Mono',monospace;}
+.ov-stat .os-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+@media(max-width:600px){
+  .overview-strip{flex-direction:column;gap:16px;}
+  .ov-stats{grid-template-columns:repeat(3,1fr);width:100%;}
+}
+
+/* -- Subject accuracy bars -- */
+.sub-bars{display:flex;flex-direction:column;gap:10px;}
+.sb-row{display:flex;align-items:center;gap:10px;}
+.sb-label{width:105px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:46px;text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+/* -- Trend Chart -- */
+.trend-wrap{position:relative;min-height:220px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.trend-wrap::-webkit-scrollbar{height:4px;}.trend-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--muted);text-align:center;}
+.trend-empty .te-icon{font-size:40px;opacity:.4;}
+.trend-empty .te-msg{font-size:13px;line-height:1.5;max-width:320px;}
+.trend-bar-chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding:10px 0;min-width:min-content;}
+.trend-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:48px;width:48px;flex-shrink:0;}
+.trend-bar-outer{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative;}
+.trend-bar{width:100%;border-radius:6px 6px 2px 2px;transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;min-height:4px;}
+.trend-bar:hover{filter:brightness(1.2);}
+.trend-bar .tb-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.trend-bar:hover .tb-val{opacity:1;}
+.trend-label{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.trend-mode-label.daily{background:rgba(110,168,255,.12);color:#6ea8ff;}
+.trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
+
+/* -- Mastery Dashboard -- */
+.mastery-wrap{margin-top:8px;}
+.mastery-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.m-stat{padding:12px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);}
+.m-stat .ms-val{font-size:22px;font-weight:800;margin-bottom:2px;}
+.m-stat .ms-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+.m-stat.green .ms-val{color:#34d399;} .m-stat.yellow .ms-val{color:#fbbf24;} .m-stat.red .ms-val{color:#f87171;} .m-stat.blue .ms-val{color:#6ea8ff;} .m-stat.purple .ms-val{color:#a78bfa;}
+.coverage-ring{display:flex;align-items:center;gap:16px;padding:14px;border-radius:14px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);margin-bottom:14px;overflow:hidden;}
+.cov-canvas{width:90px;height:90px;flex-shrink:0;}
+.cov-info{flex:1;min-width:0;overflow:hidden;}
+.cov-title{font-size:13px;font-weight:700;color:var(--fg);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cov-sub{font-size:11px;color:var(--muted);line-height:1.6;word-break:break-word;}
+.subj-mastery{margin-top:14px;}
+.sm-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+.sm-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.sm-icon{font-size:14px;width:20px;text-align:center;}
+.sm-name{width:70px;font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-bar{flex:1;height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative;}
+.sm-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.sm-pct{width:34px;text-align:right;font-weight:700;font-size:11px;}
+
+/* -- Passage block for reading items -- */
+.quiz-passage{padding:14px 16px;border-radius:14px;background:rgba(110,168,255,.04);border:1px solid rgba(110,168,255,.10);font-size:14.5px;line-height:1.75;color:var(--muted);margin-bottom:14px;}
+.quiz-passage em{color:var(--text);font-style:italic;}
+
+/* -- Difficulty chips -- */
+.diff-dist{display:flex;gap:10px;margin-top:6px;}
+.diff-chip{flex:1;padding:14px 10px;border-radius:14px;text-align:center;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);}
+.diff-chip .dc-val{font-size:20px;font-weight:700;margin-bottom:2px;}
+.diff-chip .dc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+.diff-chip.easy .dc-val{color:#34d399;}
+.diff-chip.medium .dc-val{color:#fbbf24;}
+.diff-chip.hard .dc-val{color:#f87171;}
+
+/* -- Session History -- */
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding-right:4px;}
+.hist-list::-webkit-scrollbar{width:4px;}
+.hist-list::-webkit-scrollbar-track{background:transparent;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:12px;transition:background .1s;}
+.hist-row:hover{background:rgba(255,255,255,.04);}
+.hist-date{font-weight:600;min-width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hist-mode{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.hist-mode.daily{background:rgba(110,168,255,.1);color:#6ea8ff;}
+.hist-mode.practice{background:rgba(139,92,246,.1);color:#a78bfa;}
+.hist-score{margin-left:auto;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.hist-detail{color:var(--muted);font-size:11px;}
+
+/* -- Reset Button -- */
+.reset-zone{margin-top:20px;text-align:center;}
+.reset-btn{padding:10px 20px;border-radius:12px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.reset-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);}
+
+/* -- Tab label responsive -- */
+.tab-short{display:none;}
+@media(max-width:540px){.tab-full{display:none;}.tab-short{display:inline;}}
+@media(max-width:640px){
+  .quiz-panel{padding:16px;}
+  .streak-bar{gap:10px;}
+  .subj-grid{grid-template-columns:1fr 1fr;}
+  .diff-dist{flex-wrap:wrap;}
+  .diff-chip{min-width:calc(50% - 5px);}
+  .mastery-stats{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .coverage-ring{flex-direction:column;text-align:center;}
+  .sm-name{width:55px;font-size:10px;}
+  .tab-nav{overflow-x:hidden;}
+  .hide-mobile{display:none!important;}
+}
+
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .5s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+
+.btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;padding:10px 20px;border-radius:10px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:.01em;transition:all .18s;}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-mesh"><div class="strand"></div><div class="strand"></div><div class="strand"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn hide-mobile" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+  <a class="btn primary" href="https://vaultbook.net/tools/citizen-kane-study-companion.html">Kane Companion</a>
+</div>
+</header>
+
+<div class="wrap">
+  <!-- Tab Nav -->
+  <nav class="tab-nav anim-up">
+    <button class="tab-btn active" data-tab="bank"><span class="tab-full">Question Bank</span><span class="tab-short">Questions</span></button>
+    <button class="tab-btn" data-tab="boards"><span class="tab-full">Courses and Criteria</span><span class="tab-short">Courses</span></button>
+    <button class="tab-btn" data-tab="plan"><span class="tab-full">Plan a Response</span><span class="tab-short">Plan</span></button>
+    <button class="tab-btn" data-tab="evidence"><span class="tab-full">Sequence Map</span><span class="tab-short">Sequences</span></button>
+    <button class="tab-btn" data-tab="markers"><span class="tab-full">What Markers Reward</span><span class="tab-short">Markers</span></button>
+    <button class="tab-btn" data-tab="extend"><span class="tab-full">Extending This</span><span class="tab-short">Extend</span></button>
+  </nav>
+
+  <!-- VIEW: BANK -->
+  <div class="view active" id="viewBank">
+    <div class="daily-hero anim-up d1">
+      <h1>Citizen Kane Essay <span class="grad">Practice</span></h1>
+      <p class="sub">Questions written in the style each course actually sets, with the trap in each one named and a route into an answer. Filter by course, by question type or by theme.</p>
+    </div>
+
+    <div class="phase-filter anim-up d2">
+      <span class="pf-label">Course:</span><span id="boardBtns"></span>
+    </div>
+    <div class="phase-filter anim-up d2" style="margin-top:-6px">
+      <span class="pf-label">Type:</span><span id="typeBtns"></span>
+    </div>
+
+    <div class="row" style="gap:10px;margin:14px 0;flex-wrap:wrap">
+      <input class="input" id="gbFind" type="search" placeholder="Search questions and themes" style="max-width:290px" />
+      <span class="pill tiny" id="gbCount"></span>
+      <span class="pill tiny" id="gbDone"></span>
+      <button class="btn" id="gbReset" type="button">Reset filters</button>
+    </div>
+
+    <div class="gb-grid anim-up d3" id="gbGrid"></div>
+    <div id="gbDetail"></div>
+  </div>
+
+  <!-- VIEW: BOARDS -->
+  <div class="view" id="viewBoards">
+    <div class="daily-hero">
+      <h1>Courses and <span class="grad">Criteria</span></h1>
+      <p class="sub">What each assessment actually measures, how long you get, and the single thing that most often separates the top band from the middle in that system.</p>
+    </div>
+    <div id="gbBoards"></div>
+    <div class="ri-warnbox" style="margin-top:16px">Specifications change. Set films move between components, assessment weightings are revised, and a film on the list one year may not be the next. Everything here describes the shape and the criteria of each assessment, which is stable, rather than which component this film currently sits on, which is not. Check the current specification and your teacher before planning a revision timetable around any of it.</div>
+  </div>
+
+  <!-- VIEW: PLAN -->
+  <div class="view" id="viewPlan">
+    <div class="daily-hero">
+      <h1>Plan a <span class="grad">Response</span></h1>
+      <p class="sub">Pick a question and build the plan in the order a good essay is actually assembled: the arguable claim first, the strongest objection second, then the paragraphs that get you from one to the other.</p>
+    </div>
+
+    <div class="an-card full" style="margin-bottom:16px">
+      <div class="row" style="gap:10px;flex-wrap:wrap">
+        <select class="input" id="plQ" style="flex:1;min-width:280px"></select>
+        <button class="btn" id="plExport" type="button">Export plan</button>
+        <button class="btn" id="plClear" type="button">Clear</button>
+        <span class="tiny muted" id="plMsg"></span>
+      </div>
+    </div>
+
+    <div class="analytics-grid" style="margin-bottom:16px">
+      <div class="an-card full">
+        <div class="ov-stats" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
+          <div class="ri-cell"><div class="cv" id="plFilled">0</div><div class="cl">Filled</div></div>
+          <div class="ri-cell"><div class="cv" id="plTotal">0</div><div class="cl">Fields</div></div>
+          <div class="ri-cell"><div class="cv" id="plWords">0</div><div class="cl">Words in plan</div></div>
+          <div class="ri-cell"><div class="cv" id="plReady">-</div><div class="cl">Ready to write</div></div>
+        </div>
+        <div class="ri-gauge"><i id="plBar" style="width:0%;background:#94a3b8"></i></div>
+        <div class="tiny muted" id="plRead">Choose a question and fill the fields in order.</div>
+      </div>
+    </div>
+
+    <div id="plFields"></div>
+  </div>
+
+  <!-- VIEW: EVIDENCE -->
+  <div class="view" id="viewEvidence">
+    <div class="daily-hero">
+      <h1>Sequence <span class="grad">Map</span></h1>
+      <p class="sub">Where to look, sequence by sequence, organised by what each one can be used to argue. Descriptions rather than transcriptions, because an essay that recounts a scene and then summarises it is not analysing anything.</p>
+    </div>
+    <div class="phase-filter">
+      <span class="pf-label">Focus:</span><span id="themeBtns"></span>
+    </div>
+    <div class="row" style="gap:10px;margin:14px 0;flex-wrap:wrap">
+      <span class="pill tiny" id="evCount"></span>
+    </div>
+    <div id="gbEvidence"></div>
+  </div>
+
+  <!-- VIEW: MARKERS -->
+  <div class="view" id="viewMarkers">
+    <div class="daily-hero">
+      <h1>What Markers <span class="grad">Reward</span></h1>
+      <p class="sub">Ten moves that separate a top band answer from a competent one, each with the weaker version alongside so you can see the difference rather than be told about it.</p>
+    </div>
+    <div id="gbMarkers"></div>
+  </div>
+
+  <!-- VIEW: EXTEND -->
+  <div class="view" id="viewExtend">
+    <div class="daily-hero">
+      <h1>Extending <span class="grad">This</span></h1>
+      <p class="sub">Everything renders from five arrays. Adding a question, a board, an evidence entry or a marker move is appending one object, and the whole structure works for any set text.</p>
+    </div>
+    <div id="extendList"></div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">Citizen Kane Essay Practice - questions, planning and marker criteria</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. Copyright ReportMedic.</div>
+</div>
+</footer>
+
+<script>
+/* ============================================================================
+   CITIZEN KANE - ESSAY PRACTICE
+   GB.boards    the courses and what each measures
+   GB.questions the question bank, tagged by course, type and focus
+   GB.evidence  the sequence map, organised by what each can argue
+   GB.markers   what separates a top band answer from a competent one
+   GB.plan      the planner fields, in the order they should be filled
+   GB.extend    schema documentation
+   ========================================================================== */
+
+var GB = {};
+
+GB.boards = [
+{id:"eduqas", name:"A-level Film Studies", region:"United Kingdom",
+ assess:"Written components covering varieties of film and filmmaking, comparative study of films from a period, and critical approaches, alongside a production element.",
+ timing:"Around forty five minutes to an hour for an extended response, closed book, with no clips available.",
+ aos:[{code:"AO1", what:"Demonstrate knowledge and understanding of elements of film, including the specialist study areas."},
+      {code:"AO2", what:"Apply that knowledge and understanding to analyse films and their contexts, and to evaluate critically."},
+      {code:"AO3", what:"Apply knowledge and understanding to the production of a film or screenplay."}],
+ top:"AO2 carries the weight and it splits into two halves. Analysis is showing how a technique makes meaning. Evaluation is judging whether it succeeds and against what alternative. Answers stop at the first half.",
+ note:"Naming techniques is not analysis. An essay that identifies deep focus, low angles and a non-linear structure without saying what any of them do is a list, and lists sit in the middle bands however accurate they are."},
+{id:"ib", name:"IB Film", region:"International",
+ assess:"A comparative study of two films from different cultural contexts, a textual analysis of an extract from a prescribed film, plus production portfolio and collaborative work.",
+ timing:"The comparative study is a recorded audiovisual essay of around ten minutes at higher level. The textual analysis is a written piece of roughly seventeen hundred words.",
+ aos:[{code:"A", what:"Identification and rationale. Choosing an area of enquiry and justifying the pairing or the extract."},
+      {code:"B", what:"Analysis and evaluation of film elements, and of the cultural contexts in which the films were produced and received."},
+      {code:"C", what:"Presentation and referencing, including the use of the audiovisual form where required."}],
+ top:"The cultural context requirement is not decoration. A comparison that treats two films as free floating texts loses a whole criterion, and this film's studio context and reception history make it unusually rich for that requirement.",
+ note:"For the audiovisual comparative study, the commentary must analyse rather than narrate over the clips. Showing a sequence and describing what happens in it is the most common way to lose criterion B."},
+{id:"uni", name:"University introductory film course", region:"Any",
+ assess:"Typically a sequence analysis of a few minutes of film, and a longer essay placing a film within a movement, a studio system, or a critical debate.",
+ timing:"Coursework, so the constraint is word count rather than clock. Sequence analyses commonly run to fifteen hundred words and essays to three thousand.",
+ aos:[{code:"Formal", what:"Precise description of cinematography, editing, sound and mise en scene, using the correct vocabulary."},
+      {code:"Argument", what:"A thesis about what the formal choices accomplish, sustained across the piece."},
+      {code:"Context", what:"Industrial, historical or critical framing that changes how the formal analysis reads."},
+      {code:"Scholarship", what:"Engagement with existing criticism, used and argued with rather than cited for authority."}],
+ top:"Sequence analysis is marked on precision. A tutor can tell within a paragraph whether you rewatched the sequence with a notebook or wrote from memory, and the difference is the entire grade.",
+ note:"Time-code your observations while watching. An essay that says the camera moves is weaker than one that says at what point, in which direction, and what enters the frame as a result."},
+{id:"media", name:"A-level Media Studies", region:"United Kingdom",
+ assess:"Study of media products across forms, using a theoretical framework of language, representation, industries and audiences, with set products and unseen material.",
+ timing:"Around thirty to forty five minutes per extended response.",
+ aos:[{code:"AO1", what:"Knowledge and understanding of the theoretical framework and of contexts."},
+      {code:"AO2", what:"Apply knowledge and understanding to analyse products, evaluate academic theories, make judgements and draw conclusions."},
+      {code:"AO3", what:"Create media products for an intended audience."}],
+ top:"Named theory used precisely and then tested. A theorist invoked and left unexamined earns AO1 and stops there, and AO2 is where the marks actually are.",
+ note:"This subject wants industry and audience as much as text. A film's production circumstances, its distribution difficulties and its reception over time are all assessable material here in a way they are not on a purely textual paper."},
+{id:"school", name:"School assessment and coursework", region:"Any",
+ assess:"Class essays, controlled assessments and internally set questions, usually longer and more specific than a public examination would set.",
+ timing:"Varies widely. Coursework rewards redrafting in a way timed writing cannot.",
+ aos:[{code:"Argument", what:"A contestable claim held across the whole piece."},
+      {code:"Evidence", what:"Specific sequences, described precisely and analysed rather than recounted."},
+      {code:"Structure", what:"Paragraphs ordered by the steps of the argument rather than by the running order of the film."},
+      {code:"Independence", what:"Viewing and reading beyond the class material, visible in the work rather than announced."}],
+ top:"Coursework is where you can attempt the reading you would not risk in an exam, because you can redraft until it holds.",
+ note:"Watch the film more than once with a specific question in mind each time. One viewing produces impressions and three produce evidence."},
+{id:"ext", name:"Extended essay or dissertation", region:"Any",
+ assess:"An independent research piece of several thousand words on a self-chosen question, assessed on research, argument and engagement with scholarship.",
+ timing:"Months. The constraint is the scope of the question rather than time in the room.",
+ aos:[{code:"Question", what:"A research question narrow enough to answer and open enough to be worth asking."},
+      {code:"Method", what:"A stated approach, whether formal, industrial, historical or reception based."},
+      {code:"Scholarship", what:"Sustained engagement with existing criticism, including where you disagree with it."},
+      {code:"Contribution", what:"Something the reader would not have got from the secondary literature alone."}],
+ top:"The reception history of this film is more productive at this length than another formal analysis of it, because the formal ground is thoroughly covered and the question of how a commercial failure became a canonical work is not.",
+ note:"Narrow the question ruthlessly. An essay on the whole film at three thousand words is a summary, and one on a single sequence or a single decade of its reception can actually say something."}
+];
+
+GB.themes = [
+{id:"narration", name:"Narration and unreliability"},
+{id:"technique", name:"Cinematography and technique"},
+{id:"structure", name:"Structure and time"},
+{id:"power",     name:"Power, wealth and isolation"},
+{id:"memory",    name:"Memory and interiority"},
+{id:"industry",  name:"Studio, industry and production"},
+{id:"canon",     name:"Reception and the canon"},
+{id:"sound",     name:"Sound and score"}
+];
+
+GB.questions = [
+{id:"q1", board:"eduqas", type:"Technique", theme:["technique","power"],
+ q:"Explore how cinematography contributes to the presentation of a central character in the film you have studied.",
+ trap:"Naming techniques without saying what they do. Deep focus and low angles identified and left there is a list, not analysis.",
+ route:"Take one technique and track how its meaning changes. Low angles that make a figure dominant early become the same angles making him small inside enormous rooms later, and the technique has not changed while its effect has."},
+{id:"q2", board:"eduqas", type:"Structure", theme:["structure","narration"],
+ q:"Discuss how narrative structure shapes meaning in the film you have studied.",
+ trap:"Retelling the plot in the order the film presents it. Structure means the deviation from chronology, so the reordering is the material.",
+ route:"Argue that the film withholds a coherent life and delivers fragments from people with reasons to shape their accounts, so that structure and unreliability are the same choice rather than two."},
+{id:"q3", board:"eduqas", type:"Critical", theme:["technique","canon"],
+ q:"Evaluate the significance of the film you have studied to the development of film form.",
+ trap:"Claiming the film invented techniques it used. Almost every device here existed before, and overstating the innovation is a common and checkable error.",
+ route:"Distinguish invention from consolidation. The stronger claim is that the film assembled existing devices into a system so visible that it became the reference point for what ambitious filmmaking looked like."},
+{id:"q4", board:"eduqas", type:"Contextual", theme:["industry","canon"],
+ q:"Explore how the production context of the film you have studied shaped the finished work.",
+ trap:"Listing production facts. Context earns marks when it changes how a scene reads, and not otherwise.",
+ route:"An unusually free contract for a first-time director explains formal risks a studio would normally refuse. Attach a specific choice to that freedom rather than asserting the connection generally."},
+{id:"q5", board:"eduqas", type:"Character", theme:["power","memory"],
+ q:"Analyse how the film you have studied presents the relationship between wealth and isolation.",
+ trap:"Treating the two as obviously connected. The film has to earn the connection and the essay should show how.",
+ route:"Track the physical scale of the spaces the central figure occupies across the film. Rooms grow as company diminishes, and the staging makes the argument before any dialogue does."},
+{id:"q6", board:"ib", type:"Comparative", theme:["narration","structure"],
+ q:"Compare how two films from different cultural contexts use narrative perspective to control what the audience is permitted to know.",
+ trap:"Alternating between the two films rather than comparing on shared criteria. Organise by point of comparison.",
+ route:"Choose criteria such as who narrates, whether the film corroborates them, and what remains unknown at the end. Run both films through each criterion in the same section."},
+{id:"q7", board:"ib", type:"Technique", theme:["technique","memory"],
+ q:"Compare how two films you have studied use depth of field and staging to convey relationships between characters.",
+ trap:"Describing shots. Criterion B rewards evaluating the choice against the alternative it displaced.",
+ route:"Ask what conventional coverage would have done to the same scene. Staging two figures in depth within one shot lets the audience choose where to look, which is a different proposition from cutting between them."},
+{id:"q8", board:"ib", type:"Contextual", theme:["industry","canon"],
+ q:"Compare how the production and reception contexts of two films shaped their meaning for audiences.",
+ trap:"Treating reception as one moment. A film's meaning to audiences in its release year and thirty years later can differ entirely.",
+ route:"This film is an unusually good case because its commercial reception and its critical reputation moved in opposite directions over decades. Use that gap rather than describing either alone."},
+{id:"q9", board:"uni", type:"Sequence", theme:["technique","narration"],
+ q:"Undertake a close analysis of a sequence of approximately three minutes, accounting for cinematography, editing, sound and mise en scene.",
+ trap:"Writing from memory. Tutors can tell, and the difference between a remembered impression and a timed observation is the grade.",
+ route:"Rewatch with a notebook, logging each shot with its duration, camera position, movement and what enters the frame. Build the argument from the log rather than fitting the log to an argument."},
+{id:"q10", board:"uni", type:"Technique", theme:["technique","structure"],
+ q:"Discuss the relationship between long take staging and editing in the construction of a scene.",
+ trap:"Presenting the two as opposites. A film that stages in depth still cuts, and where it chooses to cut is as significant as where it does not.",
+ route:"Find a scene that combines both and account for the cut. A film committed to unbroken staging that nonetheless cuts at a particular moment is telling you what that moment is for."},
+{id:"q11", board:"uni", type:"Critical", theme:["canon","narration"],
+ q:"Assess the claim that the film's reputation has obscured rather than illuminated its actual achievements.",
+ trap:"Answering only about the film. The question is about the reputation, which means the reception history is the evidence.",
+ route:"Trace the shift from commercial disappointment to critical elevation and then to displacement in later polls. Ask what each stage of the reputation made visible and what it hid."},
+{id:"q12", board:"uni", type:"Sound", theme:["sound","structure"],
+ q:"Analyse the contribution of sound design and score to the construction of time in a film you have studied.",
+ trap:"Treating sound as accompaniment. Sound in this film carries transitions and compresses years, which is structural work.",
+ route:"Find the transitions where sound carries across a cut before the image settles. Those bridges are doing what a dissolve alone would not, and naming the mechanism is the analysis."},
+{id:"q13", board:"media", type:"Contextual", theme:["industry","canon"],
+ q:"Explain how industry contexts influence the production and distribution of media products, with reference to products you have studied.",
+ trap:"Describing the industry generally. The question wants the influence traced to a specific product.",
+ route:"A production granted unusual creative control, followed by distribution difficulties driven by external pressure, is a clean case of industry shaping both what was made and who got to see it."},
+{id:"q14", board:"media", type:"Critical", theme:["narration","power"],
+ q:"Evaluate the usefulness of one theory of representation in analysing a media product you have studied.",
+ trap:"Explaining the theory and then describing the product. Evaluate means testing whether the theory actually helps here.",
+ route:"Apply the theory precisely, then find the element it fails to account for. A theory that explains most of a product and not all of it is a better essay than one asserted to explain everything."},
+{id:"q15", board:"media", type:"Theme", theme:["power","canon"],
+ q:"Discuss how media products construct and circulate ideas about powerful individuals.",
+ trap:"Confining the answer to the text. Circulation is part of the question and belongs in the answer.",
+ route:"The film constructs a powerful figure through a newsreel obituary before the investigation begins, which is a media product about media products, and that reflexivity is the material."},
+{id:"q16", board:"school", type:"Character", theme:["memory","power"],
+ q:"How far does the film allow the audience to understand its central character?",
+ trap:"Answering how far without measuring against anything. Understanding compared to what is the question behind the question.",
+ route:"Argue that the film withholds interiority deliberately, giving five accounts and no inner life, so that the audience ends knowing a great deal about him and almost nothing of him."},
+{id:"q17", board:"school", type:"Structure", theme:["structure","narration"],
+ q:"Discuss the significance of the film's framing device.",
+ trap:"Describing the frame. Significance means what it does to everything inside it.",
+ route:"The investigation gives the film a question to organise around and an answer the characters never receive. Argue whether the question is genuinely the film's subject or a device for holding fragments together."},
+{id:"q18", board:"school", type:"Technique", theme:["technique","power"],
+ q:"Explore how mise en scene communicates character in the film you have studied.",
+ trap:"Listing objects in the frame. Mise en scene is arrangement, so the placement is the meaning rather than the inventory.",
+ route:"Take one recurring spatial arrangement, such as figures separated by great distance within a single interior, and show it recurring at intervals with an increasing gap."},
+{id:"q19", board:"school", type:"Theme", theme:["memory","narration"],
+ q:"Discuss the presentation of memory in the film you have studied.",
+ trap:"Treating the flashbacks as reliable records. Each is someone's account, which is a different thing from what happened.",
+ route:"Distinguish what each narrator was positioned to know from what they claim. Several sequences show events the narrator could not have witnessed, which is a deliberate and arguable feature."},
+{id:"q20", board:"ext", type:"Critical", theme:["canon","industry"],
+ q:"How did a commercially unsuccessful film become a canonical work, and what does that process reveal about how film canons are formed?",
+ trap:"Assuming the elevation was inevitable because the film is good. The interesting research question is the mechanism.",
+ route:"Trace the specific institutions that did the work: critical journals, retrospective screenings, polls, and university curricula. Canon formation is an institutional process and it leaves a documentary trail."},
+{id:"q21", board:"ext", type:"Technique", theme:["technique","industry"],
+ q:"To what extent was the visual style of the film the achievement of its cinematographer rather than its director?",
+ trap:"Choosing a side and marshalling evidence for it. Authorship questions are more interesting when the difficulty of attribution is the finding.",
+ route:"Compare the cinematographer's work before and after this film, and the director's work with other collaborators. The pattern of what persists across each career is the evidence, and it rarely points cleanly one way."},
+{id:"q22", board:"ext", type:"Comparative", theme:["narration","structure"],
+ q:"Compare the use of multiple unreliable narrators in film with its use in the novel, using one example of each.",
+ trap:"Treating the two forms as equivalent. What a novel can do with a narrator's interiority a film cannot do the same way, and the difference is the essay.",
+ route:"Ask how each form signals unreliability. Prose can do it through voice on the page; film generally needs contradiction between accounts or between account and image."},
+{id:"q23", board:"eduqas", type:"Sound", theme:["sound","technique"],
+ q:"Analyse how sound is used to create meaning in the film you have studied.",
+ trap:"Discussing only the score. Dialogue overlap, sound perspective and silence are all sound design and all assessable.",
+ route:"Take overlapping dialogue as a formal choice rather than as realism. It obliges the audience to select what to attend to, which is the aural equivalent of staging in depth."},
+{id:"q24", board:"uni", type:"Contextual", theme:["industry","power"],
+ q:"Discuss the relationship between a film and the real world figures it is understood to reference.",
+ trap:"Treating the film as a biography with names changed. The differences from any real figure are as significant as the resemblances.",
+ route:"Ask what the film gains by being neither documentary nor disguise. The resemblance created a distribution problem and the fictional freedom created the formal one, and the essay can hold both."}
+];
+
+/* EVIDENCE SCHEMA: id, ch (sequence), moment, themes[], use, warn */
+GB.evidence = [
+{id:"e1", ch:"Opening", moment:"The approach across the estate to the lit window, in a series of dissolves",
+ themes:["technique","power"],
+ use:"Establishes scale, decay and inaccessibility before a single word. The camera crosses barriers it should not be able to cross, which announces the film's willingness to go where a witness could not.",
+ warn:"Do not treat the opening as atmosphere only. It sets up the film's central formal problem, which is that we are shown things nobody present could have reported."},
+{id:"e2", ch:"Opening", moment:"The death, the dropped object, and the nurse entering in a distorted reflection",
+ themes:["memory","technique"],
+ use:"The film's organising mystery is planted in seconds, and the distorted reflection tells you the reliability of what follows is in question.",
+ warn:"Everyone writes about this. To make it count, connect it forward to a specific later account rather than treating it as an isolated flourish."},
+{id:"e3", ch:"Newsreel", moment:"The obituary newsreel summarising the public life",
+ themes:["narration","industry","power"],
+ use:"A media product inside a media product. It gives the audience the public version so the rest of the film can be about what the public version leaves out.",
+ warn:"Note the deliberately degraded image quality. The film is imitating a form, and the imitation is a formal choice rather than a lapse."},
+{id:"e4", ch:"Newsreel", moment:"The darkened screening room where the reporters are given their assignment",
+ themes:["narration","structure"],
+ use:"The investigation is set up here, and the reporters are barely lit and barely individuated, which keeps the focus on the question rather than the questioner.",
+ warn:"The investigating figure is deliberately kept faceless. Writing about him as a character misses that he is a device for organising the accounts."},
+{id:"e5", ch:"First account", moment:"The childhood scene staged in depth, with the boy visible through the window behind the adults deciding his future",
+ themes:["technique","power","memory"],
+ use:"The single clearest demonstration of staging in depth doing narrative work. Three planes of action in one shot, and the person most affected is furthest away and smallest.",
+ warn:"This sequence is also the strongest evidence that the accounts cannot be literal. Ask who could have reported it, and the reliability question opens immediately."},
+{id:"e6", ch:"Early career", moment:"The signed statement of principles",
+ themes:["power","narration"],
+ use:"A document that returns much later in a completely changed light. Its function is structural rather than expository.",
+ warn:"Its meaning depends entirely on the later scene. Discussing either alone loses the point, and the essay should hold them together."},
+{id:"e7", ch:"Marriage", moment:"The breakfast table montage compressing years into minutes",
+ themes:["structure","technique","sound"],
+ use:"Time compression through a repeated setting, with widening physical distance and hardening dialogue rhythm doing the work that scenes would take an hour to do.",
+ warn:"Describe the mechanism rather than the outcome. The table stays, the costumes change, the space between the figures grows, and the cuts get shorter. That is the analysis."},
+{id:"e8", ch:"Opera", moment:"The performance, with the camera rising through the flies to the workers above",
+ themes:["technique","power"],
+ use:"A single vertical movement delivers a judgement the film never states, and it locates the verdict with people who have no stake in flattering anyone.",
+ warn:"Attribute the judgement carefully. The film does not say the performance is bad; it shows two men reacting, which is a more interesting formal choice."},
+{id:"e9", ch:"Opera", moment:"The vast opera house interior and the figure's isolation within it",
+ themes:["power","memory"],
+ use:"Scale used against a character rather than for them. The same low angles that once conveyed dominance now measure the emptiness around him.",
+ warn:"This is the payoff for the earlier low angles. An essay that treats the technique as constant across the film misses that its meaning inverts."},
+{id:"e10", ch:"Xanadu", moment:"The enormous hall with the couple seated far apart, conversing across the distance",
+ themes:["power","memory","technique"],
+ use:"Staging as argument. The distance is literal, the dialogue has to carry across it, and no line of dialogue is required to make the point.",
+ warn:"Resist paraphrasing what they say. The spatial arrangement is the evidence and the dialogue is secondary here."},
+{id:"e11", ch:"Xanadu", moment:"The destruction of the bedroom after the departure",
+ themes:["power","memory"],
+ use:"The only sustained loss of control, and the object that surfaces during it links back to the opening seconds.",
+ warn:"Handle this without over-explaining the connection. The film itself declines to explain it until the last minute, and an essay that resolves it too early flattens the structure."},
+{id:"e12", ch:"Closing", moment:"The crane over the accumulated collection in the great hall",
+ themes:["power","structure","technique"],
+ use:"Accumulation made visible at a scale no dialogue could convey, and the movement takes the audience across it rather than cutting, which insists on the quantity.",
+ warn:"The shot is doing an argument about acquisition. Describing its technical execution without saying what it argues is the standard weak version."},
+{id:"e13", ch:"Closing", moment:"The final image and the smoke leaving the chimney",
+ themes:["narration","memory","structure"],
+ use:"The audience receives an answer the characters never do, which is a precise statement about the limits of the investigation the film has just conducted.",
+ warn:"The interesting argument is not what the answer is but whether it explains anything. Several readings hold that it deliberately does not, and that position is defensible."},
+{id:"e14", ch:"Throughout", moment:"Overlapping dialogue in the newspaper and party scenes",
+ themes:["sound","technique"],
+ use:"An aural equivalent of staging in depth. The audience must choose what to attend to rather than being directed to it.",
+ warn:"Do not present it merely as realism. It is a formal decision with a cost, since it makes lines harder to catch, and the cost is worth acknowledging."},
+{id:"e15", ch:"Throughout", moment:"Ceilings visible in interior shots",
+ themes:["technique"],
+ use:"Low camera positions include ceilings that studio sets normally omit, which makes interiors feel enclosing rather than open.",
+ warn:"This is frequently claimed as an invention. It is safer and more accurate to argue that its systematic use here made it visible as a technique."},
+{id:"e16", ch:"Throughout", moment:"Sound bridges carrying dialogue across cuts and years",
+ themes:["sound","structure"],
+ use:"A line begun in one time and completed in another, which compresses the gap and asserts continuity across it.",
+ warn:"Name a specific instance and the exact transition. A general claim about sound bridges is unverifiable and reads as revision notes."},
+{id:"e17", ch:"Beyond the film", moment:"The commercial reception on release, against the critical reputation that followed",
+ themes:["canon","industry"],
+ use:"The gap between how a film performed and how it came to be regarded is itself evidence, and it is the strongest available material for any question about canon formation.",
+ warn:"Avoid the tidy story that audiences were wrong and critics were right. Distribution difficulties, a limited release and the absence of home viewing all shaped the initial performance, and none of them is a verdict on the film."},
+{id:"e18", ch:"Beyond the film", moment:"The film's position in international critical polls across seven decades, including its eventual displacement",
+ themes:["canon"],
+ use:"A documented sequence showing a reputation rising, holding for decades at the top, and then being displaced. Canon formation with a paper trail.",
+ warn:"Displacement is not demotion. The later polls reflect a widening of who was voting as much as a re-evaluation of the film, and an essay that treats the change as a verdict on quality misses the more interesting finding."},
+{id:"e19", ch:"Beyond the film", moment:"The film's absorption into teaching, from film schools to introductory curricula",
+ themes:["canon","industry"],
+ use:"Institutions make canons. A film that becomes the standard teaching example acquires a reputation partly through repetition rather than through fresh judgement each time.",
+ warn:"This argument can slide into claiming the reputation is unearned. The stronger version holds that institutional selection and genuine achievement are both real and hard to separate."}
+];
+
+GB.markers = [
+{n:1, move:"Open with a claim someone could dispute",
+ weak:"This essay will explore the techniques used in the film and their effects.",
+ strong:"The film's formal innovations are usually praised as expressive, but their consistent function is to withhold interiority from a character the audience is invited to want to understand.",
+ why:"The first sentence tells the marker whether there is an argument. Announcing a topic is not an argument and no criterion rewards it."},
+{n:2, move:"Say what a technique does, not that it is present",
+ weak:"The director uses deep focus and low angle shots throughout the film.",
+ strong:"Staging three planes of action in one shot lets the audience watch a decision being made and its subject being excluded from it simultaneously, which no cutting pattern could achieve.",
+ why:"Identification earns the knowledge marks and stops there. Every film assessment puts its weight on what the choices accomplish."},
+{n:3, move:"Evaluate against the alternative",
+ weak:"The long take creates a sense of realism.",
+ strong:"Conventional coverage would have told the audience where to look. Holding the shot transfers that decision to them, which is why the scene feels observed rather than presented.",
+ why:"Evaluation means judging a choice against what it displaced. It is the single most reliable way to move from the middle bands to the top."},
+{n:4, move:"Use context to change a reading",
+ weak:"The film was made in 1941 under a contract giving the director unusual control.",
+ strong:"A contract that removed the usual studio veto explains why a first feature could risk a structure this fragmented, and it means the fragmentation is a decision rather than a compromise.",
+ why:"Context marks are given for context that does work. Production facts attached to nothing are the most common wasted paragraph in film essays."},
+{n:5, move:"Describe sequences precisely",
+ weak:"There is a famous scene where the camera moves up during a performance.",
+ strong:"The camera leaves the stage and rises continuously through the fly system to two stagehands in the gantry, one of whom offers a silent gesture.",
+ why:"Precision is the clearest evidence of rewatching. A marker can tell the difference between a remembered impression and an observation, and grades accordingly."},
+{n:6, move:"Structure by argument, not by running order",
+ weak:"Paragraphs that follow the film from opening to closing shot.",
+ strong:"Paragraphs ordered by the steps of the claim, drawing on whichever sequences each step requires.",
+ why:"Chronological structure signals that the film is organising the essay rather than the argument. Every organisation criterion rewards the reverse."},
+{n:7, move:"Answer the strongest objection",
+ weak:"Some critics disagree, but the evidence supports this reading.",
+ strong:"The best case against this reading is the final image, which appears to offer the explanation the film has withheld. It can be answered by noting who receives it and who does not.",
+ why:"A claim that has not survived opposition has not been tested, and the top bands exist for arguments that have."},
+{n:8, move:"Separate what the film shows from what a narrator claims",
+ weak:"The film shows his childhood being taken from him.",
+ strong:"An account attributed to a man who was not present shows a scene in detail he could not have witnessed, which tells you the flashbacks are not transcripts of testimony.",
+ why:"This is the most productive move available on this particular film and it is the one that most reliably marks out an upper band answer."},
+{n:9, move:"Distinguish innovation from consolidation",
+ weak:"The film invented deep focus, low angles and the non-linear narrative.",
+ strong:"Each of these existed before. What was new was their combination in a single work at a level of visibility that made them legible as style.",
+ why:"Overstated originality claims are checkable and markers do check them. The consolidation argument is both safer and more interesting."},
+{n:10, move:"Conclude by saying what follows",
+ weak:"In conclusion, the film is rightly regarded as a masterpiece of cinema.",
+ strong:"Reading the film this way makes its reputation part of its meaning, since a work about the impossibility of summing up a life has spent eighty years being summed up in one word.",
+ why:"A conclusion that restates the introduction wastes the last position on the page. Say what your reading rules out or opens up."}
+];
+
+GB.plan = [
+{k:"claim", l:"Your contestable claim", h:"One sentence a reasonable reader could disagree with. Not a topic."},
+{k:"why", l:"Why it is arguable", h:"What would someone who disagreed say, in one line?"},
+{k:"p1", l:"Paragraph one: the step and its sequence", h:"The first move of the argument, and which sequence you will use."},
+{k:"p2", l:"Paragraph two: the step and its sequence", h:"The second move. It should advance the claim rather than restate it."},
+{k:"p3", l:"Paragraph three: the step and its sequence", h:"The third move, usually the one that complicates or deepens."},
+{k:"obj", l:"The strongest objection", h:"The best case against you, stated fairly."},
+{k:"ans", l:"Your answer to it", h:"Not a dismissal. Show why the objection does not overturn the claim."},
+{k:"ctx", l:"Context that changes a reading", h:"One piece of production, industrial or reception context, and the specific reading it alters."},
+{k:"crit", l:"An interpretation you will argue with", h:"A named critical position you will use and then push against."},
+{k:"end", l:"What your reading rules out", h:"The final sentence. Say what follows from having argued this."}
+];
+
+GB.extend = [
+{t:"Where the data lives",
+ code:"GB.boards     the courses and what each measures\nGB.questions  the question bank\nGB.evidence   the sequence map\nGB.markers    what separates the bands\nGB.plan       the planner fields, in order\nGB.themes     the vocabulary used for filtering",
+ body:"Every panel renders from these arrays. Course and focus filter buttons are generated from the data, so adding either creates its own filter without a code change."},
+{t:"Adding a question",
+ code:'{id:"q25", board:"eduqas", type:"Technique",\n theme:["technique","sound"],\n q:"The question, phrased the way that course phrases them",\n trap:"The mistake this question invites",\n route:"A concrete way into an answer, not a summary"}',
+ body:"Append to GB.questions. The board must match a GB.boards id and every theme must match a GB.themes id, or the entry is reported to the console and skipped. The trap and route fields are what make the bank worth using rather than any past paper."},
+{t:"Adding a sequence",
+ code:'{id:"e17", ch:"Xanadu",\n moment:"What is on screen, described not transcribed",\n themes:["power"],\n use:"What it can be used to argue",\n warn:"How candidates misuse it"}',
+ body:"Append to GB.evidence. Describe what is visible and audible rather than transcribing dialogue. A student who can locate a sequence and say what it supports is better prepared than one carrying remembered lines with no argument attached."},
+{t:"Adding a course",
+ code:'{id:"btec", name:"...", region:"...",\n assess:"What the assessment consists of",\n timing:"How long, and what materials are available",\n aos:[{code:"AO1", what:"..."}, ...],\n top:"The single discriminator in that system",\n note:"The most common failure mode"}',
+ body:"Append to GB.boards. Describe the criteria and the shape of the assessment, which change slowly, rather than which component this film currently sits on, which changes often and would date the page."},
+{t:"Using this for a different film",
+ code:"1  GB.boards stays, it is film neutral\n2  GB.markers mostly stays, three entries are\n   specific to this film and need rewriting\n3  GB.plan stays, it is a method\n4  Replace GB.questions and GB.evidence\n5  Rewrite GB.themes for the new film",
+ body:"Three of the six arrays transfer to any set film. The marker moves are the ones to check, since a few of them use this film's particular problems as their illustration and would need new examples."},
+{t:"The editorial rule",
+ code:"trap    the mistake the question invites\nroute   a way in, not a model answer\nwarn    how candidates misuse the sequence\nnever   transcribe dialogue",
+ body:"No model answers, and no transcribed dialogue. A student who memorises a model produces an essay that does not answer the question in front of them, and a student who memorises lines writes recall where analysis belongs."},
+{t:"Suggested order of expansion",
+ code:"1  More questions on the thinner courses\n2  A shot log template for sequence analysis\n3  A reception timeline as its own tab\n4  A second set film sharing the same shell\n5  Comparative pairings used by each course",
+ body:"The sequence analysis shot log is the highest value addition, because precision is what university level marking rewards and most students have never been shown how to build one. A reception timeline would also serve the extended essay questions well."}
+];
+</script>
+
+<script>
+(function(){
+  "use strict";
+  var K_D="rm_kn_done_v1", K_P="rm_kn_plan_v1";
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function put(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  function get(k,f){ try{ var r=localStorage.getItem(k); return r?JSON.parse(r):f; }catch(e){ return f; } }
+  function flash(id,m){ var el=$(id); if(!el) return; el.textContent=m; setTimeout(function(){el.textContent="";},2600); }
+  function download(name,text){
+    var b=new Blob([text],{type:"text/plain;charset=utf-8"});
+    var u=URL.createObjectURL(b); var a=document.createElement("a");
+    a.href=u; a.download=name; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(u);
+  }
+  function boardById(id){ for(var i=0;i<GB.boards.length;i++){ if(GB.boards[i].id===id) return GB.boards[i]; } return null; }
+  function themeName(id){ for(var i=0;i<GB.themes.length;i++){ if(GB.themes[i].id===id) return GB.themes[i].name; } return id; }
+  function qById(id){ for(var i=0;i<QS.length;i++){ if(QS[i].id===id) return QS[i]; } return null; }
+
+  var tids=GB.themes.map(function(t){ return t.id; });
+  var QS=GB.questions.filter(function(q){
+    var ok = boardById(q.board) && q.theme.every(function(t){ return tids.indexOf(t)>=0; });
+    if(!ok) console.warn("Kane practice: skipping question "+q.id+" with an unknown board or theme reference");
+    return ok;
+  });
+
+  var D=get(K_D,{}), P=get(K_P,{});
+  var fBoard="All", fType="All", fTheme="All", openId=null;
+
+  /* ---------- question bank ---------- */
+  function renderFilters(){
+    $("boardBtns").innerHTML='<button class="pf-btn'+(fBoard==="All"?" active":"")+'" data-b="All">All</button>'+
+      GB.boards.map(function(b){
+        var n=QS.filter(function(q){ return q.board===b.id; }).length;
+        if(!n) return "";
+        return '<button class="pf-btn'+(fBoard===b.id?" active":"")+'" data-b="'+esc(b.id)+'">'+
+          esc(b.name.replace(" Film Studies","").replace(" Media Studies"," Media").replace("A-level ",""))+" ("+n+")</button>";
+      }).join("");
+    var types=QS.map(function(q){ return q.type; }).filter(function(v,i,a){ return a.indexOf(v)===i; }).sort();
+    $("typeBtns").innerHTML='<button class="pf-btn'+(fType==="All"?" active":"")+'" data-t="All">All</button>'+
+      types.map(function(t){
+        var n=QS.filter(function(q){ return q.type===t; }).length;
+        return '<button class="pf-btn'+(fType===t?" active":"")+'" data-t="'+esc(t)+'">'+esc(t)+" ("+n+")</button>";
+      }).join("");
+    $("boardBtns").querySelectorAll("[data-b]").forEach(function(b){
+      b.addEventListener("click", function(){ fBoard=b.getAttribute("data-b"); renderFilters(); renderGrid(); });
+    });
+    $("typeBtns").querySelectorAll("[data-t]").forEach(function(b){
+      b.addEventListener("click", function(){ fType=b.getAttribute("data-t"); renderFilters(); renderGrid(); });
+    });
+  }
+
+  function renderGrid(){
+    var q=($("gbFind").value||"").toLowerCase();
+    var list=QS.filter(function(x){
+      if(fBoard!=="All" && x.board!==fBoard) return false;
+      if(fType!=="All" && x.type!==fType) return false;
+      if(q && (x.q+" "+x.trap+" "+x.route+" "+x.type+" "+
+               x.theme.map(themeName).join(" ")).toLowerCase().indexOf(q)<0) return false;
+      return true;
+    });
+    $("gbGrid").innerHTML = list.length ? list.map(function(x){
+      return '<div class="gb-card'+(D[x.id]?" done":"")+'" data-open="'+esc(x.id)+'">'+
+        '<div class="gb-q">'+esc(x.q)+"</div>"+
+        '<div class="gb-meta"><span class="gb-tag board">'+esc(boardById(x.board).name)+"</span>"+
+        '<span class="gb-tag type">'+esc(x.type)+"</span>"+
+        (D[x.id]?'<span class="gb-tag">attempted</span>':"")+"</div></div>";
+    }).join("") : '<div class="trend-empty"><div class="te-msg">No question matches those filters.</div></div>';
+    $("gbCount").innerHTML="<b>Showing:</b><span class='muted'> "+list.length+" of "+QS.length+"</span>";
+    $("gbDone").innerHTML="<b>Attempted:</b><span class='muted'> "+Object.keys(D).length+"</span>";
+    $("gbGrid").querySelectorAll("[data-open]").forEach(function(el){
+      el.addEventListener("click", function(){ openQ(el.getAttribute("data-open")); });
+    });
+  }
+
+  function openQ(id){
+    var x=qById(id); if(!x) return;
+    openId=id;
+    var b=boardById(x.board);
+    $("gbDetail").innerHTML='<div class="gb-detail">'+
+      '<div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px">'+
+      '<div style="flex:1"><div class="gb-meta" style="margin:0 0 8px">'+
+      '<span class="gb-tag board">'+esc(b.name)+"</span>"+
+      '<span class="gb-tag type">'+esc(x.type)+"</span>"+
+      x.theme.map(function(t){ return '<span class="gb-tag">'+esc(themeName(t))+"</span>"; }).join("")+"</div>"+
+      "<div style='font-size:17px;font-weight:600;line-height:1.7'>"+esc(x.q)+"</div></div>"+
+      '<button class="btn" id="gbClose" type="button" style="padding:5px 11px;font-size:12px">&times;</button></div>'+
+      '<div style="margin-top:16px">'+
+      '<div class="eg-row"><div class="lbl">The trap</div><div><div class="gb-bad">'+esc(x.trap)+"</div></div></div>"+
+      '<div class="eg-row"><div class="lbl">A way in</div><div><div class="gb-good">'+esc(x.route)+"</div></div></div>"+
+      '<div class="eg-row"><div class="lbl">Timing</div><div>'+esc(b.timing)+"</div></div>"+
+      '<div class="eg-row"><div class="lbl">The discriminator</div><div>'+esc(b.top)+"</div></div>"+
+      "</div>"+
+      '<div class="row" style="gap:10px;margin-top:16px">'+
+      '<button class="btn primary" id="gbPlan" type="button">Plan this one</button>'+
+      '<button class="btn" id="gbMark" type="button">'+(D[id]?"Mark as not attempted":"Mark as attempted")+"</button></div></div>";
+    $("gbClose").addEventListener("click", function(){ openId=null; $("gbDetail").innerHTML=""; });
+    $("gbMark").addEventListener("click", function(){
+      if(D[id]) delete D[id]; else D[id]=true;
+      put(K_D,D); renderGrid(); openQ(id);
+    });
+    $("gbPlan").addEventListener("click", function(){
+      P.qid=id; put(K_P,P);
+      switchTab("plan"); $("plQ").value=id; renderPlan();
+    });
+    $("gbDetail").scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+
+  /* ---------- boards ---------- */
+  function renderBoards(){
+    $("gbBoards").innerHTML = GB.boards.map(function(b){
+      var n=QS.filter(function(q){ return q.board===b.id; }).length;
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(110,168,255,.1);color:#6ea8ff;'>B</span>"+esc(b.name)+
+        " <span class='gb-tag'>"+esc(b.region)+"</span><span class='gb-tag'>"+n+" questions</span></h3>"+
+        '<div class="eg-row"><div class="lbl">The assessment</div><div>'+esc(b.assess)+"</div></div>"+
+        '<div class="eg-row"><div class="lbl">Timing</div><div>'+esc(b.timing)+"</div></div>"+
+        '<div class="eg-row"><div class="lbl">What is measured</div><div>'+
+        b.aos.map(function(a){
+          return '<div class="gb-ao"><div class="code">'+esc(a.code)+"</div><div>"+esc(a.what)+"</div></div>";
+        }).join("")+"</div></div>"+
+        '<div class="eg-row"><div class="lbl">The discriminator</div><div><div class="gb-good">'+esc(b.top)+"</div></div></div>"+
+        '<div class="eg-row"><div class="lbl">Most common failure</div><div><div class="gb-bad">'+esc(b.note)+"</div></div></div></div>";
+    }).join("");
+  }
+
+  /* ---------- planner ---------- */
+  function renderPlanSelect(){
+    $("plQ").innerHTML='<option value="">Choose a question to plan</option>'+
+      QS.map(function(x){
+        var t=x.q.length>90 ? x.q.slice(0,88)+"..." : x.q;
+        return '<option value="'+esc(x.id)+'">'+esc(boardById(x.board).name)+" . "+esc(t)+"</option>";
+      }).join("");
+    if(P.qid) $("plQ").value=P.qid;
+  }
+
+  function planStats(){
+    var filled=0, words=0;
+    GB.plan.forEach(function(f){
+      var v=(P[f.k]||"").trim();
+      if(v){ filled++; words += v.split(/\s+/).filter(Boolean).length; }
+    });
+    var pct=Math.round(filled/GB.plan.length*100);
+    $("plFilled").textContent=filled;
+    $("plTotal").textContent=GB.plan.length;
+    $("plWords").textContent=words;
+    var core=["claim","p1","p2","p3","obj","ans"].filter(function(k){ return (P[k]||"").trim(); }).length;
+    $("plReady").textContent = core===6 ? "yes" : core+" of 6";
+    var col = core===6 ? "#34d399" : (core>=3 ? "#fbbf24" : "#94a3b8");
+    $("plBar").style.width=pct+"%";
+    $("plBar").style.background = filled?col:"#94a3b8";
+    $("plRead").textContent = !filled
+      ? "Choose a question and fill the fields in order."
+      : (core===6
+         ? "The six load bearing fields are done: claim, three steps, the objection and your answer to it. The rest sharpen an essay that already works."
+         : "The six fields that carry an essay are the claim, the three steps, the objection and your answer. "+core+" of those are done.");
+  }
+
+  function renderPlan(){
+    var x = P.qid ? qById(P.qid) : null;
+    var head = x
+      ? '<div class="an-card full" style="margin-bottom:14px"><div class="gb-meta" style="margin:0 0 8px">'+
+        '<span class="gb-tag board">'+esc(boardById(x.board).name)+'</span><span class="gb-tag type">'+esc(x.type)+"</span></div>"+
+        "<div style='font-size:16px;font-weight:600;line-height:1.7'>"+esc(x.q)+"</div>"+
+        '<div class="gb-bad" style="margin-top:12px"><strong>The trap.</strong> '+esc(x.trap)+"</div>"+
+        '<div class="gb-good"><strong>A way in.</strong> '+esc(x.route)+"</div></div>"
+      : "";
+    $("plFields").innerHTML = head + '<div class="an-card full">'+ GB.plan.map(function(f){
+      return '<div style="margin-bottom:14px"><div style="font-weight:700;font-size:14.5px">'+esc(f.l)+"</div>"+
+        '<div class="tiny muted" style="margin:4px 0 7px;line-height:1.6">'+esc(f.h)+"</div>"+
+        '<textarea class="input" data-pf="'+esc(f.k)+'" style="min-height:64px">'+esc(P[f.k]||"")+"</textarea></div>";
+    }).join("")+"</div>";
+    $("plFields").querySelectorAll("[data-pf]").forEach(function(t){
+      t.addEventListener("input", function(){
+        P[t.getAttribute("data-pf")]=t.value; put(K_P,P); planStats();
+      });
+    });
+    planStats();
+  }
+
+  function planText(){
+    var x = P.qid ? qById(P.qid) : null;
+    var out=["Essay plan", ""];
+    if(x){
+      out.push("Board:    "+boardById(x.board).name);
+      out.push("Question: "+x.q);
+      out.push("Trap:     "+x.trap);
+      out.push("");
+    }
+    GB.plan.forEach(function(f){
+      out.push(f.l);
+      out.push("   "+((P[f.k]||"").trim() || "-"));
+      out.push("");
+    });
+    out.push("Plan written by the candidate. This tool supplies no model answers.");
+    return out.join("\n");
+  }
+
+  /* ---------- evidence ---------- */
+  function renderThemeBtns(){
+    $("themeBtns").innerHTML='<button class="pf-btn'+(fTheme==="All"?" active":"")+'" data-th="All">All</button>'+
+      GB.themes.map(function(t){
+        var n=GB.evidence.filter(function(e){ return e.themes.indexOf(t.id)>=0; }).length;
+        if(!n) return "";
+        return '<button class="pf-btn'+(fTheme===t.id?" active":"")+'" data-th="'+esc(t.id)+'">'+esc(t.name)+" ("+n+")</button>";
+      }).join("");
+    $("themeBtns").querySelectorAll("[data-th]").forEach(function(b){
+      b.addEventListener("click", function(){ fTheme=b.getAttribute("data-th"); renderThemeBtns(); renderEvidence(); });
+    });
+  }
+
+  function renderEvidence(){
+    var list=GB.evidence.filter(function(e){ return fTheme==="All" || e.themes.indexOf(fTheme)>=0; });
+    $("evCount").innerHTML="<b>Showing:</b><span class='muted'> "+list.length+" of "+GB.evidence.length+" moments</span>";
+    var byCh={};
+    list.forEach(function(e){ (byCh[e.ch]=byCh[e.ch]||[]).push(e); });
+    $("gbEvidence").innerHTML = Object.keys(byCh).length ? Object.keys(byCh).map(function(ch){
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(251,191,36,.1);color:#fbbf24;'>C</span>"+esc(ch)+"</h3>"+
+        byCh[ch].map(function(e){
+          return '<div class="eg-row"><div class="lbl">'+
+            e.themes.map(function(t){ return '<span class="gb-tag">'+esc(themeName(t).split(" ")[0])+"</span>"; }).join("")+
+            "</div><div><strong>"+esc(e.moment)+"</strong>"+
+            '<div style="margin-top:7px;color:var(--muted)">'+esc(e.use)+"</div>"+
+            '<div class="gb-bad" style="margin-top:9px"><strong>Careful.</strong> '+esc(e.warn)+"</div></div></div>";
+        }).join("")+"</div>";
+    }).join("") : '<div class="trend-empty"><div class="te-msg">No moment tagged with that theme.</div></div>';
+  }
+
+  /* ---------- markers ---------- */
+  function renderMarkers(){
+    $("gbMarkers").innerHTML = GB.markers.map(function(m){
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(52,211,153,.1);color:#34d399;'>"+m.n+"</span>"+esc(m.move)+"</h3>"+
+        '<div class="eg-row"><div class="lbl">Weaker</div><div><div class="gb-bad">'+esc(m.weak)+"</div></div></div>"+
+        '<div class="eg-row"><div class="lbl">Stronger</div><div><div class="gb-good">'+esc(m.strong)+"</div></div></div>"+
+        '<div class="eg-row"><div class="lbl">Why it scores</div><div>'+esc(m.why)+"</div></div></div>";
+    }).join("");
+  }
+
+  /* ---------- extend ---------- */
+  function renderExtend(){
+    var counts='<div class="an-card full" style="margin-bottom:14px">'+
+      "<h3><span class='icon' style='background:rgba(52,211,153,.1);color:#34d399;'>C</span>Currently covered</h3>"+
+      '<div class="ov-stats" style="grid-template-columns:repeat(auto-fit,minmax(115px,1fr))">'+
+      '<div class="ri-cell"><div class="cv">'+GB.boards.length+'</div><div class="cl">Boards</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+QS.length+'</div><div class="cl">Questions</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+GB.evidence.length+'</div><div class="cl">Moments</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+GB.markers.length+'</div><div class="cl">Marker moves</div></div>'+
+      "</div></div>";
+    $("extendList").innerHTML = counts + GB.extend.map(function(x){
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(110,168,255,.1);color:#6ea8ff;'>E</span>"+esc(x.t)+"</h3>"+
+        '<div style="font-size:14.5px;line-height:1.8;margin-bottom:12px;color:var(--muted)">'+esc(x.body)+"</div>"+
+        '<div class="eg-code">'+esc(x.code)+"</div></div>";
+    }).join("");
+  }
+
+  /* ---------- tabs ---------- */
+  function switchTab(name){
+    document.querySelectorAll(".tab-btn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-tab")===name);
+    });
+    var map={bank:"viewBank",boards:"viewBoards",plan:"viewPlan",
+             evidence:"viewEvidence",markers:"viewMarkers",extend:"viewExtend"};
+    document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+    var el=$(map[name]); if(el) el.classList.add("active");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    document.querySelector(".tab-nav").addEventListener("click", function(e){
+      var b=e.target.closest(".tab-btn"); if(!b) return;
+      switchTab(b.getAttribute("data-tab"));
+    });
+    $("gbFind").addEventListener("input", renderGrid);
+    $("gbReset").addEventListener("click", function(){
+      fBoard="All"; fType="All"; $("gbFind").value="";
+      renderFilters(); renderGrid();
+    });
+    $("plQ").addEventListener("change", function(){
+      P.qid=$("plQ").value; put(K_P,P); renderPlan();
+    });
+    $("plExport").addEventListener("click", function(){ download("citizen-kane-essay-plan.txt", planText()); flash("plMsg","Exported."); });
+    $("plClear").addEventListener("click", function(){
+      if(!confirm("Clear the plan? The chosen question is kept.")) return;
+      var q=P.qid; P={qid:q}; put(K_P,P); renderPlan();
+    });
+
+    renderFilters();
+    renderGrid();
+    renderBoards();
+    renderPlanSelect();
+    renderPlan();
+    renderThemeBtns();
+    renderEvidence();
+    renderMarkers();
+    renderExtend();
+  });
+})();
+</script>
+
+</body>
+</html>
