@@ -1441,6 +1441,30 @@ function switchTab(name){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+/* ---------- hash routing ----------
+   Older published articles deep link to this page for a specific section.
+   Supported: #daily #practice #math #reading-writing #timing #analytics
+   A math or reading hash opens Section Practice with that filter applied. */
+function applyHash(){
+  var h=(window.location.hash||'').replace(/^#/,'').toLowerCase();
+  if(!h) return;
+  var phaseFor={ 'math':'Math', 'reading-writing':'Reading and Writing', 'reading':'Reading and Writing', 'writing':'Reading and Writing' };
+  if(phaseFor[h]){
+    switchTab('practice');
+    var want=phaseFor[h];
+    document.querySelectorAll('.pf-btn').forEach(function(b){
+      var on = b.getAttribute('data-phase')===want;
+      b.classList.toggle('active',on);
+    });
+    renderSubjGrid(want);
+    return;
+  }
+  var tabFor={ 'daily':'daily', 'practice':'practice', 'sections':'practice',
+               'timing':'strategy', 'strategy':'strategy', 'scoring':'strategy',
+               'analytics':'analytics', 'progress':'analytics' };
+  if(tabFor[h]) switchTab(tabFor[h]);
+}
+
 document.addEventListener('DOMContentLoaded',function(){
   document.querySelector('.tab-nav').addEventListener('click',function(e){
     var btn=e.target.closest('.tab-btn'); if(!btn) return;
@@ -1459,7 +1483,9 @@ document.addEventListener('DOMContentLoaded',function(){
   renderSubjGrid('All');
   renderStrategy();
   renderAnalytics();
+  applyHash();
 });
+window.addEventListener('hashchange', applyHash);
 </script>
 
 </body>
