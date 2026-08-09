@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the Classic Literature Study Guide.</p><a href="https://reportmedic.org/tools/classic-literature-study-guide.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="An interactive study guide to fourteen classic novels, with a side-by-side comparison tool, character frameworks, theme tracking and a full essay method."/>
+<title>Classic Literature Study Guide - Interactive Tools - ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+/* -- Animated Background -- */
+.bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12;animation:meshDrift 20s ease-in-out infinite alternate;}
+.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);top:-15%;right:-10%;}
+.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#a78bfa,#6ea8ff);bottom:-10%;left:-5%;animation-delay:-7s;animation-duration:25s;}
+.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#7cf7d4,#f59e0b);top:50%;left:40%;animation-delay:-14s;animation-duration:28s;}
+@keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg) scale(1);}100%{transform:translate(40px,-30px) rotate(15deg) scale(1.1);}}
+
+/* -- Tabs Nav -- */
+.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:24px;overflow-x:auto;}
+.tab-btn{flex:1;min-width:fit-content;padding:12px 20px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;letter-spacing:.01em;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(110,168,255,.18),rgba(124,247,212,.12));color:var(--text);box-shadow:0 2px 16px rgba(110,168,255,.12),inset 0 1px 0 rgba(255,255,255,.06);}
+
+/* -- Views -- */
+.view{display:none;}
+.view.active{display:block;}
+
+/* -- Hero -- */
+.daily-hero{text-align:center;padding:32px 0 16px;}
+.daily-hero h1{font-size:clamp(26px,4.5vw,38px);font-weight:700;letter-spacing:-.02em;line-height:1.15;}
+.daily-hero h1 .grad{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:10px;line-height:1.5;letter-spacing:.01em;}
+
+/* -- Streak Banner -- */
+.streak-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 26px;flex-wrap:wrap;}
+.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);backdrop-filter:blur(8px);font-size:13px;font-weight:600;transition:transform .15s;}
+.streak-pill:hover{transform:translateY(-1px);}
+.streak-pill .fire{font-size:20px;}
+.streak-pill .sval{font-size:18px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-pill .sval.green{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-dots{display:flex;gap:5px;}
+.streak-dots .dot{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;color:var(--muted);}
+.streak-dots .dot.done{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(124,247,212,.1));border-color:rgba(16,185,129,.25);color:#34d399;}
+.streak-dots .dot.today{border-color:rgba(110,168,255,.45);box-shadow:0 0 14px rgba(110,168,255,.15);}
+
+/* -- Phase Filter -- */
+.phase-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.phase-filter .pf-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px;}
+.pf-btn{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;}
+.pf-btn:hover{border-color:rgba(255,255,255,.22);color:var(--text);}
+.pf-btn.active{background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.35);color:#6ea8ff;}
+
+/* -- Quiz Container -- */
+.quiz-panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:26px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
+.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
+.quiz-progress{display:flex;gap:4px;margin-bottom:18px;}
+.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.06);transition:background .3s;}
+.quiz-progress .pip.done{background:linear-gradient(90deg,#10b981,#7cf7d4);}
+.quiz-progress .pip.wrong{background:#ef4444;}
+.quiz-progress .pip.current{background:rgba(110,168,255,.4);animation:pipPulse 1.5s ease infinite;}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.1);color:#6ea8ff;border:1px solid rgba(110,168,255,.15);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);color:var(--muted);}
+.quiz-meta .qphase{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid rgba(124,247,212,.2);background:rgba(124,247,212,.06);color:#7cf7d4;}
+.quiz-meta .qdiff{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.quiz-meta .qdiff.easy{border:1px solid rgba(52,211,153,.2);background:rgba(52,211,153,.06);color:#34d399;}
+.quiz-meta .qdiff.medium{border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.06);color:#fbbf24;}
+.quiz-meta .qdiff.hard{border:1px solid rgba(248,113,113,.2);background:rgba(248,113,113,.06);color:#f87171;}
+.quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.quiz-meta .timer svg{color:rgba(110,168,255,.6);}
+
+.quiz-question{font-size:16.5px;line-height:1.7;font-weight:600;margin-bottom:18px;letter-spacing:.005em;}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s;}
+.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.06);}
+.qo.selected .letter{border-color:#6ea8ff;background:#6ea8ff;color:#061021;}
+.qo.correct{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);}
+.qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
+.qo.disabled{pointer-events:none;opacity:.65;}
+.qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
+
+.quiz-explain{margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(124,247,212,.035);border:1px solid rgba(124,247,212,.1);font-size:13.5px;line-height:1.7;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;letter-spacing:.01em;}
+.qa-btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;}
+.qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+.qa-btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);}
+
+/* -- Results Card -- */
+.result-card{text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;}
+.result-card .big-score{font-size:64px;font-weight:700;line-height:1;margin-bottom:8px;}
+.result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
+.result-mini .rm{padding:16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.result-mini .rm .rv{font-size:20px;font-weight:700;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* -- Subject Practice Grid -- */
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.subj-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.subj-card .sc-icon{font-size:30px;margin-bottom:10px;}
+.subj-card .sc-name{font-size:14.5px;font-weight:700;margin-bottom:4px;letter-spacing:.01em;}
+.subj-card .sc-count{font-size:12px;color:var(--muted);}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .5s ease;}
+.subj-card[data-era="Romantic"]::before,.subj-card[data-era="Romantic"] .sc-fill{background:#a78bfa;}
+.subj-card[data-era="Victorian"]::before,.subj-card[data-era="Victorian"] .sc-fill{background:#6ea8ff;}
+.subj-card[data-era="Modernist"]::before,.subj-card[data-era="Modernist"] .sc-fill{background:#34d399;}
+.subj-card[data-era="Mid-century"]::before,.subj-card[data-era="Mid-century"] .sc-fill{background:#f59e0b;}
+.subj-card[data-era="Dystopian"]::before,.subj-card[data-era="Dystopian"] .sc-fill{background:#f472b6;}
+.lit-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.lit-detail h3{font-size:20px;margin-bottom:4px;}
+.lit-detail .meta{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+.lit-detail p{line-height:1.75;font-size:14.5px;margin-bottom:12px;}
+.lit-row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.lit-row:last-child{border-bottom:0;}
+.lit-row .lbl{font-weight:700;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px;}
+@media(max-width:640px){.lit-row{grid-template-columns:1fr;gap:4px;}}
+.cmp-grid{display:grid;grid-template-columns:170px 1fr 1fr;gap:10px;align-items:start;}
+.cmp-grid > div{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.cmp-grid .cmp-lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;}
+.cmp-grid .cmp-head{font-weight:700;font-size:15px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.14);}
+@media(max-width:760px){.cmp-grid{grid-template-columns:1fr;}.cmp-grid .cmp-lbl{padding-bottom:0;border-bottom:0;}}
+.theme-chip{display:inline-block;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:rgba(110,168,255,.10);border:1px solid rgba(110,168,255,.20);color:#6ea8ff;margin:3px 5px 3px 0;cursor:pointer;}
+.theme-chip.on{background:var(--brand);border-color:var(--brand);color:#08111f;}
+
+/* -- Analytics Dashboard -- */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
+.an-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.an-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);}
+.an-card.full{grid-column:1/-1;}
+.an-card h3{font-size:12.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* -- Overview Strip -- */
+.overview-strip{display:flex;align-items:center;gap:24px;}
+.ov-ring{position:relative;flex-shrink:0;width:100px;height:100px;}
+.ov-ring canvas{width:100px;height:100px;}
+.ov-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ov-ring-label .rv{font-size:22px;font-weight:700;line-height:1;}
+.ov-ring-label .rl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ov-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ov-stat{padding:12px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;}
+.ov-stat .os-val{font-size:18px;font-weight:700;line-height:1.2;font-family:'JetBrains Mono',monospace;}
+.ov-stat .os-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+@media(max-width:600px){
+  .overview-strip{flex-direction:column;gap:16px;}
+  .ov-stats{grid-template-columns:repeat(3,1fr);width:100%;}
+}
+
+/* -- Subject accuracy bars -- */
+.sub-bars{display:flex;flex-direction:column;gap:10px;}
+.sb-row{display:flex;align-items:center;gap:10px;}
+.sb-label{width:105px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:46px;text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+/* -- Trend Chart -- */
+.trend-wrap{position:relative;min-height:220px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.trend-wrap::-webkit-scrollbar{height:4px;}.trend-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--muted);text-align:center;}
+.trend-empty .te-icon{font-size:40px;opacity:.4;}
+.trend-empty .te-msg{font-size:13px;line-height:1.5;max-width:320px;}
+.trend-bar-chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding:10px 0;min-width:min-content;}
+.trend-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:48px;width:48px;flex-shrink:0;}
+.trend-bar-outer{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative;}
+.trend-bar{width:100%;border-radius:6px 6px 2px 2px;transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;min-height:4px;}
+.trend-bar:hover{filter:brightness(1.2);}
+.trend-bar .tb-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.trend-bar:hover .tb-val{opacity:1;}
+.trend-label{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.trend-mode-label.daily{background:rgba(110,168,255,.12);color:#6ea8ff;}
+.trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
+
+/* -- Mastery Dashboard -- */
+.mastery-wrap{margin-top:8px;}
+.mastery-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.m-stat{padding:12px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);}
+.m-stat .ms-val{font-size:22px;font-weight:800;margin-bottom:2px;}
+.m-stat .ms-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+.m-stat.green .ms-val{color:#34d399;} .m-stat.yellow .ms-val{color:#fbbf24;} .m-stat.red .ms-val{color:#f87171;} .m-stat.blue .ms-val{color:#6ea8ff;} .m-stat.purple .ms-val{color:#a78bfa;}
+.coverage-ring{display:flex;align-items:center;gap:16px;padding:14px;border-radius:14px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);margin-bottom:14px;overflow:hidden;}
+.cov-canvas{width:90px;height:90px;flex-shrink:0;}
+.cov-info{flex:1;min-width:0;overflow:hidden;}
+.cov-title{font-size:13px;font-weight:700;color:var(--fg);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cov-sub{font-size:11px;color:var(--muted);line-height:1.6;word-break:break-word;}
+.subj-mastery{margin-top:14px;}
+.sm-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+.sm-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.sm-icon{font-size:14px;width:20px;text-align:center;}
+.sm-name{width:70px;font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-bar{flex:1;height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative;}
+.sm-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.sm-pct{width:34px;text-align:right;font-weight:700;font-size:11px;}
+
+/* -- Passage block for reading items -- */
+.quiz-passage{padding:14px 16px;border-radius:14px;background:rgba(110,168,255,.04);border:1px solid rgba(110,168,255,.10);font-size:14.5px;line-height:1.75;color:var(--muted);margin-bottom:14px;}
+.quiz-passage em{color:var(--text);font-style:italic;}
+
+/* -- Difficulty chips -- */
+.diff-dist{display:flex;gap:10px;margin-top:6px;}
+.diff-chip{flex:1;padding:14px 10px;border-radius:14px;text-align:center;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);}
+.diff-chip .dc-val{font-size:20px;font-weight:700;margin-bottom:2px;}
+.diff-chip .dc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+.diff-chip.easy .dc-val{color:#34d399;}
+.diff-chip.medium .dc-val{color:#fbbf24;}
+.diff-chip.hard .dc-val{color:#f87171;}
+
+/* -- Session History -- */
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding-right:4px;}
+.hist-list::-webkit-scrollbar{width:4px;}
+.hist-list::-webkit-scrollbar-track{background:transparent;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:12px;transition:background .1s;}
+.hist-row:hover{background:rgba(255,255,255,.04);}
+.hist-date{font-weight:600;min-width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hist-mode{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.hist-mode.daily{background:rgba(110,168,255,.1);color:#6ea8ff;}
+.hist-mode.practice{background:rgba(139,92,246,.1);color:#a78bfa;}
+.hist-score{margin-left:auto;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.hist-detail{color:var(--muted);font-size:11px;}
+
+/* -- Reset Button -- */
+.reset-zone{margin-top:20px;text-align:center;}
+.reset-btn{padding:10px 20px;border-radius:12px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.reset-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);}
+
+/* -- Tab label responsive -- */
+.tab-short{display:none;}
+@media(max-width:540px){.tab-full{display:none;}.tab-short{display:inline;}}
+@media(max-width:640px){
+  .quiz-panel{padding:16px;}
+  .streak-bar{gap:10px;}
+  .subj-grid{grid-template-columns:1fr 1fr;}
+  .diff-dist{flex-wrap:wrap;}
+  .diff-chip{min-width:calc(50% - 5px);}
+  .mastery-stats{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .coverage-ring{flex-direction:column;text-align:center;}
+  .sm-name{width:55px;font-size:10px;}
+  .tab-nav{overflow-x:hidden;}
+  .hide-mobile{display:none!important;}
+}
+
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .5s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+
+.btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;padding:10px 20px;border-radius:10px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:.01em;transition:all .18s;}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-mesh"><div class="strand"></div><div class="strand"></div><div class="strand"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn hide-mobile" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+  <a class="btn primary" href="/tools/film-studies-reference.html">Film Reference</a>
+</div>
+</header>
+
+<div class="wrap">
+  <!-- Tab Nav -->
+  <nav class="tab-nav anim-up">
+    <button class="tab-btn active" data-tab="library"><span class="tab-full">The Library</span><span class="tab-short">Library</span></button>
+    <button class="tab-btn" data-tab="compare"><span class="tab-full">Compare Novels</span><span class="tab-short">Compare</span></button>
+    <button class="tab-btn" data-tab="characters"><span class="tab-full">Character Tools</span><span class="tab-short">Characters</span></button>
+    <button class="tab-btn" data-tab="themes"><span class="tab-full">Theme Tracker</span><span class="tab-short">Themes</span></button>
+    <button class="tab-btn" data-tab="essay"><span class="tab-full">Essay Method</span><span class="tab-short">Essays</span></button>
+  </nav>
+
+  <!-- VIEW: LIBRARY -->
+  <div class="view active" id="viewLibrary">
+    <div class="daily-hero anim-up d1">
+      <h1>Classic Literature <span class="grad">Study Guide</span></h1>
+      <p class="sub">Fourteen novels, each broken down into the things an essay actually needs. Pick a work to open it.</p>
+    </div>
+    <div class="phase-filter anim-up d2">
+      <span class="pf-label">Filter by period:</span>
+      <button class="pf-btn active" data-phase="All">All</button>
+      <button class="pf-btn" data-phase="Romantic">Romantic</button>
+      <button class="pf-btn" data-phase="Victorian">Victorian</button>
+      <button class="pf-btn" data-phase="Modernist">Modernist</button>
+      <button class="pf-btn" data-phase="Mid-century">Mid-century</button>
+      <button class="pf-btn" data-phase="Dystopian">Dystopian</button>
+    </div>
+    <div class="subj-grid anim-up d3" id="workGrid"></div>
+    <div id="workDetail"></div>
+  </div>
+
+  <!-- VIEW: COMPARE -->
+  <div class="view" id="viewCompare">
+    <div class="daily-hero">
+      <h1>Compare <span class="grad">Novels</span></h1>
+      <p class="sub">Pick any two and the same questions are asked of both. Comparison essays are won on shared criteria, not on parallel summaries.</p>
+    </div>
+    <div class="phase-filter" style="justify-content:center">
+      <select class="input" id="cmpA" style="max-width:260px"></select>
+      <span class="pf-label" style="margin:0 4px">versus</span>
+      <select class="input" id="cmpB" style="max-width:260px"></select>
+    </div>
+    <div class="an-card full" style="margin-top:18px"><div class="cmp-grid" id="cmpTable"></div></div>
+    <div class="quiz-explain show" style="margin-top:16px">A comparison that alternates whole paragraphs about one book and then the other is not a comparison, it is two essays stapled together. Choose three or four of the rows above, and structure each paragraph around the row rather than around the novel. The reader should be unable to tell which book you like more until you tell them.</div>
+  </div>
+
+  <!-- VIEW: CHARACTERS -->
+  <div class="view" id="viewCharacters">
+    <div class="daily-hero">
+      <h1>Character <span class="grad">Tools</span></h1>
+      <p class="sub">A framework that works on any character in any novel, plus the recurring types and what each is usually doing structurally.</p>
+    </div>
+    <div class="analytics-grid">
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(110,168,255,.1);color:#6ea8ff;">Q</span>The five questions</h3>
+        <div id="charQ"></div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(139,92,246,.1);color:#8b5cf6;">T</span>Recurring types and what they do</h3>
+        <div id="charTypes"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: THEMES -->
+  <div class="view" id="viewThemes">
+    <div class="daily-hero">
+      <h1>Theme <span class="grad">Tracker</span></h1>
+      <p class="sub">Select a theme to see which novels carry it and how each one treats it differently. Difference is where the argument lives.</p>
+    </div>
+    <div style="text-align:center;margin-bottom:18px" id="themeChips"></div>
+    <div id="themeOut"></div>
+  </div>
+
+  <!-- VIEW: ESSAY -->
+  <div class="view" id="viewEssay">
+    <div class="daily-hero">
+      <h1>Essay <span class="grad">Method</span></h1>
+      <p class="sub">Eight moves that separate a top band literature essay from a competent summary.</p>
+    </div>
+    <div id="essayList"></div>
+    <div class="quiz-explain show" style="margin-top:16px">One rule underlies all eight. A literature essay is judged on argument, not on coverage. An answer that makes one contestable claim and defends it against the strongest objection will beat an answer that mentions three times as much and asserts nothing anyone could disagree with.</div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">Classic Literature Study Guide - fourteen novels, compared and analysed</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. Copyright ReportMedic.</div>
+</div>
+</footer>
+<script>
+var LIT = {};
+
+LIT.works = [
+{id:"frankenstein", t:"Frankenstein", a:"Mary Shelley", y:"1818", era:"Romantic", form:"Epistolary frame narrative",
+ q:"Who is responsible when a creator abandons what they have made?",
+ sum:"A student assembles a living being from dead matter, is horrified by the result, and abandons it. The creature, intelligent and articulate, seeks recognition, is refused it, and turns to violence. The story reaches the reader through three nested narrators, each with reason to shape it.",
+ struct:"Three concentric frames. An explorer's letters enclose the scientist's account, which encloses the creature's own narrative at the centre. The reader is furthest from the character with the strongest case.",
+ themes:["ambition","isolation","responsibility","nature","otherness"],
+ chars:"The scientist is the narrator most readers first sympathise with and the one the structure most quietly indicts. The creature is the only character who explains himself at length and the only one denied a hearing by everyone inside the book.",
+ angle:"Argue about the frame. The creature's account sits at the deepest point of the narrative, filtered through two men with reasons to distort it, and the novel never lets him speak to us directly.",
+ exam:"Attribution of blame, the limits of scientific ambition, and the question of whether the creature is made monstrous or born so."},
+
+{id:"pride", t:"Pride and Prejudice", a:"Jane Austen", y:"1813", era:"Romantic", form:"Free indirect discourse, third person",
+ q:"How much can a person revise a first judgement, and at what cost?",
+ sum:"A family of five daughters with no male heir must marry well or lose everything. The second daughter and a wealthy landowner form opposing first impressions and spend the novel dismantling them, while the economic machinery underneath every courtship stays firmly in view.",
+ struct:"Two parallel corrections. Each protagonist must revise a judgement, and the novel gives roughly equal weight to both revisions rather than reforming one for the other.",
+ themes:["class","marriage","judgement","money","reputation"],
+ chars:"The heroine's wit is her defence and her blind spot. The landowner's reserve reads as arrogance until the narration lets us stand where he stands. Minor characters are economic arguments in human form.",
+ angle:"Read it as a novel about money that uses courtship as its vehicle. Every proposal in the book has a balance sheet attached and the narration never pretends otherwise.",
+ exam:"Irony and free indirect discourse, the marriage market, entailment and female economic vulnerability."},
+
+{id:"wuthering", t:"Wuthering Heights", a:"Emily Bronte", y:"1847", era:"Victorian", form:"Nested unreliable narration",
+ q:"Can a passion that destroys everyone around it still be the truest thing in a book?",
+ sum:"Two households across a moor are bound and ruined by an attachment that survives marriage, exile, and death. The story reaches the reader through a housekeeper who lived it and a visiting tenant who understands almost none of it.",
+ struct:"A double frame with an unusual property: the outer narrator is the least informed person in the book, and the inner narrator is a servant with her own loyalties and omissions.",
+ themes:["obsession","class","revenge","nature","inheritance"],
+ chars:"Neither central figure is offered for approval. The novel gives its most destructive character the most compelling voice and then shows the second generation paying for it.",
+ angle:"Attack the narration. Everything the reader knows arrives through a servant recalling decades of events to a man who keeps misreading them, and the novel never supplies a corrective.",
+ exam:"Narrative framing and reliability, Gothic conventions, class mobility, and the two-generation structure."},
+
+{id:"expectations", t:"Great Expectations", a:"Charles Dickens", y:"1861", era:"Victorian", form:"Retrospective first person",
+ q:"What does a person owe to the origins they are ashamed of?",
+ sum:"An orphan raised by a blacksmith's family receives an anonymous fortune, remakes himself as a gentleman, and discovers the source of the money is the opposite of what he assumed. The narrator is the older man judging his younger self.",
+ struct:"Three stages of expectation, with the retrospective voice allowing constant ironic commentary on the younger self's certainties.",
+ themes:["class","shame","money","guilt","identity"],
+ chars:"The narrator condemns himself more harshly than any other character does. The convict is the novel's moral test: the reader's revulsion is placed under examination alongside the narrator's.",
+ angle:"Focus on the retrospective voice. The older narrator's judgements are not neutral, and separating what the boy felt from what the man now says about it is the whole reading.",
+ exam:"Bildungsroman structure, social mobility, guilt and gentility, and the two published endings."},
+
+{id:"gatsby", t:"The Great Gatsby", a:"F. Scott Fitzgerald", y:"1925", era:"Modernist", form:"First person peripheral narrator",
+ q:"What happens to a desire once it is reached?",
+ sum:"A narrator new to a wealthy stretch of coast becomes the neighbour and confidant of a man who has built a fortune and a persona entirely in order to reclaim a past attachment. The summer ends in a death that nobody with money is made to answer for.",
+ struct:"A narrator who claims reserve and judges constantly, telling a story he has already decided the meaning of before the first page.",
+ themes:["ambition","class","illusion","money","judgement"],
+ chars:"The title character is largely absent from his own book and is constructed for the reader through rumour, a recited autobiography, and a narrator determined to admire him.",
+ angle:"Prosecute the narrator. He opens by reserving judgement and spends the book judging, and reading him as unreliable opens far more than reading him as a witness.",
+ exam:"The American dream, unreliable narration, symbol as argument, and class as inherited manner rather than money."},
+
+{id:"bravenew", t:"Brave New World", a:"Aldous Huxley", y:"1932", era:"Dystopian", form:"Third person, multiple perspectives",
+ q:"Is a society that has abolished suffering worth living in?",
+ sum:"A world state secures stability through engineered biology, conditioning from birth, disposable pleasure, and a drug that removes discomfort. An outsider raised outside the system encounters it and cannot survive contact.",
+ struct:"Satirical exposition first, then a collision. The reader is shown the system working before being shown someone it cannot accommodate.",
+ themes:["control","conformity","technology","freedom","happiness"],
+ chars:"The characters are largely functions of the system, which is a deliberate choice rather than a weakness, and the outsider exists to make the cost of stability visible.",
+ angle:"Compare the mechanism of control with other dystopias. This society controls through pleasure and satisfaction rather than through fear, which is the harder argument to refute.",
+ exam:"Control through consent, the trade between stability and freedom, and satire as a method."},
+
+{id:"mice", t:"Of Mice and Men", a:"John Steinbeck", y:"1937", era:"Mid-century", form:"Novella, dramatic scene structure",
+ q:"What is a dream for, if everyone telling it knows it will not happen?",
+ sum:"Two itinerant workers arrive at a ranch carrying a shared plan for a small farm of their own. The plan attracts everyone who hears it, and the novella closes with an act that ends it.",
+ struct:"Six scenes, each in a single location, written to be staged. The compression makes every conversation carry structural weight.",
+ themes:["isolation","dreams","powerlessness","friendship","dignity"],
+ chars:"Every character on the ranch is isolated by something they cannot change, and each is drawn to the shared plan the moment they hear it, which is what makes the plan the novella's real subject.",
+ angle:"Argue about the function of the dream rather than its plausibility. Nobody in the book believes in it fully, and it still organises everything they do.",
+ exam:"Depression-era context, loneliness and companionship, and the ending as mercy or as failure."},
+
+{id:"1984", t:"Nineteen Eighty-Four", a:"George Orwell", y:"1949", era:"Dystopian", form:"Third person limited, with embedded documents",
+ q:"Can a mind stay free when the language available to it has been reduced?",
+ sum:"A minor official in a totalitarian state edits the past for a living, begins keeping a private record and a forbidden relationship, and is caught. The novel's final movement is concerned less with punishment than with the reconstruction of belief.",
+ struct:"Three parts: constraint, brief resistance, and dismantling. An embedded political text and an appendix on language sit inside the fiction and change how the ending reads.",
+ themes:["control","language","truth","surveillance","conformity"],
+ chars:"The protagonist is deliberately ordinary and not especially brave, which is what makes his collapse an argument about the system rather than about him.",
+ angle:"Take the appendix seriously. It is written in the past tense about the regime's language, which some readers take as evidence the regime did not last.",
+ exam:"Language and thought, the rewriting of history, surveillance, and control through fear."},
+
+{id:"catcher", t:"The Catcher in the Rye", a:"J. D. Salinger", y:"1951", era:"Mid-century", form:"First person vernacular monologue",
+ q:"How much of what a narrator condemns in others is a description of himself?",
+ sum:"A teenager expelled from school spends several days alone in a city, meeting people he despises and failing to connect with any of them, narrating from a point after the events at an institution he does not describe.",
+ struct:"A monologue delivered from an unspecified later point, with the narrator repeatedly declining to explain the circumstance he is speaking from.",
+ themes:["alienation","innocence","grief","judgement","authenticity"],
+ chars:"A single dominating voice. Everyone else exists as the narrator reports them, which makes every other character a piece of evidence about him rather than about themselves.",
+ angle:"Read the accusations as self-description. The word he uses most often for other people applies most obviously to his own performance of himself.",
+ exam:"Unreliable narration, voice and idiom, grief, and adolescent alienation."},
+
+{id:"fahrenheit", t:"Fahrenheit 451", a:"Ray Bradbury", y:"1953", era:"Dystopian", form:"Third person limited, lyrical register",
+ q:"Did the state suppress books, or did the population stop wanting them first?",
+ sum:"A fireman whose job is burning books begins reading them, loses his position and his marriage, and escapes to a group who have memorised texts in order to preserve them.",
+ struct:"Three parts moving from conformity through crisis to flight, with the prose style shifting markedly as the protagonist's awareness changes.",
+ themes:["censorship","conformity","technology","memory","distraction"],
+ chars:"The fire chief is the novel's most important character because he has read everything and rejects it deliberately, which makes him an argument rather than an enforcer.",
+ angle:"Attend to the origin story the chief gives. The novel suggests censorship began as public preference rather than as state decree, which complicates every simple reading of it.",
+ exam:"Censorship and self-censorship, mass media and distraction, memory as resistance."},
+
+{id:"flies", t:"Lord of the Flies", a:"William Golding", y:"1954", era:"Mid-century", form:"Third person, allegorical",
+ q:"Is the collapse a loss of civilisation, or the removal of something that was always a veneer?",
+ sum:"Schoolboys stranded without adults establish an order, watch it fragment into competing groups, and reach violence. Rescue arrives immediately after the worst of it, by an adult who misreads what he is seeing.",
+ struct:"Steady structural decay, with recurring objects tracking the state of the group's order as it degrades.",
+ themes:["power","civilisation","fear","conformity","cruelty"],
+ chars:"The central figures are positions in an argument as much as boys: consent-based authority, intellect without power, charisma with force, and the one who sees clearly and is destroyed for it.",
+ angle:"Interrogate the ending. The rescuing officer's misreading, and the war he has arrived from, undercut any reading in which adulthood represents order.",
+ exam:"Allegory, the nature of power and consent, symbolism, and the significance of the final chapter."},
+
+{id:"mockingbird", t:"To Kill a Mockingbird", a:"Harper Lee", y:"1960", era:"Mid-century", form:"Retrospective first person, child focaliser",
+ q:"What can a child narrator show a reader that an adult one could not?",
+ sum:"In a Southern town during the Depression, a lawyer defends a Black man against a false accusation while his young daughter narrates both the trial and the smaller cruelties of the town around it.",
+ struct:"Two halves that appear separate and are not. The neighbourhood story of the first half supplies the moral vocabulary the trial in the second half requires.",
+ themes:["justice","race","innocence","prejudice","moral courage"],
+ chars:"The narrating child reports more than she understands, which lets the reader see past her. The lawyer father has been read both as moral centre and as a limited figure, and both readings are defensible.",
+ angle:"Examine the limits of the perspective. The child's viewpoint produces clarity about some injustices and silence about others, and that pattern is worth arguing about.",
+ exam:"Narrative perspective, racial injustice, moral education, and modern critical reappraisal."},
+
+{id:"jane", t:"Jane Eyre", a:"Charlotte Bronte", y:"1847", era:"Victorian", form:"Retrospective first person, direct address",
+ q:"What must a woman with no money and no family give up to be treated as an equal?",
+ sum:"An orphan endures a brutal school, becomes a governess, and refuses two proposals on opposite grounds, one for its terms and one for its coldness, before returning on her own conditions.",
+ struct:"Five locations, each a distinct stage with its own moral test, ending only when the protagonist has independent means.",
+ themes:["class","independence","religion","confinement","gender"],
+ chars:"The narrator addresses the reader directly and controls the account entirely, which raises the same questions of selection and omission any first person account does.",
+ angle:"Follow the money. Her refusals only become possible once she has an inheritance, and the novel is precise about the sequence.",
+ exam:"First person narration and direct address, gender and economic dependence, Gothic elements, and the postcolonial reading of the first wife."},
+
+{id:"animalfarm", t:"Animal Farm", a:"George Orwell", y:"1945", era:"Dystopian", form:"Beast fable, third person",
+ q:"Does a revolution fail because of its leaders, or because of something in its structure?",
+ sum:"Farm animals overthrow their owner and establish self-government, and the pigs who administer it gradually assume the position of the class that was removed.",
+ struct:"A fable with a fixed set of commandments that are quietly revised across the book, so the alterations chart the corruption without needing to be narrated.",
+ themes:["power","language","conformity","betrayal","control"],
+ chars:"Characters are allegorical positions, and the loyal carthorse is the emotional centre precisely because his virtue is what makes the betrayal possible.",
+ angle:"Track the commandments as a device. Each revision is the argument being made, and listing them in order gives you the essay's structure ready-made.",
+ exam:"Allegory and its limits, language as an instrument of power, the mechanics of revolutionary betrayal, and the fable form."}
+];
+
+LIT.cmpRows = [
+ {k:"a",      l:"Author and date"},
+ {k:"form",   l:"Form and narration"},
+ {k:"q",      l:"Central question"},
+ {k:"struct", l:"Structure"},
+ {k:"chars",  l:"How characters work"},
+ {k:"angle",  l:"The arguable angle"},
+ {k:"exam",   l:"Usual exam focus"}
+];
+
+LIT.themes = [
+{id:"class",       name:"Class and social mobility"},
+{id:"power",       name:"Power and its abuse"},
+{id:"control",     name:"Control and conformity"},
+{id:"isolation",   name:"Isolation and loneliness"},
+{id:"ambition",    name:"Ambition and its cost"},
+{id:"judgement",   name:"Judgement and misreading"},
+{id:"money",       name:"Money and dependence"},
+{id:"language",    name:"Language and truth"},
+{id:"innocence",   name:"Innocence and its loss"},
+{id:"justice",     name:"Justice and injustice"},
+{id:"identity",    name:"Identity and self-invention"},
+{id:"nature",      name:"Nature and the natural"},
+{id:"conformity",  name:"Conformity and dissent"},
+{id:"freedom",     name:"Freedom and constraint"},
+{id:"guilt",       name:"Guilt and responsibility"},
+{id:"marriage",    name:"Marriage as institution"},
+{id:"technology",  name:"Technology and its effects"},
+{id:"memory",      name:"Memory and the past"},
+{id:"gender",      name:"Gender and constraint"},
+{id:"race",        name:"Race and prejudice"},
+{id:"responsibility",name:"Responsibility and its evasion"},
+{id:"otherness",    name:"Otherness and exclusion"},
+{id:"reputation",   name:"Reputation and social judgement"},
+{id:"obsession",    name:"Obsession and its wreckage"},
+{id:"revenge",      name:"Revenge across generations"},
+{id:"inheritance",  name:"Inheritance and property"},
+{id:"shame",        name:"Shame and origins"},
+{id:"illusion",     name:"Illusion and the reached desire"},
+{id:"happiness",    name:"Happiness against meaning"},
+{id:"dreams",       name:"Dreams that will not happen"},
+{id:"powerlessness",name:"Powerlessness and dependence"},
+{id:"friendship",   name:"Friendship and obligation"},
+{id:"dignity",      name:"Dignity under pressure"},
+{id:"truth",        name:"Truth and its rewriting"},
+{id:"surveillance", name:"Surveillance and privacy"},
+{id:"alienation",   name:"Alienation and disconnection"},
+{id:"grief",        name:"Grief and its concealment"},
+{id:"authenticity", name:"Authenticity and performance"},
+{id:"censorship",   name:"Censorship and suppression"},
+{id:"distraction",  name:"Distraction and mass media"},
+{id:"civilisation", name:"Civilisation as veneer"},
+{id:"fear",         name:"Fear as a political tool"},
+{id:"cruelty",      name:"Cruelty and complicity"},
+{id:"prejudice",    name:"Prejudice and its ordinariness"},
+{id:"moral courage",name:"Moral courage and its limits"},
+{id:"independence", name:"Independence and its price"},
+{id:"religion",     name:"Religion and moral authority"},
+{id:"confinement",  name:"Confinement, literal and social"},
+{id:"betrayal",     name:"Betrayal of a shared cause"}
+];
+
+LIT.charQuestions = [
+{t:"What does this character want, and does the novel let them say it?",
+ body:"A stated desire and an enacted one are frequently different, and the gap is where characterisation lives. A character who says they want security and repeatedly acts against it is telling you something the dialogue is not. Where a novel refuses to let a character articulate their want at all, that silence is itself the point, and it is usually the most productive thing on the page."},
+{t:"What do they believe that the novel does not?",
+ body:"Almost every memorable character holds an illusion the text quietly declines to endorse. Locating the precise gap between the character's understanding and the novel's is the fastest route to an argument, because it forces you to say what the novel does think, which is a claim someone could dispute."},
+{t:"Who are they placed against, and what does the pairing expose?",
+ body:"Characters are rarely built alone. A contrast pair reveals what neither figure would show in isolation, and novels construct these deliberately. When you can name the pairing and the quality it isolates, you have the spine of a comparison paragraph."},
+{t:"What do they cost, and who pays it?",
+ body:"Follow the consequences outward. Many novels grant a central figure sympathy while distributing the damage to characters with less narrative attention. Asking who absorbs the cost frequently reveals a moral structure the surface of the novel does not advertise."},
+{t:"How does the narration treat them, and is that treatment fair?",
+ body:"Narrative attention is not neutral. Who gets interiority, who gets described from outside, whose motives are explained and whose are merely reported, all shape the reader's judgement before any evidence is weighed. Noticing the distribution of sympathy is often more revealing than the events themselves."}
+];
+
+LIT.charTypes = [
+{t:"The peripheral narrator", body:"Tells someone else's story while insisting they are not the subject. The form guarantees partial knowledge and usually conceals a stake in how the story is told. Treat their self-description as a claim requiring evidence rather than as a given."},
+{t:"The retrospective narrator", body:"An older voice recounting a younger self, which builds ironic distance into every sentence. The essential move is separating what the younger self experienced from what the older self now says about it, because the two frequently disagree."},
+{t:"The foil", body:"Exists primarily to make a quality in another character visible by contrast. A foil is not a weak character, it is a structural instrument, and identifying what quality it isolates is more useful than assessing it on its own terms."},
+{t:"The moral witness", body:"Sees clearly, holds no power, and is usually destroyed or ignored. Their function is to establish that the novel's world contained the knowledge required to act differently, which removes ignorance as an excuse for everyone else."},
+{t:"The system figure", body:"Common in dystopian and allegorical fiction. Not a psychology but a position in an argument, and criticising them for lacking interiority mistakes the genre. The interesting question is what they make arguable."},
+{t:"The absent centre", body:"A character constructed almost entirely through what others say about them, present far less than their importance implies. The gap between reputation and appearance is the whole point, and it makes them impossible to assess directly."},
+{t:"The obstacle who is right", body:"Opposes the protagonist and turns out to have had the better case. Novels use this to complicate sympathy, and readers who identify with the protagonist tend to under-read them."}
+];
+
+LIT.essay = [
+{t:"Open with a claim someone could disagree with", body:"An introduction that summarises the plot or announces the topic has spent its most valuable position on nothing. Open with the contestable proposition your essay will defend, so the reader knows from the first sentence what is at stake and what would count as failure."},
+{t:"Argue about the novel's method, not only its content", body:"What a novel says is available to any reader. How it produces that meaning, through narration, structure, withholding, or arrangement, is the analysis. An essay that never mentions how the book is built is describing a story rather than reading a novel."},
+{t:"Handle the strongest objection, not the weakest", body:"Anticipating a feeble counterargument is worse than anticipating none, because it advertises that you have avoided the real one. Name the best case against your reading and answer it, and your claim gains the credibility that only survived opposition provides."},
+{t:"Quote briefly and analyse at length", body:"A long quotation with a sentence of comment inverts the correct ratio. Take the shortest passage that carries the point and spend the space on what its wording, placement, and rhythm are doing. The analysis is the essay, the quotation is only its occasion."},
+{t:"Use context to sharpen, not to pad", body:"Historical background earns its place when it changes how a passage reads. A paragraph of period detail that could sit in any essay on the same period is filler. Ask what the reader would misunderstand without it, and if the answer is nothing, remove it."},
+{t:"Treat critics as positions to argue with", body:"Quoting a critic in agreement adds authority and no thought. Name a reading, state what it gets right, then extend or resist it. An essay that argues with its secondary reading demonstrates judgement, which is what the top bands are actually for."},
+{t:"Make structure carry the argument", body:"Paragraphs organised by chronology or by chapter number are organised by the book rather than by your case. Order them by the steps of the argument, so each paragraph advances a claim rather than reporting the next thing that happened."},
+{t:"Conclude by stating what follows", body:"A conclusion that restates the introduction has wasted its position. Say what your reading means for how the novel should be read, what it rules out, or what it leaves open. The last sentence is where judgement is demonstrated rather than summarised."}
+];
+
+/* ================================================================ */
+(function(){
+  "use strict";
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function workById(id){
+    for(var i=0;i<LIT.works.length;i++){ if(LIT.works[i].id===id) return LIT.works[i]; }
+    return LIT.works[0];
+  }
+  function themeName(id){
+    for(var i=0;i<LIT.themes.length;i++){ if(LIT.themes[i].id===id) return LIT.themes[i].name; }
+    return id;
+  }
+
+  /* ---------- library ---------- */
+  var currentEra="All", openWork=null;
+
+  function renderGrid(){
+    var html="";
+    LIT.works.forEach(function(w){
+      if(currentEra!=="All" && w.era!==currentEra) return;
+      html += '<div class="subj-card" data-era="'+esc(w.era)+'" data-work="'+esc(w.id)+'">'+
+        '<div class="sc-icon" style="font-size:15px;font-weight:700;letter-spacing:.04em">'+esc(w.y)+"</div>"+
+        '<div class="sc-name">'+esc(w.t)+"</div>"+
+        '<div class="sc-count">'+esc(w.a)+" . "+esc(w.era)+"</div>"+
+        '<div class="sc-bar"><div class="sc-fill" style="width:100%"></div></div></div>';
+    });
+    $("workGrid").innerHTML = html || '<div class="trend-empty"><div class="te-msg">No work in that period.</div></div>';
+    $("workGrid").querySelectorAll(".subj-card").forEach(function(c){
+      c.addEventListener("click", function(){ showWork(c.getAttribute("data-work")); });
+    });
+  }
+
+  function showWork(id){
+    openWork=id;
+    var w=workById(id);
+    var chips=w.themes.map(function(t){ return '<span class="theme-chip">'+esc(themeName(t))+"</span>"; }).join("");
+    $("workDetail").innerHTML='<div class="lit-detail">'+
+      "<h3>"+esc(w.t)+"</h3>"+
+      '<div class="meta">'+esc(w.a)+"  .  "+esc(w.y)+"  .  "+esc(w.era)+"  .  "+esc(w.form)+"</div>"+
+      '<div class="lit-row"><div class="lbl">Central question</div><div>'+esc(w.q)+"</div></div>"+
+      '<div class="lit-row"><div class="lbl">What happens</div><div>'+esc(w.sum)+"</div></div>"+
+      '<div class="lit-row"><div class="lbl">Structure</div><div>'+esc(w.struct)+"</div></div>"+
+      '<div class="lit-row"><div class="lbl">Characters</div><div>'+esc(w.chars)+"</div></div>"+
+      '<div class="lit-row"><div class="lbl">Arguable angle</div><div>'+esc(w.angle)+"</div></div>"+
+      '<div class="lit-row"><div class="lbl">Exam focus</div><div>'+esc(w.exam)+"</div></div>"+
+      '<div class="lit-row"><div class="lbl">Themes</div><div>'+chips+"</div></div>"+
+      "</div>";
+    $("workDetail").scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+
+  /* ---------- compare ---------- */
+  function renderCompare(){
+    var a=workById($("cmpA").value), b=workById($("cmpB").value);
+    var html='<div class="cmp-lbl"></div>'+
+      '<div class="cmp-head">'+esc(a.t)+"</div>"+
+      '<div class="cmp-head">'+esc(b.t)+"</div>";
+    LIT.cmpRows.forEach(function(r){
+      var va = r.k==="a" ? (a.a+", "+a.y) : a[r.k];
+      var vb = r.k==="a" ? (b.a+", "+b.y) : b[r.k];
+      html += '<div class="cmp-lbl">'+esc(r.l)+"</div><div>"+esc(va)+"</div><div>"+esc(vb)+"</div>";
+    });
+    var shared=a.themes.filter(function(t){ return b.themes.indexOf(t)>=0; });
+    var onlyA=a.themes.filter(function(t){ return b.themes.indexOf(t)<0; });
+    var onlyB=b.themes.filter(function(t){ return a.themes.indexOf(t)<0; });
+    html += '<div class="cmp-lbl">Shared themes</div>'+
+      '<div style="grid-column:2 / span 2">'+
+      (shared.length ? shared.map(function(t){ return '<span class="theme-chip on">'+esc(themeName(t))+"</span>"; }).join("")
+                     : '<span class="tiny" style="color:var(--muted)">No overlap in the listed themes, which is itself worth writing about.</span>')+
+      "</div>";
+    html += '<div class="cmp-lbl">Only in each</div>'+
+      "<div>"+(onlyA.map(function(t){ return '<span class="theme-chip">'+esc(themeName(t))+"</span>"; }).join("")||"-")+"</div>"+
+      "<div>"+(onlyB.map(function(t){ return '<span class="theme-chip">'+esc(themeName(t))+"</span>"; }).join("")||"-")+"</div>";
+    $("cmpTable").innerHTML=html;
+  }
+
+  /* ---------- themes ---------- */
+  var activeTheme=null;
+
+  function renderThemeChips(){
+    var used=LIT.themes.filter(function(t){
+      return LIT.works.filter(function(w){ return w.themes.indexOf(t.id)>=0; }).length>=2;
+    });
+    $("themeChips").innerHTML = used.map(function(t){
+      return '<span class="theme-chip'+(activeTheme===t.id?" on":"")+'" data-th="'+esc(t.id)+'">'+esc(t.name)+"</span>";
+    }).join("");
+    $("themeChips").querySelectorAll("[data-th]").forEach(function(c){
+      c.addEventListener("click", function(){
+        activeTheme = activeTheme===c.getAttribute("data-th") ? null : c.getAttribute("data-th");
+        renderThemeChips(); renderThemeOut();
+      });
+    });
+  }
+
+  function renderThemeOut(){
+    if(!activeTheme){
+      $("themeOut").innerHTML='<div class="trend-empty"><div class="te-msg">Select a theme above. Only themes carried by two or more novels are shown, because a theme in a single book cannot be compared.</div></div>';
+      return;
+    }
+    var list=LIT.works.filter(function(w){ return w.themes.indexOf(activeTheme)>=0; });
+    var html='<div class="an-card full"><h3><span class="icon" style="background:rgba(110,168,255,.1);color:#6ea8ff;">T</span>'+
+      esc(themeName(activeTheme))+" in "+list.length+" novels</h3>";
+    list.forEach(function(w){
+      html += '<div class="lit-row"><div class="lbl">'+esc(w.t)+"</div><div>"+esc(w.angle)+"</div></div>";
+    });
+    html += '<div class="quiz-explain show" style="margin-top:14px">Two novels sharing a theme is the beginning of a comparison, not the comparison itself. The argument comes from how differently each one treats it, so write the paragraph about the difference rather than about the shared label.</div></div>';
+    $("themeOut").innerHTML=html;
+  }
+
+  /* ---------- static lists ---------- */
+  function renderStatic(){
+    $("charQ").innerHTML = LIT.charQuestions.map(function(q,i){
+      return '<div class="lit-row"><div class="lbl">'+(i+1)+"</div><div><strong>"+esc(q.t)+
+        '</strong><div style="margin-top:6px;color:var(--muted)">'+esc(q.body)+"</div></div></div>";
+    }).join("");
+    $("charTypes").innerHTML = LIT.charTypes.map(function(t){
+      return '<div class="lit-row"><div class="lbl">'+esc(t.t)+"</div><div>"+esc(t.body)+"</div></div>";
+    }).join("");
+    $("essayList").innerHTML = '<div class="an-card full">'+ LIT.essay.map(function(e,i){
+      return '<div class="lit-row"><div class="lbl">Move '+(i+1)+"</div><div><strong>"+esc(e.t)+
+        '</strong><div style="margin-top:6px;color:var(--muted)">'+esc(e.body)+"</div></div></div>";
+    }).join("") + "</div>";
+  }
+
+  /* ---------- tabs ---------- */
+  function switchTab(name){
+    document.querySelectorAll(".tab-btn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-tab")===name);
+    });
+    var map={library:"viewLibrary",compare:"viewCompare",characters:"viewCharacters",themes:"viewThemes",essay:"viewEssay"};
+    document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+    var el=$(map[name]); if(el) el.classList.add("active");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    document.querySelector(".tab-nav").addEventListener("click", function(e){
+      var b=e.target.closest(".tab-btn"); if(!b) return;
+      switchTab(b.getAttribute("data-tab"));
+    });
+    document.querySelectorAll(".pf-btn").forEach(function(b){
+      b.addEventListener("click", function(){
+        document.querySelectorAll(".pf-btn").forEach(function(x){ x.classList.remove("active"); });
+        b.classList.add("active");
+        currentEra=b.getAttribute("data-phase");
+        renderGrid();
+      });
+    });
+    LIT.works.forEach(function(w){
+      [ $("cmpA"), $("cmpB") ].forEach(function(sel){
+        var o=document.createElement("option"); o.value=w.id; o.textContent=w.t+" ("+w.y+")"; sel.appendChild(o);
+      });
+    });
+    $("cmpA").value=LIT.works[0].id;
+    $("cmpB").value=LIT.works[1].id;
+    $("cmpA").addEventListener("change", renderCompare);
+    $("cmpB").addEventListener("change", renderCompare);
+
+    renderGrid();
+    showWork(LIT.works[0].id);
+    renderCompare();
+    renderThemeChips();
+    renderThemeOut();
+    renderStatic();
+  });
+})();
+</script>
+
+</body>
+</html>
