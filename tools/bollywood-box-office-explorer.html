@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the Box Office Explorer.</p><a href="https://reportmedic.org/tools/bollywood-box-office-explorer.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="Work out what a box office number actually means. Convert nett and gross, estimate footfalls and distributor share, and track a run day by day."/>
+<title>Box Office Explorer - Calculator and Run Tracker - ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+/* -- Animated Background -- */
+.bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12;animation:meshDrift 20s ease-in-out infinite alternate;}
+.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);top:-15%;right:-10%;}
+.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#a78bfa,#6ea8ff);bottom:-10%;left:-5%;animation-delay:-7s;animation-duration:25s;}
+.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#7cf7d4,#f59e0b);top:50%;left:40%;animation-delay:-14s;animation-duration:28s;}
+@keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg) scale(1);}100%{transform:translate(40px,-30px) rotate(15deg) scale(1.1);}}
+
+/* -- Tabs Nav -- */
+.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:24px;overflow-x:auto;}
+.tab-btn{flex:1;min-width:fit-content;padding:12px 20px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;letter-spacing:.01em;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(110,168,255,.18),rgba(124,247,212,.12));color:var(--text);box-shadow:0 2px 16px rgba(110,168,255,.12),inset 0 1px 0 rgba(255,255,255,.06);}
+
+/* -- Views -- */
+.view{display:none;}
+.view.active{display:block;}
+
+/* -- Hero -- */
+.daily-hero{text-align:center;padding:32px 0 16px;}
+.daily-hero h1{font-size:clamp(26px,4.5vw,38px);font-weight:700;letter-spacing:-.02em;line-height:1.15;}
+.daily-hero h1 .grad{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:10px;line-height:1.5;letter-spacing:.01em;}
+
+/* -- Streak Banner -- */
+.streak-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 26px;flex-wrap:wrap;}
+.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);backdrop-filter:blur(8px);font-size:13px;font-weight:600;transition:transform .15s;}
+.streak-pill:hover{transform:translateY(-1px);}
+.streak-pill .fire{font-size:20px;}
+.streak-pill .sval{font-size:18px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-pill .sval.green{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-dots{display:flex;gap:5px;}
+.streak-dots .dot{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;color:var(--muted);}
+.streak-dots .dot.done{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(124,247,212,.1));border-color:rgba(16,185,129,.25);color:#34d399;}
+.streak-dots .dot.today{border-color:rgba(110,168,255,.45);box-shadow:0 0 14px rgba(110,168,255,.15);}
+
+/* -- Phase Filter -- */
+.phase-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.phase-filter .pf-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px;}
+.pf-btn{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;}
+.pf-btn:hover{border-color:rgba(255,255,255,.22);color:var(--text);}
+.pf-btn.active{background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.35);color:#6ea8ff;}
+
+/* -- Quiz Container -- */
+.quiz-panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:26px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
+.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
+.quiz-progress{display:flex;gap:4px;margin-bottom:18px;}
+.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.06);transition:background .3s;}
+.quiz-progress .pip.done{background:linear-gradient(90deg,#10b981,#7cf7d4);}
+.quiz-progress .pip.wrong{background:#ef4444;}
+.quiz-progress .pip.current{background:rgba(110,168,255,.4);animation:pipPulse 1.5s ease infinite;}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.1);color:#6ea8ff;border:1px solid rgba(110,168,255,.15);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);color:var(--muted);}
+.quiz-meta .qphase{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid rgba(124,247,212,.2);background:rgba(124,247,212,.06);color:#7cf7d4;}
+.quiz-meta .qdiff{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.quiz-meta .qdiff.easy{border:1px solid rgba(52,211,153,.2);background:rgba(52,211,153,.06);color:#34d399;}
+.quiz-meta .qdiff.medium{border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.06);color:#fbbf24;}
+.quiz-meta .qdiff.hard{border:1px solid rgba(248,113,113,.2);background:rgba(248,113,113,.06);color:#f87171;}
+.quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.quiz-meta .timer svg{color:rgba(110,168,255,.6);}
+
+.quiz-question{font-size:16.5px;line-height:1.7;font-weight:600;margin-bottom:18px;letter-spacing:.005em;}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s;}
+.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.06);}
+.qo.selected .letter{border-color:#6ea8ff;background:#6ea8ff;color:#061021;}
+.qo.correct{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);}
+.qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
+.qo.disabled{pointer-events:none;opacity:.65;}
+.qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
+
+.quiz-explain{margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(124,247,212,.035);border:1px solid rgba(124,247,212,.1);font-size:13.5px;line-height:1.7;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;letter-spacing:.01em;}
+.qa-btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;}
+.qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+.qa-btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);}
+
+/* -- Results Card -- */
+.result-card{text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;}
+.result-card .big-score{font-size:64px;font-weight:700;line-height:1;margin-bottom:8px;}
+.result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
+.result-mini .rm{padding:16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.result-mini .rm .rv{font-size:20px;font-weight:700;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* -- Subject Practice Grid -- */
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.subj-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.subj-card .sc-icon{font-size:30px;margin-bottom:10px;}
+.subj-card .sc-name{font-size:14.5px;font-weight:700;margin-bottom:4px;letter-spacing:.01em;}
+.subj-card .sc-count{font-size:12px;color:var(--muted);}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .5s ease;}
+.bo-calc{border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.03);padding:20px;}
+.bo-fld{margin-bottom:13px;}
+.bo-fld label{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
+.bo-fld .hint{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.6;}
+.bo-out{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:6px;}
+.bo-o{padding:14px 12px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.03);text-align:center;}
+.bo-o .v{font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace;}
+.bo-o .l{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:4px;}
+.bo-bars{display:flex;align-items:flex-end;gap:4px;height:170px;padding:10px 0;overflow-x:auto;}
+.bo-col{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:34px;flex-shrink:0;}
+.bo-bar{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;}
+.bo-bar i{display:block;border-radius:5px 5px 2px 2px;min-height:3px;transition:height .4s ease;}
+.bo-lbl{font-size:9.5px;color:var(--muted);font-weight:600;white-space:nowrap;}
+.bo-row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.75;}
+.bo-row:last-child{border-bottom:0;}
+.bo-row .lbl{font-weight:700;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px;}
+@media(max-width:640px){.bo-row{grid-template-columns:1fr;gap:4px;}}
+.bo-pill{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);margin:3px 5px 0 0;}
+.bo-up{color:#34d399;font-weight:700;}
+.bo-dn{color:#f87171;font-weight:700;}
+.ri-cell{padding:12px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.03);text-align:center;}
+.ri-cell .cv{font-size:19px;font-weight:800;}
+.ri-cell .cl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:3px;}
+.bn-text{line-height:1.9;}
+.ri-warnbox{border-left:3px solid #ffb35c;background:rgba(255,179,92,.07);border-radius:0 12px 12px 0;padding:14px 16px;font-size:13.5px;line-height:1.75;}
+.lit-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.lit-detail h3{font-size:20px;margin-bottom:4px;}
+.lit-detail .meta{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+.lit-detail p{line-height:1.75;font-size:14.5px;margin-bottom:12px;}
+.lit-row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.lit-row:last-child{border-bottom:0;}
+.lit-row .lbl{font-weight:700;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px;}
+@media(max-width:640px){.lit-row{grid-template-columns:1fr;gap:4px;}}
+.cmp-grid{display:grid;grid-template-columns:170px 1fr 1fr;gap:10px;align-items:start;}
+.cmp-grid > div{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.cmp-grid .cmp-lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;}
+.cmp-grid .cmp-head{font-weight:700;font-size:15px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.14);}
+@media(max-width:760px){.cmp-grid{grid-template-columns:1fr;}.cmp-grid .cmp-lbl{padding-bottom:0;border-bottom:0;}}
+.theme-chip{display:inline-block;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:rgba(110,168,255,.10);border:1px solid rgba(110,168,255,.20);color:#6ea8ff;margin:3px 5px 3px 0;cursor:pointer;}
+.theme-chip.on{background:var(--brand);border-color:var(--brand);color:#08111f;}
+
+/* -- Analytics Dashboard -- */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
+.an-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.an-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);}
+.an-card.full{grid-column:1/-1;}
+.an-card h3{font-size:12.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* -- Overview Strip -- */
+.overview-strip{display:flex;align-items:center;gap:24px;}
+.ov-ring{position:relative;flex-shrink:0;width:100px;height:100px;}
+.ov-ring canvas{width:100px;height:100px;}
+.ov-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ov-ring-label .rv{font-size:22px;font-weight:700;line-height:1;}
+.ov-ring-label .rl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ov-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ov-stat{padding:12px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;}
+.ov-stat .os-val{font-size:18px;font-weight:700;line-height:1.2;font-family:'JetBrains Mono',monospace;}
+.ov-stat .os-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+@media(max-width:600px){
+  .overview-strip{flex-direction:column;gap:16px;}
+  .ov-stats{grid-template-columns:repeat(3,1fr);width:100%;}
+}
+
+/* -- Subject accuracy bars -- */
+.sub-bars{display:flex;flex-direction:column;gap:10px;}
+.sb-row{display:flex;align-items:center;gap:10px;}
+.sb-label{width:105px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:46px;text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+/* -- Trend Chart -- */
+.trend-wrap{position:relative;min-height:220px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.trend-wrap::-webkit-scrollbar{height:4px;}.trend-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--muted);text-align:center;}
+.trend-empty .te-icon{font-size:40px;opacity:.4;}
+.trend-empty .te-msg{font-size:13px;line-height:1.5;max-width:320px;}
+.trend-bar-chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding:10px 0;min-width:min-content;}
+.trend-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:48px;width:48px;flex-shrink:0;}
+.trend-bar-outer{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative;}
+.trend-bar{width:100%;border-radius:6px 6px 2px 2px;transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;min-height:4px;}
+.trend-bar:hover{filter:brightness(1.2);}
+.trend-bar .tb-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.trend-bar:hover .tb-val{opacity:1;}
+.trend-label{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.trend-mode-label.daily{background:rgba(110,168,255,.12);color:#6ea8ff;}
+.trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
+
+/* -- Mastery Dashboard -- */
+.mastery-wrap{margin-top:8px;}
+.mastery-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.m-stat{padding:12px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);}
+.m-stat .ms-val{font-size:22px;font-weight:800;margin-bottom:2px;}
+.m-stat .ms-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+.m-stat.green .ms-val{color:#34d399;} .m-stat.yellow .ms-val{color:#fbbf24;} .m-stat.red .ms-val{color:#f87171;} .m-stat.blue .ms-val{color:#6ea8ff;} .m-stat.purple .ms-val{color:#a78bfa;}
+.coverage-ring{display:flex;align-items:center;gap:16px;padding:14px;border-radius:14px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);margin-bottom:14px;overflow:hidden;}
+.cov-canvas{width:90px;height:90px;flex-shrink:0;}
+.cov-info{flex:1;min-width:0;overflow:hidden;}
+.cov-title{font-size:13px;font-weight:700;color:var(--fg);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cov-sub{font-size:11px;color:var(--muted);line-height:1.6;word-break:break-word;}
+.subj-mastery{margin-top:14px;}
+.sm-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+.sm-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.sm-icon{font-size:14px;width:20px;text-align:center;}
+.sm-name{width:70px;font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-bar{flex:1;height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative;}
+.sm-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.sm-pct{width:34px;text-align:right;font-weight:700;font-size:11px;}
+
+/* -- Passage block for reading items -- */
+.quiz-passage{padding:14px 16px;border-radius:14px;background:rgba(110,168,255,.04);border:1px solid rgba(110,168,255,.10);font-size:14.5px;line-height:1.75;color:var(--muted);margin-bottom:14px;}
+.quiz-passage em{color:var(--text);font-style:italic;}
+
+/* -- Difficulty chips -- */
+.diff-dist{display:flex;gap:10px;margin-top:6px;}
+.diff-chip{flex:1;padding:14px 10px;border-radius:14px;text-align:center;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);}
+.diff-chip .dc-val{font-size:20px;font-weight:700;margin-bottom:2px;}
+.diff-chip .dc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+.diff-chip.easy .dc-val{color:#34d399;}
+.diff-chip.medium .dc-val{color:#fbbf24;}
+.diff-chip.hard .dc-val{color:#f87171;}
+
+/* -- Session History -- */
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding-right:4px;}
+.hist-list::-webkit-scrollbar{width:4px;}
+.hist-list::-webkit-scrollbar-track{background:transparent;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:12px;transition:background .1s;}
+.hist-row:hover{background:rgba(255,255,255,.04);}
+.hist-date{font-weight:600;min-width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hist-mode{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.hist-mode.daily{background:rgba(110,168,255,.1);color:#6ea8ff;}
+.hist-mode.practice{background:rgba(139,92,246,.1);color:#a78bfa;}
+.hist-score{margin-left:auto;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.hist-detail{color:var(--muted);font-size:11px;}
+
+/* -- Reset Button -- */
+.reset-zone{margin-top:20px;text-align:center;}
+.reset-btn{padding:10px 20px;border-radius:12px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.reset-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);}
+
+/* -- Tab label responsive -- */
+.tab-short{display:none;}
+@media(max-width:540px){.tab-full{display:none;}.tab-short{display:inline;}}
+@media(max-width:640px){
+  .quiz-panel{padding:16px;}
+  .streak-bar{gap:10px;}
+  .subj-grid{grid-template-columns:1fr 1fr;}
+  .diff-dist{flex-wrap:wrap;}
+  .diff-chip{min-width:calc(50% - 5px);}
+  .mastery-stats{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .coverage-ring{flex-direction:column;text-align:center;}
+  .sm-name{width:55px;font-size:10px;}
+  .tab-nav{overflow-x:hidden;}
+  .hide-mobile{display:none!important;}
+}
+
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .5s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+
+.btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;padding:10px 20px;border-radius:10px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:.01em;transition:all .18s;}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-mesh"><div class="strand"></div><div class="strand"></div><div class="strand"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn hide-mobile" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+  <a class="btn primary" href="/tools/world-history-timeline.html">More Tools</a>
+</div>
+</header>
+
+<div class="wrap">
+  <!-- Tab Nav -->
+  <nav class="tab-nav anim-up">
+    <button class="tab-btn active" data-tab="calc"><span class="tab-full">Calculator</span><span class="tab-short">Calc</span></button>
+    <button class="tab-btn" data-tab="run"><span class="tab-full">Run Tracker</span><span class="tab-short">Run</span></button>
+    <button class="tab-btn" data-tab="read"><span class="tab-full">Reading the Numbers</span><span class="tab-short">Reading</span></button>
+    <button class="tab-btn" data-tab="disagree"><span class="tab-full">Why Trackers Disagree</span><span class="tab-short">Sources</span></button>
+    <button class="tab-btn" data-tab="verdict"><span class="tab-full">Verdict Maths</span><span class="tab-short">Verdict</span></button>
+  </nav>
+
+  <!-- VIEW: CALC -->
+  <div class="view active" id="viewCalc">
+    <div class="daily-hero anim-up d1">
+      <h1>Box Office <span class="grad">Calculator</span></h1>
+      <p class="sub">Convert between the figures different sources report, and see what a headline number implies about tickets sold and money reaching the producer.</p>
+    </div>
+
+    <div class="ri-warnbox anim-up d2" style="margin-bottom:18px">
+      This tool contains no live collection data and reports no figures for any film. You supply the numbers from whichever tracker you use, and it does the arithmetic the trackers do not show. Indian box office figures are not independently audited the way studio reporting is elsewhere, so treat every input as an estimate rather than an accounting record.
+    </div>
+
+    <div class="analytics-grid anim-up d3">
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(110,168,255,.1);color:#6ea8ff;">1</span>Nett, gross and what reaches whom</h3>
+        <div class="bo-calc">
+          <div class="row" style="gap:14px;flex-wrap:wrap">
+            <div class="bo-fld" style="flex:1;min-width:180px">
+              <label for="cAmt">Reported figure, in crore</label>
+              <input class="input" id="cAmt" type="number" min="0" step="0.01" value="100" style="margin-top:5px" />
+              <div class="hint">Enter whatever your source published.</div>
+            </div>
+            <div class="bo-fld" style="flex:1;min-width:180px">
+              <label for="cBasis">That figure is</label>
+              <select class="input" id="cBasis" style="margin-top:5px">
+                <option value="nett">India nett, the usual Hindi convention</option>
+                <option value="gross">India gross, the usual southern convention</option>
+              </select>
+              <div class="hint">Hindi trade reports nett. Southern trade reports gross. Comparing the two directly is the most common error.</div>
+            </div>
+            <div class="bo-fld" style="flex:1;min-width:180px">
+              <label for="cGst">Blended GST rate on tickets</label>
+              <select class="input" id="cGst" style="margin-top:5px">
+                <option value="0.28">28 percent, tickets above the threshold</option>
+                <option value="0.18">18 percent, cheaper tickets</option>
+                <option value="0.24" selected>24 percent, mixed blend</option>
+              </select>
+              <div class="hint">Rates and thresholds are set by policy and change. Check the current rate before relying on a precise figure.</div>
+            </div>
+          </div>
+          <div class="bo-out">
+            <div class="bo-o"><div class="v" id="oNett">-</div><div class="l">India nett</div></div>
+            <div class="bo-o"><div class="v" id="oGross">-</div><div class="l">India gross</div></div>
+            <div class="bo-o"><div class="v" id="oTax">-</div><div class="l">Tax component</div></div>
+            <div class="bo-o"><div class="v" id="oShare">-</div><div class="l">Approx distributor share</div></div>
+          </div>
+          <div class="quiz-explain show" style="margin-top:14px" id="cNote"></div>
+        </div>
+      </div>
+
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(52,211,153,.1);color:#34d399;">2</span>Footfalls from gross</h3>
+        <div class="bo-calc">
+          <div class="row" style="gap:14px;flex-wrap:wrap">
+            <div class="bo-fld" style="flex:1;min-width:180px">
+              <label for="fAtp">Average ticket price, in rupees</label>
+              <input class="input" id="fAtp" type="number" min="1" value="250" style="margin-top:5px" />
+              <div class="hint">Varies enormously between a single screen and a premium format, which is why footfall estimates are approximate.</div>
+            </div>
+          </div>
+          <div class="bo-out">
+            <div class="bo-o"><div class="v" id="oFoot">-</div><div class="l">Estimated footfalls</div></div>
+            <div class="bo-o"><div class="v" id="oFootCr">-</div><div class="l">In crore</div></div>
+          </div>
+          <div class="quiz-explain show" style="margin-top:14px">Footfalls count tickets sold rather than people. A viewer who watches three times counts three times, so unique audience is always lower than the footfall figure and there is no reliable way to derive one from the other.</div>
+        </div>
+      </div>
+
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(245,158,11,.1);color:#f59e0b;">3</span>Against the budget</h3>
+        <div class="bo-calc">
+          <div class="row" style="gap:14px;flex-wrap:wrap">
+            <div class="bo-fld" style="flex:1;min-width:180px">
+              <label for="bBudget">Production budget, in crore</label>
+              <input class="input" id="bBudget" type="number" min="0" value="100" style="margin-top:5px" />
+            </div>
+            <div class="bo-fld" style="flex:1;min-width:180px">
+              <label for="bMkt">Marketing and distribution, in crore</label>
+              <input class="input" id="bMkt" type="number" min="0" value="30" style="margin-top:5px" />
+              <div class="hint">Frequently a quarter to a third of the production budget again, and rarely published.</div>
+            </div>
+            <div class="bo-fld" style="flex:1;min-width:180px">
+              <label for="bNon">Non-theatrical recovered, in crore</label>
+              <input class="input" id="bNon" type="number" min="0" value="0" style="margin-top:5px" />
+              <div class="hint">Streaming, satellite and music rights, often sold before release and frequently decisive.</div>
+            </div>
+          </div>
+          <div class="bo-out">
+            <div class="bo-o"><div class="v" id="oNeed">-</div><div class="l">Nett needed to break even</div></div>
+            <div class="bo-o"><div class="v" id="oMult">-</div><div class="l">Multiple of budget</div></div>
+            <div class="bo-o"><div class="v" id="oVerdict">-</div><div class="l">Indicative verdict</div></div>
+          </div>
+          <div class="quiz-explain show" style="margin-top:14px" id="bNote"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: RUN -->
+  <div class="view" id="viewRun">
+    <div class="daily-hero">
+      <h1>Run <span class="grad">Tracker</span></h1>
+      <p class="sub">Paste day-wise figures from whichever tracker you follow and the shape of the run appears: drops, weekend recoveries, and the week-on-week hold that actually predicts a total.</p>
+    </div>
+
+    <div class="an-card full" style="margin-bottom:16px">
+      <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-start">
+        <div style="flex:1;min-width:240px">
+          <label class="tiny muted" for="rTitle">Film</label>
+          <input class="input" id="rTitle" type="text" placeholder="Title" style="margin-top:5px" />
+        </div>
+        <div style="flex:2;min-width:280px">
+          <label class="tiny muted" for="rData">Day-wise figures, comma or line separated</label>
+          <textarea class="input" id="rData" style="min-height:88px;margin-top:5px" placeholder="33.6, 38.4, 51.6, 22.1, 19.8"></textarea>
+        </div>
+      </div>
+      <div class="row" style="gap:10px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn primary" id="rGo" type="button">Analyse the run</button>
+        <button class="btn" id="rExport" type="button">Export</button>
+        <button class="btn" id="rClear" type="button">Clear</button>
+        <span class="tiny muted" id="rMsg"></span>
+      </div>
+    </div>
+
+    <div id="rOut"></div>
+  </div>
+
+  <!-- VIEW: READ -->
+  <div class="view" id="viewRead">
+    <div class="daily-hero">
+      <h1>Reading the <span class="grad">Numbers</span></h1>
+      <p class="sub">Twelve terms you will meet in any collection report, what each actually measures, and what it hides.</p>
+    </div>
+    <div id="readList"></div>
+  </div>
+
+  <!-- VIEW: DISAGREE -->
+  <div class="view" id="viewDisagree">
+    <div class="daily-hero">
+      <h1>Why Trackers <span class="grad">Disagree</span></h1>
+      <p class="sub">Eight reasons two reputable sources will publish different totals for the same film on the same day.</p>
+    </div>
+    <div id="disList"></div>
+    <div class="ri-warnbox" style="margin-top:16px">One of the largest Indian trackers states on its own pages that its figures are compiled from various sources and its own research, that they may be approximate or differ substantially from producer figures, and that it makes no claim about their authenticity. That disclaimer is honest and it applies to every source in this field. Quote a number with the tracker's name attached, never as a bare fact.</div>
+  </div>
+
+  <!-- VIEW: VERDICT -->
+  <div class="view" id="viewVerdict">
+    <div class="daily-hero">
+      <h1>Verdict <span class="grad">Maths</span></h1>
+      <p class="sub">Why a film in the thousand crore club can lose money, and a quiet mid-budget release can be the more profitable picture.</p>
+    </div>
+    <div id="verdictList"></div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">Box Office Explorer - conversion, run tracking and box office literacy</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. Copyright ReportMedic.</div>
+</div>
+</footer>
+
+<script>
+var BO = {};
+
+BO.terms = [
+{t:"Nett collection", k:"the default Hindi figure",
+ body:"Ticket revenue after the applicable goods and services tax has been removed. This is the figure Hindi trade has traditionally reported, so a Hindi film quoted at a round number is almost always being quoted nett. It is the base on which distributor and exhibitor shares are calculated, which is why the trade prefers it."},
+{t:"Gross collection", k:"the default southern figure",
+ body:"The total value of tickets sold including tax, which is simply what audiences paid. Southern Indian trade has generally reported gross. The consequence is that a Hindi film and a Telugu film quoted at the same number are not describing the same thing, and comparing them directly overstates the southern film by roughly a quarter."},
+{t:"Distributor share", k:"the profitability figure",
+ body:"What reaches the distributor after tax is removed and after the exhibitor takes an agreed cut. Revenue sharing varies by film, by region, and by week of release, with the distributor share typically highest in week one and falling thereafter. Trade analysts regard this as the most meaningful indicator of theatrical profitability, and it is rarely the number in a headline."},
+{t:"Worldwide gross", k:"the milestone figure",
+ body:"India gross combined with overseas earnings, and the basis on which club milestones are announced. Because it mixes a gross domestic figure with overseas gross, it is the largest number available for any film, which is precisely why publicity uses it."},
+{t:"Footfalls", k:"tickets, not people",
+ body:"Gross divided by an assumed average ticket price. It counts tickets sold rather than individuals, so repeat viewing inflates it and unique audience is always lower. It is the only measure that lets you compare across eras, because ticket prices have risen far faster than attendance."},
+{t:"Average ticket price", k:"the hidden variable",
+ body:"The number that converts money into attendance, and the one nobody publishes reliably. It varies enormously between a single screen in a small town and a premium format in a metro, and a film skewed toward premium formats will post a large figure on comparatively modest attendance."},
+{t:"Occupancy", k:"a rate, not a total",
+ body:"The proportion of available seats sold across a set of shows. Useful for judging demand independently of how many screens a film received, and easily misread, because a high occupancy on a small show count is a very different signal from the same figure on a wide release."},
+{t:"Show count and screen count", k:"the supply side",
+ body:"How many showings and how many screens a film was given. A large opening on an enormous show count says less about demand than the same figure on a modest one, and show counts are cut quickly when occupancy falls, which is why a second week drop is partly a distribution decision rather than an audience verdict."},
+{t:"Paid previews", k:"where day one gets complicated",
+ body:"Screenings held before the official release date whose takings are sometimes folded into the day one figure and sometimes reported separately. When two sources disagree on an opening day number, this is one of the first places to look."},
+{t:"Opening weekend", k:"a moving definition",
+ body:"Usually the first Friday to Sunday, sometimes a five day frame including previews or a holiday, and occasionally a four day frame. The window is rarely stated alongside the figure, so an opening weekend comparison between two films is frequently comparing different lengths of time."},
+{t:"Hold and drop", k:"what predicts the total",
+ body:"The percentage change from one day or week to the next. A film with a strong opening and a steep second week drop finishes far below one with a smaller opening and a shallow hold. Week two against week one is the single most predictive early number available."},
+{t:"Non-theatrical rights", k:"the invisible half",
+ body:"Streaming, satellite and music rights, frequently sold before release. These can cover a substantial share of a budget regardless of theatrical outcome, which is why a film can underperform in cinemas and still return a profit, and why theatrical figures alone cannot settle whether a film made money."}
+];
+
+BO.disagree = [
+{t:"Nobody audits the figures", k:"structural",
+ body:"Unlike markets where studios report to a central industry body, Indian collections are compiled by trackers from a mix of chain reporting, distributor contacts, and their own estimation. Each tracker's method differs and none is externally verified, so divergence is the expected outcome rather than a sign that one is wrong."},
+{t:"Nett against gross", k:"definition",
+ body:"The single largest source of apparent disagreement. One outlet reports nett and another gross for the same film, and the gap is roughly the tax rate. Before concluding two sources conflict, check which basis each is using, because they frequently do not say."},
+{t:"India against worldwide", k:"definition",
+ body:"A domestic figure and a worldwide figure for the same film on the same day will differ by the entire overseas contribution. Headlines routinely omit which one they are quoting, and the larger number is the one that tends to travel."},
+{t:"Dubbed versions counted or not", k:"scope",
+ body:"A Hindi film released with dubbed versions in other languages may be reported with those versions included or excluded. Including them can add substantially, and different trackers make different choices without always saying so."},
+{t:"Previews folded in or reported apart", k:"timing",
+ body:"Whether paid preview takings sit inside the day one figure moves opening day comparisons considerably. Two sources can both be correct and differ by a large margin purely on this."},
+{t:"Producer figures against tracker figures", k:"incentive",
+ body:"Studios announce numbers for publicity and have every incentive to present the most flattering basis available. Tracker figures and producer figures are different kinds of claim, and where they diverge sharply the divergence is itself worth writing about."},
+{t:"Estimates published before finals", k:"timing",
+ body:"Same day figures are estimates, revised over the following days as actual reporting arrives. A number captured on the night and a number captured a week later can differ, and neither was wrong at the time it was published."},
+{t:"Currency conversion for overseas", k:"method",
+ body:"Overseas takings are earned in many currencies and converted to rupees at a rate the source chooses and rarely states. Two conversions of the same underlying earnings, at different rates or on different dates, produce different rupee totals."}
+];
+
+BO.verdict = [
+{t:"The club is a gross milestone, not a profit statement",
+ body:"Crossing a headline threshold describes ticket value, not money returning to anyone. Tax comes out first, the exhibitor takes a share of what remains, and the distributor receives roughly half the domestic nett as a working ballpark. A film can announce an enormous worldwide gross and still leave its producer short."},
+{t:"The rough recovery rule",
+ body:"A common trade approximation is that a film needs somewhere around two to two and a half times its production budget in India nett to be commercially successful once the distributor share and marketing spend are accounted for. It is a rule of thumb rather than an accounting identity, and the true figure depends on the deal structure for that specific film."},
+{t:"Marketing is the number nobody publishes",
+ body:"Promotion and distribution spend is frequently a substantial fraction of the production budget again and is almost never announced. Any profitability judgement built on the production budget alone is missing a line item large enough to change the answer."},
+{t:"Non-theatrical revenue can decide everything",
+ body:"Streaming and satellite rights are often sold ahead of release at a price set by expectation rather than outcome. A film that disappoints in cinemas may already have covered much of its cost, and a film that performs well theatrically may have sold its rights cheaply. Neither shows up in a collection report."},
+{t:"Budget scale changes what success means",
+ body:"A modest film needs a fraction of the audience to succeed that a large one does. Comparing two films by total collection while ignoring what each cost is the most common failure in box office writing, and ratio to budget is almost always the more informative comparison."},
+{t:"Run length and hold beat opening size",
+ body:"An enormous opening followed by a steep collapse frequently finishes below a smaller opening with a long tail, because the tail is where a film reaches audiences who waited for word of mouth. Judging a film on its first weekend is judging its marketing rather than its reception."},
+{t:"Screens and shows are a decision, not a verdict",
+ body:"A record opening on a record show count is partly a statement about what distributors and exhibitors expected. Occupancy against capacity is closer to a measure of demand, and it is the figure that survives the comparison between a wide release and a narrow one."},
+{t:"Say which basis you are quoting",
+ body:"The single practical rule. Name the tracker, name whether the figure is nett or gross, name whether it is domestic or worldwide, and give the date it was captured. A number with those four attached can be checked, and a bare number cannot."}
+];
+</script>
+
+<script>
+(function(){
+  "use strict";
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function flash(id,m){ var el=$(id); if(!el) return; el.textContent=m; setTimeout(function(){el.textContent="";},2600); }
+  function download(name,text){
+    var b=new Blob([text],{type:"text/plain;charset=utf-8"});
+    var u=URL.createObjectURL(b); var a=document.createElement("a");
+    a.href=u; a.download=name; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(u);
+  }
+  function cr(n){ return (Math.round(n*100)/100).toLocaleString(undefined,{maximumFractionDigits:2}); }
+
+  /* ---------- calculator ---------- */
+  function calc(){
+    var amt=parseFloat($("cAmt").value)||0;
+    var g=parseFloat($("cGst").value)||0.24;
+    var basis=$("cBasis").value;
+    var nett, gross;
+    if(basis==="nett"){ nett=amt; gross=amt*(1+g); }
+    else { gross=amt; nett=amt/(1+g); }
+    var tax=gross-nett;
+    var share=nett*0.5;
+
+    $("oNett").textContent=cr(nett);
+    $("oGross").textContent=cr(gross);
+    $("oTax").textContent=cr(tax);
+    $("oShare").textContent=cr(share);
+
+    $("cNote").textContent =
+      "A figure of "+cr(amt)+" crore reported as "+(basis==="nett"?"nett":"gross")+
+      " corresponds to roughly "+cr(gross)+" crore gross and "+cr(nett)+" crore nett at a "+
+      Math.round(g*100)+" percent blended rate. The gap of "+cr(tax)+
+      " crore is tax and never belonged to anyone in the film business. The distributor share shown is a working ballpark of about half the domestic nett, and the real figure depends entirely on the deal for that film and moves week by week.";
+
+    var atp=Math.max(1, parseFloat($("fAtp").value)||1);
+    var foot=(gross*10000000)/atp;
+    $("oFoot").textContent=Math.round(foot).toLocaleString();
+    $("oFootCr").textContent=cr(foot/10000000);
+
+    var budget=parseFloat($("bBudget").value)||0;
+    var mkt=parseFloat($("bMkt").value)||0;
+    var non=parseFloat($("bNon").value)||0;
+    var toRecover=Math.max(0, budget+mkt-non);
+    var needNett=toRecover/0.5;
+    var mult=budget>0 ? needNett/budget : 0;
+    $("oNeed").textContent = toRecover>0 ? cr(needNett) : "0";
+    $("oMult").textContent = budget>0 ? cr(mult)+"x" : "-";
+
+    var v="-";
+    if(budget>0 && nett>0){
+      var got=nett*0.5+non;
+      var cost=budget+mkt;
+      var ratio=got/cost;
+      v = ratio>=2 ? "Clear profit" : (ratio>=1.25 ? "Profitable" : (ratio>=1 ? "Around break-even" : "Below recovery"));
+    }
+    $("oVerdict").textContent=v;
+
+    $("bNote").textContent =
+      "To recover "+cr(budget)+" crore of production and "+cr(mkt)+" crore of marketing, with "+cr(non)+
+      " crore already recovered from non-theatrical rights, the film needs roughly "+cr(needNett)+
+      " crore in India nett on a half-share assumption. That is about "+(budget>0?cr(mult):"-")+
+      " times the production budget, which is why the trade rule of thumb sits near two to two and a half times. Every one of these inputs is an estimate, and the marketing figure in particular is almost never published.";
+  }
+
+  /* ---------- run tracker ---------- */
+  function parseDays(text){
+    return String(text||"").split(/[\s,;\n\t]+/).map(function(x){ return parseFloat(x); })
+      .filter(function(n){ return !isNaN(n) && n>=0; });
+  }
+
+  function analyseRun(){
+    var days=parseDays($("rData").value);
+    var title=$("rTitle").value.trim() || "Untitled";
+    if(days.length<2){
+      $("rOut").innerHTML='<div class="trend-empty"><div class="te-msg">Enter at least two day figures, separated by commas or line breaks.</div></div>';
+      return;
+    }
+    var total=days.reduce(function(a,b){ return a+b; },0);
+    var peak=Math.max.apply(null,days);
+    var peakDay=days.indexOf(peak)+1;
+    var openWk=days.slice(0,7).reduce(function(a,b){ return a+b; },0);
+    var wk2=days.slice(7,14).reduce(function(a,b){ return a+b; },0);
+    var hold = days.length>7 && openWk>0 ? wk2/openWk : null;
+    var d1=days[0];
+    var mult = d1>0 ? total/d1 : 0;
+
+    var bars=days.map(function(v,i){
+      var h=Math.max(3, Math.round(v/peak*100));
+      var prev=i>0?days[i-1]:null;
+      var up = prev!==null && v>prev;
+      var col = i===0 ? "#6ea8ff" : (up ? "#34d399" : "#f87171");
+      return '<div class="bo-col"><div class="bo-bar"><i style="height:'+h+'%;background:'+col+'" title="Day '+(i+1)+": "+v+'"></i></div>'+
+        '<div class="bo-lbl">'+(i+1)+"</div></div>";
+    }).join("");
+
+    var rows=days.map(function(v,i){
+      if(i===0) return "<tr><td>1</td><td class='bo-pill'>opening</td><td>"+cr(v)+"</td><td>-</td><td>"+cr(v)+"</td></tr>";
+      var ch=(v-days[i-1])/days[i-1]*100;
+      var cls = ch>=0 ? "bo-up" : "bo-dn";
+      var run=days.slice(0,i+1).reduce(function(a,b){ return a+b; },0);
+      return "<tr><td>"+(i+1)+"</td><td></td><td>"+cr(v)+"</td><td class='"+cls+"'>"+(ch>=0?"+":"")+cr(ch)+"%</td><td>"+cr(run)+"</td></tr>";
+    }).join("");
+
+    var read="";
+    if(hold!==null){
+      read = "Week two held "+cr(hold*100)+" percent of week one. ";
+      read += hold>=0.5 ? "That is a strong hold and it usually means word of mouth is doing work the marketing did not have to."
+            : (hold>=0.35 ? "That is an ordinary hold for a wide release and suggests a normal front-loaded run."
+            : "That is a steep drop, which typically indicates a strong opening driven by anticipation rather than by reception.");
+    } else {
+      read = "Enter at least fourteen days and the week two hold appears here, which is the single most predictive early figure in a run.";
+    }
+    read += " The current total is "+cr(mult)+" times the opening day figure. A multiplier near two suggests a heavily front-loaded run and one above four suggests genuine legs.";
+
+    $("rOut").innerHTML='<div class="an-card full" style="margin-bottom:14px">'+
+      "<h3><span class='icon' style='background:rgba(110,168,255,.1);color:#6ea8ff;'>R</span>"+esc(title)+"</h3>"+
+      '<div class="bo-out">'+
+      '<div class="bo-o"><div class="v">'+cr(total)+'</div><div class="l">Total entered</div></div>'+
+      '<div class="bo-o"><div class="v">'+days.length+'</div><div class="l">Days</div></div>'+
+      '<div class="bo-o"><div class="v">'+cr(peak)+'</div><div class="l">Best day, day '+peakDay+'</div></div>'+
+      '<div class="bo-o"><div class="v">'+cr(mult)+'x</div><div class="l">Total over day one</div></div>'+
+      '<div class="bo-o"><div class="v">'+(hold!==null?cr(hold*100)+"%":"-")+'</div><div class="l">Week two hold</div></div>'+
+      "</div>"+
+      '<div class="bo-bars">'+bars+"</div>"+
+      '<div class="quiz-explain show">'+esc(read)+"</div>"+
+      '<div style="margin-top:14px">'+
+      '<div style="overflow-x:auto;border:1px solid var(--border);border-radius:12px">'+
+      "<table style='border-collapse:collapse;width:100%;font-size:13.5px;min-width:420px'>"+
+      "<thead><tr style='background:rgba(255,255,255,.06)'>"+
+      "<th style='padding:9px 11px;text-align:left'>Day</th><th style='padding:9px 11px'></th>"+
+      "<th style='padding:9px 11px;text-align:left'>Figure</th><th style='padding:9px 11px;text-align:left'>Change</th>"+
+      "<th style='padding:9px 11px;text-align:left'>Running total</th></tr></thead><tbody>"+
+      rows.replace(/<td/g,"<td style='padding:9px 11px;border-top:1px solid rgba(255,255,255,.07)'")+
+      "</tbody></table></div></div></div>";
+  }
+
+  function runText(){
+    var days=parseDays($("rData").value);
+    var out=["Box office run analysis", ($("rTitle").value.trim()||"Untitled"), ""];
+    if(!days.length){ out.push("No data entered."); return out.join("\n"); }
+    var run=0;
+    days.forEach(function(v,i){
+      run+=v;
+      var ch = i===0 ? "" : "   "+((v-days[i-1])/days[i-1]*100>=0?"+":"")+cr((v-days[i-1])/days[i-1]*100)+"%";
+      out.push("  Day "+String(i+1).padStart(3)+"   "+String(cr(v)).padStart(9)+ch+"   total "+cr(run));
+    });
+    out.push("");
+    out.push("Figures are as entered by the user from a third party tracker.");
+    out.push("This tool performs arithmetic only and asserts no collection data of its own.");
+    return out.join("\n");
+  }
+
+  /* ---------- reference lists ---------- */
+  function renderRef(target, list){
+    $(target).innerHTML='<div class="an-card full">'+ list.map(function(e){
+      return '<div class="bo-row"><div class="lbl">'+esc(e.t)+"</div><div>"+
+        (e.k?'<div class="bo-pill" style="margin-bottom:6px">'+esc(e.k)+"</div>":"")+
+        esc(e.body)+"</div></div>";
+    }).join("")+"</div>";
+  }
+
+  /* ---------- tabs ---------- */
+  function switchTab(name){
+    document.querySelectorAll(".tab-btn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-tab")===name);
+    });
+    var map={calc:"viewCalc",run:"viewRun",read:"viewRead",disagree:"viewDisagree",verdict:"viewVerdict"};
+    document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+    var el=$(map[name]); if(el) el.classList.add("active");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    document.querySelector(".tab-nav").addEventListener("click", function(e){
+      var b=e.target.closest(".tab-btn"); if(!b) return;
+      switchTab(b.getAttribute("data-tab"));
+    });
+    ["cAmt","fAtp","bBudget","bMkt","bNon"].forEach(function(id){ $(id).addEventListener("input", calc); });
+    ["cBasis","cGst"].forEach(function(id){ $(id).addEventListener("change", calc); });
+    $("rGo").addEventListener("click", analyseRun);
+    $("rData").addEventListener("input", function(){ if(parseDays($("rData").value).length>=2) analyseRun(); });
+    $("rExport").addEventListener("click", function(){ download("box-office-run.txt", runText()); flash("rMsg","Exported."); });
+    $("rClear").addEventListener("click", function(){
+      $("rData").value=""; $("rTitle").value="";
+      $("rOut").innerHTML='<div class="trend-empty"><div class="te-msg">Paste day-wise figures above and the analysis appears here.</div></div>';
+    });
+    calc();
+    renderRef("readList", BO.terms);
+    renderRef("disList", BO.disagree);
+    renderRef("verdictList", BO.verdict);
+    $("rOut").innerHTML='<div class="trend-empty"><div class="te-msg">Paste day-wise figures above and the analysis appears here.</div></div>';
+  });
+})();
+</script>
