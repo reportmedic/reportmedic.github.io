@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the Azure Troubleshooting Drills.</p><a href="https://reportmedic.org/tools/azure-troubleshooting-drills.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="Scenario-based Azure troubleshooting drills. Diagnose real failure symptoms, learn the diagnostic order that finds causes fastest, and track your progress."/>
+<title>Azure Troubleshooting Drills - Scenario Practice - ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+/* -- Animated Background -- */
+.bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12;animation:meshDrift 20s ease-in-out infinite alternate;}
+.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);top:-15%;right:-10%;}
+.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#a78bfa,#6ea8ff);bottom:-10%;left:-5%;animation-delay:-7s;animation-duration:25s;}
+.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#7cf7d4,#f59e0b);top:50%;left:40%;animation-delay:-14s;animation-duration:28s;}
+@keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg) scale(1);}100%{transform:translate(40px,-30px) rotate(15deg) scale(1.1);}}
+
+/* -- Tabs Nav -- */
+.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:24px;overflow-x:auto;}
+.tab-btn{flex:1;min-width:fit-content;padding:12px 20px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;letter-spacing:.01em;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(110,168,255,.18),rgba(124,247,212,.12));color:var(--text);box-shadow:0 2px 16px rgba(110,168,255,.12),inset 0 1px 0 rgba(255,255,255,.06);}
+
+/* -- Views -- */
+.view{display:none;}
+.view.active{display:block;}
+
+/* -- Hero -- */
+.daily-hero{text-align:center;padding:32px 0 16px;}
+.daily-hero h1{font-size:clamp(26px,4.5vw,38px);font-weight:700;letter-spacing:-.02em;line-height:1.15;}
+.daily-hero h1 .grad{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:10px;line-height:1.5;letter-spacing:.01em;}
+
+/* -- Streak Banner -- */
+.streak-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 26px;flex-wrap:wrap;}
+.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);backdrop-filter:blur(8px);font-size:13px;font-weight:600;transition:transform .15s;}
+.streak-pill:hover{transform:translateY(-1px);}
+.streak-pill .fire{font-size:20px;}
+.streak-pill .sval{font-size:18px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-pill .sval.green{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-dots{display:flex;gap:5px;}
+.streak-dots .dot{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;color:var(--muted);}
+.streak-dots .dot.done{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(124,247,212,.1));border-color:rgba(16,185,129,.25);color:#34d399;}
+.streak-dots .dot.today{border-color:rgba(110,168,255,.45);box-shadow:0 0 14px rgba(110,168,255,.15);}
+
+/* -- Phase Filter -- */
+.phase-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.phase-filter .pf-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px;}
+.pf-btn{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;}
+.pf-btn:hover{border-color:rgba(255,255,255,.22);color:var(--text);}
+.pf-btn.active{background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.35);color:#6ea8ff;}
+
+/* -- Quiz Container -- */
+.quiz-panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:26px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
+.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
+.quiz-progress{display:flex;gap:4px;margin-bottom:18px;}
+.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.06);transition:background .3s;}
+.quiz-progress .pip.done{background:linear-gradient(90deg,#10b981,#7cf7d4);}
+.quiz-progress .pip.wrong{background:#ef4444;}
+.quiz-progress .pip.current{background:rgba(110,168,255,.4);animation:pipPulse 1.5s ease infinite;}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.1);color:#6ea8ff;border:1px solid rgba(110,168,255,.15);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);color:var(--muted);}
+.quiz-meta .qphase{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid rgba(124,247,212,.2);background:rgba(124,247,212,.06);color:#7cf7d4;}
+.quiz-meta .qdiff{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.quiz-meta .qdiff.easy{border:1px solid rgba(52,211,153,.2);background:rgba(52,211,153,.06);color:#34d399;}
+.quiz-meta .qdiff.medium{border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.06);color:#fbbf24;}
+.quiz-meta .qdiff.hard{border:1px solid rgba(248,113,113,.2);background:rgba(248,113,113,.06);color:#f87171;}
+.quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.quiz-meta .timer svg{color:rgba(110,168,255,.6);}
+
+.quiz-question{font-size:16.5px;line-height:1.7;font-weight:600;margin-bottom:18px;letter-spacing:.005em;}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s;}
+.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.06);}
+.qo.selected .letter{border-color:#6ea8ff;background:#6ea8ff;color:#061021;}
+.qo.correct{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);}
+.qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
+.qo.disabled{pointer-events:none;opacity:.65;}
+.qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
+
+.quiz-explain{margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(124,247,212,.035);border:1px solid rgba(124,247,212,.1);font-size:13.5px;line-height:1.7;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;letter-spacing:.01em;}
+.qa-btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;}
+.qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+.qa-btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);}
+
+/* -- Results Card -- */
+.result-card{text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;}
+.result-card .big-score{font-size:64px;font-weight:700;line-height:1;margin-bottom:8px;}
+.result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
+.result-mini .rm{padding:16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.result-mini .rm .rv{font-size:20px;font-weight:700;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* -- Subject Practice Grid -- */
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.subj-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.subj-card .sc-icon{font-size:30px;margin-bottom:10px;}
+.subj-card .sc-name{font-size:14.5px;font-weight:700;margin-bottom:4px;letter-spacing:.01em;}
+.subj-card .sc-count{font-size:12px;color:var(--muted);}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .5s ease;}
+.dr-card{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;}
+.dr-sym{border-left:3px solid #f87171;background:rgba(248,113,113,.07);border-radius:0 12px 12px 0;padding:14px 16px;font-size:14.5px;line-height:1.75;margin-bottom:14px;}
+.dr-ctx{font-size:13.5px;color:var(--muted);line-height:1.75;margin-bottom:16px;}
+.dr-opt{padding:13px 15px;border-radius:13px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:1.6;margin-bottom:9px;}
+.dr-opt:hover{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.05);}
+.dr-opt .ltr{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex-shrink:0;}
+.dr-opt.ok{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.07);}
+.dr-opt.ok .ltr{border-color:#10b981;background:#10b981;color:#061021;}
+.dr-opt.no{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.dr-opt.no .ltr{border-color:#ef4444;background:#ef4444;color:#fff;}
+.dr-opt.locked{pointer-events:none;}
+.dr-step{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.75;}
+.dr-step:last-child{border-bottom:0;}
+.dr-step .n{flex:0 0 26px;height:26px;border-radius:50%;background:rgba(110,168,255,.12);border:1px solid rgba(110,168,255,.25);color:#6ea8ff;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;}
+.dr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;}
+.dr-tile{padding:16px;border-radius:16px;border:1px solid var(--border);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.dr-tile:hover{border-color:rgba(255,255,255,.2);transform:translateY(-2px);}
+.dr-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--brand);}
+.dr-tile.done::before{background:#34d399;}
+.dr-tile .svc{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.dr-tile .ttl{font-size:14.5px;font-weight:700;margin:6px 0 4px;line-height:1.4;}
+.dr-code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:3px 8px;display:inline-block;color:#7cf7d4;}
+.ri-cell{padding:12px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.03);text-align:center;}
+.ri-cell .cv{font-size:19px;font-weight:800;}
+.ri-cell .cl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:3px;}
+.ri-gauge{height:10px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin:10px 0 4px;}
+.ri-gauge i{display:block;height:100%;transition:width .4s ease;}
+.ri-warnbox{border-left:3px solid #ffb35c;background:rgba(255,179,92,.07);border-radius:0 12px 12px 0;padding:14px 16px;font-size:13.5px;line-height:1.75;}
+.lit-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.lit-detail h3{font-size:20px;margin-bottom:4px;}
+.lit-detail .meta{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+.lit-detail p{line-height:1.75;font-size:14.5px;margin-bottom:12px;}
+.lit-row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.lit-row:last-child{border-bottom:0;}
+.lit-row .lbl{font-weight:700;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px;}
+@media(max-width:640px){.lit-row{grid-template-columns:1fr;gap:4px;}}
+.cmp-grid{display:grid;grid-template-columns:170px 1fr 1fr;gap:10px;align-items:start;}
+.cmp-grid > div{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.cmp-grid .cmp-lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;}
+.cmp-grid .cmp-head{font-weight:700;font-size:15px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.14);}
+@media(max-width:760px){.cmp-grid{grid-template-columns:1fr;}.cmp-grid .cmp-lbl{padding-bottom:0;border-bottom:0;}}
+.theme-chip{display:inline-block;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:rgba(110,168,255,.10);border:1px solid rgba(110,168,255,.20);color:#6ea8ff;margin:3px 5px 3px 0;cursor:pointer;}
+.theme-chip.on{background:var(--brand);border-color:var(--brand);color:#08111f;}
+
+/* -- Analytics Dashboard -- */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
+.an-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.an-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);}
+.an-card.full{grid-column:1/-1;}
+.an-card h3{font-size:12.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* -- Overview Strip -- */
+.overview-strip{display:flex;align-items:center;gap:24px;}
+.ov-ring{position:relative;flex-shrink:0;width:100px;height:100px;}
+.ov-ring canvas{width:100px;height:100px;}
+.ov-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ov-ring-label .rv{font-size:22px;font-weight:700;line-height:1;}
+.ov-ring-label .rl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ov-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ov-stat{padding:12px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;}
+.ov-stat .os-val{font-size:18px;font-weight:700;line-height:1.2;font-family:'JetBrains Mono',monospace;}
+.ov-stat .os-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+@media(max-width:600px){
+  .overview-strip{flex-direction:column;gap:16px;}
+  .ov-stats{grid-template-columns:repeat(3,1fr);width:100%;}
+}
+
+/* -- Subject accuracy bars -- */
+.sub-bars{display:flex;flex-direction:column;gap:10px;}
+.sb-row{display:flex;align-items:center;gap:10px;}
+.sb-label{width:105px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:46px;text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+/* -- Trend Chart -- */
+.trend-wrap{position:relative;min-height:220px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.trend-wrap::-webkit-scrollbar{height:4px;}.trend-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--muted);text-align:center;}
+.trend-empty .te-icon{font-size:40px;opacity:.4;}
+.trend-empty .te-msg{font-size:13px;line-height:1.5;max-width:320px;}
+.trend-bar-chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding:10px 0;min-width:min-content;}
+.trend-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:48px;width:48px;flex-shrink:0;}
+.trend-bar-outer{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative;}
+.trend-bar{width:100%;border-radius:6px 6px 2px 2px;transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;min-height:4px;}
+.trend-bar:hover{filter:brightness(1.2);}
+.trend-bar .tb-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.trend-bar:hover .tb-val{opacity:1;}
+.trend-label{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.trend-mode-label.daily{background:rgba(110,168,255,.12);color:#6ea8ff;}
+.trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
+
+/* -- Mastery Dashboard -- */
+.mastery-wrap{margin-top:8px;}
+.mastery-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.m-stat{padding:12px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);}
+.m-stat .ms-val{font-size:22px;font-weight:800;margin-bottom:2px;}
+.m-stat .ms-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+.m-stat.green .ms-val{color:#34d399;} .m-stat.yellow .ms-val{color:#fbbf24;} .m-stat.red .ms-val{color:#f87171;} .m-stat.blue .ms-val{color:#6ea8ff;} .m-stat.purple .ms-val{color:#a78bfa;}
+.coverage-ring{display:flex;align-items:center;gap:16px;padding:14px;border-radius:14px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);margin-bottom:14px;overflow:hidden;}
+.cov-canvas{width:90px;height:90px;flex-shrink:0;}
+.cov-info{flex:1;min-width:0;overflow:hidden;}
+.cov-title{font-size:13px;font-weight:700;color:var(--fg);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cov-sub{font-size:11px;color:var(--muted);line-height:1.6;word-break:break-word;}
+.subj-mastery{margin-top:14px;}
+.sm-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+.sm-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.sm-icon{font-size:14px;width:20px;text-align:center;}
+.sm-name{width:70px;font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-bar{flex:1;height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative;}
+.sm-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.sm-pct{width:34px;text-align:right;font-weight:700;font-size:11px;}
+
+/* -- Passage block for reading items -- */
+.quiz-passage{padding:14px 16px;border-radius:14px;background:rgba(110,168,255,.04);border:1px solid rgba(110,168,255,.10);font-size:14.5px;line-height:1.75;color:var(--muted);margin-bottom:14px;}
+.quiz-passage em{color:var(--text);font-style:italic;}
+
+/* -- Difficulty chips -- */
+.diff-dist{display:flex;gap:10px;margin-top:6px;}
+.diff-chip{flex:1;padding:14px 10px;border-radius:14px;text-align:center;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);}
+.diff-chip .dc-val{font-size:20px;font-weight:700;margin-bottom:2px;}
+.diff-chip .dc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+.diff-chip.easy .dc-val{color:#34d399;}
+.diff-chip.medium .dc-val{color:#fbbf24;}
+.diff-chip.hard .dc-val{color:#f87171;}
+
+/* -- Session History -- */
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding-right:4px;}
+.hist-list::-webkit-scrollbar{width:4px;}
+.hist-list::-webkit-scrollbar-track{background:transparent;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:12px;transition:background .1s;}
+.hist-row:hover{background:rgba(255,255,255,.04);}
+.hist-date{font-weight:600;min-width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hist-mode{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.hist-mode.daily{background:rgba(110,168,255,.1);color:#6ea8ff;}
+.hist-mode.practice{background:rgba(139,92,246,.1);color:#a78bfa;}
+.hist-score{margin-left:auto;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.hist-detail{color:var(--muted);font-size:11px;}
+
+/* -- Reset Button -- */
+.reset-zone{margin-top:20px;text-align:center;}
+.reset-btn{padding:10px 20px;border-radius:12px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.reset-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);}
+
+/* -- Tab label responsive -- */
+.tab-short{display:none;}
+@media(max-width:540px){.tab-full{display:none;}.tab-short{display:inline;}}
+@media(max-width:640px){
+  .quiz-panel{padding:16px;}
+  .streak-bar{gap:10px;}
+  .subj-grid{grid-template-columns:1fr 1fr;}
+  .diff-dist{flex-wrap:wrap;}
+  .diff-chip{min-width:calc(50% - 5px);}
+  .mastery-stats{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .coverage-ring{flex-direction:column;text-align:center;}
+  .sm-name{width:55px;font-size:10px;}
+  .tab-nav{overflow-x:hidden;}
+  .hide-mobile{display:none!important;}
+}
+
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .5s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+
+.btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;padding:10px 20px;border-radius:10px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:.01em;transition:all .18s;}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-mesh"><div class="strand"></div><div class="strand"></div><div class="strand"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn hide-mobile" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+  <a class="btn primary" href="https://vaultbook.net/tools/azure-labs.html">Azure Labs</a>
+</div>
+</header>
+
+<div class="wrap">
+  <!-- Tab Nav -->
+  <nav class="tab-nav anim-up">
+    <button class="tab-btn active" data-tab="drills"><span class="tab-full">The Drills</span><span class="tab-short">Drills</span></button>
+    <button class="tab-btn" data-tab="method"><span class="tab-full">Diagnostic Order</span><span class="tab-short">Method</span></button>
+    <button class="tab-btn" data-tab="errors"><span class="tab-full">Symptom Reference</span><span class="tab-short">Symptoms</span></button>
+    <button class="tab-btn" data-tab="progress"><span class="tab-full">My Progress</span><span class="tab-short">Progress</span></button>
+  </nav>
+
+  <!-- VIEW: DRILLS -->
+  <div class="view active" id="viewDrills">
+    <div class="daily-hero anim-up d1">
+      <h1>Azure Troubleshooting <span class="grad">Drills</span></h1>
+      <p class="sub">Twenty scenarios drawn from failures engineers actually hit. Read the symptom, commit to a cause, then see the diagnostic order that would have found it faster.</p>
+    </div>
+
+    <div class="phase-filter anim-up d2">
+      <span class="pf-label">Area:</span>
+      <span id="svcBtns"></span>
+    </div>
+
+    <div class="row" style="gap:10px;margin:14px 0;flex-wrap:wrap">
+      <input class="input" id="drFind" type="search" placeholder="Search symptoms and services" style="max-width:280px" />
+      <span class="pill tiny" id="drCount"><b>Showing:</b><span class="muted"> 0</span></span>
+      <button class="btn" id="drReset" type="button">Reset progress</button>
+      <span class="tiny muted" id="drMsg"></span>
+    </div>
+
+    <div class="dr-grid anim-up d3" id="drGrid"></div>
+    <div id="drOpen" style="margin-top:18px"></div>
+  </div>
+
+  <!-- VIEW: METHOD -->
+  <div class="view" id="viewMethod">
+    <div class="daily-hero">
+      <h1>Diagnostic <span class="grad">Order</span></h1>
+      <p class="sub">Six checks in the order that finds a cause fastest. Almost every cloud failure is one of these, and checking them out of order is how afternoons disappear.</p>
+    </div>
+    <div id="methodList"></div>
+    <div class="quiz-explain show" style="margin-top:16px">The principle underneath the order is cost. Each check is cheaper than the one after it and rules out a whole class of causes. Guessing at configuration before confirming identity means you may spend an hour tuning something that was never reachable, and that mistake is the single most common time sink in cloud support work.</div>
+  </div>
+
+  <!-- VIEW: ERRORS -->
+  <div class="view" id="viewErrors">
+    <div class="daily-hero">
+      <h1>Symptom <span class="grad">Reference</span></h1>
+      <p class="sub">What common failure signatures usually mean, and the first thing to check for each. Exact wording changes between services and over time, so match on the shape rather than the string.</p>
+    </div>
+    <div class="row" style="gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <input class="input" id="errFind" type="search" placeholder="Search symptoms" style="max-width:300px" />
+      <span class="pill tiny" id="errCount"><b>Showing:</b><span class="muted"> 0</span></span>
+    </div>
+    <div id="errList"></div>
+    <div class="ri-warnbox" style="margin-top:16px">Cloud platforms change. Service names, error text, default behaviours, and portal layouts all move, and a message that means one thing today may be reworded next quarter. Everything here is written around the underlying cause rather than the exact string, and you should still confirm against current official documentation before acting on production.</div>
+  </div>
+
+  <!-- VIEW: PROGRESS -->
+  <div class="view" id="viewProgress">
+    <div class="daily-hero">
+      <h1>My <span class="grad">Progress</span></h1>
+      <p class="sub">What you have attempted and how you did. Everything stays in your browser.</p>
+    </div>
+    <div class="analytics-grid">
+      <div class="an-card full">
+        <div class="ov-stats" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
+          <div class="ri-cell"><div class="cv" id="pgDone">0</div><div class="cl">Attempted</div></div>
+          <div class="ri-cell"><div class="cv" id="pgTotal">0</div><div class="cl">Drills</div></div>
+          <div class="ri-cell"><div class="cv" id="pgRight">0</div><div class="cl">First-time correct</div></div>
+          <div class="ri-cell"><div class="cv" id="pgRate">-</div><div class="cl">Hit rate</div></div>
+          <div class="ri-cell"><div class="cv" id="pgAreas">0</div><div class="cl">Areas covered</div></div>
+        </div>
+        <div class="ri-gauge"><i id="pgBar" style="width:0%;background:#94a3b8"></i></div>
+        <div class="tiny muted" id="pgRead">Work a drill and your progress appears here.</div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(139,92,246,.1);color:#8b5cf6;">A</span>Accuracy by area</h3>
+        <div class="sub-bars" id="pgBars"></div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(239,68,68,.1);color:#f87171;">W</span>Where you went wrong</h3>
+        <div id="pgWrong"></div>
+      </div>
+    </div>
+    <div class="reset-zone">
+      <button class="reset-btn" id="pgWipe" type="button">Reset All Progress</button>
+    </div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">Azure Troubleshooting Drills - scenario practice with diagnostic method</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. Copyright ReportMedic.</div>
+</div>
+</footer>
+<script>
+var AZ = {};
+
+AZ.services = ["Identity and access","Storage","Networking","Databases","Compute","Serverless","Containers","Platform"];
+
+AZ.drills = [
+{id:"d1", svc:"Identity and access", diff:"medium",
+ t:"Reader role, still cannot list blobs",
+ sym:"An application authenticates successfully and can see the storage account in the portal, but every attempt to list or download blobs returns an authorization failure.",
+ ctx:"The identity has been granted the Reader role at the storage account scope. The account is not firewalled and the container exists.",
+ opts:["The role grants management plane access but not data plane access","The container was created in a different region","The identity has expired","The storage account key has been rotated"],
+ ans:0,
+ why:"Reader permits reading the resource's configuration, not its contents. Blob data access requires a data plane role such as Storage Blob Data Reader or Storage Blob Data Contributor. This management versus data plane split catches nearly everyone once, and the giveaway is being able to see the resource while failing on its contents.",
+ steps:["Confirm which identity is actually being used, not which one you intended","List the role assignments at the resource scope and read the role names carefully","Check whether the role name contains the word Data, which marks the data plane roles","Assign the correct data plane role and allow time for propagation","Retry, and if it now works, remove any broad role you added while debugging"],
+ prevent:"When granting access to contents rather than configuration, search the role list for the data plane role first and never reach for Contributor as a shortcut."},
+
+{id:"d2", svc:"Identity and access", diff:"easy",
+ t:"Role assigned, action still refused",
+ sym:"A role assignment was created a moment ago and the same action still fails with an authorization error.",
+ ctx:"The role and scope have been checked and both look correct.",
+ opts:["The assignment is wrong and must be recreated","Role assignments take time to propagate","The subscription is suspended","The role does not exist"],
+ ans:1,
+ why:"Role assignments are eventually consistent and can take several minutes to take effect across all endpoints. Recreating the assignment immediately is the common reaction and it restarts the same wait. Verify the assignment exists, then wait before concluding it is wrong.",
+ steps:["Confirm the assignment appears when listed at the scope","Confirm the identity in the assignment matches the identity making the call","Wait several minutes and retry before changing anything","If it still fails, widen the scope temporarily to test, then narrow again"],
+ prevent:"Build a short wait into any automation that creates a role assignment and then immediately uses it."},
+
+{id:"d3", svc:"Identity and access", diff:"medium",
+ t:"Secret store refuses a caller that should be permitted",
+ sym:"An application receives an access denied response from a secret store even though permission appears to have been granted.",
+ ctx:"The store was created some time ago. A newer team recently added permissions using role assignments.",
+ opts:["The secret value is too large","The secret has been deleted","The store is using the access policy model while permissions were granted as roles","The application is in a different subscription"],
+ ans:2,
+ why:"Secret stores can be configured to use either an access policy model or a role based model, and only the configured one is evaluated. Granting a role on a store still set to access policies produces exactly this symptom, with permissions visible in one place and ignored at runtime.",
+ steps:["Confirm which permission model the store is configured for","Check whether the grant was made in that model or the other one","Check the store's network restrictions, which produce a similar refusal","Grant in the correct model, or migrate the store deliberately rather than by accident"],
+ prevent:"Standardise on one permission model across an environment and record which one, because a mixed estate produces this failure repeatedly."},
+
+{id:"d4", svc:"Identity and access", diff:"hard",
+ t:"Managed identity token request fails from inside a virtual machine",
+ sym:"Code running on a virtual machine cannot obtain a token from the local identity endpoint, and the request times out rather than being refused.",
+ ctx:"The same code works on a developer machine using an interactive sign-in.",
+ opts:["The token is too large for the header","The subscription has no quota left","The application secret has expired","No managed identity is assigned to the machine, or the local metadata endpoint is unreachable"],
+ ans:3,
+ why:"A timeout rather than a refusal points at reachability rather than permission. Either no identity is assigned to the resource, or something on the host is blocking the local metadata endpoint. A proxy configuration that captures all outbound traffic is a frequent culprit because it intercepts the link-local address the endpoint uses.",
+ steps:["Confirm an identity is assigned to the resource","Confirm the code is requesting a token for the correct target resource","Check for a proxy or firewall configuration capturing link-local traffic","Test the endpoint directly from the host before testing from the application","Only after a token is obtained, check whether that identity has the role it needs"],
+ prevent:"Exclude the local metadata address from any host proxy configuration as a standard build step."},
+
+{id:"d5", svc:"Storage", diff:"medium",
+ t:"Uploads intermittently rejected with a conflict",
+ sym:"Most writes succeed but some are rejected with a conflict response, and the failures cluster when several processes run together.",
+ ctx:"Multiple workers write to the same container, occasionally to the same blob path.",
+ opts:["Concurrent writers are conflicting, or a lease is held on the target","The region is unavailable","The access key is invalid","The account has run out of capacity"],
+ ans:0,
+ why:"A conflict response indicates the target is in a state incompatible with the request, most often because another writer holds a lease or is creating the same resource concurrently. Clustering under parallel load is the diagnostic signature, because a credential or capacity problem would fail consistently rather than intermittently.",
+ steps:["Establish whether failures correlate with concurrency rather than with time or size","Check whether a lease exists on the blobs that fail","Review whether writers use conditional headers or blind overwrites","Introduce a partitioning scheme so two workers never target one path","Add bounded retry with backoff for the genuinely concurrent cases"],
+ prevent:"Design the write path so each worker owns a distinct key range, which removes the conflict rather than retrying through it."},
+
+{id:"d6", svc:"Storage", diff:"easy",
+ t:"Access works from a laptop but not from a deployed service",
+ sym:"The same credentials succeed from a developer machine and fail from a deployed application.",
+ ctx:"The storage account has network rules configured.",
+ opts:["The deployed service uses a different credential and the credential is wrong","The account firewall permits the developer network but not the service","The container name is misspelled","Storage does not support that operation"],
+ ans:1,
+ why:"When identical credentials behave differently by origin, the variable is the network path rather than the identity. Account level firewalls and virtual network rules produce exactly this asymmetry, and a developer machine is frequently on an allowed network while the deployed workload is not.",
+ steps:["Confirm both sides genuinely use the same credential before assuming they do","Read the storage account network rules and list what is permitted","Check whether the deployed workload has a service endpoint or private endpoint configured","Add the correct network rule rather than opening the account to all networks"],
+ prevent:"Test from a machine on the same network path as production, because a developer laptop is rarely representative of it."},
+
+{id:"d7", svc:"Networking", diff:"medium",
+ t:"Two networks are peered but nothing routes between them",
+ sym:"A peering shows as created and hosts on each side cannot reach the other.",
+ ctx:"The peering was configured recently and the address ranges were chosen independently by two teams.",
+ opts:["Peering does not support private addresses","One network is in a different subscription","The address ranges overlap, or the peering exists in only one direction","The subnets are too small"],
+ ans:2,
+ why:"Peering must be established from both sides and the address spaces must not overlap. Two teams choosing ranges independently produces overlap frequently, and an overlapping peering either fails outright or routes unpredictably. A one-sided peering shows as configured from the side you created it on, which is why it is easy to miss.",
+ steps:["Check the peering state from both networks rather than from one","Compare the two address spaces for any overlap","Check the effective routes on a network interface on each side","Check the security rules on the subnets before blaming the peering itself"],
+ prevent:"Allocate address space centrally from a documented plan, because overlap discovered after deployment is expensive to unwind."},
+
+{id:"d8", svc:"Networking", diff:"medium",
+ t:"A private name will not resolve from inside the network",
+ sym:"A resource reachable by address cannot be reached by name from workloads inside the virtual network.",
+ ctx:"A private endpoint was created for the resource. The virtual network has custom DNS servers configured.",
+ opts:["The resource is stopped","The name is too long","The private endpoint failed to provision","The private DNS zone is not linked to the network, or custom DNS servers do not forward correctly"],
+ ans:3,
+ why:"Reachable by address and unreachable by name isolates the problem to name resolution. A private endpoint requires its DNS zone to be linked to the virtual network, and where custom DNS servers are configured they must forward to the platform resolver for that zone to be consulted at all.",
+ steps:["Confirm the resource answers on its private address, which proves the path exists","Resolve the name from a host inside the network and note what address comes back","Check whether the private DNS zone exists and is linked to this network","Check whether custom DNS servers forward correctly to the platform resolver","Fix the resolution path rather than hard-coding the address"],
+ prevent:"Link the DNS zone as part of the same deployment that creates the private endpoint, never as a separate manual step."},
+
+{id:"d9", svc:"Networking", diff:"hard",
+ t:"A load balancer reports every backend as unhealthy",
+ sym:"All backend instances are marked unhealthy and no traffic is distributed, although the instances are running.",
+ ctx:"The application responds correctly when reached directly on its port.",
+ opts:["The health probe configuration does not match what the application actually serves","The load balancer is in the wrong region","The application is single threaded","The instances are undersized"],
+ ans:0,
+ why:"Reachable directly but unhealthy through the balancer points at the probe rather than the application. The probe may target a path that does not exist, a port the application does not listen on, or a protocol mismatch, and security rules must also permit the probe source to reach the instances.",
+ steps:["Confirm the application answers on the exact port and path the probe uses","Check the probe protocol against what the application actually serves","Check that security rules permit the probe source range to reach the backend","Check the instance count and whether any are still starting","Correct the probe rather than loosening security rules to make it pass"],
+ prevent:"Expose a dedicated health path that is cheap to serve and does not depend on downstream services, so a probe failure means what you think it means."},
+
+{id:"d10", svc:"Databases", diff:"medium",
+ t:"A managed database becomes briefly unavailable",
+ sym:"Connections fail for a short period with an unavailable response, then recover without intervention.",
+ ctx:"The pattern recurs occasionally and does not correlate with deployments.",
+ opts:["The database has been deleted","A transient event such as a failover or reconfiguration occurred","The connection string is malformed","The firewall is blocking the client"],
+ ans:1,
+ why:"Managed database services perform maintenance, failover, and reconfiguration transparently, which produces brief unavailability. Self-recovery without intervention is the signature. A malformed connection string or firewall rule fails consistently rather than intermittently.",
+ steps:["Establish whether failures are brief and self-resolving or persistent","Check the service health and maintenance history for the window","Confirm the client implements retry with backoff for transient conditions","Check whether the tier can pause on inactivity, which produces a similar first-connection delay","Add retry logic rather than treating each occurrence as an incident"],
+ prevent:"Treat transient faults as normal in a managed platform and implement retry with exponential backoff as a baseline requirement rather than a fix."},
+
+{id:"d11", svc:"Databases", diff:"medium",
+ t:"Query latency rises sharply under moderate load",
+ sym:"Queries that normally complete quickly slow dramatically once concurrency increases, without any change to the queries themselves.",
+ ctx:"Resource consumption metrics sit near the ceiling for the provisioned tier.",
+ opts:["The client has a memory leak","The queries were rewritten","The workload is hitting the resource limit of the provisioned tier","The network is saturated"],
+ ans:2,
+ why:"When latency scales with concurrency and utilisation sits at its ceiling, the platform is throttling to the limit you purchased. The queries have not changed and the network is rarely the constraint. Scaling up is the immediate answer and query tuning is usually the cheaper long-term one.",
+ steps:["Check utilisation against the provisioned limit for the period in question","Identify the highest consuming queries rather than the slowest ones","Check for missing indexes or full scans in those queries","Scale the tier to confirm the diagnosis, then tune to scale back down","Set an alert on sustained utilisation so this is caught before users report it"],
+ prevent:"Alert on approaching the resource ceiling rather than on reaching it, because the symptom appears well before the limit is fully consumed."},
+
+{id:"d12", svc:"Databases", diff:"hard",
+ t:"A document database throttles despite headroom in aggregate",
+ sym:"Requests are rejected with a rate limit response even though total provisioned throughput appears sufficient.",
+ ctx:"A small number of partition keys account for most of the traffic.",
+ opts:["The indexing policy is disabled","The region is unavailable","The account is out of storage","Throughput is distributed across partitions and one partition is saturated"],
+ ans:3,
+ why:"Provisioned throughput is divided across physical partitions, so a partition key receiving disproportionate traffic can exhaust its share while the account as a whole looks underused. This hot partition problem is invisible in aggregate metrics and is a design issue rather than a capacity one.",
+ steps:["Confirm the rejections are rate limiting rather than another failure","Examine consumption by partition key rather than in aggregate","Identify whether a small number of keys dominate the traffic","Redesign the partition key toward higher cardinality and even distribution","Handle the rate limit response with the retry guidance the service returns"],
+ prevent:"Choose a partition key for even distribution under real traffic patterns, and test it with a representative workload rather than with uniform synthetic load."}
+];
+
+AZ.drills = AZ.drills.concat([
+{id:"d13", svc:"Compute", diff:"medium",
+ t:"Creating a virtual machine fails on quota",
+ sym:"A deployment fails immediately with a message about exceeding an available limit, before any resource is created.",
+ ctx:"Other machines of a different size deploy successfully in the same region.",
+ opts:["A per-region quota for that machine family is exhausted","The image is corrupt","The resource group is full","The subscription has been disabled"],
+ ans:0,
+ why:"Quotas are enforced per region and per machine family rather than per subscription in aggregate. Succeeding with a different size in the same region is the giveaway, because it shows the subscription is active and the region is available while one family's allocation is spent.",
+ steps:["Read the failure message for the specific limit named, which usually identifies the family","Check current usage against quota for that family in that region","Try a different but comparable family to confirm the diagnosis","Request an increase, or deploy to a region with headroom","Deallocate machines you are not using, since allocation counts against quota"],
+ prevent:"Track quota consumption as part of capacity planning and request increases before a deployment window rather than during one."},
+
+{id:"d14", svc:"Compute", diff:"hard",
+ t:"A machine reports as running but never becomes reachable",
+ sym:"The platform shows the machine as running while it never answers on any port and no connection succeeds.",
+ ctx:"The machine was working before a change was applied to its operating system configuration.",
+ opts:["The subscription is out of credit","The guest operating system is failing to boot, and boot diagnostics will show why","The region has no capacity","The disk is the wrong type"],
+ ans:1,
+ why:"Running is a statement about the platform allocating compute, not about the guest booting successfully. A machine that boots into an error state, waits at a repair prompt, or fails on a filesystem check will report as running and answer nothing. Boot diagnostics show the console output that reveals this.",
+ steps:["Enable and open boot diagnostics to see the actual console output","Read the console for a boot loader error, filesystem check, or repair prompt","If the guest is stuck, attach the operating system disk to a working machine to inspect it","Check whether a recent configuration change to networking or the boot process caused it","Restore from a snapshot if you have one, which is faster than repairing in place"],
+ prevent:"Snapshot before any change to boot configuration or networking on the guest, because these are the changes that cost you access to the machine."},
+
+{id:"d15", svc:"Serverless", diff:"medium",
+ t:"A function app stops triggering entirely",
+ sym:"No executions appear at all, for any function in the app, and there are no errors in the application logs.",
+ ctx:"The app was working. Someone recently rotated credentials on the associated storage account.",
+ opts:["The plan was scaled down","The code has a syntax error","The runtime cannot reach its associated storage account, so the host is not starting","The functions were deleted"],
+ ans:2,
+ why:"A function host depends on an associated storage account for its own state, including trigger coordination and leases. If that connection breaks, the host does not start and no function runs, which produces silence rather than errors. Total absence of executions across every function is the signature of a host problem rather than a code problem.",
+ steps:["Confirm the absence is total rather than affecting one trigger type","Check the host status rather than the function logs","Verify the storage connection setting resolves and the credential is current","Check whether network rules on the storage account now exclude the app","Restart the app after fixing the connection and confirm executions resume"],
+ prevent:"Use an identity based connection to the associated storage account so credential rotation cannot silently stop the host."},
+
+{id:"d16", svc:"Serverless", diff:"easy",
+ t:"First request after idle takes several seconds",
+ sym:"Requests are fast under steady traffic and the first request after a quiet period is dramatically slower.",
+ ctx:"The app runs on a consumption based plan and has a large dependency set.",
+ opts:["The database is slow","The region is congested","The code is inefficient","The platform is starting an instance from cold, and startup cost includes loading dependencies"],
+ ans:3,
+ why:"Consumption plans scale to zero when idle, so the first request after a quiet period pays for allocating an instance, starting the runtime, and loading dependencies. Being fast under load and slow only after idle is the defining pattern, and it is a property of the hosting model rather than a defect.",
+ steps:["Confirm the slowness only occurs after an idle period","Measure how much of the delay is dependency loading rather than allocation","Reduce the dependency set, which is usually the largest controllable component","Consider a plan with always-ready instances if the latency is not acceptable","Avoid synthetic keep-alive traffic, which costs money and hides the real behaviour"],
+ prevent:"Choose the hosting plan against the latency requirement rather than against cost alone, and keep the deployment package small."},
+
+{id:"d17", svc:"Containers", diff:"medium",
+ t:"A pod restarts continuously in a crash loop",
+ sym:"A pod starts, exits, and is restarted repeatedly with increasing delay between attempts.",
+ ctx:"The image was updated recently and configuration is supplied through mounted secrets.",
+ opts:["The container is exiting on startup, most often on missing configuration or a failing probe","The node is unreachable","The registry is offline","The cluster is out of capacity"],
+ ans:0,
+ why:"A crash loop means the container starts and then exits, so the platform is working correctly and the workload is not. The most common causes are configuration the application requires and cannot find, a dependency it cannot reach at startup, or a readiness probe failing before the application has finished starting.",
+ steps:["Read the logs from the previous instance rather than the current one, since the current one may not have logged yet","Check the exit code, which distinguishes an application error from a termination signal","Confirm every mounted secret and configuration item exists and is readable","Check probe timings against actual startup duration","Check resource limits, since being terminated for memory looks similar and has a distinct exit code"],
+ prevent:"Set a startup probe with a realistic budget so a slow start is not mistaken by the platform for a failure."},
+
+{id:"d18", svc:"Containers", diff:"hard",
+ t:"A cluster cannot pull an image from a private registry",
+ sym:"Pods remain pending and events show repeated image pull failures, while the image exists and is pullable from a workstation.",
+ ctx:"The registry is private and the cluster uses a managed identity.",
+ opts:["The image tag does not exist","The cluster identity lacks the pull role on the registry","The image is too large","The registry is in a different region"],
+ ans:1,
+ why:"Pullable from a workstation and not from the cluster separates the image from the authorisation. The cluster identity needs an explicit pull role on the registry, and this is a role assignment problem in the same family as every other identity, role, scope failure rather than a container problem.",
+ steps:["Read the pull failure event, which distinguishes not found from unauthorised","Confirm the exact image reference including registry, repository, and tag","Identify which identity the cluster uses to pull","Assign the pull role to that identity at the registry scope","Retry after allowing time for the assignment to propagate"],
+ prevent:"Attach the registry to the cluster at creation so the role assignment is made once and correctly, rather than after the first failure."},
+
+{id:"d19", svc:"Platform", diff:"medium",
+ t:"A template deployment fails partway through",
+ sym:"Some resources are created and the deployment reports failure, with the summary naming a resource that appears unrelated to the real problem.",
+ ctx:"The template was edited to add a new resource that depends on an existing one.",
+ opts:["The region does not support templates","The subscription has expired","An undeclared dependency caused resources to be created in the wrong order","The template file is corrupt"],
+ ans:2,
+ why:"Deployments parallelise wherever no dependency is declared, so a resource that implicitly relies on another may be created before it exists. The summary reports the last failure rather than the first, which is why the named resource often looks unrelated. Reading the individual deployment operations is what finds the real one.",
+ steps:["Open the deployment operations and find the earliest failed operation, not the summary","Read that operation's message rather than the rollup","Check whether the failing resource requires something not yet created","Declare the dependency explicitly rather than relying on ordering","Preview the deployment before applying it so predicted changes are visible first"],
+ prevent:"Always preview a template deployment before applying it, which is the single habit that prevents the worst class of infrastructure error."},
+
+{id:"d20", svc:"Platform", diff:"medium",
+ t:"A self-hosted integration component reports offline",
+ sym:"A component installed on a machine you control shows as offline in the portal, and jobs depending on it queue without running.",
+ ctx:"The machine is running and reachable by administrators.",
+ opts:["The subscription is over quota","The jobs are malformed","The portal is showing stale data","The service is stopped on the host, or outbound connectivity to the platform is blocked"],
+ ans:3,
+ why:"A self-hosted component must maintain outbound connectivity to the platform to report as online. The two ordinary causes are the local service not running and a network change blocking the required outbound destinations. The machine being reachable by administrators proves inbound access only, which is a different path.",
+ steps:["Confirm the service is running on the host and check its own log","Test outbound connectivity from the host to the required platform endpoints","Check whether a proxy or firewall change coincides with the outage","Check whether the component version is still supported, since expired versions can stop connecting","Restart the service after fixing the path and confirm it reports online"],
+ prevent:"Monitor the component's own heartbeat rather than relying on job failures to tell you it is offline."}
+]);
+
+AZ.method = [
+{t:"Identity: who is actually making the call",
+ body:"Confirm which identity is being used rather than which one you intended. Applications frequently pick up a different credential from an environment variable, a configuration file, or a default chain than the developer assumes. This check costs seconds and eliminates a large share of access failures immediately."},
+{t:"Context: which subscription and tenant are you pointed at",
+ body:"An account with access to more than one subscription operates against whichever is currently selected. Creating a resource in one and looking for it in another produces a confusing does not exist error that has nothing to do with the resource. Confirm context before investigating anything else."},
+{t:"Existence: does the resource exist, in the state you believe",
+ body:"List the resource rather than assuming it. It may have been deleted, deallocated, paused, moved, or created in a different resource group. A deallocated or paused resource behaves like an unreachable one and the distinction saves an hour of network investigation."},
+{t:"Path: is there a network route between caller and resource",
+ body:"Check reachability before checking permission, because an unreachable endpoint frequently produces an error that reads like a permission problem. Effective security rules, private endpoint DNS, peering state, and firewall rules all live at this step, and the effective rules view resolves most of it in one look."},
+{t:"Permission: identity, role, and scope",
+ body:"Every authorisation failure is a wrong value in one of three fields. Check which identity, which role, and at which scope, in that order. Pay particular attention to whether the operation needs a management plane role or a data plane one, because that distinction produces the most persistent confusion in the platform."},
+{t:"Configuration: what is set inside the resource",
+ body:"Only now look at settings, connection strings, application configuration, and code. It is the most expensive place to look and the least likely to be the cause, which is exactly why it should be last. Arriving here having ruled out the first five means anything you find is probably the real problem."}
+];
+
+AZ.errors = [
+{sig:"Authorization failed or permission mismatch", first:"Identity, role, and scope, in that order",
+ mean:"The call reached the service and was refused. This is a permission outcome rather than a connectivity one, so the network path is already proven to work. Check whether the operation needs a data plane role rather than a management one."},
+{sig:"Resource not found", first:"Subscription context, then spelling, then existence",
+ mean:"Frequently means you are pointed at a different subscription rather than that the resource is missing. It can also mean the caller lacks permission to see it, since some services return not found rather than disclosing existence."},
+{sig:"Request timed out with no response", first:"Network path and any local proxy",
+ mean:"A timeout is a reachability signature rather than a permission one. Check security rules, private endpoint resolution, and any proxy on the host that may be intercepting traffic to internal addresses."},
+{sig:"Rate limited or throttled", first:"Consumption against the provisioned limit, by partition where applicable",
+ mean:"The service is protecting itself at the limit you purchased. Look at distribution as well as total, because an uneven hot key can exhaust one partition while the aggregate looks healthy."},
+{sig:"Conflict on a write", first:"Concurrency and leases on the target",
+ mean:"The target is in a state incompatible with the request. Usually another writer holds a lease or is creating the same resource simultaneously. Failures clustering under load rather than spread evenly is the confirming pattern."},
+{sig:"Quota or limit exceeded on creation", first:"Per-region, per-family usage against quota",
+ mean:"Limits are enforced by region and by family rather than per subscription overall. Deallocated resources still count against some allocation quotas, which surprises people regularly."},
+{sig:"Service briefly unavailable, then recovers", first:"Service health and maintenance history for the window",
+ mean:"Transient conditions are normal in a managed platform and are expected to be handled by retry with backoff. Self-recovery without intervention is the signature that distinguishes this from a configuration fault."},
+{sig:"Crash loop or repeated restart", first:"Logs from the previous instance, and the exit code",
+ mean:"The platform is working and the workload is exiting. Missing configuration, an unreachable startup dependency, a probe that fires too early, or termination for exceeding a memory limit account for most cases."},
+{sig:"All health probes failing at once", first:"Probe path, port, and protocol against what the app serves",
+ mean:"Every backend failing simultaneously points at the probe configuration rather than at the instances, particularly when the application answers correctly on a direct connection."},
+{sig:"Name will not resolve, address works", first:"Private DNS zone linkage and custom DNS forwarding",
+ mean:"The network path exists and only resolution is broken. Check whether the private DNS zone is linked to the network and whether custom DNS servers forward to the platform resolver."},
+{sig:"Deployment failed, named resource looks unrelated", first:"The earliest failed operation, not the summary",
+ mean:"Summaries report the last failure. The first failed operation is the real one, and an undeclared dependency causing out-of-order creation is the usual underlying cause."},
+{sig:"Works locally, fails when deployed", first:"Which credential each side uses, then the network path",
+ mean:"The two variables that differ between a workstation and a deployed workload are almost always identity and network origin. Establish which of the two changed before looking at anything in the code."}
+];
+
+/* ================================================================ */
+(function(){
+  "use strict";
+  var KEY="rm_azdrills_v1";
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function put(v){ try{ localStorage.setItem(KEY, JSON.stringify(v)); }catch(e){} }
+  function get(){ try{ var r=localStorage.getItem(KEY); return r?JSON.parse(r):{}; }catch(e){ return {}; } }
+  function flash(id,m){ var el=$(id); if(!el) return; el.textContent=m; setTimeout(function(){el.textContent="";},2600); }
+  function drillById(id){ for(var i=0;i<AZ.drills.length;i++){ if(AZ.drills[i].id===id) return AZ.drills[i]; } return null; }
+
+  var P = get();          /* id -> {first:bool, picked:int} */
+  var fSvc = "All";
+  var open = null;
+
+  /* ---------- grid ---------- */
+  function renderSvcBtns(){
+    $("svcBtns").innerHTML='<button class="pf-btn active" data-svc="All">All</button>'+
+      AZ.services.map(function(s){ return '<button class="pf-btn" data-svc="'+esc(s)+'">'+esc(s)+"</button>"; }).join("");
+    $("svcBtns").querySelectorAll("[data-svc]").forEach(function(b){
+      b.addEventListener("click", function(){
+        $("svcBtns").querySelectorAll(".pf-btn").forEach(function(x){x.classList.remove("active");});
+        b.classList.add("active"); fSvc=b.getAttribute("data-svc"); renderGrid();
+      });
+    });
+  }
+
+  function renderGrid(){
+    var q=($("drFind").value||"").toLowerCase();
+    var list=AZ.drills.filter(function(d){
+      if(fSvc!=="All" && d.svc!==fSvc) return false;
+      if(q && (d.t+" "+d.sym+" "+d.svc+" "+d.ctx).toLowerCase().indexOf(q)<0) return false;
+      return true;
+    });
+    $("drGrid").innerHTML = list.length ? list.map(function(d){
+      var st=P[d.id];
+      var mark = st ? (st.first ? "solved first try" : "attempted") : "not attempted";
+      return '<div class="dr-tile'+(st?" done":"")+'" data-open="'+esc(d.id)+'">'+
+        '<div class="svc">'+esc(d.svc)+"</div>"+
+        '<div class="ttl">'+esc(d.t)+"</div>"+
+        '<div class="tiny muted">'+esc(d.diff)+" . "+mark+"</div></div>";
+    }).join("") : '<div class="trend-empty"><div class="te-msg">No drill matches that filter.</div></div>';
+    $("drCount").innerHTML="<b>Showing:</b><span class='muted'> "+list.length+" of "+AZ.drills.length+"</span>";
+    $("drGrid").querySelectorAll("[data-open]").forEach(function(t){
+      t.addEventListener("click", function(){ openDrill(t.getAttribute("data-open")); });
+    });
+  }
+
+  /* ---------- drill ---------- */
+  function openDrill(id){
+    open=id;
+    var d=drillById(id);
+    var letters=["A","B","C","D"];
+    var opts=d.opts.map(function(o,i){
+      return '<div class="dr-opt" data-pick="'+i+'"><div class="ltr">'+letters[i]+"</div><div>"+esc(o)+"</div></div>";
+    }).join("");
+    $("drOpen").innerHTML='<div class="dr-card">'+
+      '<div class="row" style="justify-content:space-between;align-items:flex-start;margin-bottom:12px">'+
+      "<div><div class='svc' style='font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)'>"+
+      esc(d.svc)+" . "+esc(d.diff)+"</div><h3 style='font-size:19px;margin-top:5px'>"+esc(d.t)+"</h3></div>"+
+      '<button class="btn" id="drClose" type="button" style="padding:5px 11px;font-size:12px">Close</button></div>'+
+      '<div class="dr-sym"><strong>Symptom.</strong> '+esc(d.sym)+"</div>"+
+      '<div class="dr-ctx"><strong>Context.</strong> '+esc(d.ctx)+"</div>"+
+      '<div style="font-weight:700;font-size:14px;margin-bottom:10px">What is the most likely cause?</div>'+
+      '<div id="drOpts">'+opts+"</div>"+
+      '<div id="drResult"></div></div>';
+    $("drClose").addEventListener("click", function(){ open=null; $("drOpen").innerHTML=""; });
+    $("drOpen").querySelectorAll("[data-pick]").forEach(function(o){
+      o.addEventListener("click", function(){ answer(id, parseInt(o.getAttribute("data-pick"),10)); });
+    });
+    $("drOpen").scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+
+  function answer(id, picked){
+    var d=drillById(id);
+    var ok = picked===d.ans;
+    if(!P[id]) P[id]={ first:ok, picked:picked };
+    put(P);
+
+    $("drOpen").querySelectorAll("[data-pick]").forEach(function(o){
+      var i=parseInt(o.getAttribute("data-pick"),10);
+      o.classList.add("locked");
+      if(i===d.ans) o.classList.add("ok");
+      else if(i===picked) o.classList.add("no");
+    });
+
+    var steps=d.steps.map(function(s,i){
+      return '<div class="dr-step"><div class="n">'+(i+1)+"</div><div>"+esc(s)+"</div></div>";
+    }).join("");
+
+    $("drResult").innerHTML='<div class="quiz-explain show" style="margin-top:16px">'+
+      "<strong>"+(ok?"Correct.":"Not quite.")+"</strong> "+esc(d.why)+"</div>"+
+      '<div style="font-weight:700;font-size:14px;margin:18px 0 6px">Diagnostic order</div>'+steps+
+      '<div class="ri-warnbox" style="margin-top:16px"><strong>Preventing it.</strong> '+esc(d.prevent)+"</div>"+
+      '<div class="row" style="gap:10px;margin-top:16px">'+
+      '<button class="btn primary" id="drNext" type="button">Next drill</button>'+
+      '<button class="btn" id="drDone" type="button">Back to the list</button></div>';
+
+    $("drNext").addEventListener("click", function(){
+      var pool=AZ.drills.filter(function(x){ return !P[x.id] && (fSvc==="All" || x.svc===fSvc); });
+      if(!pool.length) pool=AZ.drills.filter(function(x){ return x.id!==id; });
+      openDrill(pool[Math.floor(Math.random()*pool.length)].id);
+    });
+    $("drDone").addEventListener("click", function(){ open=null; $("drOpen").innerHTML=""; });
+
+    renderGrid(); renderProgress();
+  }
+
+  /* ---------- static views ---------- */
+  function renderMethod(){
+    $("methodList").innerHTML='<div class="an-card full">'+ AZ.method.map(function(m,i){
+      return '<div class="lit-row"><div class="lbl">Step '+(i+1)+"</div><div><strong>"+esc(m.t)+
+        '</strong><div style="margin-top:6px;color:var(--muted)">'+esc(m.body)+"</div></div></div>";
+    }).join("")+"</div>";
+  }
+
+  function renderErrors(){
+    function draw(){
+      var q=($("errFind").value||"").toLowerCase();
+      var list=AZ.errors.filter(function(e){
+        return !q || (e.sig+" "+e.first+" "+e.mean).toLowerCase().indexOf(q)>=0;
+      });
+      $("errList").innerHTML = list.length ? '<div class="an-card full">'+ list.map(function(e){
+        return '<div class="lit-row"><div class="lbl">'+esc(e.sig)+"</div><div>"+
+          '<div class="dr-code">First check: '+esc(e.first)+"</div>"+
+          '<div style="margin-top:8px;color:var(--muted);font-size:13.5px;line-height:1.75">'+esc(e.mean)+"</div></div></div>";
+      }).join("")+"</div>" : '<div class="trend-empty"><div class="te-msg">Nothing matches that search.</div></div>';
+      $("errCount").innerHTML="<b>Showing:</b><span class='muted'> "+list.length+" of "+AZ.errors.length+"</span>";
+    }
+    $("errFind").addEventListener("input", draw);
+    draw();
+  }
+
+  /* ---------- progress ---------- */
+  function renderProgress(){
+    var ids=Object.keys(P);
+    var right=ids.filter(function(i){ return P[i].first; }).length;
+    var areas={}; ids.forEach(function(i){ var d=drillById(i); if(d) areas[d.svc]=true; });
+    var rate = ids.length ? Math.round(right/ids.length*100) : 0;
+
+    $("pgDone").textContent=ids.length;
+    $("pgTotal").textContent=AZ.drills.length;
+    $("pgRight").textContent=right;
+    $("pgRate").textContent = ids.length ? rate+"%" : "-";
+    $("pgAreas").textContent=Object.keys(areas).length;
+    var col = rate>=75?"#34d399":(rate>=50?"#fbbf24":"#f87171");
+    $("pgBar").style.width=(ids.length?Math.round(ids.length/AZ.drills.length*100):0)+"%";
+    $("pgBar").style.background = ids.length?col:"#94a3b8";
+    $("pgRead").textContent = ids.length
+      ? "Attempted "+ids.length+" of "+AZ.drills.length+" drills across "+Object.keys(areas).length+
+        " areas, solving "+right+" on the first attempt. The hit rate matters less than whether you can now state the diagnostic order without looking."
+      : "Work a drill and your progress appears here.";
+
+    var max=1;
+    AZ.services.forEach(function(s){
+      var n=AZ.drills.filter(function(d){ return d.svc===s; }).length;
+      if(n>max) max=n;
+    });
+    $("pgBars").innerHTML = AZ.services.map(function(s){
+      var all=AZ.drills.filter(function(d){ return d.svc===s; });
+      var att=all.filter(function(d){ return P[d.id]; });
+      var ok=att.filter(function(d){ return P[d.id].first; }).length;
+      var pct = att.length ? Math.round(ok/att.length*100) : 0;
+      var c = !att.length ? "#475569" : (pct>=75?"#34d399":(pct>=50?"#fbbf24":"#f87171"));
+      return '<div class="sb-row"><div class="sb-label">'+esc(s)+"</div>"+
+        '<div class="sb-track"><div class="sb-fill" style="width:'+(att.length?Math.max(pct,10):6)+'%;background:'+c+'">'+
+        (att.length?pct+"%":"")+"</div></div>"+
+        '<div class="sb-val">'+(att.length? ok+"/"+att.length : "-")+"</div></div>";
+    }).join("");
+
+    var wrong=ids.filter(function(i){ return !P[i].first; }).map(drillById).filter(Boolean);
+    $("pgWrong").innerHTML = wrong.length ? wrong.map(function(d){
+      return '<div class="lit-row"><div class="lbl">'+esc(d.svc)+"</div><div><strong>"+esc(d.t)+"</strong>"+
+        '<div style="margin-top:5px;color:var(--muted);font-size:13.5px;line-height:1.7">'+esc(d.why)+"</div></div></div>";
+    }).join("") : '<div class="tiny muted">Nothing missed yet. Attempt more drills and anything you get wrong on the first try collects here with its explanation.</div>';
+  }
+
+  /* ---------- tabs ---------- */
+  function switchTab(name){
+    document.querySelectorAll(".tab-btn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-tab")===name);
+    });
+    var map={drills:"viewDrills",method:"viewMethod",errors:"viewErrors",progress:"viewProgress"};
+    document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+    var el=$(map[name]); if(el) el.classList.add("active");
+    if(name==="progress") renderProgress();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    document.querySelector(".tab-nav").addEventListener("click", function(e){
+      var b=e.target.closest(".tab-btn"); if(!b) return;
+      switchTab(b.getAttribute("data-tab"));
+    });
+    $("drFind").addEventListener("input", renderGrid);
+    $("drReset").addEventListener("click", function(){
+      if(!confirm("Reset every drill attempt?")) return;
+      P={}; put(P); renderGrid(); renderProgress(); flash("drMsg","Progress cleared.");
+    });
+    $("pgWipe").addEventListener("click", function(){
+      if(!confirm("This will erase all your drill progress. Continue?")) return;
+      P={}; put(P); renderGrid(); renderProgress();
+    });
+    renderSvcBtns();
+    renderGrid();
+    renderMethod();
+    renderErrors();
+    renderProgress();
+  });
+})();
+</script>
+
+</body>
+</html>
