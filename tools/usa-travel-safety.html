@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the USA Travel Safety companion.</p><a href="https://reportmedic.org/tools/usa-travel-safety.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="Safety briefings for all 63 national parks and major US destinations, a travel insurance comparison framework, and checklists built from where you are going."/>
+<title>USA Travel Safety - Parks, Hazards and Checklists - ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+/* -- Animated Background -- */
+.bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12;animation:meshDrift 20s ease-in-out infinite alternate;}
+.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);top:-15%;right:-10%;}
+.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#a78bfa,#6ea8ff);bottom:-10%;left:-5%;animation-delay:-7s;animation-duration:25s;}
+.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#7cf7d4,#f59e0b);top:50%;left:40%;animation-delay:-14s;animation-duration:28s;}
+@keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg) scale(1);}100%{transform:translate(40px,-30px) rotate(15deg) scale(1.1);}}
+
+/* -- Tabs Nav -- */
+.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:24px;overflow-x:auto;}
+.tab-btn{flex:1;min-width:fit-content;padding:12px 20px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;letter-spacing:.01em;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(110,168,255,.18),rgba(124,247,212,.12));color:var(--text);box-shadow:0 2px 16px rgba(110,168,255,.12),inset 0 1px 0 rgba(255,255,255,.06);}
+
+/* -- Views -- */
+.view{display:none;}
+.view.active{display:block;}
+
+/* -- Hero -- */
+.daily-hero{text-align:center;padding:32px 0 16px;}
+.daily-hero h1{font-size:clamp(26px,4.5vw,38px);font-weight:700;letter-spacing:-.02em;line-height:1.15;}
+.daily-hero h1 .grad{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:10px;line-height:1.5;letter-spacing:.01em;}
+
+/* -- Streak Banner -- */
+.streak-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 26px;flex-wrap:wrap;}
+.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);backdrop-filter:blur(8px);font-size:13px;font-weight:600;transition:transform .15s;}
+.streak-pill:hover{transform:translateY(-1px);}
+.streak-pill .fire{font-size:20px;}
+.streak-pill .sval{font-size:18px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-pill .sval.green{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-dots{display:flex;gap:5px;}
+.streak-dots .dot{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;color:var(--muted);}
+.streak-dots .dot.done{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(124,247,212,.1));border-color:rgba(16,185,129,.25);color:#34d399;}
+.streak-dots .dot.today{border-color:rgba(110,168,255,.45);box-shadow:0 0 14px rgba(110,168,255,.15);}
+
+/* -- Phase Filter -- */
+.phase-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.phase-filter .pf-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px;}
+.pf-btn{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;}
+.pf-btn:hover{border-color:rgba(255,255,255,.22);color:var(--text);}
+.pf-btn.active{background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.35);color:#6ea8ff;}
+
+/* -- Quiz Container -- */
+.quiz-panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:26px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
+.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
+.quiz-progress{display:flex;gap:4px;margin-bottom:18px;}
+.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.06);transition:background .3s;}
+.quiz-progress .pip.done{background:linear-gradient(90deg,#10b981,#7cf7d4);}
+.quiz-progress .pip.wrong{background:#ef4444;}
+.quiz-progress .pip.current{background:rgba(110,168,255,.4);animation:pipPulse 1.5s ease infinite;}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.1);color:#6ea8ff;border:1px solid rgba(110,168,255,.15);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);color:var(--muted);}
+.quiz-meta .qphase{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid rgba(124,247,212,.2);background:rgba(124,247,212,.06);color:#7cf7d4;}
+.quiz-meta .qdiff{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.quiz-meta .qdiff.easy{border:1px solid rgba(52,211,153,.2);background:rgba(52,211,153,.06);color:#34d399;}
+.quiz-meta .qdiff.medium{border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.06);color:#fbbf24;}
+.quiz-meta .qdiff.hard{border:1px solid rgba(248,113,113,.2);background:rgba(248,113,113,.06);color:#f87171;}
+.quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.quiz-meta .timer svg{color:rgba(110,168,255,.6);}
+
+.quiz-question{font-size:16.5px;line-height:1.7;font-weight:600;margin-bottom:18px;letter-spacing:.005em;}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s;}
+.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.06);}
+.qo.selected .letter{border-color:#6ea8ff;background:#6ea8ff;color:#061021;}
+.qo.correct{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);}
+.qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
+.qo.disabled{pointer-events:none;opacity:.65;}
+.qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
+
+.quiz-explain{margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(124,247,212,.035);border:1px solid rgba(124,247,212,.1);font-size:13.5px;line-height:1.7;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;letter-spacing:.01em;}
+.qa-btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;}
+.qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+.qa-btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);}
+
+/* -- Results Card -- */
+.result-card{text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;}
+.result-card .big-score{font-size:64px;font-weight:700;line-height:1;margin-bottom:8px;}
+.result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
+.result-mini .rm{padding:16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.result-mini .rm .rv{font-size:20px;font-weight:700;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* -- Subject Practice Grid -- */
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.subj-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.subj-card .sc-icon{font-size:30px;margin-bottom:10px;}
+.subj-card .sc-name{font-size:14.5px;font-weight:700;margin-bottom:4px;letter-spacing:.01em;}
+.subj-card .sc-count{font-size:12px;color:var(--muted);}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .5s ease;}
+.ri-gauge{height:12px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin:12px 0 6px;}
+.ri-gauge i{display:block;height:100%;transition:width .4s ease;}
+.us-card{border:1px solid var(--border);border-radius:15px;background:rgba(255,255,255,.03);padding:15px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.us-card:hover{border-color:rgba(255,255,255,.22);transform:translateY(-2px);}
+.us-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--brand);}
+.us-card.sel::before{background:#34d399;}
+.us-nm{font-size:15px;font-weight:700;line-height:1.4;}
+.us-st{font-size:11.5px;color:var(--muted);margin-top:4px;}
+.us-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:11px;}
+.us-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.us-row{display:grid;grid-template-columns:155px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14.5px;line-height:1.8;}
+.us-row:last-child{border-bottom:0;}
+.us-row .lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;padding-top:3px;}
+@media(max-width:660px){.us-row{grid-template-columns:1fr;gap:5px;}}
+.us-hz{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;margin:3px 5px 0 0;border:1px solid;}
+.us-hz.heat{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.32);color:#f87171;}
+.us-hz.cold{background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.32);color:#6ea8ff;}
+.us-hz.altitude{background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.32);color:#a78bfa;}
+.us-hz.water{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.32);color:#38bdf8;}
+.us-hz.bears{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.32);color:#fbbf24;}
+.us-hz.wildlife{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.32);color:#34d399;}
+.us-hz.falls{background:rgba(244,114,182,.12);border-color:rgba(244,114,182,.32);color:#f472b6;}
+.us-hz.remote{background:rgba(148,163,184,.14);border-color:rgba(148,163,184,.34);color:#cbd5e1;}
+.us-hz.flood{background:rgba(14,165,233,.12);border-color:rgba(14,165,233,.32);color:#0ea5e9;}
+.us-hz.weather{background:rgba(217,119,6,.14);border-color:rgba(217,119,6,.34);color:#fbbf24;}
+.us-hz.marine{background:rgba(45,212,191,.12);border-color:rgba(45,212,191,.32);color:#2dd4bf;}
+.us-hz.driving{background:rgba(139,92,246,.12);border-color:rgba(139,92,246,.32);color:#8b5cf6;}
+.us-hz.crowds{background:rgba(255,255,255,.06);border-color:var(--border);color:var(--muted);}
+.us-hz.volcanic{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.32);color:#ef4444;}
+.us-hz.cave{background:rgba(120,113,108,.2);border-color:rgba(168,162,158,.35);color:#d6d3d1;}
+.us-hz.altitudeSick{background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.32);color:#a78bfa;}
+.us-red{border-left:3px solid #f87171;background:rgba(248,113,113,.08);border-radius:0 12px 12px 0;padding:13px 15px;font-size:13.5px;line-height:1.8;margin-top:10px;}
+.us-note{border-left:3px solid var(--brand);background:rgba(255,255,255,.04);border-radius:0 12px 12px 0;padding:13px 15px;font-size:13.5px;line-height:1.8;}
+.us-code{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:15px;overflow-x:auto;white-space:pre;color:#a7c7f0;}
+.us-chk{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-top:1px solid rgba(255,255,255,.07);}
+.us-chk:first-of-type{border-top:0;}
+.us-chk input{width:18px;height:18px;margin-top:3px;accent-color:var(--brand);flex:0 0 auto;}
+.us-chk label{font-size:14.5px;line-height:1.6;cursor:pointer;}
+.us-chk .why{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.7;}
+.us-chk.on label{color:var(--muted);}
+.ri-cell{padding:12px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.03);text-align:center;}
+.ri-cell .cv{font-size:19px;font-weight:800;}
+.ri-cell .cl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:3px;}
+.bn-text{line-height:1.9;}
+.ri-warnbox{border-left:3px solid #ffb35c;background:rgba(255,179,92,.07);border-radius:0 12px 12px 0;padding:14px 16px;font-size:13.5px;line-height:1.75;}
+.lit-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.lit-detail h3{font-size:20px;margin-bottom:4px;}
+.lit-detail .meta{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+.lit-detail p{line-height:1.75;font-size:14.5px;margin-bottom:12px;}
+.lit-row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.lit-row:last-child{border-bottom:0;}
+.lit-row .lbl{font-weight:700;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px;}
+@media(max-width:640px){.lit-row{grid-template-columns:1fr;gap:4px;}}
+.cmp-grid{display:grid;grid-template-columns:170px 1fr 1fr;gap:10px;align-items:start;}
+.cmp-grid > div{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.cmp-grid .cmp-lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;}
+.cmp-grid .cmp-head{font-weight:700;font-size:15px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.14);}
+@media(max-width:760px){.cmp-grid{grid-template-columns:1fr;}.cmp-grid .cmp-lbl{padding-bottom:0;border-bottom:0;}}
+.theme-chip{display:inline-block;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:rgba(110,168,255,.10);border:1px solid rgba(110,168,255,.20);color:#6ea8ff;margin:3px 5px 3px 0;cursor:pointer;}
+.theme-chip.on{background:var(--brand);border-color:var(--brand);color:#08111f;}
+
+/* -- Analytics Dashboard -- */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
+.an-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.an-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);}
+.an-card.full{grid-column:1/-1;}
+.an-card h3{font-size:12.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* -- Overview Strip -- */
+.overview-strip{display:flex;align-items:center;gap:24px;}
+.ov-ring{position:relative;flex-shrink:0;width:100px;height:100px;}
+.ov-ring canvas{width:100px;height:100px;}
+.ov-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ov-ring-label .rv{font-size:22px;font-weight:700;line-height:1;}
+.ov-ring-label .rl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ov-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ov-stat{padding:12px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;}
+.ov-stat .os-val{font-size:18px;font-weight:700;line-height:1.2;font-family:'JetBrains Mono',monospace;}
+.ov-stat .os-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+@media(max-width:600px){
+  .overview-strip{flex-direction:column;gap:16px;}
+  .ov-stats{grid-template-columns:repeat(3,1fr);width:100%;}
+}
+
+/* -- Subject accuracy bars -- */
+.sub-bars{display:flex;flex-direction:column;gap:10px;}
+.sb-row{display:flex;align-items:center;gap:10px;}
+.sb-label{width:105px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:46px;text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+/* -- Trend Chart -- */
+.trend-wrap{position:relative;min-height:220px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.trend-wrap::-webkit-scrollbar{height:4px;}.trend-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--muted);text-align:center;}
+.trend-empty .te-icon{font-size:40px;opacity:.4;}
+.trend-empty .te-msg{font-size:13px;line-height:1.5;max-width:320px;}
+.trend-bar-chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding:10px 0;min-width:min-content;}
+.trend-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:48px;width:48px;flex-shrink:0;}
+.trend-bar-outer{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative;}
+.trend-bar{width:100%;border-radius:6px 6px 2px 2px;transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;min-height:4px;}
+.trend-bar:hover{filter:brightness(1.2);}
+.trend-bar .tb-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.trend-bar:hover .tb-val{opacity:1;}
+.trend-label{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.trend-mode-label.daily{background:rgba(110,168,255,.12);color:#6ea8ff;}
+.trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
+
+/* -- Mastery Dashboard -- */
+.mastery-wrap{margin-top:8px;}
+.mastery-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.m-stat{padding:12px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);}
+.m-stat .ms-val{font-size:22px;font-weight:800;margin-bottom:2px;}
+.m-stat .ms-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+.m-stat.green .ms-val{color:#34d399;} .m-stat.yellow .ms-val{color:#fbbf24;} .m-stat.red .ms-val{color:#f87171;} .m-stat.blue .ms-val{color:#6ea8ff;} .m-stat.purple .ms-val{color:#a78bfa;}
+.coverage-ring{display:flex;align-items:center;gap:16px;padding:14px;border-radius:14px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);margin-bottom:14px;overflow:hidden;}
+.cov-canvas{width:90px;height:90px;flex-shrink:0;}
+.cov-info{flex:1;min-width:0;overflow:hidden;}
+.cov-title{font-size:13px;font-weight:700;color:var(--fg);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cov-sub{font-size:11px;color:var(--muted);line-height:1.6;word-break:break-word;}
+.subj-mastery{margin-top:14px;}
+.sm-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+.sm-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.sm-icon{font-size:14px;width:20px;text-align:center;}
+.sm-name{width:70px;font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-bar{flex:1;height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative;}
+.sm-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.sm-pct{width:34px;text-align:right;font-weight:700;font-size:11px;}
+
+/* -- Passage block for reading items -- */
+.quiz-passage{padding:14px 16px;border-radius:14px;background:rgba(110,168,255,.04);border:1px solid rgba(110,168,255,.10);font-size:14.5px;line-height:1.75;color:var(--muted);margin-bottom:14px;}
+.quiz-passage em{color:var(--text);font-style:italic;}
+
+/* -- Difficulty chips -- */
+.diff-dist{display:flex;gap:10px;margin-top:6px;}
+.diff-chip{flex:1;padding:14px 10px;border-radius:14px;text-align:center;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);}
+.diff-chip .dc-val{font-size:20px;font-weight:700;margin-bottom:2px;}
+.diff-chip .dc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+.diff-chip.easy .dc-val{color:#34d399;}
+.diff-chip.medium .dc-val{color:#fbbf24;}
+.diff-chip.hard .dc-val{color:#f87171;}
+
+/* -- Session History -- */
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding-right:4px;}
+.hist-list::-webkit-scrollbar{width:4px;}
+.hist-list::-webkit-scrollbar-track{background:transparent;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:12px;transition:background .1s;}
+.hist-row:hover{background:rgba(255,255,255,.04);}
+.hist-date{font-weight:600;min-width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hist-mode{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.hist-mode.daily{background:rgba(110,168,255,.1);color:#6ea8ff;}
+.hist-mode.practice{background:rgba(139,92,246,.1);color:#a78bfa;}
+.hist-score{margin-left:auto;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.hist-detail{color:var(--muted);font-size:11px;}
+
+/* -- Reset Button -- */
+.reset-zone{margin-top:20px;text-align:center;}
+.reset-btn{padding:10px 20px;border-radius:12px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.reset-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);}
+
+/* -- Tab label responsive -- */
+.tab-short{display:none;}
+@media(max-width:540px){.tab-full{display:none;}.tab-short{display:inline;}}
+@media(max-width:640px){
+  .quiz-panel{padding:16px;}
+  .streak-bar{gap:10px;}
+  .subj-grid{grid-template-columns:1fr 1fr;}
+  .diff-dist{flex-wrap:wrap;}
+  .diff-chip{min-width:calc(50% - 5px);}
+  .mastery-stats{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .coverage-ring{flex-direction:column;text-align:center;}
+  .sm-name{width:55px;font-size:10px;}
+  .tab-nav{overflow-x:hidden;}
+  .hide-mobile{display:none!important;}
+}
+
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .5s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+
+.btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;padding:10px 20px;border-radius:10px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:.01em;transition:all .18s;}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-mesh"><div class="strand"></div><div class="strand"></div><div class="strand"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn hide-mobile" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+  <a class="btn primary" href="https://vaultbook.net/tools/usa-trip-planner.html">Trip Planner</a>
+</div>
+</header>
+
+<div class="wrap">
+  <!-- Tab Nav -->
+  <nav class="tab-nav anim-up">
+    <button class="tab-btn active" data-tab="places"><span class="tab-full">Destinations</span><span class="tab-short">Places</span></button>
+    <button class="tab-btn" data-tab="hazards"><span class="tab-full">Hazards</span><span class="tab-short">Hazards</span></button>
+    <button class="tab-btn" data-tab="insurance"><span class="tab-full">Insurance Comparison</span><span class="tab-short">Insurance</span></button>
+    <button class="tab-btn" data-tab="checklist"><span class="tab-full">My Checklist</span><span class="tab-short">Checklist</span></button>
+    <button class="tab-btn" data-tab="extend"><span class="tab-full">Extending This</span><span class="tab-short">Extend</span></button>
+  </nav>
+
+  <!-- VIEW: PLACES -->
+  <div class="view active" id="viewPlaces">
+    <div class="daily-hero anim-up d1">
+      <h1>USA Travel <span class="grad">Safety</span></h1>
+      <p class="sub">All 63 national parks and the major destinations, each with the hazards that actually send people to a ranger station. Add a place to your trip and its checklist items appear automatically.</p>
+    </div>
+
+    <div class="ri-warnbox anim-up d2" style="margin-bottom:18px">
+      This is general preparation guidance, not medical advice and not an official park source. Conditions, closures, permit rules and fire restrictions change constantly, so check the official park service page and current alerts before you travel. In an emergency in the United States dial 911, and in a park tell the dispatcher which park and which trail or road you are on.
+    </div>
+
+    <div class="phase-filter anim-up d2">
+      <span class="pf-label">Type:</span>
+      <span id="typeBtns"></span>
+    </div>
+    <div class="phase-filter anim-up d2" style="margin-top:-6px">
+      <span class="pf-label">Region:</span>
+      <span id="regionBtns"></span>
+    </div>
+    <div class="phase-filter anim-up d2" style="margin-top:-6px">
+      <span class="pf-label">Hazard:</span>
+      <span id="hazBtns"></span>
+    </div>
+
+    <div class="row" style="gap:10px;margin:14px 0;flex-wrap:wrap">
+      <input class="input" id="usFind" type="search" placeholder="Search places, states and hazards" style="max-width:290px" />
+      <span class="pill tiny" id="usCount"></span>
+      <span class="pill tiny" id="usTrip"></span>
+      <button class="btn" id="usReset" type="button">Reset filters</button>
+    </div>
+
+    <div class="us-grid anim-up d3" id="usGrid"></div>
+    <div id="usDetail"></div>
+  </div>
+
+  <!-- VIEW: HAZARDS -->
+  <div class="view" id="viewHazards">
+    <div class="daily-hero">
+      <h1>Hazard <span class="grad">Briefings</span></h1>
+      <p class="sub">Fourteen hazards, each with what actually goes wrong, the early signs, and the decision that prevents it. Read the ones tagged on your destinations.</p>
+    </div>
+    <div id="hazList"></div>
+  </div>
+
+  <!-- VIEW: INSURANCE -->
+  <div class="view" id="viewInsurance">
+    <div class="daily-hero">
+      <h1>Insurance <span class="grad">Comparison</span></h1>
+      <p class="sub">Enter the policies you are actually quoted and compare them on the fourteen points that decide whether a claim pays. Premium is the least informative number on a policy.</p>
+    </div>
+
+    <div class="ri-warnbox" style="margin-bottom:16px">
+      No products, prices or providers are listed here and none are recommended. You enter your own quotes and this compares them against the criteria that matter. Policy terms vary by insurer, by country of residence and by year, so the policy wording is always the authority and this tool is not.
+    </div>
+
+    <div class="an-card full" style="margin-bottom:16px">
+      <div class="row" style="gap:10px;flex-wrap:wrap">
+        <input class="input" id="insName" type="text" placeholder="Policy or insurer name" style="flex:1;min-width:200px" />
+        <input class="input" id="insPrice" type="text" placeholder="Premium" style="max-width:150px" />
+        <button class="btn primary" id="insAdd" type="button">Add policy</button>
+        <button class="btn" id="insExport" type="button">Export</button>
+        <button class="btn" id="insClear" type="button">Clear</button>
+        <span class="tiny muted" id="insMsg"></span>
+      </div>
+    </div>
+
+    <div id="insTable"></div>
+    <div id="insPoints" style="margin-top:20px"></div>
+  </div>
+
+  <!-- VIEW: CHECKLIST -->
+  <div class="view" id="viewChecklist">
+    <div class="daily-hero">
+      <h1>My <span class="grad">Checklist</span></h1>
+      <p class="sub">Built from the places on your trip. Every hazard tagged on a destination adds its own items, so a bear country and altitude trip produces a different list from a desert one.</p>
+    </div>
+
+    <div class="analytics-grid" style="margin-bottom:16px">
+      <div class="an-card full">
+        <div class="ov-stats" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
+          <div class="ri-cell"><div class="cv" id="ckPlaces">0</div><div class="cl">Places</div></div>
+          <div class="ri-cell"><div class="cv" id="ckItems">0</div><div class="cl">Items</div></div>
+          <div class="ri-cell"><div class="cv" id="ckDone">0</div><div class="cl">Done</div></div>
+          <div class="ri-cell"><div class="cv" id="ckPct">0%</div><div class="cl">Ready</div></div>
+          <div class="ri-cell"><div class="cv" id="ckHaz">0</div><div class="cl">Hazards</div></div>
+        </div>
+        <div class="ri-gauge"><i id="ckBar" style="width:0%;background:#94a3b8"></i></div>
+        <div class="tiny muted" id="ckRead">Add a place on the Destinations tab and your checklist builds itself.</div>
+      </div>
+    </div>
+
+    <div class="row" style="gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn" id="ckReset" type="button">Untick everything</button>
+      <button class="btn" id="ckExport" type="button">Export checklist</button>
+      <button class="btn" id="ckWipe" type="button">Clear trip</button>
+      <span class="tiny muted" id="ckMsg"></span>
+    </div>
+
+    <div id="ckList"></div>
+  </div>
+
+  <!-- VIEW: EXTEND -->
+  <div class="view" id="viewExtend">
+    <div class="daily-hero">
+      <h1>Extending <span class="grad">This</span></h1>
+      <p class="sub">Everything renders from four arrays. Adding a destination, a hazard, a checklist item or an insurance criterion is appending one object.</p>
+    </div>
+    <div id="extendList"></div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">USA Travel Safety - 63 national parks, hazard briefings and checklists</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. Copyright ReportMedic.</div>
+</div>
+</footer>
+
+<script>
+/* ============================================================================
+   USA TRAVEL SAFETY - DATA
+   ----------------------------------------------------------------------------
+   US.places    all 63 national parks plus major destinations
+   US.hazards   one briefing per hazard, keyed to the tags used on places
+   US.checks    checklist items, each attached to a hazard tag
+   US.insurance the criteria a policy is compared on
+   Schemas are documented on the Extending This tab.
+   ========================================================================== */
+
+var US = {};
+
+US.regions = ["Southwest","Rockies","Pacific","Northwest","Alaska","Midwest","Southeast","Northeast","Texas and Plains","Islands"];
+
+/* PLACE SCHEMA
+   id, name, sub (states), type (Park or Destination), region,
+   haz    array of hazard tags from US.hazards
+   season best window and why
+   risk   what actually goes wrong here, two or three sentences
+   advice the specific decision that prevents it
+   note   optional extra                                            */
+US.places = [
+{id:"acadia", name:"Acadia", sub:"Maine", type:"Park", region:"Northeast", haz:["falls","weather","water","crowds"],
+ season:"Late spring to October. Winter closes much of the loop road.",
+ risk:"Coastal granite stays slick long after rain and the iron rung trails are genuinely exposed. Most incidents are falls on wet rock and people caught out by cold Atlantic water and fast fog.",
+ advice:"Check tide tables before the sand bar to Bar Island, because people are routinely stranded by a rising tide. Treat the rung trails as scrambling rather than hiking."},
+{id:"samoa", name:"National Park of American Samoa", sub:"American Samoa", type:"Park", region:"Islands", haz:["heat","marine","remote","weather"],
+ season:"Drier from June to September.",
+ risk:"Tropical heat and humidity, strong ocean currents, and very limited medical infrastructure. Evacuation to a major hospital is a long way.",
+ advice:"Treat any reef swimming as advanced, respect village customs and Sunday observance, and carry insurance that explicitly covers medical evacuation from a remote Pacific territory."},
+{id:"arches", name:"Arches", sub:"Utah", type:"Park", region:"Southwest", haz:["heat","falls","flood","crowds"],
+ season:"April to May and September to October. Summer is dangerously hot.",
+ risk:"Summer surface temperatures are extreme and there is almost no shade. Fatal falls occur on the fins and slickrock, where the drop is often invisible until you are on the edge.",
+ advice:"Hike Devils Garden before nine in the morning in summer. Timed entry may apply in peak season, so book before travelling."},
+{id:"badlands", name:"Badlands", sub:"South Dakota", type:"Park", region:"Midwest", haz:["heat","weather","wildlife","falls"],
+ season:"Spring and autumn. Summer brings extreme heat and thunderstorms.",
+ risk:"Severe thunderstorms build fast on open prairie, the formations are crumbly and unreliable underfoot, and bison are present and dangerous.",
+ advice:"Stay a bus length from bison. Do not shelter under isolated trees in a storm and get back to a vehicle rather than a ridge."},
+{id:"bigbend", name:"Big Bend", sub:"Texas", type:"Park", region:"Texas and Plains", haz:["heat","remote","driving","wildlife"],
+ season:"November to March. Summer desert heat is severe.",
+ risk:"One of the most remote parks in the lower states. Fuel, water and mobile signal are all scarce, and the drive out to a hospital is measured in hours.",
+ advice:"Carry far more water than seems necessary, fill the tank whenever you can, and tell someone your route. Do not rely on a phone for navigation or for help."},
+{id:"biscayne", name:"Biscayne", sub:"Florida", type:"Park", region:"Southeast", haz:["marine","heat","weather","water"],
+ season:"December to April, outside hurricane season.",
+ risk:"Ninety five percent of the park is water, so nearly every hazard is a boating or diving one. Afternoon lightning is a serious and underestimated risk.",
+ advice:"Check marine forecasts rather than land forecasts, and get off the water at the first sign of a building storm."},
+{id:"blackcanyon", name:"Black Canyon of the Gunnison", sub:"Colorado", type:"Park", region:"Rockies", haz:["falls","altitude","remote"],
+ season:"Late spring to autumn. The north rim road closes in winter.",
+ risk:"Extremely steep unfenced overlooks and inner canyon routes that are unmaintained wilderness rather than trails. Falls are the dominant serious incident.",
+ advice:"Treat inner canyon descents as technical, requiring a permit and self-rescue capability. Keep children well back from every overlook."},
+{id:"bryce", name:"Bryce Canyon", sub:"Utah", type:"Park", region:"Southwest", haz:["altitude","cold","falls","crowds"],
+ season:"Year round, with snow and ice from November to March.",
+ risk:"The rim sits above eight thousand feet, which surprises visitors arriving from sea level, and the descent into the amphitheatre is easy going down and hard coming back up.",
+ advice:"Budget for the climb out rather than the walk in. Traction devices are genuinely necessary on icy rim trails in winter."},
+{id:"canyonlands", name:"Canyonlands", sub:"Utah", type:"Park", region:"Southwest", haz:["heat","remote","driving","flood","falls"],
+ season:"Spring and autumn.",
+ risk:"The districts are separated by hours of driving and the Maze is among the most remote areas in the lower states. Water is essentially absent and rescue is slow.",
+ advice:"Carry a gallon of water per person per day minimum, and a satellite communicator if you leave the paved areas. Never enter a slot on a day with rain forecast anywhere upstream."},
+{id:"capitolreef", name:"Capitol Reef", sub:"Utah", type:"Park", region:"Southwest", haz:["heat","flood","driving","remote"],
+ season:"April to June and September to October.",
+ risk:"Narrow canyons and washes flood violently from storms falling many miles away under a clear local sky. Unpaved roads become impassable within minutes.",
+ advice:"Ask a ranger about the flash flood outlook every single day you plan to be in a wash, not just when it looks like rain."},
+{id:"carlsbad", name:"Carlsbad Caverns", sub:"New Mexico", type:"Park", region:"Southwest", haz:["cave","falls","heat"],
+ season:"Year round. The cave stays cool.",
+ risk:"The natural entrance route is a long steep descent on a wet slick path, and the return by lift is not always available. Surface heat above ground is severe in summer.",
+ advice:"Take the natural entrance only if you can also manage the walk back up. Wear real shoes, since the path is genuinely slippery."},
+{id:"channel", name:"Channel Islands", sub:"California", type:"Park", region:"Pacific", haz:["marine","remote","falls","weather"],
+ season:"Spring for wildflowers, summer for calm crossings.",
+ risk:"Access is by boat only, and once the boat leaves you are on an island with no services, no shop and often no reliable signal. Crossings are frequently rough and can be cancelled.",
+ advice:"Carry everything including all water. Plan for the possibility that weather strands you an extra night."},
+{id:"congaree", name:"Congaree", sub:"South Carolina", type:"Park", region:"Southeast", haz:["water","heat","wildlife"],
+ season:"Autumn to spring. Summer brings heat and heavy mosquitoes.",
+ risk:"Floodplain trails go under water regularly and the boardwalk can be submerged. Venomous snakes are present and easily missed in leaf litter.",
+ advice:"Check the water level before travelling, watch where you place hands and feet off the boardwalk, and treat the mosquito forecast seriously."},
+{id:"craterlake", name:"Crater Lake", sub:"Oregon", type:"Park", region:"Northwest", haz:["cold","altitude","falls","weather","driving"],
+ season:"July to September for full road access. Snow lingers into summer.",
+ risk:"Snow can close the rim drive for much of the year and the caldera rim is unstable with long fatal drops. The lake is severely cold year round.",
+ advice:"Only descend to the water on the one maintained trail, and check road status before setting out, since the rim drive opens late."},
+{id:"cuyahoga", name:"Cuyahoga Valley", sub:"Ohio", type:"Park", region:"Midwest", haz:["water","weather","wildlife"],
+ season:"Year round, best from spring to autumn.",
+ risk:"The gentlest park on this list. Main issues are slippery towpath in wet weather, sudden river rises, and ticks.",
+ advice:"Check for ticks after every walk in long grass, and do not enter the river after heavy rain."},
+{id:"deathvalley", name:"Death Valley", sub:"California and Nevada", type:"Park", region:"Southwest", haz:["heat","remote","driving","flood"],
+ season:"November to March only. Summer is genuinely life threatening.",
+ risk:"The hottest reliably measured place on earth. People die here every year, usually from a short walk taken in the afternoon or a vehicle breakdown far from help.",
+ advice:"Do not hike at low elevation after ten in the morning between May and September. Carry many gallons of water in the vehicle and stay with it if it breaks down."},
+{id:"denali", name:"Denali", sub:"Alaska", type:"Park", region:"Alaska", haz:["bears","cold","remote","weather","water"],
+ season:"Late May to mid September. Everything else is winter.",
+ risk:"Grizzly country with no marked trail system in most of the park, glacial river crossings that are stronger than they look, and weather that changes without warning.",
+ advice:"Carry bear spray and know how to use it. Backcountry units require a permit and a bear resistant food container, and river crossings should be unroped and unbuckled."},
+{id:"drytortugas", name:"Dry Tortugas", sub:"Florida", type:"Park", region:"Southeast", haz:["marine","heat","remote","weather"],
+ season:"December to April.",
+ risk:"Seventy miles by boat or seaplane from Key West with no fresh water, no shop and no medical facility. Sun exposure on open water and coral is severe.",
+ advice:"Carry all water and everything else you will need. Any medical problem means waiting for a boat, so pack a proper first aid kit."},
+{id:"everglades", name:"Everglades", sub:"Florida", type:"Park", region:"Southeast", haz:["heat","wildlife","water","weather"],
+ season:"December to April. Summer means heat, storms and relentless mosquitoes.",
+ risk:"Alligators and crocodiles are genuinely present rather than a novelty, water levels change the whole landscape seasonally, and heat with humidity is punishing.",
+ advice:"Never feed or approach wildlife of any kind, keep small children and dogs well away from water edges, and treat the mosquito report as a planning input."},
+{id:"gatesarctic", name:"Gates of the Arctic", sub:"Alaska", type:"Park", region:"Alaska", haz:["remote","bears","cold","water","weather"],
+ season:"June to August, and even then conditions are severe.",
+ risk:"No roads, no trails, no facilities and no mobile signal anywhere in the park. Access is by bush plane and a weather delay can extend a trip by days.",
+ advice:"This is an expedition rather than a visit. Carry a satellite communicator, several days of contingency food, and insurance that covers remote evacuation."},
+{id:"gatewayarch", name:"Gateway Arch", sub:"Missouri", type:"Park", region:"Midwest", haz:["crowds","heat"],
+ season:"Year round.",
+ risk:"An urban park where the practical concerns are ordinary city ones plus summer heat on unshaded grounds and the confined tram to the top.",
+ advice:"Book the tram in advance, and skip it if enclosed spaces are difficult for anyone in the group."},
+{id:"glacier", name:"Glacier", sub:"Montana", type:"Park", region:"Rockies", haz:["bears","falls","cold","driving","weather","crowds"],
+ season:"July to mid September for full access to the Going to the Sun Road.",
+ risk:"Dense grizzly and black bear population, steep exposed trails with long drops, and a high alpine road with snow closures into July. Vehicle reservations may be required.",
+ advice:"Carry bear spray on every trail, hike in groups and make noise on blind corners. Check the road status and reservation requirement before you drive."},
+{id:"glacierbay", name:"Glacier Bay", sub:"Alaska", type:"Park", region:"Alaska", haz:["marine","cold","bears","remote","water"],
+ season:"May to September.",
+ risk:"Most visits are by ship. Independent travel means cold water kayaking with tidal currents, calving ice, and bears on every shoreline camp.",
+ advice:"Cold water immersion is the dominant risk for paddlers. Camp away from the tide line and store food properly."},
+{id:"grandcanyon", name:"Grand Canyon", sub:"Arizona", type:"Park", region:"Southwest", haz:["heat","falls","altitude","remote","crowds"],
+ season:"South Rim year round, North Rim May to October. Inner canyon summer is extreme.",
+ risk:"Every year people attempt to reach the river and return in a day, and it is the single most reliable way to require a rescue. Inner canyon summer temperatures far exceed those on the rim.",
+ advice:"Do not attempt rim to river and back in one day. Descending is the easy half and the climb out takes roughly twice as long in far worse heat."},
+{id:"grandteton", name:"Grand Teton", sub:"Wyoming", type:"Park", region:"Rockies", haz:["bears","altitude","cold","falls","water"],
+ season:"June to September for high trails.",
+ risk:"Grizzly and black bears throughout, sudden alpine storms, cold lakes, and a valley floor already above six thousand feet.",
+ advice:"Bear spray on every hike including short ones near the lakes. Start early and be off exposed ground before afternoon lightning."},
+{id:"greatbasin", name:"Great Basin", sub:"Nevada", type:"Park", region:"Southwest", haz:["altitude","cold","remote","cave","driving"],
+ season:"June to September for the summit road.",
+ risk:"Wheeler Peak is above thirteen thousand feet and the park is a long way from any town. Altitude sickness catches people who drove up quickly from low ground.",
+ advice:"Sleep lower than you climb, and if headache and nausea arrive, descend rather than pushing on."},
+{id:"greatsanddunes", name:"Great Sand Dunes", sub:"Colorado", type:"Park", region:"Rockies", haz:["heat","altitude","weather","falls"],
+ season:"Spring and autumn. Summer sand surface temperatures are extreme.",
+ risk:"Sand can reach far above air temperature and burns feet badly. The dunes are also the highest point around, which makes them a lightning risk.",
+ advice:"Walk the dunes early morning or evening in summer and get off them entirely at the first rumble of thunder."},
+{id:"smokies", name:"Great Smoky Mountains", sub:"Tennessee and North Carolina", type:"Park", region:"Southeast", haz:["bears","water","weather","driving","crowds"],
+ season:"Year round. Spring and autumn are busiest.",
+ risk:"The most visited national park, with a large black bear population habituated to people, fast rising creeks, and mountain roads that are icy in winter.",
+ advice:"Never leave food or scented items accessible, and do not approach a bear for a photograph. Water crossings after rain are the main cause of serious incidents."},
+{id:"guadalupe", name:"Guadalupe Mountains", sub:"Texas", type:"Park", region:"Texas and Plains", haz:["heat","weather","remote","falls"],
+ season:"Autumn and spring. Summer is very hot.",
+ risk:"Extremely high winds on the ridges, no water on the trails, and long climbs with full exposure. Services are minimal and the nearest town is far.",
+ advice:"Carry all your water since there is none on the mountain, and check the wind forecast, because gusts on the ridge routinely reach hazardous speeds."},
+{id:"haleakala", name:"Haleakala", sub:"Hawaii", type:"Park", region:"Islands", haz:["altitude","cold","falls","weather","driving"],
+ season:"Year round. Sunrise requires a reservation.",
+ risk:"The summit is above ten thousand feet, and people arrive in shorts from a beach an hour earlier. Cold, wind and altitude at sunrise catch out large numbers of visitors.",
+ advice:"Bring proper warm layers for sunrise regardless of the coastal weather. Do not drive the descent while drowsy, since it is steep and heavily switchbacked."},
+{id:"hawaiivolcanoes", name:"Hawaii Volcanoes", sub:"Hawaii", type:"Park", region:"Islands", haz:["volcanic","falls","heat","weather"],
+ season:"Year round, subject to eruption closures.",
+ risk:"Volcanic gas can reach hazardous concentrations, lava surfaces collapse, and earth cracks are frequently hidden by vegetation. Conditions change with volcanic activity.",
+ advice:"Check current conditions and closures on the day. People with respiratory or heart conditions, and pregnant travellers, should take the gas advisories seriously."},
+{id:"hotsprings", name:"Hot Springs", sub:"Arkansas", type:"Park", region:"Southeast", haz:["heat","crowds"],
+ season:"Year round.",
+ risk:"An urban park with a thermal water source that is genuinely hot enough to scald at the springs themselves.",
+ advice:"Do not touch the open spring water, and treat the hot air in bathhouses as a real consideration for anyone with a cardiac condition."},
+{id:"indianadunes", name:"Indiana Dunes", sub:"Indiana", type:"Park", region:"Midwest", haz:["water","heat","falls"],
+ season:"Late spring to autumn.",
+ risk:"Lake Michigan produces strong structural currents and rip currents that drown swimmers every year, and the dunes themselves are steep and unstable.",
+ advice:"Swim only at guarded beaches and check the daily swim risk flag. Never dig into a dune, since collapses have buried people."},
+{id:"isleroyale", name:"Isle Royale", sub:"Michigan", type:"Park", region:"Midwest", haz:["remote","water","cold","weather"],
+ season:"Mid April to October. Closed entirely in winter.",
+ risk:"Reached only by ferry or seaplane, with no roads and no shops. Lake Superior is lethally cold and crossings are cancelled in rough weather.",
+ advice:"Carry everything including a water filter, and plan for a weather delay in both directions."},
+{id:"joshuatree", name:"Joshua Tree", sub:"California", type:"Park", region:"Southwest", haz:["heat","remote","falls","driving"],
+ season:"October to April. Summer is dangerous.",
+ risk:"Almost no mobile signal, no water in most of the park, and a landscape that looks similar in every direction, which is why people become disoriented and dehydrated.",
+ advice:"Download offline maps, carry far more water than planned, and note that scrambling here is real climbing with real falls."},
+{id:"katmai", name:"Katmai", sub:"Alaska", type:"Park", region:"Alaska", haz:["bears","remote","water","cold","weather"],
+ season:"June to September, with bear viewing peaking in July and September.",
+ risk:"The highest concentration of brown bears anywhere, at very close range. Access is by float plane and weather cancels flights routinely.",
+ advice:"Follow the mandatory bear school briefing exactly, keep the required distances, and never place yourself between a bear and the river."},
+{id:"kenaifjords", name:"Kenai Fjords", sub:"Alaska", type:"Park", region:"Alaska", haz:["marine","cold","bears","water","weather"],
+ season:"Late May to September.",
+ risk:"Cold water and calving ice for boat visitors, and a glacier that people approach far too closely on foot. Ice caves collapse without warning.",
+ advice:"Stay behind every barrier at the glacier face, and treat any ice cave as unsafe regardless of who else is inside it."},
+{id:"kingscanyon", name:"Kings Canyon", sub:"California", type:"Park", region:"Pacific", haz:["bears","altitude","water","falls","driving"],
+ season:"Late spring to October. The canyon road closes in winter.",
+ risk:"Black bears actively break into vehicles for food, rivers run fast and lethally cold with snowmelt, and the road in is long and steep.",
+ advice:"Use the food lockers rather than the boot of a car, and stay out of the rivers in spring and early summer entirely."},
+{id:"kobuk", name:"Kobuk Valley", sub:"Alaska", type:"Park", region:"Alaska", haz:["remote","cold","bears","water","weather"],
+ season:"June to August.",
+ risk:"One of the least visited parks in the system, with no roads, no trails and no facilities. Everything is by air and by river.",
+ advice:"Full expedition planning with a satellite communicator, and insurance that explicitly covers search and rescue in remote Alaska."},
+{id:"lakeclark", name:"Lake Clark", sub:"Alaska", type:"Park", region:"Alaska", haz:["bears","remote","water","weather","cold"],
+ season:"June to September.",
+ risk:"Bear viewing at close range on coastal flats, float plane access subject to weather, and no road connection to anywhere.",
+ advice:"Use a licensed guide for coastal bear viewing, and build spare days into the schedule for weather."},
+{id:"lassen", name:"Lassen Volcanic", sub:"California", type:"Park", region:"Pacific", haz:["volcanic","altitude","cold","falls","weather"],
+ season:"July to October for the full park road. Snow persists into summer.",
+ risk:"Hydrothermal areas have thin crust over boiling water and acid, and people have been badly injured stepping off boardwalks. High elevation snow lasts late.",
+ advice:"Stay on boardwalks in every hydrothermal area without exception, and hold small children by the hand there."},
+{id:"mammothcave", name:"Mammoth Cave", sub:"Kentucky", type:"Park", region:"Southeast", haz:["cave","falls","water"],
+ season:"Year round.",
+ risk:"The longest cave system known, with tours varying from easy to genuinely strenuous with tight passages and many stairs.",
+ advice:"Read the difficulty rating and the confined space warnings before booking. The cave is cool year round, so bring a layer."},
+{id:"mesaverde", name:"Mesa Verde", sub:"Colorado", type:"Park", region:"Rockies", haz:["altitude","falls","heat","driving"],
+ season:"Late spring to autumn for ranger-led cliff dwelling tours.",
+ risk:"Cliff dwelling tours involve ladders, narrow ledges and steep drops at over seven thousand feet, which combines exposure with altitude.",
+ advice:"Take the tour descriptions seriously, since several are unsuitable for anyone uneasy with heights or ladders."},
+{id:"rainier", name:"Mount Rainier", sub:"Washington", type:"Park", region:"Northwest", haz:["cold","altitude","falls","water","weather","volcanic"],
+ season:"July to September for high trails. Snow lingers very late.",
+ risk:"An active volcano with severe weather that changes in minutes, snow bridges over creeks that collapse, and glacial rivers carrying debris flows.",
+ advice:"Carry full weather layers even on a sunny July morning, and never cross a snow bridge over running water."},
+{id:"newriver", name:"New River Gorge", sub:"West Virginia", type:"Park", region:"Southeast", haz:["water","falls","weather"],
+ season:"Spring to autumn.",
+ risk:"Serious whitewater with commercial rafting, and climbing on exposed sandstone. River levels change quickly with rainfall upstream.",
+ advice:"Use a licensed outfitter for the whitewater, and check river levels rather than local weather."},
+{id:"northcascades", name:"North Cascades", sub:"Washington", type:"Park", region:"Northwest", haz:["bears","falls","cold","remote","weather","water"],
+ season:"Mid July to September for high country.",
+ risk:"Steep glaciated terrain, very few roads, and weather that closes in fast. Rescue is slow because access is difficult everywhere.",
+ advice:"Treat any glacier travel as requiring rope and training, and carry a communicator since signal is largely absent."},
+{id:"olympic", name:"Olympic", sub:"Washington", type:"Park", region:"Northwest", haz:["water","weather","bears","falls","driving","marine"],
+ season:"July to September for high country, coast year round.",
+ risk:"Three distinct environments in one park. The coast has tide and log hazards, the rainforest is wet and cold, and the mountains hold snow into summer.",
+ advice:"Carry a tide table for every coastal walk, since headlands are only passable at certain tides. Never sit on or near beach logs in surf."},
+{id:"petrified", name:"Petrified Forest", sub:"Arizona", type:"Park", region:"Southwest", haz:["heat","weather","flood","driving"],
+ season:"Spring and autumn.",
+ risk:"Open exposed terrain with almost no shade, summer lightning on high ground, and flash flooding in the washes.",
+ advice:"Carry water for every short walk, and be aware the park closes at night with gates locked, so time your exit."},
+{id:"pinnacles", name:"Pinnacles", sub:"California", type:"Park", region:"Pacific", haz:["heat","cave","falls"],
+ season:"Spring and autumn. Summer is very hot.",
+ risk:"Talus caves flood and close, the rock is crumbly volcanic breccia, and summer temperatures on the exposed high peaks trail are severe.",
+ advice:"Carry a torch for the caves and check whether they are open, since closures for flooding and for bat protection are routine."},
+{id:"redwood", name:"Redwood", sub:"California", type:"Park", region:"Pacific", haz:["marine","water","weather","falls","wildlife"],
+ season:"Year round, wettest in winter.",
+ risk:"Sneaker waves on the coast pull people off beaches every year, and falling limbs in old growth forest are a genuine hazard in wind.",
+ advice:"Never turn your back on the ocean here, and stay out of the forest in high wind."},
+{id:"rocky", name:"Rocky Mountain", sub:"Colorado", type:"Park", region:"Rockies", haz:["altitude","weather","cold","wildlife","driving","crowds"],
+ season:"June to September for Trail Ridge Road. Timed entry usually applies.",
+ risk:"Trail Ridge Road exceeds twelve thousand feet, and altitude sickness affects a large share of visitors arriving from sea level. Afternoon lightning above treeline is the classic fatal scenario.",
+ advice:"Spend a night in Denver or Estes Park before going high, and plan to be below treeline by noon in summer. Elk are dangerous during the autumn rut."},
+{id:"saguaro", name:"Saguaro", sub:"Arizona", type:"Park", region:"Southwest", haz:["heat","wildlife","remote","flood"],
+ season:"November to March. Summer is dangerous.",
+ risk:"Extreme summer heat close to a major city, which lulls people into short unprepared walks. Rattlesnakes and Africanised bees are present.",
+ advice:"Hike at dawn in the warm months, carry more water than the walk seems to need, and never place hands where you cannot see."},
+{id:"sequoia", name:"Sequoia", sub:"California", type:"Park", region:"Pacific", haz:["bears","altitude","driving","falls","cold"],
+ season:"Late spring to October for high country.",
+ risk:"Black bears that break into cars, a very steep and winding access road, and rapid elevation gain from the foothills to over seven thousand feet.",
+ advice:"Use food lockers, take the road slowly and use low gear on the descent to save the brakes, and allow time to acclimatise."},
+{id:"shenandoah", name:"Shenandoah", sub:"Virginia", type:"Park", region:"Northeast", haz:["bears","falls","weather","water","driving"],
+ season:"Spring to autumn. Skyline Drive closes in ice.",
+ risk:"Waterfall trails are slick and account for most serious falls, and the park has a dense black bear population.",
+ advice:"Stay off wet rock above waterfalls, which is where nearly every fatal fall here happens, and store food properly at campgrounds."},
+{id:"theodore", name:"Theodore Roosevelt", sub:"North Dakota", type:"Park", region:"Midwest", haz:["wildlife","heat","weather","driving"],
+ season:"May to September.",
+ risk:"Free ranging bison and wild horses on and beside the roads, and severe prairie thunderstorms.",
+ advice:"Never approach bison for a photograph, and give any animal on the road time rather than trying to pass close."},
+{id:"virginislands", name:"Virgin Islands", sub:"US Virgin Islands", type:"Park", region:"Islands", haz:["marine","heat","water","weather"],
+ season:"December to April, outside hurricane season.",
+ risk:"Currents at some beaches are stronger than they look, sun exposure while snorkelling burns backs badly, and hurricane season disrupts travel.",
+ advice:"Wear a rash guard while snorkelling, ask locally which beaches have current, and buy insurance that covers hurricane disruption if travelling in season."},
+{id:"voyageurs", name:"Voyageurs", sub:"Minnesota", type:"Park", region:"Midwest", haz:["water","cold","bears","remote","weather"],
+ season:"Summer for boating, winter for ice roads.",
+ risk:"A water based park where most travel is by boat, on lakes that produce sudden dangerous chop. Winter ice conditions vary and are not uniformly safe.",
+ advice:"Wear a flotation device at all times on the water and check the wind forecast, since the big lakes turn rough quickly."},
+{id:"whitesands", name:"White Sands", sub:"New Mexico", type:"Park", region:"Southwest", haz:["heat","remote","weather","driving"],
+ season:"Autumn to spring. Summer is severe.",
+ risk:"The dunes are featureless and people become disoriented remarkably quickly. There is no shade and no water beyond the visitor centre. The park closes for missile range tests.",
+ advice:"Follow the trail markers carefully and turn back if you lose sight of them. Check closure schedules before driving out."},
+{id:"windcave", name:"Wind Cave", sub:"South Dakota", type:"Park", region:"Midwest", haz:["cave","wildlife","weather","heat"],
+ season:"Year round for cave tours.",
+ risk:"Bison and elk roam the prairie above the cave, and cave tours involve many stairs in a cool damp environment.",
+ advice:"Keep a bus length from bison on the surface, and check the stair count on a tour before booking it for anyone with mobility limits."},
+{id:"wrangell", name:"Wrangell St Elias", sub:"Alaska", type:"Park", region:"Alaska", haz:["remote","cold","bears","water","weather","driving"],
+ season:"June to September.",
+ risk:"The largest national park in the country, with two long unpaved roads and vast trackless wilderness beyond them. Glacier travel and river crossings are serious undertakings.",
+ advice:"Check with rangers about road conditions, carry two spare tyres for the McCarthy road, and treat any glacier travel as technical."},
+{id:"yellowstone", name:"Yellowstone", sub:"Wyoming, Montana and Idaho", type:"Park", region:"Rockies", haz:["bears","wildlife","volcanic","altitude","cold","driving","crowds"],
+ season:"May to October for most roads.",
+ risk:"Thermal features have killed people who left the boardwalk, and bison injure more visitors than bears do every year. The park sits above seven thousand feet.",
+ advice:"Stay on boardwalks in all thermal areas, keep twenty five yards from bison and elk and a hundred from bears and wolves, and carry bear spray on every trail."},
+{id:"yosemite", name:"Yosemite", sub:"California", type:"Park", region:"Pacific", haz:["falls","water","bears","altitude","driving","crowds"],
+ season:"Late spring for waterfalls, summer for high country. Reservations often required.",
+ risk:"Falls from height and drowning in fast cold water are the two dominant causes of death here, and both usually involve someone leaving a marked route or entering a river above a fall.",
+ advice:"Never swim or wade above a waterfall, stay behind railings on the Mist Trail and at Half Dome, and use food lockers because bears here are expert at cars."},
+{id:"zion", name:"Zion", sub:"Utah", type:"Park", region:"Southwest", haz:["heat","flood","falls","water","crowds"],
+ season:"Spring and autumn. Summer canyon heat is severe.",
+ risk:"Angels Landing is a chain assisted route with fatal exposure and now requires a permit lottery. The Narrows floods from storms falling many miles upstream under blue sky here.",
+ advice:"Check the flash flood potential rating for the Narrows on the day, every day, and do not enter if it is elevated. Do not attempt Angels Landing in wind, ice or with young children."}
+];
+
+US.places = US.places.concat([
+{id:"nyc", name:"New York City", sub:"New York", type:"Destination", region:"Northeast", haz:["crowds","heat","cold","weather"],
+ season:"Spring and autumn. Summer is humid, winter is cold.",
+ risk:"An ordinary large city rather than a dangerous one. The real risks are heat exhaustion while walking far more than planned, and winter cold on exposed avenues.",
+ advice:"Plan realistic walking distances, use the subway rather than pushing through heat, and carry water in summer since it is far from everywhere."},
+{id:"vegas", name:"Las Vegas", sub:"Nevada", type:"Destination", region:"Southwest", haz:["heat","driving","crowds"],
+ season:"Spring and autumn. Summer regularly exceeds forty degrees Celsius.",
+ risk:"Desert heat combined with alcohol and long walks between resorts is the standard route to a medical incident. Day trips leave into genuinely remote desert.",
+ advice:"Treat every day trip as a desert trip with water in the vehicle. The distance between two hotels is much further than it looks."},
+{id:"orlando", name:"Orlando and central Florida", sub:"Florida", type:"Destination", region:"Southeast", haz:["heat","weather","water","crowds"],
+ season:"Winter and spring. Summer is hot with daily storms.",
+ risk:"Heat and humidity with long queues in full sun, daily afternoon lightning, and alligators present in almost every freshwater body.",
+ advice:"Plan indoor time in the early afternoon, leave open areas when thunder starts, and never let children near unfenced fresh water."},
+{id:"bigsur", name:"Big Sur and Highway One", sub:"California", type:"Destination", region:"Pacific", haz:["driving","falls","marine","weather"],
+ season:"Spring and autumn. Winter storms cause landslides and closures.",
+ risk:"A narrow cliff road with limited fuel and signal, subject to landslide closures that can last months. Cliff edges have no barriers in many places.",
+ advice:"Check road closures before departing, fill the tank whenever you see a station, and keep well back from unfenced cliff edges."},
+{id:"nola", name:"New Orleans", sub:"Louisiana", type:"Destination", region:"Southeast", haz:["heat","weather","crowds"],
+ season:"October to April. Hurricane season runs June to November.",
+ risk:"Summer heat and humidity are severe, hurricane season can disrupt travel entirely, and late night areas vary considerably block by block.",
+ advice:"Buy insurance covering hurricane disruption if travelling in season, and take licensed transport late at night rather than walking unfamiliar routes."},
+{id:"miami", name:"Miami and the Keys", sub:"Florida", type:"Destination", region:"Southeast", haz:["heat","marine","weather","water"],
+ season:"December to April.",
+ risk:"Strong sun, rip currents on the Atlantic beaches, and boat and snorkel excursions where operator standards vary.",
+ advice:"Swim at guarded beaches and check the flag, and ask any operator directly about safety equipment before booking."},
+{id:"sanfran", name:"San Francisco and the Bay", sub:"California", type:"Destination", region:"Pacific", haz:["cold","marine","crowds","driving"],
+ season:"September and October are the warmest. Summer is foggy and cold.",
+ risk:"Visitors consistently underestimate how cold summer is, and the Pacific here is dangerously cold with strong currents even on sunny days.",
+ advice:"Bring layers regardless of the season, and treat the ocean beaches as unsafe for swimming."},
+{id:"hawaii", name:"Hawaii beyond the parks", sub:"Hawaii", type:"Destination", region:"Islands", haz:["marine","water","falls","volcanic","weather"],
+ season:"Year round. Winter brings large north shore surf.",
+ risk:"Drowning is the leading cause of visitor death in Hawaii, largely from rip currents and shore break at unguarded beaches. Flash floods in valleys are also a recurring cause.",
+ advice:"Swim only where a lifeguard is present, ask them directly about conditions, and never enter a valley trail when rain is forecast on the mountains."},
+{id:"alaska", name:"Alaska beyond the parks", sub:"Alaska", type:"Destination", region:"Alaska", haz:["cold","bears","remote","driving","water","weather"],
+ season:"May to September for road travel.",
+ risk:"Distances between services are enormous, wildlife is on the road at dusk, and water is cold enough to incapacitate within minutes year round.",
+ advice:"Fuel at every opportunity, carry a spare tyre and a communicator, and treat any water immersion as an emergency."},
+{id:"nps-dc", name:"Washington DC monuments", sub:"District of Columbia", type:"Destination", region:"Northeast", haz:["heat","crowds","weather"],
+ season:"Spring and autumn. Summer is hot and humid.",
+ risk:"The mall is far larger than it looks on a map and offers little shade, and summer heat with humidity catches out visitors walking between monuments.",
+ advice:"Plan the mall in the morning or evening in summer, and use the metro rather than walking the full length in heat."},
+{id:"grandtetonjackson", name:"Jackson Hole and the Tetons corridor", sub:"Wyoming", type:"Destination", region:"Rockies", haz:["altitude","cold","bears","driving","wildlife"],
+ season:"Summer for hiking, winter for skiing.",
+ risk:"High elevation, wildlife on roads at dawn and dusk, and winter driving conditions that change quickly on mountain passes.",
+ advice:"Acclimatise before strenuous activity, drive well below the limit at dawn and dusk, and carry chains in winter."},
+{id:"moab", name:"Moab and the Utah desert corridor", sub:"Utah", type:"Destination", region:"Southwest", haz:["heat","flood","driving","remote","falls"],
+ season:"Spring and autumn.",
+ risk:"The base for several parks, with extreme summer heat, slot canyons that flood, and off-road routes that strand unprepared vehicles.",
+ advice:"Never enter a slot canyon with rain forecast anywhere in the region, and tell someone your route before any off-road driving."},
+{id:"blueridge", name:"Blue Ridge Parkway", sub:"Virginia and North Carolina", type:"Destination", region:"Southeast", haz:["driving","weather","bears","falls"],
+ season:"Spring to autumn. Sections close for ice and fog.",
+ risk:"A long slow road with fog that reduces visibility to metres, no fuel on the parkway itself, and overlooks with unfenced drops.",
+ advice:"Fuel before joining the parkway, and pull off entirely rather than driving on in heavy fog."},
+{id:"outerbanks", name:"Outer Banks", sub:"North Carolina", type:"Destination", region:"Southeast", haz:["marine","water","weather","driving"],
+ season:"Late spring to early autumn. Hurricane season overlaps.",
+ risk:"Strong rip currents along the whole coast, and a narrow barrier island chain with a single evacuation route in a storm.",
+ advice:"Learn the rip current escape method before swimming, and leave early rather than late if an evacuation order is issued."},
+{id:"greatlakes", name:"Great Lakes shorelines", sub:"Michigan, Wisconsin and neighbours", type:"Destination", region:"Midwest", haz:["water","cold","weather"],
+ season:"Summer.",
+ risk:"The lakes generate structural currents around piers and breakwalls that drown strong swimmers, and water stays cold well into summer.",
+ advice:"Never swim near a pier or breakwall, and check the daily beach flag which is issued for exactly this reason."}
+]);
+
+/* HAZARD SCHEMA
+   id, name, what, signs, decision                                   */
+US.hazards = [
+{id:"heat", name:"Heat and dehydration",
+ what:"The most common cause of serious incidents across the southwestern parks and the most preventable. It builds across hours and people consistently misjudge it because a walk that felt fine at nine feels very different at one.",
+ signs:"Heavy sweating, headache, nausea, muscle cramps, and weakness out of proportion to the effort. Confusion, hot dry skin or fainting are a different and far more serious condition.",
+ decision:"Turn round on time rather than at the destination. Most rescues involve someone who reached the objective and had nothing left for the return, which is always the harder half."},
+{id:"cold", name:"Cold and hypothermia",
+ what:"Not confined to winter. Wet and windy conditions at ten degrees produce hypothermia readily, and summer visitors to high country and to Alaska are frequently the least prepared.",
+ signs:"Shivering, clumsiness, slurred speech and poor decision making. The person affected is usually the last to recognise it.",
+ decision:"Carry a windproof layer even on a warm morning at altitude, and act on the first signs in a companion rather than waiting to see whether it worsens."},
+{id:"altitude", name:"Altitude",
+ what:"Above roughly two and a half thousand metres, a substantial share of visitors arriving from low ground develop symptoms. Several parks put visitors well above that on their first day.",
+ signs:"Headache, nausea, poor sleep, breathlessness at rest. Confusion, a persistent cough or loss of coordination are serious and require immediate descent.",
+ decision:"Sleep lower than you climb, give yourself a night at intermediate elevation, and descend rather than pushing on when symptoms appear."},
+{id:"water", name:"Moving and cold water",
+ what:"Drowning is among the leading causes of death in the national parks. Snowmelt rivers run far faster and colder than they appear, and cold water incapacitates limbs within minutes.",
+ signs:"There is rarely a warning. The immediate cold shock response causes a gasp and rapid breathing, which is what drowns people who fall in.",
+ decision:"Do not enter rivers above waterfalls, do not wade fast water even at knee depth, and treat any unexpected immersion in cold water as an emergency."},
+{id:"flood", name:"Flash flooding",
+ what:"Slot canyons and desert washes flood from rain falling many miles upstream, under a clear blue sky at your location. The water arrives as a wall carrying debris.",
+ signs:"Rising or muddying water, a roaring sound, floating debris, or a sudden change in wind. If you notice any of these you have very little time.",
+ decision:"Check the daily flash flood potential rating with a ranger and do not enter if it is elevated. In a canyon, climb rather than run, because you cannot outrun it."},
+{id:"bears", name:"Bear country",
+ what:"Black bears break into cars and campsites for food, which makes them dangerous to themselves and eventually to people. Grizzly and brown bears in the Rockies and Alaska are a different and more serious proposition.",
+ signs:"Fresh scat, tracks, torn logs, or a carcass. A carcass means leave the area immediately and by the route you came.",
+ decision:"Carry bear spray on the outside of the pack where you can reach it in two seconds, hike in a group, make noise on blind corners, and use food lockers without exception."},
+{id:"wildlife", name:"Other wildlife",
+ what:"Bison injure more visitors in Yellowstone than bears do. Elk during the autumn rut, moose with calves, alligators, venomous snakes and Africanised bees all cause serious injuries every year.",
+ signs:"An animal that stops feeding and looks at you has already registered you as a concern, and that is your cue to increase the distance.",
+ decision:"Keep the posted distances, never approach for a photograph, and never place hands or feet where you cannot see in snake country."},
+{id:"falls", name:"Falls from height",
+ what:"Falls are the leading cause of death in several parks. They usually involve leaving a marked route, standing on wet or icy rock near an edge, or a photograph taken a step too far back.",
+ signs:"Wet rock, ice, loose gravel on slickrock, and any surface polished smooth by traffic.",
+ decision:"Stay behind railings, keep three points of contact on scrambles, and accept that the photograph is not worth the step. Wind and ice make chain assisted routes far more dangerous than the guidebook implies."},
+{id:"weather", name:"Storms and lightning",
+ what:"Afternoon thunderstorms build in a predictable daily pattern in the mountains and on the plains, and being above treeline or on a dune when one arrives is the classic fatal scenario.",
+ signs:"Building cumulus by late morning, a drop in temperature, or any thunder at all. If you can hear thunder you are within range.",
+ decision:"Plan to be below treeline or off open ground by noon in summer, and turn round on schedule rather than on progress."},
+{id:"remote", name:"Remoteness and no signal",
+ what:"Large parts of the park system have no mobile coverage and no services. A twisted ankle two hours from a road becomes a serious problem when nobody knows where you are.",
+ signs:"Not a hazard with signs, but a condition to plan for before you leave.",
+ decision:"Leave a written itinerary with someone who will act on it, carry a satellite communicator where signal is absent, and download offline maps before you lose service."},
+{id:"driving", name:"Roads and driving",
+ what:"More visitors are injured in vehicles than by anything else in the park system. Mountain roads, wildlife at dawn and dusk, long distances between fuel, and fatigue all contribute.",
+ signs:"Drowsiness, a long stretch since the last town, or an animal on the verge which usually means more behind it.",
+ decision:"Fuel whenever you can rather than when you must, use a low gear on long descents instead of riding the brakes, and slow substantially at dawn and dusk."},
+{id:"marine", name:"Ocean and rip currents",
+ what:"Rip currents are the leading cause of drowning at surf beaches, and they are strongest at exactly the beaches that look most inviting. Sneaker waves on the Pacific northwest coast pull people off dry sand.",
+ signs:"A channel of choppy or discoloured water moving seaward, a gap in the breaking waves, or debris moving out.",
+ decision:"Swim where a lifeguard is present and ask them about conditions. Caught in a rip, swim parallel to the beach rather than against the pull, and never turn your back on the ocean on the Pacific coast."},
+{id:"volcanic", name:"Volcanic and thermal",
+ what:"Hydrothermal ground has thin crust over water well above boiling, and people have died stepping off boardwalks. Volcanic gas reaches concentrations dangerous to people with heart and lung conditions.",
+ signs:"Steam, discoloured ground, a sulphur smell, or any crust that sounds hollow.",
+ decision:"Stay on boardwalks in every thermal area without exception and hold small children. Check current gas advisories where volcanic activity is ongoing."},
+{id:"cave", name:"Caves and confined spaces",
+ what:"Cave tours range from level walkways to strenuous routes with tight passages and hundreds of stairs. Caves are cool year round and floors are wet and slippery.",
+ signs:"Read the tour difficulty and confined space rating rather than judging by the name.",
+ decision:"Book by difficulty rather than by interest, wear shoes with grip, and take the warnings about claustrophobia seriously since there is no easy exit part way."},
+{id:"crowds", name:"Crowds, permits and access",
+ what:"Several parks now require timed entry or a permit lottery for their most popular features, and arriving without one means being turned away at the gate after a long drive.",
+ signs:"Not a safety hazard so much as a trip hazard, and it changes annually.",
+ decision:"Check the official park page for reservation and permit requirements when you book travel, not the week before, since lotteries close months ahead."}
+];
+
+/* CHECK SCHEMA
+   haz   the hazard tag that triggers this item, or "always"
+   t     the item
+   why   why it matters
+   crit  true if leaving it undone is genuinely dangerous          */
+US.checks = [
+{haz:"always", t:"Leave a written itinerary with someone at home", why:"Search and rescue begins when somebody notices you are overdue, and that requires them to know where you were going", crit:true},
+{haz:"always", t:"Download offline maps for every area", why:"Signal fails across most of the park system and a phone map that will not load is worse than a paper one", crit:true},
+{haz:"always", t:"Check official alerts and closures the day before", why:"Fires, floods, road closures and permit rules change constantly and the official page is the only current source", crit:true},
+{haz:"always", t:"Confirm your insurance covers the activities planned", why:"Many policies exclude hiking above a stated altitude, climbing, and any activity with a rope", crit:true},
+{haz:"always", t:"Pack a first aid kit including blister treatment", why:"The most common trip-ending injury is a blister nobody treated early", crit:false},
+{haz:"heat", t:"Carry at least four litres of water per person per day", why:"Desert parks have no water on trail and dehydration begins long before thirst becomes urgent", crit:true},
+{haz:"heat", t:"Plan to be off the trail by mid morning in summer", why:"Afternoon heat in the desert parks is the single most reliable route to a rescue", crit:true},
+{haz:"heat", t:"Carry electrolyte replacement, not water alone", why:"Heavy sweating loses salts and water alone does not replace them", crit:false},
+{haz:"heat", t:"Pack a wide brimmed hat and high factor sunscreen", why:"Shade is absent in most desert parks and burn accumulates across a multi-day trip", crit:false},
+{haz:"cold", t:"Pack a windproof and waterproof layer regardless of forecast", why:"Wet and windy at ten degrees produces hypothermia readily and mountain weather turns in minutes", crit:true},
+{haz:"cold", t:"Pack warm layers for sunrise and high elevation", why:"Visitors arrive from a warm coast and are unprepared for a summit before dawn", crit:true},
+{haz:"altitude", t:"Sleep one night at intermediate elevation before going high", why:"The single most effective prevention for altitude sickness and it costs only a day", crit:true},
+{haz:"altitude", t:"Agree in advance that symptoms mean descending", why:"The decision is much harder to make in the moment, especially with a summit close", crit:true},
+{haz:"altitude", t:"Plan lighter activity on the first day at elevation", why:"Exertion on arrival day is what converts mild symptoms into a ruined trip", crit:false},
+{haz:"water", t:"Agree nobody enters a river above a waterfall", why:"This is the scenario behind a large share of park drownings and it is entirely avoidable", crit:true},
+{haz:"water", t:"Check water levels and crossings before setting out", why:"Snowmelt rivers rise through the day and a morning crossing may be impassable by afternoon", crit:true},
+{haz:"water", t:"Carry a means of purifying water on any long hike", why:"Running out is common and untreated surface water carries giardia", crit:false},
+{haz:"flood", t:"Check the flash flood potential rating on the day", why:"Slot canyons flood from rain many miles upstream under clear local sky", crit:true},
+{haz:"flood", t:"Agree a turnaround rule if the sky changes upstream", why:"You cannot outrun a flood in a canyon, so the decision has to be made before entering", crit:true},
+{haz:"bears", t:"Carry bear spray accessible on the outside of the pack", why:"Spray inside a pack is useless, since the encounter allows seconds rather than minutes", crit:true},
+{haz:"bears", t:"Know how to deploy bear spray before you need it", why:"Practise removing the safety clip, because people fail at that step under stress", crit:true},
+{haz:"bears", t:"Use food lockers and never store food in a vehicle", why:"Bears in several parks open cars routinely, and a habituated bear is eventually destroyed", crit:true},
+{haz:"bears", t:"Hike in a group and make noise on blind corners", why:"Almost every serious encounter involves surprising a bear at close range", crit:true},
+{haz:"wildlife", t:"Agree the minimum distances before you arrive", why:"Twenty five yards from bison and elk and a hundred from bears and wolves, decided in advance rather than with a camera in hand", crit:true},
+{haz:"wildlife", t:"Never place hands or feet where you cannot see", why:"Snake bites overwhelmingly occur when reaching onto a ledge or stepping over a log", crit:true},
+{haz:"wildlife", t:"Keep children and dogs away from all water edges", why:"Alligators are present in almost every freshwater body in the southeast", crit:true},
+{haz:"falls", t:"Agree that nobody steps off the marked route for a photograph", why:"This is the circumstance behind most fatal falls in the park system", crit:true},
+{haz:"falls", t:"Check whether rock will be wet or icy", why:"Wet slickrock and iced chains are dramatically more dangerous than the same route dry", crit:true},
+{haz:"falls", t:"Check whether any permit lottery applies to exposed routes", why:"Angels Landing and similar routes now require a permit obtained well in advance", crit:false},
+{haz:"weather", t:"Plan to be below treeline or off open ground by noon", why:"Afternoon lightning follows a daily pattern in the mountains and on the plains", crit:true},
+{haz:"weather", t:"Set a turnaround time and hold to it", why:"Turning round on time rather than on progress is the discipline that prevents most incidents", crit:true},
+{haz:"remote", t:"Carry a satellite communicator", why:"Signal is absent across most of the park system and a communicator is the only way to summon help", crit:true},
+{haz:"remote", t:"Carry contingency food and fuel for an extra day", why:"Weather delays are routine in Alaska and on island access, and a bush plane may not come", crit:true},
+{haz:"driving", t:"Fuel whenever you can rather than when you must", why:"Distances between stations in the desert and in Alaska are far larger than most visitors expect", crit:true},
+{haz:"driving", t:"Slow substantially at dawn and dusk", why:"This is when wildlife is on the road and when most vehicle collisions with animals occur", crit:true},
+{haz:"driving", t:"Check road status and seasonal closures before departing", why:"High alpine roads open late and close early and a closure can add hours", crit:false},
+{haz:"marine", t:"Swim only where a lifeguard is present and ask them about conditions", why:"Drowning is the leading cause of visitor death in Hawaii and rip currents are the main mechanism", crit:true},
+{haz:"marine", t:"Learn the rip current escape method before swimming", why:"Swim parallel to the beach rather than against the pull, decided before you are in one", crit:true},
+{haz:"marine", t:"Check the tide table for any coastal walk", why:"Headlands and sand bars are only passable at certain tides and people are stranded every year", crit:true},
+{haz:"volcanic", t:"Agree nobody leaves a boardwalk in a thermal area", why:"The crust is thin over water well above boiling and people have died stepping off", crit:true},
+{haz:"volcanic", t:"Check gas advisories if anyone has a heart or lung condition", why:"Volcanic gas concentrations vary daily and affect susceptible people first", crit:false},
+{haz:"cave", t:"Read the tour difficulty and confined space rating", why:"There is no easy exit part way through a cave tour", crit:false},
+{haz:"cave", t:"Wear shoes with grip and bring a layer", why:"Cave floors are wet and caves stay cool regardless of the surface temperature", crit:false},
+{haz:"crowds", t:"Check reservation and permit requirements when you book travel", why:"Timed entry and lotteries close months ahead and being turned away at the gate ends the day", crit:true}
+];
+
+/* INSURANCE CRITERIA SCHEMA
+   k   short key used as a column
+   l   label
+   why what it decides                                              */
+US.insurance = [
+{k:"medical",   l:"Medical cover limit", why:"United States medical costs are the reason this policy exists. A limit that would be generous elsewhere can be inadequate here."},
+{k:"evac",      l:"Emergency evacuation and repatriation", why:"Helicopter evacuation from a remote park is expensive and it is a separate line from medical cover on most policies."},
+{k:"searchres", l:"Search and rescue", why:"Frequently excluded entirely. Some parks and states can bill for rescue, and many policies do not cover it."},
+{k:"activities",l:"Activities covered and altitude limit", why:"Many policies exclude hiking above a stated altitude, any use of a rope, and off-piste or off-trail travel."},
+{k:"preex",     l:"Pre-existing conditions", why:"Usually requires declaration and often a medical screening. An undeclared condition can void the whole policy."},
+{k:"cancel",    l:"Trip cancellation, and for what reasons", why:"Cancel for any reason is a distinct and more expensive product from cancellation for listed reasons only."},
+{k:"weather",   l:"Weather, wildfire and natural disaster", why:"Park closures for fire and hurricane disruption are common and are not always a covered reason."},
+{k:"delay",     l:"Travel delay and missed connection", why:"Matters most for float plane and ferry access, where delays are routine and expensive."},
+{k:"baggage",   l:"Baggage and equipment", why:"Check whether hiking and camera equipment is covered and at what per-item limit."},
+{k:"rental",    l:"Rental vehicle and off-road use", why:"Unpaved road driving is excluded by many rental agreements and by many policies, which matters in Utah and Alaska."},
+{k:"excess",    l:"Excess or deductible per claim", why:"A low premium with a high excess is frequently the more expensive policy in practice."},
+{k:"limit",     l:"Any per-incident or per-day sub-limits", why:"Headline limits often conceal sub-limits that are the figure actually paid."},
+{k:"claims",    l:"Claims process and time limit", why:"Some policies require notification within a short window and pre-authorisation for treatment."},
+{k:"premium",   l:"Premium", why:"The least informative figure on the policy, and the one most people compare first."}
+];
+
+US.extend = [
+{t:"Where the data lives",
+ code:"US.places     national parks and destinations\nUS.hazards    one briefing per hazard tag\nUS.checks     checklist items, each keyed to a hazard\nUS.insurance  the policy comparison criteria\nUS.regions    the region vocabulary used for filtering",
+ body:"Every panel renders from these arrays. The checklist is generated by taking the union of hazard tags across the places on your trip and pulling every matching check, so adding a hazard to a place automatically changes the checklist without any other edit."},
+{t:"Adding a destination",
+ code:'{id:"sedona", name:"Sedona", sub:"Arizona",\n type:"Destination", region:"Southwest",\n haz:["heat","falls","flood","crowds"],\n season:"Best window and why",\n risk:"What actually goes wrong here",\n advice:"The specific decision that prevents it"}',
+ body:"Append to US.places. The id must be unique. Any hazard tag that does not match an entry in US.hazards is skipped and logged to the console rather than breaking the page, so a partial addition is safe. Filter buttons for new regions appear automatically."},
+{t:"Adding a hazard",
+ code:'{id:"avalanche", name:"Avalanche",\n what:"What the hazard is and where it applies",\n signs:"What you would notice beforehand",\n decision:"The decision that prevents it"}',
+ body:"Append to US.hazards. Then add at least one item to US.checks with the same tag, or the hazard will appear on places and contribute nothing to a checklist. The colour of the hazard chip comes from a CSS class matching the id, so add a rule for a new one."},
+{t:"Adding a checklist item",
+ code:'{haz:"avalanche",\n t:"Carry a transceiver, probe and shovel, and know how to use them",\n why:"Why it matters",\n crit:true}',
+ body:"Append to US.checks. Use haz value always for items that apply to every trip. The crit flag drives the readiness reading, which reports outstanding critical items separately from the total, so reserve it for things whose absence is genuinely dangerous rather than merely inconvenient."},
+{t:"Adding an insurance criterion",
+ code:'{k:"legal", l:"Legal expenses and liability",\n why:"What it decides"}',
+ body:"Append to US.insurance. It becomes a row in the comparison table automatically and is included in the export. Never add a product, a provider or a price, because those go stale and the page is not a recommendation engine."},
+{t:"The editorial rule",
+ code:"risk    what actually goes wrong, not what could\nadvice  a decision, not a platitude\nsigns   what a person would notice beforehand",
+ body:"Each entry should name the specific failure that produces incidents at that place rather than listing generic caution. Be careful with water is worthless; do not enter a river above a waterfall is a decision someone can act on. If a new entry does not name a decision, it is not ready."},
+{t:"Suggested order of expansion",
+ code:"1  National monuments: Bears Ears, Grand Staircase\n2  State parks with high visitation and real hazards\n3  National seashores and lakeshores\n4  Ski and winter destinations, with avalanche as a new hazard\n5  City guides with the transport and neighbourhood detail",
+ body:"All 63 national parks are covered, so the highest value additions are the monuments and state parks that carry park-level hazards without park-level staffing. Winter destinations would need avalanche added as a hazard with its own checks, which is the pattern to follow for any new category."}
+];
+</script>
+
+<script>
+(function(){
+  "use strict";
+  var K_T="rm_us_trip_v1", K_C="rm_us_checks_v1", K_I="rm_us_ins_v1";
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function put(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  function get(k,f){ try{ var r=localStorage.getItem(k); return r?JSON.parse(r):f; }catch(e){ return f; } }
+  function flash(id,m){ var el=$(id); if(!el) return; el.textContent=m; setTimeout(function(){el.textContent="";},2600); }
+  function download(name,text){
+    var b=new Blob([text],{type:"text/plain;charset=utf-8"});
+    var u=URL.createObjectURL(b); var a=document.createElement("a");
+    a.href=u; a.download=name; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(u);
+  }
+  function placeById(id){ for(var i=0;i<US.places.length;i++){ if(US.places[i].id===id) return US.places[i]; } return null; }
+  function hazById(id){ for(var i=0;i<US.hazards.length;i++){ if(US.hazards[i].id===id) return US.hazards[i]; } return null; }
+
+  /* Unknown hazard tags are dropped and logged rather than breaking the page. */
+  US.places.forEach(function(p){
+    p.haz=(p.haz||[]).filter(function(h){
+      if(hazById(h)) return true;
+      console.warn("USA travel safety: place "+p.id+" carries unknown hazard tag "+h);
+      return false;
+    });
+  });
+
+  var TRIP=get(K_T,{}), C=get(K_C,{}), INS=get(K_I,[]);
+  var fType="All", fRegion="All", fHaz="All", openId=null;
+
+  function tripIds(){ return Object.keys(TRIP).filter(function(k){ return TRIP[k]; }); }
+  function tripHazards(){
+    var out={};
+    tripIds().forEach(function(id){
+      var p=placeById(id); if(p) p.haz.forEach(function(h){ out[h]=true; });
+    });
+    return Object.keys(out);
+  }
+  function activeChecks(){
+    var hz=tripHazards();
+    return US.checks.filter(function(c){ return c.haz==="always" ? tripIds().length>0 : hz.indexOf(c.haz)>=0; });
+  }
+  function ckKey(c){ return c.haz+"|"+c.t.slice(0,40); }
+
+  /* ---------- filters and grid ---------- */
+  function renderFilters(){
+    $("typeBtns").innerHTML =
+      ["All","Park","Destination"].map(function(t){
+        var n = t==="All" ? US.places.length : US.places.filter(function(p){ return p.type===t; }).length;
+        return '<button class="pf-btn'+(fType===t?" active":"")+'" data-ty="'+esc(t)+'">'+esc(t)+" ("+n+")</button>";
+      }).join("");
+    $("regionBtns").innerHTML='<button class="pf-btn'+(fRegion==="All"?" active":"")+'" data-rg="All">All</button>'+
+      US.regions.map(function(r){
+        var n=US.places.filter(function(p){ return p.region===r; }).length;
+        if(!n) return "";
+        return '<button class="pf-btn'+(fRegion===r?" active":"")+'" data-rg="'+esc(r)+'">'+esc(r)+" ("+n+")</button>";
+      }).join("");
+    $("hazBtns").innerHTML='<button class="pf-btn'+(fHaz==="All"?" active":"")+'" data-hz="All">All</button>'+
+      US.hazards.map(function(h){
+        var n=US.places.filter(function(p){ return p.haz.indexOf(h.id)>=0; }).length;
+        return '<button class="pf-btn'+(fHaz===h.id?" active":"")+'" data-hz="'+esc(h.id)+'">'+esc(h.name)+" ("+n+")</button>";
+      }).join("");
+    $("typeBtns").querySelectorAll("[data-ty]").forEach(function(b){
+      b.addEventListener("click", function(){ fType=b.getAttribute("data-ty"); renderFilters(); renderGrid(); });
+    });
+    $("regionBtns").querySelectorAll("[data-rg]").forEach(function(b){
+      b.addEventListener("click", function(){ fRegion=b.getAttribute("data-rg"); renderFilters(); renderGrid(); });
+    });
+    $("hazBtns").querySelectorAll("[data-hz]").forEach(function(b){
+      b.addEventListener("click", function(){ fHaz=b.getAttribute("data-hz"); renderFilters(); renderGrid(); });
+    });
+  }
+
+  function renderGrid(){
+    var q=($("usFind").value||"").toLowerCase();
+    var list=US.places.filter(function(p){
+      if(fType!=="All" && p.type!==fType) return false;
+      if(fRegion!=="All" && p.region!==fRegion) return false;
+      if(fHaz!=="All" && p.haz.indexOf(fHaz)<0) return false;
+      if(q){
+        var hay=(p.name+" "+p.sub+" "+p.region+" "+p.risk+" "+p.advice+" "+
+                 p.haz.map(function(h){ var x=hazById(h); return x?x.name:h; }).join(" ")).toLowerCase();
+        if(hay.indexOf(q)<0) return false;
+      }
+      return true;
+    }).sort(function(a,b){ return a.name.localeCompare(b.name); });
+
+    $("usGrid").innerHTML = list.length ? list.map(function(p){
+      return '<div class="us-card'+(TRIP[p.id]?" sel":"")+'" data-open="'+esc(p.id)+'">'+
+        '<div class="us-nm">'+esc(p.name)+(TRIP[p.id]?' <span class="us-hz crowds">on trip</span>':"")+"</div>"+
+        '<div class="us-st">'+esc(p.sub)+" . "+esc(p.type)+"</div>"+
+        '<div style="margin-top:8px">'+p.haz.slice(0,4).map(function(h){
+          return '<span class="us-hz '+esc(h)+'">'+esc(hazById(h).name.split(" ")[0])+"</span>";
+        }).join("")+"</div></div>";
+    }).join("") : '<div class="trend-empty"><div class="te-msg">No place matches those filters.</div></div>';
+
+    $("usCount").innerHTML="<b>Showing:</b><span class='muted'> "+list.length+" of "+US.places.length+"</span>";
+    $("usTrip").innerHTML="<b>On trip:</b><span class='muted'> "+tripIds().length+"</span>";
+    $("usGrid").querySelectorAll("[data-open]").forEach(function(el){
+      el.addEventListener("click", function(){ openPlace(el.getAttribute("data-open")); });
+    });
+  }
+
+  function openPlace(id){
+    var p=placeById(id); if(!p) return;
+    openId=id;
+    $("usDetail").innerHTML='<div class="us-detail">'+
+      '<div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px">'+
+      "<div><h3 style='font-size:22px'>"+esc(p.name)+"</h3>"+
+      "<div class='us-st' style='font-size:13px'>"+esc(p.sub)+" . "+esc(p.type)+" . "+esc(p.region)+"</div></div>"+
+      '<button class="btn" id="usClose" type="button" style="padding:5px 11px;font-size:12px">&times;</button></div>'+
+      '<div style="margin-top:16px">'+
+      '<div class="us-row"><div class="lbl">Best season</div><div>'+esc(p.season)+"</div></div>"+
+      '<div class="us-row"><div class="lbl">What goes wrong</div><div><div class="us-red">'+esc(p.risk)+"</div></div></div>"+
+      '<div class="us-row"><div class="lbl">The decision</div><div><div class="us-note">'+esc(p.advice)+"</div></div></div>"+
+      '<div class="us-row"><div class="lbl">Hazards</div><div>'+p.haz.map(function(h){
+        return '<span class="us-hz '+esc(h)+'" style="cursor:pointer" data-hgoto="'+esc(h)+'">'+esc(hazById(h).name)+"</span>";
+      }).join("")+"</div></div>"+
+      "</div>"+
+      '<div class="row" style="margin-top:16px"><button class="btn primary" id="usTripBtn" type="button">'+
+      (TRIP[id] ? "Remove from my trip" : "Add to my trip")+"</button></div></div>";
+    $("usClose").addEventListener("click", function(){ openId=null; $("usDetail").innerHTML=""; });
+    $("usTripBtn").addEventListener("click", function(){
+      TRIP[id]=!TRIP[id]; put(K_T,TRIP);
+      renderGrid(); renderChecklist(); openPlace(id);
+    });
+    $("usDetail").querySelectorAll("[data-hgoto]").forEach(function(el){
+      el.addEventListener("click", function(){
+        switchTab("hazards");
+        var t=document.getElementById("hz-"+el.getAttribute("data-hgoto"));
+        if(t) setTimeout(function(){ t.scrollIntoView({behavior:"smooth",block:"center"}); },120);
+      });
+    });
+    $("usDetail").scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+
+  /* ---------- hazards ---------- */
+  function renderHazards(){
+    $("hazList").innerHTML = US.hazards.map(function(h){
+      var n=US.places.filter(function(p){ return p.haz.indexOf(h.id)>=0; }).length;
+      return '<div class="an-card full" style="margin-bottom:14px" id="hz-'+esc(h.id)+'">'+
+        "<h3><span class='icon' style='background:rgba(110,168,255,.1);color:#6ea8ff;'>H</span>"+esc(h.name)+
+        " <span class='us-hz "+esc(h.id)+"'>"+n+" places</span></h3>"+
+        '<div class="us-row"><div class="lbl">What it is</div><div>'+esc(h.what)+"</div></div>"+
+        '<div class="us-row"><div class="lbl">Early signs</div><div>'+esc(h.signs)+"</div></div>"+
+        '<div class="us-row"><div class="lbl">The decision</div><div><div class="us-note">'+esc(h.decision)+"</div></div></div></div>";
+    }).join("");
+  }
+
+  /* ---------- insurance ---------- */
+  function renderInsurance(){
+    if(!INS.length){
+      $("insTable").innerHTML='<div class="trend-empty"><div class="te-msg">Add a policy above and the comparison table appears here.</div></div>';
+    } else {
+      var html='<div class="an-card full" style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px">'+
+        '<thead><tr style="background:rgba(255,255,255,.06)"><th style="padding:9px 11px;text-align:left;min-width:180px">Criterion</th>'+
+        INS.map(function(p,i){ return '<th style="padding:9px 11px;text-align:left">'+esc(p.name)+
+          ' <button class="btn" data-idel="'+i+'" style="padding:2px 7px;font-size:11px">x</button></th>'; }).join("")+
+        "</tr></thead><tbody>";
+      US.insurance.forEach(function(cr){
+        html += '<tr><td style="padding:9px 11px;border-top:1px solid rgba(255,255,255,.07)"><strong>'+esc(cr.l)+
+          '</strong><div class="tiny muted" style="margin-top:3px;line-height:1.6">'+esc(cr.why)+"</div></td>"+
+          INS.map(function(p,i){
+            return '<td style="padding:9px 11px;border-top:1px solid rgba(255,255,255,.07)">'+
+              '<input class="input" data-icell="'+i+"|"+cr.k+'" value="'+esc((p.vals||{})[cr.k]||"")+'" placeholder="-"></td>';
+          }).join("")+"</tr>";
+      });
+      $("insTable").innerHTML=html+"</tbody></table></div>";
+      $("insTable").querySelectorAll("[data-icell]").forEach(function(inp){
+        inp.addEventListener("input", function(){
+          var p=inp.getAttribute("data-icell").split("|");
+          if(!INS[+p[0]].vals) INS[+p[0]].vals={};
+          INS[+p[0]].vals[p[1]]=inp.value; put(K_I,INS);
+        });
+      });
+      $("insTable").querySelectorAll("[data-idel]").forEach(function(b){
+        b.addEventListener("click", function(){
+          INS.splice(parseInt(b.getAttribute("data-idel"),10),1); put(K_I,INS); renderInsurance();
+        });
+      });
+    }
+    $("insPoints").innerHTML='<div class="an-card full"><h3><span class="icon" style="background:rgba(251,191,36,.1);color:#fbbf24;">W</span>What each row decides</h3>'+
+      US.insurance.map(function(cr){
+        return '<div class="us-row"><div class="lbl">'+esc(cr.l)+"</div><div>"+esc(cr.why)+"</div></div>";
+      }).join("")+"</div>";
+  }
+
+  function insText(){
+    var out=["Travel insurance comparison",""];
+    if(!INS.length){ out.push("No policies entered."); return out.join("\n"); }
+    INS.forEach(function(p){
+      out.push(p.name+(p.price?"   "+p.price:""));
+      US.insurance.forEach(function(cr){
+        out.push("   "+cr.l+": "+(((p.vals||{})[cr.k]||"").trim()||"-"));
+      });
+      out.push("");
+    });
+    out.push("Values are as entered by the user from their own quotes.");
+    out.push("No policy, provider or price is supplied or recommended by this tool.");
+    return out.join("\n");
+  }
+
+  /* ---------- checklist ---------- */
+  function renderChecklist(){
+    var list=activeChecks();
+    var done=list.filter(function(c){ return C[ckKey(c)]; }).length;
+    var crit=list.filter(function(c){ return c.crit && !C[ckKey(c)]; }).length;
+    var pct = list.length ? Math.round(done/list.length*100) : 0;
+
+    $("ckPlaces").textContent=tripIds().length;
+    $("ckItems").textContent=list.length;
+    $("ckDone").textContent=done;
+    $("ckPct").textContent=pct+"%";
+    $("ckHaz").textContent=tripHazards().length;
+    var col = crit>4 ? "#f87171" : (crit>0 ? "#fbbf24" : "#34d399");
+    $("ckBar").style.width=pct+"%";
+    $("ckBar").style.background = list.length ? col : "#94a3b8";
+    $("ckRead").textContent = !list.length
+      ? "Add a place on the Destinations tab and your checklist builds itself."
+      : (crit>0
+         ? tripIds().length+" places bring "+tripHazards().length+" hazards and "+list.length+" items. "+
+           crit+" critical item"+(crit===1?"":"s")+" outstanding, and those are the ones whose absence is genuinely dangerous."
+         : "Every critical item is done across "+tripHazards().length+" hazards. The remainder are comfort and convenience.");
+
+    if(!list.length){
+      $("ckList").innerHTML='<div class="trend-empty"><div class="te-msg">Nothing yet. Every hazard tagged on a place you add contributes its own items.</div></div>';
+      return;
+    }
+    var byHaz={};
+    list.forEach(function(c){ (byHaz[c.haz]=byHaz[c.haz]||[]).push(c); });
+    var order=["always"].concat(US.hazards.map(function(h){ return h.id; }));
+    $("ckList").innerHTML = order.filter(function(h){ return byHaz[h]; }).map(function(h){
+      var title = h==="always" ? "Every trip" : hazById(h).name;
+      return '<div class="an-card full" style="margin-bottom:12px"><h3>'+
+        "<span class='icon' style='background:rgba(110,168,255,.1);color:#6ea8ff;'>C</span>"+esc(title)+"</h3>"+
+        byHaz[h].map(function(c){
+          var k=ckKey(c), on=!!C[k];
+          return '<div class="us-chk'+(on?" on":"")+'">'+
+            '<input type="checkbox" id="ck-'+esc(k)+'" data-ck="'+esc(k)+'"'+(on?" checked":"")+">"+
+            '<label for="ck-'+esc(k)+'">'+esc(c.t)+
+            (c.crit?' <span class="us-hz heat">critical</span>':"")+
+            '<span class="why">'+esc(c.why)+"</span></label></div>";
+        }).join("")+"</div>";
+    }).join("");
+    $("ckList").querySelectorAll("input[data-ck]").forEach(function(cb){
+      cb.addEventListener("change", function(){
+        C[cb.getAttribute("data-ck")]=cb.checked; put(K_C,C); renderChecklist();
+      });
+    });
+  }
+
+  function ckText(){
+    var out=["USA travel safety checklist",""];
+    var ids=tripIds();
+    if(ids.length){
+      out.push("TRIP");
+      ids.forEach(function(id){ var p=placeById(id); if(p) out.push("  "+p.name+" ("+p.sub+")"); });
+      out.push("");
+    }
+    var list=activeChecks();
+    if(!list.length){ out.push("No places added yet."); return out.join("\n"); }
+    var byHaz={}; list.forEach(function(c){ (byHaz[c.haz]=byHaz[c.haz]||[]).push(c); });
+    ["always"].concat(US.hazards.map(function(h){ return h.id; })).forEach(function(h){
+      if(!byHaz[h]) return;
+      out.push((h==="always" ? "EVERY TRIP" : hazById(h).name.toUpperCase()));
+      byHaz[h].forEach(function(c){
+        out.push("  ["+(C[ckKey(c)]?"x":" ")+"] "+c.t+(c.crit?"   (critical)":""));
+      });
+      out.push("");
+    });
+    out.push("Conditions change. Check the official park service alerts before you travel.");
+    return out.join("\n");
+  }
+
+  /* ---------- extend ---------- */
+  function renderExtend(){
+    var counts='<div class="an-card full" style="margin-bottom:14px">'+
+      "<h3><span class='icon' style='background:rgba(52,211,153,.1);color:#34d399;'>C</span>Currently covered</h3>"+
+      '<div class="ov-stats" style="grid-template-columns:repeat(auto-fit,minmax(115px,1fr))">'+
+      '<div class="ri-cell"><div class="cv">'+US.places.filter(function(p){return p.type==="Park";}).length+'</div><div class="cl">National parks</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+US.places.filter(function(p){return p.type==="Destination";}).length+'</div><div class="cl">Destinations</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+US.hazards.length+'</div><div class="cl">Hazards</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+US.checks.length+'</div><div class="cl">Check items</div></div>'+
+      '<div class="ri-cell"><div class="cv">'+US.insurance.length+'</div><div class="cl">Policy criteria</div></div>'+
+      "</div></div>";
+    $("extendList").innerHTML = counts + US.extend.map(function(x){
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(110,168,255,.1);color:#6ea8ff;'>E</span>"+esc(x.t)+"</h3>"+
+        '<div style="font-size:14.5px;line-height:1.8;margin-bottom:12px;color:var(--muted)">'+esc(x.body)+"</div>"+
+        '<div class="us-code">'+esc(x.code)+"</div></div>";
+    }).join("");
+  }
+
+  /* ---------- tabs ---------- */
+  function switchTab(name){
+    document.querySelectorAll(".tab-btn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-tab")===name);
+    });
+    var map={places:"viewPlaces",hazards:"viewHazards",insurance:"viewInsurance",checklist:"viewChecklist",extend:"viewExtend"};
+    document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+    var el=$(map[name]); if(el) el.classList.add("active");
+    if(name==="checklist") renderChecklist();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    document.querySelector(".tab-nav").addEventListener("click", function(e){
+      var b=e.target.closest(".tab-btn"); if(!b) return;
+      switchTab(b.getAttribute("data-tab"));
+    });
+    $("usFind").addEventListener("input", renderGrid);
+    $("usReset").addEventListener("click", function(){
+      fType="All"; fRegion="All"; fHaz="All"; $("usFind").value="";
+      renderFilters(); renderGrid();
+    });
+    $("insAdd").addEventListener("click", function(){
+      var n=$("insName").value.trim();
+      if(!n){ flash("insMsg","Name the policy first."); return; }
+      if(INS.length>=3){ flash("insMsg","Three policies is the practical limit for a readable table."); return; }
+      INS.push({name:n, price:$("insPrice").value.trim(), vals:{}});
+      put(K_I,INS); $("insName").value=""; $("insPrice").value="";
+      renderInsurance(); flash("insMsg","Added.");
+    });
+    $("insExport").addEventListener("click", function(){ download("insurance-comparison.txt", insText()); flash("insMsg","Exported."); });
+    $("insClear").addEventListener("click", function(){
+      if(!confirm("Clear every policy entered?")) return;
+      INS=[]; put(K_I,INS); renderInsurance();
+    });
+    $("ckReset").addEventListener("click", function(){
+      if(!confirm("Untick every checklist item?")) return;
+      C={}; put(K_C,C); renderChecklist();
+    });
+    $("ckExport").addEventListener("click", function(){ download("usa-travel-checklist.txt", ckText()); flash("ckMsg","Exported."); });
+    $("ckWipe").addEventListener("click", function(){
+      if(!confirm("Remove every place from your trip?")) return;
+      TRIP={}; put(K_T,TRIP); renderGrid(); renderChecklist();
+    });
+
+    renderFilters();
+    renderGrid();
+    renderHazards();
+    renderInsurance();
+    renderChecklist();
+    renderExtend();
+  });
+})();
+</script>
+
+</body>
+</html>
