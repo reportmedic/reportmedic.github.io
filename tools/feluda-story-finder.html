@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the Feluda Story Finder.</p><a href="https://reportmedic.org/tools/feluda-story-finder.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="Find any Feluda story by setting, character, type or year. A bilingual Bengali and English index with a reading tracker and reading order guidance."/>
+<title>Feluda Story Finder - Bengali and English Index - ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+
+/* -- Animated Background -- */
+.bg-mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.bg-mesh .strand{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12;animation:meshDrift 20s ease-in-out infinite alternate;}
+.bg-mesh .strand:nth-child(1){width:700px;height:500px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);top:-15%;right:-10%;}
+.bg-mesh .strand:nth-child(2){width:500px;height:500px;background:linear-gradient(135deg,#a78bfa,#6ea8ff);bottom:-10%;left:-5%;animation-delay:-7s;animation-duration:25s;}
+.bg-mesh .strand:nth-child(3){width:400px;height:300px;background:linear-gradient(135deg,#7cf7d4,#f59e0b);top:50%;left:40%;animation-delay:-14s;animation-duration:28s;}
+@keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg) scale(1);}100%{transform:translate(40px,-30px) rotate(15deg) scale(1.1);}}
+
+/* -- Tabs Nav -- */
+.tab-nav{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:24px;overflow-x:auto;}
+.tab-btn{flex:1;min-width:fit-content;padding:12px 20px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;letter-spacing:.01em;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(110,168,255,.18),rgba(124,247,212,.12));color:var(--text);box-shadow:0 2px 16px rgba(110,168,255,.12),inset 0 1px 0 rgba(255,255,255,.06);}
+
+/* -- Views -- */
+.view{display:none;}
+.view.active{display:block;}
+
+/* -- Hero -- */
+.daily-hero{text-align:center;padding:32px 0 16px;}
+.daily-hero h1{font-size:clamp(26px,4.5vw,38px);font-weight:700;letter-spacing:-.02em;line-height:1.15;}
+.daily-hero h1 .grad{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.daily-hero .sub{color:var(--muted);font-size:14.5px;margin-top:10px;line-height:1.5;letter-spacing:.01em;}
+
+/* -- Streak Banner -- */
+.streak-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 26px;flex-wrap:wrap;}
+.streak-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);backdrop-filter:blur(8px);font-size:13px;font-weight:600;transition:transform .15s;}
+.streak-pill:hover{transform:translateY(-1px);}
+.streak-pill .fire{font-size:20px;}
+.streak-pill .sval{font-size:18px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-pill .sval.green{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak-dots{display:flex;gap:5px;}
+.streak-dots .dot{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;color:var(--muted);}
+.streak-dots .dot.done{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(124,247,212,.1));border-color:rgba(16,185,129,.25);color:#34d399;}
+.streak-dots .dot.today{border-color:rgba(110,168,255,.45);box-shadow:0 0 14px rgba(110,168,255,.15);}
+
+/* -- Phase Filter -- */
+.phase-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.phase-filter .pf-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px;}
+.pf-btn{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;}
+.pf-btn:hover{border-color:rgba(255,255,255,.22);color:var(--text);}
+.pf-btn.active{background:rgba(110,168,255,.12);border-color:rgba(110,168,255,.35);color:#6ea8ff;}
+
+/* -- Quiz Container -- */
+.quiz-panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:26px;backdrop-filter:blur(8px);position:relative;overflow:hidden;max-width:780px;margin:0 auto;}
+.quiz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,247,212,.3),rgba(110,168,255,.3),transparent);}
+.quiz-progress{display:flex;gap:4px;margin-bottom:18px;}
+.quiz-progress .pip{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.06);transition:background .3s;}
+.quiz-progress .pip.done{background:linear-gradient(90deg,#10b981,#7cf7d4);}
+.quiz-progress .pip.wrong{background:#ef4444;}
+.quiz-progress .pip.current{background:rgba(110,168,255,.4);animation:pipPulse 1.5s ease infinite;}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.1);color:#6ea8ff;border:1px solid rgba(110,168,255,.15);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);color:var(--muted);}
+.quiz-meta .qphase{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid rgba(124,247,212,.2);background:rgba(124,247,212,.06);color:#7cf7d4;}
+.quiz-meta .qdiff{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.quiz-meta .qdiff.easy{border:1px solid rgba(52,211,153,.2);background:rgba(52,211,153,.06);color:#34d399;}
+.quiz-meta .qdiff.medium{border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.06);color:#fbbf24;}
+.quiz-meta .qdiff.hard{border:1px solid rgba(248,113,113,.2);background:rgba(248,113,113,.06);color:#f87171;}
+.quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.quiz-meta .timer svg{color:rgba(110,168,255,.6);}
+
+.quiz-question{font-size:16.5px;line-height:1.7;font-weight:600;margin-bottom:18px;letter-spacing:.005em;}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s;}
+.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.06);}
+.qo.selected .letter{border-color:#6ea8ff;background:#6ea8ff;color:#061021;}
+.qo.correct{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);}
+.qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
+.qo.disabled{pointer-events:none;opacity:.65;}
+.qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
+
+.quiz-explain{margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(124,247,212,.035);border:1px solid rgba(124,247,212,.1);font-size:13.5px;line-height:1.7;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;letter-spacing:.01em;}
+.qa-btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;}
+.qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+.qa-btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);}
+
+/* -- Results Card -- */
+.result-card{text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;}
+.result-card .big-score{font-size:64px;font-weight:700;line-height:1;margin-bottom:8px;}
+.result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
+.result-mini .rm{padding:16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.result-mini .rm .rv{font-size:20px;font-weight:700;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* -- Subject Practice Grid -- */
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.subj-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.subj-card .sc-icon{font-size:30px;margin-bottom:10px;}
+.subj-card .sc-name{font-size:14.5px;font-weight:700;margin-bottom:4px;letter-spacing:.01em;}
+.subj-card .sc-count{font-size:12px;color:var(--muted);}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .5s ease;}
+.fl-card{border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.03);padding:17px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.fl-card:hover{border-color:rgba(255,255,255,.2);transform:translateY(-2px);}
+.fl-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--brand);}
+.fl-card.read::before{background:#34d399;}
+.fl-bn{font-size:16px;font-weight:700;line-height:1.55;}
+.fl-en{font-size:13px;color:var(--muted);margin-top:3px;font-style:italic;}
+.fl-meta{font-size:11.5px;color:var(--muted);margin-top:8px;}
+.fl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;}
+.fl-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.fl-row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.75;}
+.fl-row:last-child{border-bottom:0;}
+.fl-row .lbl{font-weight:700;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px;}
+@media(max-width:640px){.fl-row{grid-template-columns:1fr;gap:4px;}}
+.fl-tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);margin:3px 5px 0 0;}
+.fl-note{border-left:3px solid var(--brand);background:rgba(255,255,255,.04);border-radius:0 12px 12px 0;padding:13px 15px;font-size:13.5px;line-height:1.75;}
+.ri-cell{padding:12px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.03);text-align:center;}
+.ri-cell .cv{font-size:19px;font-weight:800;}
+.ri-cell .cl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:3px;}
+.bn-text{line-height:1.9;}
+.ri-warnbox{border-left:3px solid #ffb35c;background:rgba(255,179,92,.07);border-radius:0 12px 12px 0;padding:14px 16px;font-size:13.5px;line-height:1.75;}
+.lit-detail{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.03);padding:22px;margin-top:18px;}
+.lit-detail h3{font-size:20px;margin-bottom:4px;}
+.lit-detail .meta{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+.lit-detail p{line-height:1.75;font-size:14.5px;margin-bottom:12px;}
+.lit-row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.lit-row:last-child{border-bottom:0;}
+.lit-row .lbl{font-weight:700;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px;}
+@media(max-width:640px){.lit-row{grid-template-columns:1fr;gap:4px;}}
+.cmp-grid{display:grid;grid-template-columns:170px 1fr 1fr;gap:10px;align-items:start;}
+.cmp-grid > div{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.7;}
+.cmp-grid .cmp-lbl{font-weight:700;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;}
+.cmp-grid .cmp-head{font-weight:700;font-size:15px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.14);}
+@media(max-width:760px){.cmp-grid{grid-template-columns:1fr;}.cmp-grid .cmp-lbl{padding-bottom:0;border-bottom:0;}}
+.theme-chip{display:inline-block;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:rgba(110,168,255,.10);border:1px solid rgba(110,168,255,.20);color:#6ea8ff;margin:3px 5px 3px 0;cursor:pointer;}
+.theme-chip.on{background:var(--brand);border-color:var(--brand);color:#08111f;}
+
+/* -- Analytics Dashboard -- */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
+.an-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.an-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);}
+.an-card.full{grid-column:1/-1;}
+.an-card h3{font-size:12.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* -- Overview Strip -- */
+.overview-strip{display:flex;align-items:center;gap:24px;}
+.ov-ring{position:relative;flex-shrink:0;width:100px;height:100px;}
+.ov-ring canvas{width:100px;height:100px;}
+.ov-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ov-ring-label .rv{font-size:22px;font-weight:700;line-height:1;}
+.ov-ring-label .rl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ov-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ov-stat{padding:12px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;}
+.ov-stat .os-val{font-size:18px;font-weight:700;line-height:1.2;font-family:'JetBrains Mono',monospace;}
+.ov-stat .os-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+@media(max-width:600px){
+  .overview-strip{flex-direction:column;gap:16px;}
+  .ov-stats{grid-template-columns:repeat(3,1fr);width:100%;}
+}
+
+/* -- Subject accuracy bars -- */
+.sub-bars{display:flex;flex-direction:column;gap:10px;}
+.sb-row{display:flex;align-items:center;gap:10px;}
+.sb-label{width:105px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:46px;text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+/* -- Trend Chart -- */
+.trend-wrap{position:relative;min-height:220px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.trend-wrap::-webkit-scrollbar{height:4px;}.trend-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--muted);text-align:center;}
+.trend-empty .te-icon{font-size:40px;opacity:.4;}
+.trend-empty .te-msg{font-size:13px;line-height:1.5;max-width:320px;}
+.trend-bar-chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding:10px 0;min-width:min-content;}
+.trend-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:48px;width:48px;flex-shrink:0;}
+.trend-bar-outer{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative;}
+.trend-bar{width:100%;border-radius:6px 6px 2px 2px;transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;min-height:4px;}
+.trend-bar:hover{filter:brightness(1.2);}
+.trend-bar .tb-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.trend-bar:hover .tb-val{opacity:1;}
+.trend-label{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.trend-mode-label.daily{background:rgba(110,168,255,.12);color:#6ea8ff;}
+.trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
+
+/* -- Mastery Dashboard -- */
+.mastery-wrap{margin-top:8px;}
+.mastery-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.m-stat{padding:12px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);}
+.m-stat .ms-val{font-size:22px;font-weight:800;margin-bottom:2px;}
+.m-stat .ms-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+.m-stat.green .ms-val{color:#34d399;} .m-stat.yellow .ms-val{color:#fbbf24;} .m-stat.red .ms-val{color:#f87171;} .m-stat.blue .ms-val{color:#6ea8ff;} .m-stat.purple .ms-val{color:#a78bfa;}
+.coverage-ring{display:flex;align-items:center;gap:16px;padding:14px;border-radius:14px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);margin-bottom:14px;overflow:hidden;}
+.cov-canvas{width:90px;height:90px;flex-shrink:0;}
+.cov-info{flex:1;min-width:0;overflow:hidden;}
+.cov-title{font-size:13px;font-weight:700;color:var(--fg);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cov-sub{font-size:11px;color:var(--muted);line-height:1.6;word-break:break-word;}
+.subj-mastery{margin-top:14px;}
+.sm-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+.sm-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.sm-icon{font-size:14px;width:20px;text-align:center;}
+.sm-name{width:70px;font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-bar{flex:1;height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative;}
+.sm-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.sm-pct{width:34px;text-align:right;font-weight:700;font-size:11px;}
+
+/* -- Passage block for reading items -- */
+.quiz-passage{padding:14px 16px;border-radius:14px;background:rgba(110,168,255,.04);border:1px solid rgba(110,168,255,.10);font-size:14.5px;line-height:1.75;color:var(--muted);margin-bottom:14px;}
+.quiz-passage em{color:var(--text);font-style:italic;}
+
+/* -- Difficulty chips -- */
+.diff-dist{display:flex;gap:10px;margin-top:6px;}
+.diff-chip{flex:1;padding:14px 10px;border-radius:14px;text-align:center;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);}
+.diff-chip .dc-val{font-size:20px;font-weight:700;margin-bottom:2px;}
+.diff-chip .dc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+.diff-chip.easy .dc-val{color:#34d399;}
+.diff-chip.medium .dc-val{color:#fbbf24;}
+.diff-chip.hard .dc-val{color:#f87171;}
+
+/* -- Session History -- */
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding-right:4px;}
+.hist-list::-webkit-scrollbar{width:4px;}
+.hist-list::-webkit-scrollbar-track{background:transparent;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:12px;transition:background .1s;}
+.hist-row:hover{background:rgba(255,255,255,.04);}
+.hist-date{font-weight:600;min-width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hist-mode{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.hist-mode.daily{background:rgba(110,168,255,.1);color:#6ea8ff;}
+.hist-mode.practice{background:rgba(139,92,246,.1);color:#a78bfa;}
+.hist-score{margin-left:auto;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.hist-detail{color:var(--muted);font-size:11px;}
+
+/* -- Reset Button -- */
+.reset-zone{margin-top:20px;text-align:center;}
+.reset-btn{padding:10px 20px;border-radius:12px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.reset-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);}
+
+/* -- Tab label responsive -- */
+.tab-short{display:none;}
+@media(max-width:540px){.tab-full{display:none;}.tab-short{display:inline;}}
+@media(max-width:640px){
+  .quiz-panel{padding:16px;}
+  .streak-bar{gap:10px;}
+  .subj-grid{grid-template-columns:1fr 1fr;}
+  .diff-dist{flex-wrap:wrap;}
+  .diff-chip{min-width:calc(50% - 5px);}
+  .mastery-stats{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .coverage-ring{flex-direction:column;text-align:center;}
+  .sm-name{width:55px;font-size:10px;}
+  .tab-nav{overflow-x:hidden;}
+  .hide-mobile{display:none!important;}
+}
+
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .5s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+
+.btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;padding:10px 20px;border-radius:10px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:.01em;transition:all .18s;}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-mesh"><div class="strand"></div><div class="strand"></div><div class="strand"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn hide-mobile" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+  <button class="btn primary" id="langToggle" type="button">বাংলা</button>
+</div>
+</header>
+
+<div class="wrap">
+  <!-- Tab Nav -->
+  <nav class="tab-nav anim-up">
+    <button class="tab-btn active" data-tab="finder"><span class="tab-full" data-i18n="tabFinder"></span></button>
+    <button class="tab-btn" data-tab="order"><span class="tab-full" data-i18n="tabOrder"></span></button>
+    <button class="tab-btn" data-tab="people"><span class="tab-full" data-i18n="tabPeople"></span></button>
+    <button class="tab-btn" data-tab="progress"><span class="tab-full" data-i18n="tabProgress"></span></button>
+  </nav>
+
+  <!-- VIEW: FINDER -->
+  <div class="view active" id="viewFinder">
+    <div class="daily-hero anim-up d1">
+      <h1 data-i18n-html="h1Finder"></h1>
+      <p class="sub" data-i18n="subFinder"></p>
+    </div>
+
+    <div class="phase-filter anim-up d2">
+      <span class="pf-label" data-i18n="filType"></span>
+      <span id="typeBtns"></span>
+    </div>
+    <div class="phase-filter anim-up d2" style="margin-top:-6px">
+      <span class="pf-label" data-i18n="filRegion"></span>
+      <span id="regionBtns"></span>
+    </div>
+
+    <div class="row" style="gap:10px;margin:14px 0;flex-wrap:wrap">
+      <input class="input" id="flFind" type="search" style="max-width:300px" />
+      <span class="pill tiny" id="flCount"></span>
+      <button class="btn" id="flReset" type="button" data-i18n="btnReset"></button>
+    </div>
+
+    <div class="fl-grid anim-up d3" id="flGrid"></div>
+    <div id="flDetail"></div>
+  </div>
+
+  <!-- VIEW: ORDER -->
+  <div class="view" id="viewOrder">
+    <div class="daily-hero">
+      <h1 data-i18n-html="h1Order"></h1>
+      <p class="sub" data-i18n="subOrder"></p>
+    </div>
+    <div id="orderList"></div>
+  </div>
+
+  <!-- VIEW: PEOPLE -->
+  <div class="view" id="viewPeople">
+    <div class="daily-hero">
+      <h1 data-i18n-html="h1People"></h1>
+      <p class="sub" data-i18n="subPeople"></p>
+    </div>
+    <div id="peopleList"></div>
+  </div>
+
+  <!-- VIEW: PROGRESS -->
+  <div class="view" id="viewProgress">
+    <div class="daily-hero">
+      <h1 data-i18n-html="h1Progress"></h1>
+      <p class="sub" data-i18n="subProgress"></p>
+    </div>
+    <div class="analytics-grid">
+      <div class="an-card full">
+        <div class="ov-stats" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
+          <div class="ri-cell"><div class="cv" id="pgRead">0</div><div class="cl" data-i18n="statRead"></div></div>
+          <div class="ri-cell"><div class="cv" id="pgTotal">0</div><div class="cl" data-i18n="statTotal"></div></div>
+          <div class="ri-cell"><div class="cv" id="pgPct">0%</div><div class="cl" data-i18n="statPct"></div></div>
+          <div class="ri-cell"><div class="cv" id="pgNovels">0</div><div class="cl" data-i18n="statNovels"></div></div>
+          <div class="ri-cell"><div class="cv" id="pgPlaces">0</div><div class="cl" data-i18n="statPlaces"></div></div>
+        </div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(110,168,255,.1);color:#6ea8ff;">N</span><span data-i18n="notRead"></span></h3>
+        <div id="pgLeft"></div>
+      </div>
+    </div>
+    <div class="reset-zone">
+      <button class="reset-btn" id="pgWipe" type="button" data-i18n="btnWipe"></button>
+    </div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">Feluda Story Finder - a bilingual index to the Feluda canon</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. Copyright ReportMedic.</div>
+</div>
+</footer>
+<script>
+var FL = {};
+
+FL.i18n = {
+en:{
+ tabFinder:"Story Finder", tabOrder:"Reading Order", tabPeople:"The Regulars", tabProgress:"My Reading",
+ h1Finder:'Feluda <span class="grad">Story Finder</span>',
+ subFinder:"Find any story by setting, type, or who appears in it. Tap a card to open the full entry.",
+ h1Order:'Reading <span class="grad">Order</span>',
+ subOrder:"Four routes through the canon, depending on whether you are starting, returning, or reading with someone else.",
+ h1People:'The <span class="grad">Regulars</span>',
+ subPeople:"The recurring figures, when each first appears, and what each one is for.",
+ h1Progress:'My <span class="grad">Reading</span>',
+ subProgress:"What you have read and what is left. Everything stays in your browser.",
+ filType:"Type:", filRegion:"Setting:", btnReset:"Reset filters", btnWipe:"Reset reading record",
+ search:"Search titles, settings, characters", showing:"Showing",
+ statRead:"Read", statTotal:"Stories", statPct:"Complete", statNovels:"Novels read", statPlaces:"Settings visited",
+ notRead:"Still to read", markRead:"Mark as read", markUnread:"Mark as unread",
+ lYear:"First published", lType:"Type", lSetting:"Setting", lPremise:"Premise", lNotable:"Notable for", lFeat:"Features",
+ all:"All", novel:"Novel", story:"Short story", noneLeft:"You have read every story in this index.",
+ empty:"No story matches those filters."
+},
+bn:{
+ tabFinder:"গল্প খোঁজা", tabOrder:"পড়ার ক্রম", tabPeople:"নিয়মিত চরিত্র", tabProgress:"আমার পড়া",
+ h1Finder:'ফেলুদা <span class="grad">গল্প খোঁজা</span>',
+ subFinder:"পটভূমি, ধরন বা কোন চরিত্র আছে তা দিয়ে যেকোনো গল্প খুঁজুন। সম্পূর্ণ বিবরণ দেখতে কার্ডে চাপ দিন।",
+ h1Order:'পড়ার <span class="grad">ক্রম</span>',
+ subOrder:"চারটি পথ, আপনি নতুন শুরু করছেন, ফিরে আসছেন, নাকি কারও সঙ্গে পড়ছেন তার উপর নির্ভর করে।",
+ h1People:'নিয়মিত <span class="grad">চরিত্র</span>',
+ subPeople:"বারবার ফিরে আসা চরিত্ররা, কে কোথায় প্রথম আসে, আর প্রত্যেকের ভূমিকা কী।",
+ h1Progress:'আমার <span class="grad">পড়া</span>',
+ subProgress:"কী পড়েছেন আর কী বাকি। সব কিছু আপনার ব্রাউজারেই থাকে।",
+ filType:"ধরন:", filRegion:"পটভূমি:", btnReset:"ফিল্টার মুছুন", btnWipe:"পড়ার হিসাব মুছুন",
+ search:"নাম, পটভূমি বা চরিত্র খুঁজুন", showing:"দেখানো হচ্ছে",
+ statRead:"পড়া হয়েছে", statTotal:"মোট গল্প", statPct:"সম্পূর্ণ", statNovels:"উপন্যাস পড়া", statPlaces:"পটভূমি ঘোরা",
+ notRead:"এখনও পড়া বাকি", markRead:"পড়া হয়েছে চিহ্নিত করুন", markUnread:"পড়া হয়নি চিহ্নিত করুন",
+ lYear:"প্রথম প্রকাশ", lType:"ধরন", lSetting:"পটভূমি", lPremise:"সংক্ষেপে", lNotable:"বিশেষত্ব", lFeat:"চরিত্র",
+ all:"সব", novel:"উপন্যাস", story:"ছোট গল্প", noneLeft:"এই তালিকার সব গল্পই আপনি পড়ে ফেলেছেন।",
+ empty:"এই ফিল্টারে কোনো গল্প মেলেনি।"
+}};
+
+FL.regions = [
+{id:"kolkata", en:"Kolkata", bn:"কলকাতা"},
+{id:"hills",   en:"The hills", bn:"পাহাড়"},
+{id:"rajasthan", en:"Rajasthan and the west", bn:"রাজস্থান ও পশ্চিম"},
+{id:"north",   en:"North India", bn:"উত্তর ভারত"},
+{id:"east",    en:"Eastern India", bn:"পূর্ব ভারত"},
+{id:"south",   en:"South and coastal", bn:"দক্ষিণ ও উপকূল"},
+{id:"abroad",  en:"Outside India", bn:"বিদেশ"}
+];
+
+/* The canon, in order of first publication.
+   Titles, settings and character appearances are bibliographic facts.
+   Premises are original one-line summaries written for this index and
+   contain no text from the stories themselves. */
+FL.stories = [
+{id:"f01", bn:"ফেলুদার গোয়েন্দাগিরি", en:"Feluda's Detection", y:1965, type:"story", r:"hills",
+ setBn:"দার্জিলিং", setEn:"Darjeeling",
+ pBn:"সিরিজের প্রথম গল্প। ছুটিতে গিয়ে ফেলুদা একটি হুমকির চিঠির তদন্তে নামে।",
+ pEn:"The first story in the series. On holiday, Feluda takes on the case of a threatening letter.",
+ nBn:"ফেলুদা ও তোপসের প্রথম আবির্ভাব।", nEn:"The first appearance of Feluda and Topshe.",
+ feat:["feluda","topshe"]},
+{id:"f02", bn:"বাদশাহী আংটি", en:"The Emperor's Ring", y:1966, type:"novel", r:"north",
+ setBn:"লখনউ", setEn:"Lucknow",
+ pBn:"একটি ঐতিহাসিক আংটি চুরি যাওয়ার পর ফেলুদার প্রথম পূর্ণাঙ্গ তদন্ত।",
+ pEn:"Feluda's first full-length case, following the theft of a historic ring.",
+ nBn:"সিরিজের প্রথম উপন্যাস।", nEn:"The first novel in the series.",
+ feat:["feluda","topshe"]},
+{id:"f03", bn:"কৈলাসে কেলেঙ্কারি", en:"Trouble in Kailash", y:1973, type:"novel", r:"north",
+ setBn:"ইলোরা ও ঔরঙ্গাবাদ", setEn:"Ellora and Aurangabad",
+ pBn:"মন্দিরের ভাস্কর্য পাচারের একটি চক্রের সন্ধানে ফেলুদা।",
+ pEn:"Feluda pursues a ring trafficking in temple sculpture.",
+ nBn:"মগনলাল মেঘরাজের প্রথম আবির্ভাব।", nEn:"The first appearance of Maganlal Meghraj.",
+ feat:["feluda","topshe","jatayu","maganlal"]},
+{id:"f04", bn:"সোনার কেল্লা", en:"The Golden Fortress", y:1971, type:"novel", r:"rajasthan",
+ setBn:"রাজস্থান, জয়সলমীর", setEn:"Rajasthan, Jaisalmer",
+ pBn:"পূর্বজন্মের কথা বলা এক শিশুকে ঘিরে বিপদ, আর মরুভূমির পথে ধাওয়া।",
+ pEn:"A child who speaks of a past life draws danger, and a pursuit across the desert follows.",
+ nBn:"লালমোহনবাবুর প্রথম আবির্ভাব। সত্যজিৎ রায়ের চলচ্চিত্রায়িত।", nEn:"The first appearance of Lalmohan Ganguly. Filmed by Satyajit Ray.",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f05", bn:"বাক্স রহস্য", en:"The Case of the Attache Case", y:1972, type:"novel", r:"hills",
+ setBn:"সিমলা", setEn:"Simla",
+ pBn:"ট্রেনে দুটি একরকম দেখতে বাক্স বদল হয়ে যাওয়া থেকে গোটা ঘটনার শুরু।",
+ pEn:"Two identical cases swapped on a train set the whole affair in motion.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f06", bn:"গ্যাংটকে গণ্ডগোল", en:"Trouble in Gangtok", y:1970, type:"novel", r:"hills",
+ setBn:"গ্যাংটক, সিকিম", setEn:"Gangtok, Sikkim",
+ pBn:"পাহাড়ি রাস্তায় একটি মৃত্যু দুর্ঘটনা নাকি নয়, সেই প্রশ্ন থেকেই তদন্ত।",
+ pEn:"A death on a mountain road may not be an accident, and the question opens the case.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe"]},
+{id:"f07", bn:"শেয়াল-দেবতা রহস্য", en:"The Mystery of the Jackal God", y:1970, type:"story", r:"kolkata",
+ setBn:"কলকাতা", setEn:"Kolkata",
+ pBn:"একটি প্রাচীন মূর্তি ঘিরে ভয় আর লোভের গল্প।",
+ pEn:"An ancient figurine draws out both fear and greed.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe"]},
+{id:"f08", bn:"সমাদ্দারের চাবি", en:"Samaddar's Key", y:1973, type:"story", r:"kolkata",
+ setBn:"কলকাতা", setEn:"Kolkata",
+ pBn:"এক পুরনো ধাঁধার সমাধান খুঁজতে গিয়ে উত্তরাধিকারের প্রশ্ন সামনে আসে।",
+ pEn:"Solving an old riddle brings a question of inheritance to the surface.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f09", bn:"রয়েল বেঙ্গল রহস্য", en:"The Royal Bengal Mystery", y:1974, type:"novel", r:"east",
+ setBn:"উত্তরবঙ্গের জঙ্গল", setEn:"The forests of North Bengal",
+ pBn:"জঙ্গলে বাঘের আতঙ্ক আর একটি সাংকেতিক ধাঁধা একসঙ্গে চলে।",
+ pEn:"A tiger scare in the forest runs alongside a coded puzzle.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f10", bn:"ঘুরঘুটিয়ার ঘটনা", en:"The Ghurghutiya Incident", y:1975, type:"story", r:"east",
+ setBn:"গ্রামবাংলা", setEn:"Rural Bengal",
+ pBn:"এক পুরনো বাড়ির ঘটনা, যেখানে অতীত সহজে ছাড়ে না।",
+ pEn:"An affair at an old house, where the past does not let go easily.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe"]},
+{id:"f11", bn:"বোম্বাইয়ের বোম্বেটে", en:"The Bandits of Bombay", y:1976, type:"novel", r:"rajasthan",
+ setBn:"বোম্বাই", setEn:"Bombay",
+ pBn:"চলচ্চিত্র জগতের পটভূমিতে পাচার আর ছদ্মবেশের তদন্ত।",
+ pEn:"A case of smuggling and disguise set against the film industry.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f12", bn:"গোরস্থানে সাবধান", en:"Danger in the Cemetery", y:1977, type:"novel", r:"kolkata",
+ setBn:"কলকাতা, পার্ক স্ট্রিট", setEn:"Kolkata, Park Street",
+ pBn:"একটি ঔপনিবেশিক যুগের সমাধি ঘিরে সন্দেহ আর অনুসন্ধান।",
+ pEn:"Suspicion and enquiry gather around a colonial-era grave.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f13", bn:"জয় বাবা ফেলুনাথ", en:"The Elephant God", y:1975, type:"novel", r:"north",
+ setBn:"বারাণসী", setEn:"Varanasi",
+ pBn:"একটি পারিবারিক মূর্তি হারানোর তদন্তে ফেলুদা এক পুরনো প্রতিপক্ষের মুখোমুখি।",
+ pEn:"Investigating a missing family idol brings Feluda face to face with an old adversary.",
+ nBn:"সত্যজিৎ রায়ের চলচ্চিত্রায়িত।", nEn:"Filmed by Satyajit Ray.",
+ feat:["feluda","topshe","jatayu","maganlal"]},
+{id:"f14", bn:"ছিন্নমস্তার অভিশাপ", en:"The Curse of the Goddess", y:1978, type:"novel", r:"east",
+ setBn:"হাজারিবাগ", setEn:"Hazaribagh",
+ pBn:"একটি সার্কাস, একটি পুরনো পরিবার আর একটি সন্দেহজনক মৃত্যু।",
+ pEn:"A circus, an old family, and a suspicious death.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f15", bn:"হত্যাপুরী", en:"The House of Death", y:1979, type:"novel", r:"south",
+ setBn:"পুরী", setEn:"Puri",
+ pBn:"সমুদ্রতীরের শহরে ছুটি কাটাতে গিয়ে একটি হত্যার তদন্ত।",
+ pEn:"A seaside holiday turns into a murder investigation.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f16", bn:"গোলকধাম রহস্য", en:"The Gokuldham Mystery", y:1980, type:"story", r:"kolkata",
+ setBn:"কলকাতা", setEn:"Kolkata",
+ pBn:"একটি আবাসনে ঘটা মৃত্যু, যেখানে প্রত্যেক প্রতিবেশীরই কিছু বলার আছে।",
+ pEn:"A death in an apartment block where every neighbour has something to say.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe"]},
+{id:"f17", bn:"যত কাণ্ড কাঠমান্ডুতে", en:"Trouble in Kathmandu", y:1980, type:"novel", r:"abroad",
+ setBn:"কাঠমান্ডু, নেপাল", setEn:"Kathmandu, Nepal",
+ pBn:"সীমান্ত পেরিয়ে একটি তদন্ত, যেখানে পুরনো শত্রুতা ফিরে আসে।",
+ pEn:"An investigation across the border, where an old enmity returns.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu","maganlal"]},
+{id:"f18", bn:"নেপোলিয়নের চিঠি", en:"Napoleon's Letter", y:1981, type:"story", r:"kolkata",
+ setBn:"কলকাতা", setEn:"Kolkata",
+ pBn:"একটি ঐতিহাসিক চিঠি ঘিরে সংগ্রাহকদের মধ্যে টানাপোড়েন।",
+ pEn:"A historic letter creates tension among collectors.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f19", bn:"টিনটোরেটোর যীশু", en:"Tintoretto's Jesus", y:1982, type:"novel", r:"abroad",
+ setBn:"কলকাতা ও হংকং", setEn:"Kolkata and Hong Kong",
+ pBn:"একটি ইউরোপীয় চিত্রকর্মের সন্ধান ফেলুদাকে দেশের বাইরে নিয়ে যায়।",
+ pEn:"The search for a European painting takes Feluda abroad.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f20", bn:"অম্বর সেন অন্তর্ধান রহস্য", en:"The Disappearance of Ambar Sen", y:1983, type:"story", r:"kolkata",
+ setBn:"কলকাতা", setEn:"Kolkata",
+ pBn:"এক ব্যক্তি নিখোঁজ, আর তদন্ত এগোতেই কারণটি বদলে যেতে থাকে।",
+ pEn:"A man goes missing, and the reason keeps changing as the enquiry proceeds.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f21", bn:"জাহাঙ্গীরের স্বর্ণমুদ্রা", en:"Jahangir's Gold Coin", y:1983, type:"story", r:"kolkata",
+ setBn:"কলকাতা", setEn:"Kolkata",
+ pBn:"একটি মুঘল মুদ্রা উধাও, আর সন্দেহভাজনদের তালিকা ছোট।",
+ pEn:"A Mughal coin vanishes, and the list of suspects is short.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f22", bn:"এবার কাণ্ড কেদারনাথে", en:"Trouble in Kedarnath", y:1984, type:"novel", r:"hills",
+ setBn:"কেদারনাথ", setEn:"Kedarnath",
+ pBn:"তীর্থযাত্রার পথে একটি অপরাধের তদন্ত।",
+ pEn:"A crime investigated on a pilgrimage route.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f23", bn:"বোসপুকুরে খুনখারাপি", en:"Murder in Bosepukur", y:1985, type:"novel", r:"kolkata",
+ setBn:"কলকাতা", setEn:"Kolkata",
+ pBn:"পুজোর প্রতিমা তৈরির জগতে ঘটা একটি খুন।",
+ pEn:"A murder in the world of festival idol making.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f24", bn:"দার্জিলিং জমজমাট", en:"Darjeeling Jamjamat", y:1986, type:"novel", r:"hills",
+ setBn:"দার্জিলিং", setEn:"Darjeeling",
+ pBn:"একটি ছবির শুটিংয়ের সময় ঘটা রহস্য, প্রথম গল্পের শহরে ফেরা।",
+ pEn:"A mystery during a film shoot, returning to the town of the first story.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f25", bn:"অপ্সরা থিয়েটারের মামলা", en:"The Apsara Theatre Case", y:1987, type:"novel", r:"kolkata",
+ setBn:"কলকাতা", setEn:"Kolkata",
+ pBn:"মঞ্চের জগতে একটি হুমকি আর তার পিছনের কারণ।",
+ pEn:"A threat in the world of the stage, and the reason behind it.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f26", bn:"ভূস্বর্গ ভয়ংকর", en:"Peril in Paradise", y:1987, type:"novel", r:"hills",
+ setBn:"কাশ্মীর", setEn:"Kashmir",
+ pBn:"পাহাড়ঘেরা উপত্যকায় একটি বিপজ্জনক তদন্ত।",
+ pEn:"A dangerous investigation in a valley ringed by mountains.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f27", bn:"শকুন্তলার কণ্ঠহার", en:"Shakuntala's Necklace", y:1988, type:"novel", r:"kolkata",
+ setBn:"কলকাতা", setEn:"Kolkata",
+ pBn:"একটি হার হারানোর পিছনে থিয়েটারের পুরনো ইতিহাস।",
+ pEn:"An old theatrical history lies behind a missing necklace.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f28", bn:"লন্ডনে ফেলুদা", en:"Feluda in London", y:1989, type:"story", r:"abroad",
+ setBn:"লন্ডন", setEn:"London",
+ pBn:"বিদেশে একটি ছোট কিন্তু পরিপাটি তদন্ত।",
+ pEn:"A short and neatly turned case abroad.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f29", bn:"গোলাপী মুক্তা রহস্য", en:"The Pink Pearl Mystery", y:1989, type:"novel", r:"north",
+ setBn:"উত্তর ভারত", setEn:"North India",
+ pBn:"একটি দুর্লভ মুক্তা ঘিরে সংগ্রাহক আর প্রতারকের খেলা।",
+ pEn:"Collectors and deceivers circle a rare pearl.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f30", bn:"ডাক্তার মুনসীর ডায়রি", en:"Dr Munshi's Diary", y:1990, type:"novel", r:"kolkata",
+ setBn:"কলকাতা", setEn:"Kolkata",
+ pBn:"একজন চিকিৎসকের ডায়রি হারানো থেকে শুরু হওয়া তদন্ত।",
+ pEn:"An investigation that begins with a doctor's missing diary.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f31", bn:"নয়ন রহস্য", en:"The Mystery of Nayan", y:1990, type:"novel", r:"south",
+ setBn:"মাদ্রাজ ও কলকাতা", setEn:"Madras and Kolkata",
+ pBn:"অসাধারণ ক্ষমতাসম্পন্ন এক বালককে ঘিরে লোভ আর বিপদ।",
+ pEn:"Greed and danger gather around a boy with an extraordinary gift.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f32", bn:"রবার্টসনের রুবি", en:"Robertson's Ruby", y:1992, type:"novel", r:"east",
+ setBn:"ঝাড়খণ্ড অঞ্চল", setEn:"The Jharkhand region",
+ pBn:"একটি ঔপনিবেশিক যুগের রত্ন আর তার সঙ্গে জড়িয়ে থাকা অভিশাপের গল্প।",
+ pEn:"A colonial-era gem and the curse said to attach to it.",
+ nBn:"", nEn:"",
+ feat:["feluda","topshe","jatayu"]},
+{id:"f33", bn:"ইন্দ্রজাল রহস্য", en:"The Magical Mystery", y:1992, type:"story", r:"kolkata",
+ setBn:"কলকাতা", setEn:"Kolkata",
+ pBn:"জাদুর জগতে ঘটা একটি ঘটনা, যেখানে বিভ্রম আর অপরাধ মেশে।",
+ pEn:"An affair in the world of magic, where illusion and crime mix.",
+ nBn:"শেষ সম্পূর্ণ ফেলুদা কাহিনিগুলির একটি।", nEn:"Among the last completed Feluda cases.",
+ feat:["feluda","topshe","jatayu"]}
+];
+
+FL.people = [
+{id:"feluda", bn:"ফেলুদা", en:"Feluda",
+ dBn:"প্রদোষচন্দ্র মিত্র, পেশায় বেসরকারি গোয়েন্দা। যুক্তি, পর্যবেক্ষণ আর মগজাস্ত্রই তাঁর প্রধান হাতিয়ার। শারীরিক সক্ষমতা থাকলেও সমাধান প্রায় সবসময়ই আসে চিন্তা থেকে।",
+ dEn:"Pradosh Chandra Mitra, a private investigator. Reasoning, observation and what he calls his brain are the principal tools. He is physically capable, and the solution almost always arrives through thought rather than force.",
+ first:"f01"},
+{id:"topshe", bn:"তোপসে", en:"Topshe",
+ dBn:"ফেলুদার খুড়তুতো ভাই এবং প্রতিটি কাহিনির কথক। পাঠক যা জানেন, তা তোপসের চোখ দিয়েই জানেন, তাই তার সীমাবদ্ধতাই কাহিনির সীমা।",
+ dEn:"Feluda's cousin and the narrator of every case. What the reader knows arrives through his eyes, so his limits are the story's limits.",
+ first:"f01"},
+{id:"jatayu", bn:"লালমোহন গাঙ্গুলী", en:"Lalmohan Ganguly",
+ dBn:"ছদ্মনামে জটায়ু, জনপ্রিয় রোমাঞ্চ উপন্যাসের লেখক। হাস্যরসের উৎস, কিন্তু নিছক কৌতুক চরিত্র নন। তাঁর প্রশ্নেই অনেক সময় পাঠকের প্রশ্নটি উঠে আসে।",
+ dEn:"Writing as Jatayu, a popular author of adventure novels. A source of humour and not merely a comic figure, because his questions are frequently the reader's own.",
+ first:"f04"},
+{id:"maganlal", bn:"মগনলাল মেঘরাজ", en:"Maganlal Meghraj",
+ dBn:"সিরিজের একমাত্র বারবার ফিরে আসা প্রতিপক্ষ। ভয় দেখানোর কাজটি তিনি শান্ত ভঙ্গিতে করেন, আর সেটাই তাঁকে ভয়ংকর করে তোলে।",
+ dEn:"The one recurring adversary of the series. He conducts intimidation quietly, and the quietness is precisely what makes him formidable.",
+ first:"f03"}
+];
+
+FL.orders = [
+{id:"o1", bn:"প্রথমবার পড়ার জন্য", en:"If you are starting",
+ dBn:"প্রকাশের ক্রমেই পড়ুন। চরিত্ররা যেভাবে একে একে আসে, সম্পর্কগুলিও সেভাবেই গড়ে ওঠে, আর জটায়ুর আগমনের আগে ও পরে সিরিজের সুর কতটা বদলায় তা তখনই ধরা পড়ে।",
+ dEn:"Read in order of publication. The characters arrive one at a time and the relationships build with them, and the shift in the series' tone before and after Jatayu appears only registers if you meet them in sequence.",
+ ids:["f01","f02","f06","f04","f05"]},
+{id:"o2", bn:"বিখ্যাত পাঁচটি", en:"The five best known",
+ dBn:"যদি অল্প সময়ে সিরিজের সেরা দিকটি দেখতে চান, এই পাঁচটি যথেষ্ট। দুটি চলচ্চিত্রায়িত, আর তিনটিতেই ফেলুদার পদ্ধতি সবচেয়ে স্পষ্ট।",
+ dEn:"If you want the best of the series quickly, these five suffice. Two were filmed, and in all of them Feluda's method is at its clearest.",
+ ids:["f04","f13","f03","f12","f14"]},
+{id:"o3", bn:"ছোটদের সঙ্গে পড়তে", en:"Reading with a child",
+ dBn:"ছোট গল্পগুলি দিয়ে শুরু করুন। দৈর্ঘ্য কম, ধাঁধা স্পষ্ট, আর একবারে শেষ করা যায়, তাই আগ্রহ ধরে রাখা সহজ।",
+ dEn:"Begin with the short stories. They are brief, the puzzle is clear, and each finishes in one sitting, which makes holding attention far easier.",
+ ids:["f01","f07","f08","f16","f18"]},
+{id:"o4", bn:"পটভূমি ধরে ভ্রমণ", en:"Travelling by setting",
+ dBn:"পাহাড় থেকে মরুভূমি, সমুদ্রতীর থেকে বিদেশ। ভূগোল ধরে পড়লে দেখা যায় প্রতিটি জায়গা কীভাবে কাহিনির ধরন বদলে দেয়।",
+ dEn:"From the hills to the desert, the coast to abroad. Reading by geography shows how each place changes the shape of the case.",
+ ids:["f06","f04","f15","f17","f19"]}
+];
+
+/* ================================================================ */
+(function(){
+  "use strict";
+  var K_R="rm_fel_read_v1", K_L="rm_fel_lang_v1";
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function put(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  function get(k,f){ try{ var r=localStorage.getItem(k); return r?JSON.parse(r):f; }catch(e){ return f; } }
+
+  var L = get(K_L, "bn") === "en" ? "en" : "bn";
+  var R = get(K_R, {});
+  var fType="All", fRegion="All", openId=null;
+
+  function t(k){ return (FL.i18n[L]||FL.i18n.en)[k] || k; }
+  function sTitle(s){ return L==="bn" ? s.bn : s.en; }
+  function sAlt(s){ return L==="bn" ? s.en : s.bn; }
+  function sSet(s){ return L==="bn" ? s.setBn : s.setEn; }
+  function sPrem(s){ return L==="bn" ? s.pBn : s.pEn; }
+  function sNote(s){ return L==="bn" ? s.nBn : s.nEn; }
+  function rName(id){ for(var i=0;i<FL.regions.length;i++){ if(FL.regions[i].id===id) return L==="bn"?FL.regions[i].bn:FL.regions[i].en; } return id; }
+  function pName(id){ for(var i=0;i<FL.people.length;i++){ if(FL.people[i].id===id) return L==="bn"?FL.people[i].bn:FL.people[i].en; } return id; }
+  function typeName(x){ return x==="novel" ? t("novel") : t("story"); }
+  function storyById(id){ for(var i=0;i<FL.stories.length;i++){ if(FL.stories[i].id===id) return FL.stories[i]; } return null; }
+
+  /* ---------- language ---------- */
+  function applyLang(){
+    document.documentElement.setAttribute("lang", L);
+    document.querySelectorAll("[data-i18n]").forEach(function(el){ el.textContent = t(el.getAttribute("data-i18n")); });
+    document.querySelectorAll("[data-i18n-html]").forEach(function(el){ el.innerHTML = t(el.getAttribute("data-i18n-html")); });
+    $("langToggle").textContent = L==="bn" ? "English" : "বাংলা";
+    $("flFind").setAttribute("placeholder", t("search"));
+    renderFilters(); renderGrid(); renderOrders(); renderPeople(); renderProgress();
+    if(openId) openStory(openId);
+  }
+
+  /* ---------- filters ---------- */
+  function renderFilters(){
+    $("typeBtns").innerHTML =
+      '<button class="pf-btn'+(fType==="All"?" active":"")+'" data-ty="All">'+esc(t("all"))+"</button>"+
+      '<button class="pf-btn'+(fType==="novel"?" active":"")+'" data-ty="novel">'+esc(t("novel"))+"</button>"+
+      '<button class="pf-btn'+(fType==="story"?" active":"")+'" data-ty="story">'+esc(t("story"))+"</button>";
+    $("regionBtns").innerHTML =
+      '<button class="pf-btn'+(fRegion==="All"?" active":"")+'" data-rg="All">'+esc(t("all"))+"</button>"+
+      FL.regions.map(function(r){
+        return '<button class="pf-btn'+(fRegion===r.id?" active":"")+'" data-rg="'+esc(r.id)+'">'+
+          esc(L==="bn"?r.bn:r.en)+"</button>";
+      }).join("");
+    $("typeBtns").querySelectorAll("[data-ty]").forEach(function(b){
+      b.addEventListener("click", function(){ fType=b.getAttribute("data-ty"); renderFilters(); renderGrid(); });
+    });
+    $("regionBtns").querySelectorAll("[data-rg]").forEach(function(b){
+      b.addEventListener("click", function(){ fRegion=b.getAttribute("data-rg"); renderFilters(); renderGrid(); });
+    });
+  }
+
+  /* ---------- grid ---------- */
+  function renderGrid(){
+    var q=($("flFind").value||"").toLowerCase();
+    var list=FL.stories.filter(function(s){
+      if(fType!=="All" && s.type!==fType) return false;
+      if(fRegion!=="All" && s.r!==fRegion) return false;
+      if(q){
+        var hay=(s.bn+" "+s.en+" "+s.setBn+" "+s.setEn+" "+s.pBn+" "+s.pEn+" "+
+                 s.feat.map(function(f){return pName(f);}).join(" ")+" "+s.y).toLowerCase();
+        if(hay.indexOf(q)<0) return false;
+      }
+      return true;
+    }).sort(function(a,b){ return a.y-b.y; });
+
+    $("flGrid").innerHTML = list.length ? list.map(function(s){
+      return '<div class="fl-card'+(R[s.id]?" read":"")+'" data-open="'+esc(s.id)+'">'+
+        '<div class="fl-bn">'+esc(sTitle(s))+"</div>"+
+        '<div class="fl-en">'+esc(sAlt(s))+"</div>"+
+        '<div class="fl-meta">'+s.y+" . "+esc(typeName(s.type))+" . "+esc(sSet(s))+"</div></div>";
+    }).join("") : '<div class="trend-empty"><div class="te-msg">'+esc(t("empty"))+"</div></div>";
+
+    $("flCount").innerHTML="<b>"+esc(t("showing"))+":</b><span class='muted'> "+list.length+" / "+FL.stories.length+"</span>";
+    $("flGrid").querySelectorAll("[data-open]").forEach(function(c){
+      c.addEventListener("click", function(){ openStory(c.getAttribute("data-open")); });
+    });
+  }
+
+  function openStory(id){
+    openId=id;
+    var s=storyById(id); if(!s) return;
+    var feats=s.feat.map(function(f){ return '<span class="fl-tag">'+esc(pName(f))+"</span>"; }).join("");
+    var note=sNote(s);
+    $("flDetail").innerHTML='<div class="fl-detail">'+
+      '<div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px">'+
+      "<div><h3 style='font-size:21px;line-height:1.5'>"+esc(sTitle(s))+"</h3>"+
+      "<div class='fl-en' style='font-size:14px'>"+esc(sAlt(s))+"</div></div>"+
+      '<button class="btn" id="flClose" type="button" style="padding:5px 11px;font-size:12px">&times;</button></div>'+
+      '<div style="margin-top:14px">'+
+      '<div class="fl-row"><div class="lbl">'+esc(t("lYear"))+"</div><div>"+s.y+"</div></div>"+
+      '<div class="fl-row"><div class="lbl">'+esc(t("lType"))+"</div><div>"+esc(typeName(s.type))+"</div></div>"+
+      '<div class="fl-row"><div class="lbl">'+esc(t("lSetting"))+"</div><div>"+esc(sSet(s))+" . "+esc(rName(s.r))+"</div></div>"+
+      '<div class="fl-row"><div class="lbl">'+esc(t("lPremise"))+"</div><div class='bn-text'>"+esc(sPrem(s))+"</div></div>"+
+      (note?'<div class="fl-row"><div class="lbl">'+esc(t("lNotable"))+"</div><div>"+esc(note)+"</div></div>":"")+
+      '<div class="fl-row"><div class="lbl">'+esc(t("lFeat"))+"</div><div>"+feats+"</div></div>"+
+      "</div>"+
+      '<div class="row" style="margin-top:16px"><button class="btn primary" id="flMark" type="button">'+
+      esc(R[id] ? t("markUnread") : t("markRead"))+"</button></div></div>";
+    $("flClose").addEventListener("click", function(){ openId=null; $("flDetail").innerHTML=""; });
+    $("flMark").addEventListener("click", function(){
+      R[id]=!R[id]; put(K_R,R); renderGrid(); renderProgress(); openStory(id);
+    });
+    $("flDetail").scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+
+  /* ---------- orders ---------- */
+  function renderOrders(){
+    $("orderList").innerHTML = FL.orders.map(function(o){
+      var items=o.ids.map(storyById).filter(Boolean).map(function(s,i){
+        return '<div class="fl-row"><div class="lbl">'+(i+1)+"</div><div><strong>"+esc(sTitle(s))+
+          '</strong><div class="fl-en">'+esc(sAlt(s))+" . "+s.y+"</div></div></div>";
+      }).join("");
+      return '<div class="an-card full" style="margin-bottom:14px">'+
+        "<h3><span class='icon' style='background:rgba(110,168,255,.1);color:#6ea8ff;'>R</span>"+
+        esc(L==="bn"?o.bn:o.en)+"</h3>"+
+        '<div class="quiz-explain show bn-text" style="margin-bottom:14px">'+esc(L==="bn"?o.dBn:o.dEn)+"</div>"+
+        items+"</div>";
+    }).join("");
+  }
+
+  /* ---------- people ---------- */
+  function renderPeople(){
+    $("peopleList").innerHTML='<div class="an-card full">'+ FL.people.map(function(p){
+      var f=storyById(p.first);
+      return '<div class="fl-row"><div class="lbl">'+esc(L==="bn"?p.bn:p.en)+"</div><div>"+
+        '<div class="bn-text" style="color:var(--muted)">'+esc(L==="bn"?p.dBn:p.dEn)+"</div>"+
+        (f?'<div class="fl-tag" style="margin-top:8px">'+esc(sTitle(f))+" . "+f.y+"</div>":"")+
+        "</div></div>";
+    }).join("")+"</div>";
+  }
+
+  /* ---------- progress ---------- */
+  function renderProgress(){
+    var read=FL.stories.filter(function(s){ return R[s.id]; });
+    var novels=read.filter(function(s){ return s.type==="novel"; }).length;
+    var places={}; read.forEach(function(s){ places[s.r]=true; });
+    $("pgRead").textContent=read.length;
+    $("pgTotal").textContent=FL.stories.length;
+    $("pgPct").textContent=Math.round(read.length/FL.stories.length*100)+"%";
+    $("pgNovels").textContent=novels;
+    $("pgPlaces").textContent=Object.keys(places).length;
+
+    var left=FL.stories.filter(function(s){ return !R[s.id]; }).sort(function(a,b){ return a.y-b.y; });
+    $("pgLeft").innerHTML = left.length ? left.map(function(s){
+      return '<div class="fl-row"><div class="lbl">'+s.y+"</div><div><strong>"+esc(sTitle(s))+
+        '</strong><div class="fl-en">'+esc(sAlt(s))+" . "+esc(sSet(s))+"</div></div></div>";
+    }).join("") : '<div class="tiny muted bn-text">'+esc(t("noneLeft"))+"</div>";
+  }
+
+  /* ---------- tabs ---------- */
+  function switchTab(name){
+    document.querySelectorAll(".tab-btn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-tab")===name);
+    });
+    var map={finder:"viewFinder",order:"viewOrder",people:"viewPeople",progress:"viewProgress"};
+    document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+    var el=$(map[name]); if(el) el.classList.add("active");
+    if(name==="progress") renderProgress();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    document.querySelector(".tab-nav").addEventListener("click", function(e){
+      var b=e.target.closest(".tab-btn"); if(!b) return;
+      switchTab(b.getAttribute("data-tab"));
+    });
+    $("langToggle").addEventListener("click", function(){
+      L = L==="bn" ? "en" : "bn";
+      put(K_L,L); applyLang();
+    });
+    $("flFind").addEventListener("input", renderGrid);
+    $("flReset").addEventListener("click", function(){
+      fType="All"; fRegion="All"; $("flFind").value="";
+      renderFilters(); renderGrid();
+    });
+    $("pgWipe").addEventListener("click", function(){
+      if(!confirm(L==="bn" ? "আপনার পড়ার হিসাব মুছে যাবে। চালিয়ে যাবেন?" : "This will erase your reading record. Continue?")) return;
+      R={}; put(K_R,R); renderGrid(); renderProgress();
+    });
+    applyLang();
+  });
+})();
+</script>
+
+</body>
+</html>
