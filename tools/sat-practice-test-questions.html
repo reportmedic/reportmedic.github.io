@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var r=document.referrer||'';
+  var h=window.location.hostname||'';
+  var allowed=['reportmedic.org','www.reportmedic.org','reportmedic.github.io'];
+  var onSite=allowed.indexOf(h)!==-1;
+  var fromSite=allowed.some(function(d){return r.indexOf(d)!==-1;});
+  if(!onSite&&!fromSite){
+    document.documentElement.innerHTML='<head><title>Access Denied</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0f1a;font-family:system-ui,sans-serif;color:#e2e8f0;text-align:center;padding:20px;}.c{max-width:440px;}.c h1{font-size:28px;margin-bottom:12px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.c p{color:#94a3b8;line-height:1.7;font-size:15px;margin-bottom:20px;}.c a{display:inline-block;padding:12px 28px;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;font-weight:700;text-decoration:none;font-size:14px;}</style></head><body><div class="c"><h1>Access Restricted</h1><p>This tool is part of ReportMedic and can only be accessed through the official site. Please visit the link below to use the SAT Practice tool.</p><a href="https://reportmedic.org/tools/sat-practice-test-questions.html">Go to ReportMedic</a></div></body>';
+    throw new Error('Blocked: not loaded from reportmedic.org');
+  }
+})();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="SAT Practice Test Questions - original practice items across Reading and Writing and Math, with daily challenges, section drills, timing strategy and analytics."/>
+<title>SAT Practice Test Questions - Drills with Analytics - ReportMedic</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/assets/img/reportmedic-48.png?v=1" sizes="48x48" type="image/png"/>
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" sizes="180x180"/>
+<link rel="stylesheet" href="/assets/css/styles.css"/>
+<script defer src="/assets/js/rm-tools-drawer.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+.quiz-progress .pip.wrong{background:#ef4444;}
+.quiz-progress .pip.current{background:rgba(110,168,255,.4);animation:pipPulse 1.5s ease infinite;}
+@keyframes pipPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.quiz-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.quiz-meta .qnum{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(110,168,255,.1);color:#6ea8ff;border:1px solid rgba(110,168,255,.15);}
+.quiz-meta .qsub{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);color:var(--muted);}
+.quiz-meta .qphase{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid rgba(124,247,212,.2);background:rgba(124,247,212,.06);color:#7cf7d4;}
+.quiz-meta .qdiff{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.quiz-meta .qdiff.easy{border:1px solid rgba(52,211,153,.2);background:rgba(52,211,153,.06);color:#34d399;}
+.quiz-meta .qdiff.medium{border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.06);color:#fbbf24;}
+.quiz-meta .qdiff.hard{border:1px solid rgba(248,113,113,.2);background:rgba(248,113,113,.06);color:#f87171;}
+.quiz-meta .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.quiz-meta .timer svg{color:rgba(110,168,255,.6);}
+
+.quiz-question{font-size:16.5px;line-height:1.7;font-weight:600;margin-bottom:18px;letter-spacing:.005em;}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.qo{padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5;}
+.qo:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);transform:translateX(4px);}
+.qo .letter{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s;}
+.qo.selected{border-color:rgba(110,168,255,.5);background:rgba(110,168,255,.06);}
+.qo.selected .letter{border-color:#6ea8ff;background:#6ea8ff;color:#061021;}
+.qo.correct{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);}
+.qo.correct .letter{border-color:#10b981;background:#10b981;color:#061021;}
+.qo.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05);}
+.qo.wrong .letter{border-color:#ef4444;background:#ef4444;color:#fff;}
+.qo.disabled{pointer-events:none;opacity:.65;}
+.qo.correct.disabled,.qo.wrong.disabled{opacity:1;}
+
+.quiz-explain{margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(124,247,212,.035);border:1px solid rgba(124,247,212,.1);font-size:13.5px;line-height:1.7;color:var(--muted);display:none;}
+.quiz-explain.show{display:block;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.quiz-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.qa-btn{padding:12px 24px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;letter-spacing:.01em;}
+.qa-btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;}
+.qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+.qa-btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+.qa-btn.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);}
+
+/* ── Results Card ── */
+.result-card{text-align:center;padding:40px 20px;max-width:520px;margin:0 auto;}
+.result-card .big-score{font-size:64px;font-weight:700;line-height:1;margin-bottom:8px;}
+.result-card .big-score.great{background:linear-gradient(135deg,#10b981,#7cf7d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.ok{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .big-score.poor{background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-card .rlabel{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.result-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;}
+.result-mini .rm{padding:16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+.result-mini .rm .rv{font-size:20px;font-weight:700;}
+.result-mini .rm .rl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* ── Subject Practice Grid ── */
+.subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px;}
+.subj-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.subj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.subj-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.subj-card .sc-icon{font-size:30px;margin-bottom:10px;}
+.subj-card .sc-name{font-size:14.5px;font-weight:700;margin-bottom:4px;letter-spacing:.01em;}
+.subj-card .sc-count{font-size:12px;color:var(--muted);}
+.subj-card .sc-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
+.subj-card .sc-fill{height:100%;border-radius:999px;transition:width .5s ease;}
+.subj-card[data-sub="Information and Ideas"]::before,.subj-card[data-sub="Information and Ideas"] .sc-fill{background:#6ea8ff;}
+.subj-card[data-sub="Craft and Structure"]::before,.subj-card[data-sub="Craft and Structure"] .sc-fill{background:#a78bfa;}
+.subj-card[data-sub="Expression of Ideas"]::before,.subj-card[data-sub="Expression of Ideas"] .sc-fill{background:#f472b6;}
+.subj-card[data-sub="Standard English Conventions"]::before,.subj-card[data-sub="Standard English Conventions"] .sc-fill{background:#38bdf8;}
+.subj-card[data-sub="Algebra"]::before,.subj-card[data-sub="Algebra"] .sc-fill{background:#34d399;}
+.subj-card[data-sub="Advanced Math"]::before,.subj-card[data-sub="Advanced Math"] .sc-fill{background:#14b8a6;}
+.subj-card[data-sub="Problem-Solving and Data Analysis"]::before,.subj-card[data-sub="Problem-Solving and Data Analysis"] .sc-fill{background:#f59e0b;}
+.subj-card[data-sub="Geometry and Trigonometry"]::before,.subj-card[data-sub="Geometry and Trigonometry"] .sc-fill{background:#fb923c;}
+
+/* ── Analytics Dashboard ── */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr;}}
+.an-card{padding:20px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.an-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);}
+.an-card.full{grid-column:1/-1;}
+.an-card h3{font-size:12.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.an-card h3 .icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* ── Overview Strip ── */
+.overview-strip{display:flex;align-items:center;gap:24px;}
+.ov-ring{position:relative;flex-shrink:0;width:100px;height:100px;}
+.ov-ring canvas{width:100px;height:100px;}
+.ov-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ov-ring-label .rv{font-size:22px;font-weight:700;line-height:1;}
+.ov-ring-label .rl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ov-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ov-stat{padding:12px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;}
+.ov-stat .os-val{font-size:18px;font-weight:700;line-height:1.2;font-family:'JetBrains Mono',monospace;}
+.ov-stat .os-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+@media(max-width:600px){
+  .overview-strip{flex-direction:column;gap:16px;}
+  .ov-stats{grid-template-columns:repeat(3,1fr);width:100%;}
+}
+
+/* ── Subject accuracy bars ── */
+.sub-bars{display:flex;flex-direction:column;gap:10px;}
+.sb-row{display:flex;align-items:center;gap:10px;}
+.sb-label{width:105px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-track{flex:1;height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;}
+.sb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#061021;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:fit-content;}
+.sb-val{font-size:12px;font-weight:700;width:46px;text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+/* ── Trend Chart ── */
+.trend-wrap{position:relative;min-height:220px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.trend-wrap::-webkit-scrollbar{height:4px;}.trend-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--muted);text-align:center;}
+.trend-empty .te-icon{font-size:40px;opacity:.4;}
+.trend-empty .te-msg{font-size:13px;line-height:1.5;max-width:320px;}
+.trend-bar-chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding:10px 0;min-width:min-content;}
+.trend-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:48px;width:48px;flex-shrink:0;}
+.trend-bar-outer{width:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative;}
+.trend-bar{width:100%;border-radius:6px 6px 2px 2px;transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;min-height:4px;}
+.trend-bar:hover{filter:brightness(1.2);}
+.trend-bar .tb-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.trend-bar:hover .tb-val{opacity:1;}
+.trend-label{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.trend-mode-label{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.trend-mode-label.daily{background:rgba(110,168,255,.12);color:#6ea8ff;}
+.trend-mode-label.practice{background:rgba(139,92,246,.12);color:#a78bfa;}
+
+/* ── Mastery Dashboard ── */
+.mastery-wrap{margin-top:8px;}
+.mastery-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.m-stat{padding:12px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);}
+.m-stat .ms-val{font-size:22px;font-weight:800;margin-bottom:2px;}
+.m-stat .ms-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+.m-stat.green .ms-val{color:#34d399;} .m-stat.yellow .ms-val{color:#fbbf24;} .m-stat.red .ms-val{color:#f87171;} .m-stat.blue .ms-val{color:#6ea8ff;} .m-stat.purple .ms-val{color:#a78bfa;}
+.coverage-ring{display:flex;align-items:center;gap:16px;padding:14px;border-radius:14px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);margin-bottom:14px;overflow:hidden;}
+.cov-canvas{width:90px;height:90px;flex-shrink:0;}
+.cov-info{flex:1;min-width:0;overflow:hidden;}
+.cov-title{font-size:13px;font-weight:700;color:var(--fg);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cov-sub{font-size:11px;color:var(--muted);line-height:1.6;word-break:break-word;}
+.subj-mastery{margin-top:14px;}
+.sm-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+.sm-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.sm-icon{font-size:14px;width:20px;text-align:center;}
+.sm-name{width:70px;font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-bar{flex:1;height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative;}
+.sm-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.sm-pct{width:34px;text-align:right;font-weight:700;font-size:11px;}
+
+/* -- Passage block for reading items -- */
+.quiz-passage{padding:14px 16px;border-radius:14px;background:rgba(110,168,255,.04);border:1px solid rgba(110,168,255,.10);font-size:14.5px;line-height:1.75;color:var(--muted);margin-bottom:14px;}
+.quiz-passage em{color:var(--text);font-style:italic;}
+
+/* -- Difficulty chips -- */
+.diff-dist{display:flex;gap:10px;margin-top:6px;}
+.diff-chip{flex:1;padding:14px 10px;border-radius:14px;text-align:center;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);}
+.diff-chip .dc-val{font-size:20px;font-weight:700;margin-bottom:2px;}
+.diff-chip .dc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+.diff-chip.easy .dc-val{color:#34d399;}
+.diff-chip.medium .dc-val{color:#fbbf24;}
+.diff-chip.hard .dc-val{color:#f87171;}
+
+/* ── Session History ── */
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding-right:4px;}
+.hist-list::-webkit-scrollbar{width:4px;}
+.hist-list::-webkit-scrollbar-track{background:transparent;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:12px;transition:background .1s;}
+.hist-row:hover{background:rgba(255,255,255,.04);}
+.hist-date{font-weight:600;min-width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hist-mode{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.hist-mode.daily{background:rgba(110,168,255,.1);color:#6ea8ff;}
+.hist-mode.practice{background:rgba(139,92,246,.1);color:#a78bfa;}
+.hist-score{margin-left:auto;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.hist-detail{color:var(--muted);font-size:11px;}
+
+/* ── Reset Button ── */
+.reset-zone{margin-top:20px;text-align:center;}
+.reset-btn{padding:10px 20px;border-radius:12px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.reset-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);}
+
+/* ── Tab label responsive ── */
+.tab-short{display:none;}
+@media(max-width:540px){.tab-full{display:none;}.tab-short{display:inline;}}
+@media(max-width:640px){
+  .quiz-panel{padding:16px;}
+  .streak-bar{gap:10px;}
+  .subj-grid{grid-template-columns:1fr 1fr;}
+  .diff-dist{flex-wrap:wrap;}
+  .diff-chip{min-width:calc(50% - 5px);}
+  .mastery-stats{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .coverage-ring{flex-direction:column;text-align:center;}
+  .sm-name{width:55px;font-size:10px;}
+  .tab-nav{overflow-x:hidden;}
+  .hide-mobile{display:none!important;}
+}
+
+.anim-up{opacity:0;transform:translateY(20px);animation:animUp .5s ease forwards;}
+@keyframes animUp{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+
+.btn.primary{background:linear-gradient(135deg,#6ea8ff,#7cf7d4);color:#061021;padding:10px 20px;border-radius:10px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:.01em;transition:all .18s;}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(110,168,255,.25);}
+</style>
+</head>
+<body class="tools-page">
+<div class="bg-mesh"><div class="strand"></div><div class="strand"></div><div class="strand"></div></div>
+
+<header>
+<div class="nav">
+  <a class="logo" href="/" style="text-decoration:none">
+    <div class="mark"></div>
+    <div>ReportMedic</div>
+  </a>
+  <div class="spacer"></div>
+  <a class="btn hide-mobile" href="/">Home</a>
+  <button class="btn" id="openDrawerBtn">All Tools</button>
+  <a class="btn primary" href="/#toolbox">Toolbox</a>
+</div>
+</header>
+
+<div class="wrap">
+  <!-- Tab Nav -->
+  <nav class="tab-nav anim-up">
+    <button class="tab-btn active" data-tab="daily">Daily <span class="tab-full">Challenge</span><span class="tab-short">Set</span></button>
+    <button class="tab-btn" data-tab="practice"><span class="tab-full">Section Practice</span><span class="tab-short">Sections</span></button>
+    <button class="tab-btn" data-tab="strategy"><span class="tab-full">Timing and Scoring</span><span class="tab-short">Timing</span></button>
+    <button class="tab-btn" data-tab="analytics"><span class="tab-full">Performance Analytics</span><span class="tab-short">Analytics</span></button>
+  </nav>
+
+  <!-- VIEW: DAILY -->
+  <div class="view active" id="viewDaily">
+    <div class="daily-hero anim-up d1">
+      <h1>SAT Daily <span class="grad">Challenge</span></h1>
+      <p class="sub">Ten fresh questions every day across Reading and Writing and Math. Build the streak, build the score.</p>
+    </div>
+    <div class="streak-bar anim-up d2">
+      <div class="streak-pill"><span>Streak</span><span class="sval" id="streakVal">0</span></div>
+      <div class="streak-pill"><span>Today</span><span class="sval green" id="todayScore">-</span></div>
+      <div class="streak-dots" id="streakDots"></div>
+    </div>
+    <div id="quizArea" class="anim-up d3"></div>
+  </div>
+
+  <!-- VIEW: SECTION PRACTICE -->
+  <div class="view" id="viewPractice">
+    <div class="daily-hero">
+      <h1>Section <span class="grad">Drill</span></h1>
+      <p class="sub">Work one domain at a time. Pick where you are weakest and drill ten questions.</p>
+    </div>
+    <div class="phase-filter">
+      <span class="pf-label">Filter by Section:</span>
+      <button class="pf-btn active" data-phase="All">All Sections</button>
+      <button class="pf-btn" data-phase="Reading and Writing">Reading and Writing</button>
+      <button class="pf-btn" data-phase="Math">Math</button>
+    </div>
+    <div class="subj-grid" id="subjGrid"></div>
+    <div id="practiceQuizArea" style="margin-top:20px;"></div>
+  </div>
+
+  <!-- VIEW: STRATEGY -->
+  <div class="view" id="viewStrategy">
+    <div class="daily-hero">
+      <h1>Timing and <span class="grad">Scoring</span></h1>
+      <p class="sub">The arithmetic behind the test. How long you have per question, what guessing is worth, and where points are actually lost.</p>
+    </div>
+    <div class="analytics-grid">
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(110,168,255,.1);color:#6ea8ff;">T</span>Pacing calculator</h3>
+        <div class="ov-stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">
+          <div class="ov-stat"><div class="os-val"><input id="pcQ" type="number" min="1" value="27" style="width:100%;background:transparent;border:none;color:inherit;font:inherit;text-align:center"></div><div class="os-label">Questions</div></div>
+          <div class="ov-stat"><div class="os-val"><input id="pcM" type="number" min="1" value="32" style="width:100%;background:transparent;border:none;color:inherit;font:inherit;text-align:center"></div><div class="os-label">Minutes</div></div>
+          <div class="ov-stat"><div class="os-val" id="pcOut">71s</div><div class="os-label">Per question</div></div>
+        </div>
+        <div class="quiz-explain show" id="pcNote"></div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(52,211,153,.1);color:#34d399;">G</span>Guessing arithmetic</h3>
+        <div class="diff-dist">
+          <div class="diff-chip easy"><div class="dc-val">25%</div><div class="dc-label">Blind guess</div></div>
+          <div class="diff-chip medium"><div class="dc-val">33%</div><div class="dc-label">One eliminated</div></div>
+          <div class="diff-chip hard"><div class="dc-val">50%</div><div class="dc-label">Two eliminated</div></div>
+        </div>
+        <div class="quiz-explain show" style="margin-top:12px">There is no penalty for a wrong answer on this test, which changes everything about how you should behave in the final minute. Every blank is a guaranteed zero and every guess is worth a quarter of a point in expectation before any elimination. Eliminating even one option lifts that to a third. Never leave a question blank, and if the clock is running out, spend the last thirty seconds filling every remaining answer rather than solving one more.</div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(245,158,11,.1);color:#f59e0b;">S</span>Where points are actually lost</h3>
+        <div id="lossList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: ANALYTICS -->
+  <div class="view" id="viewAnalytics">
+    <div class="daily-hero">
+      <h1>Performance <span class="grad">Analytics</span></h1>
+      <p class="sub">Your readiness report: accuracy, trends, and weak spots. All data stays in your browser.</p>
+    </div>
+    <div class="analytics-grid" id="analyticsGrid">
+      <div class="an-card full">
+        <div class="overview-strip">
+          <div class="ov-ring">
+            <canvas id="ringCanvas" width="100" height="100"></canvas>
+            <div class="ov-ring-label"><div class="rv" id="ringVal">-</div><div class="rl">accuracy</div></div>
+          </div>
+          <div class="ov-stats" id="quickStats"></div>
+        </div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(139,92,246,.1);color:#8b5cf6;">D</span>Domain-wise accuracy</h3>
+        <div class="sub-bars" id="subBars"></div>
+      </div>
+      <div class="an-card full">
+        <h3><span class="icon" style="background:rgba(245,158,11,.1);color:#f59e0b;">T</span>Accuracy trend, last 10 sessions</h3>
+        <div class="trend-wrap" id="trendWrap"></div>
+      </div>
+      <div class="an-card">
+        <h3><span class="icon" style="background:rgba(110,168,255,.1);color:#6ea8ff;">H</span>Session history</h3>
+        <div class="hist-list" id="histList"></div>
+      </div>
+      <div class="an-card">
+        <h3><span class="icon" style="background:rgba(245,158,11,.1);color:#f59e0b;">M</span>Mastery dashboard</h3>
+        <div id="diffDist"></div>
+      </div>
+      <div class="an-card full" id="weakCard">
+        <h3><span class="icon" style="background:rgba(239,68,68,.1);color:#f87171;">W</span>Weak areas, focus here</h3>
+        <div id="weakAreas"></div>
+      </div>
+    </div>
+    <div class="reset-zone">
+      <button class="reset-btn" onclick="if(confirm('This will erase ALL your practice data, scores, and streaks. Cannot be undone. Continue?')){localStorage.removeItem('rm_sat_practice');location.reload();}">Reset All Progress</button>
+    </div>
+  </div>
+</div>
+
+<footer class="rm-footer">
+<div class="rm-footer-inner">
+  <div><span class="rm-footer-name">ReportMedic</span><div class="rm-footer-tag">SAT Practice Test Questions - original items with analytics</div></div>
+  <div class="rm-footer-links">
+    <a href="/">Home</a>
+    <a href="/docs/privacy.html">Privacy</a>
+    <a href="/docs/terms.html">Terms</a>
+  </div>
+  <div class="rm-footer-meta">All data runs locally in your browser. Nothing is uploaded. Copyright ReportMedic.</div>
+</div>
+</footer>
+
+<script>
+/* ================================================================
+   SAT PRACTICE BANK - original items written for this tool.
+   Not reproduced from any published test. Each item targets the
+   same skill the official domain description names.
+   ================================================================ */
+const BANK=[
+
+/* ---------- Information and Ideas ---------- */
+{phase:"Reading and Writing",sub:"Information and Ideas",diff:"easy",
+ pas:"Mangrove forests grow where rivers meet the sea. Their tangled roots trap sediment carried downstream, and over decades that trapped sediment raises the height of the land beneath them. Coastal engineers once dismissed mangroves as an obstacle to development. Recent surveys of storm damage have changed that view.",
+ q:"Which choice best states the main idea of the text?",
+ opts:["Mangrove roots are difficult for engineers to remove.","Mangroves build land over time and are now valued for coastal protection.","Rivers carry more sediment than was previously believed.","Coastal development has slowed in regions with mangrove forests."],
+ ans:1,exp:"The text moves from what mangroves do, trapping sediment and raising land, to a change in how engineers regard them after storm damage surveys. Choice B captures both halves. A and C fix on a detail. D states an effect the text never claims."},
+
+{phase:"Reading and Writing",sub:"Information and Ideas",diff:"easy",
+ pas:"A researcher measured how long ravens would wait before eating a small piece of food if waiting earned them a larger piece. Individual ravens differed sharply. Some waited the full interval on nearly every trial; others almost never waited, regardless of how large the delayed reward was.",
+ q:"Which choice best describes the finding reported in the text?",
+ opts:["Ravens as a species are unable to delay gratification.","The size of the delayed reward determined whether ravens waited.","Waiting behaviour varied substantially between individual ravens.","Ravens waited longer as the experiment progressed."],
+ ans:2,exp:"The text states individuals differed sharply and describes both extremes. C reports exactly that. A contradicts the ravens who did wait. B is ruled out by the phrase regardless of how large. D describes a trend over time the text does not mention."},
+
+{phase:"Reading and Writing",sub:"Information and Ideas",diff:"medium",
+ pas:"Archaeologists studying a settlement found grinding stones in nearly every dwelling but storage pits in only four of the sixty structures excavated. If food processing had been organised at the household level while storage was organised communally, this is the distribution one would expect.",
+ q:"Which finding would most directly weaken the interpretation offered in the text?",
+ opts:["Grinding stones were found in dwellings of varying size.","The four storage pits were each located inside a private dwelling with restricted access.","Some grinding stones showed heavier wear than others.","The settlement was occupied for several centuries."],
+ ans:1,exp:"The interpretation depends on storage being communal. If every pit sat inside a private dwelling with restricted access, storage was household-level too, and the contrast collapses. The other choices are consistent with the interpretation or irrelevant to it."},
+
+{phase:"Reading and Writing",sub:"Information and Ideas",diff:"medium",
+ pas:"A city introduced a fee for driving into its centre at peak hours. Traffic entering the zone fell by roughly a fifth in the first year. Public transport journeys rose over the same period, but so did cycling, walking, and journeys made outside the charging hours.",
+ q:"Which choice best describes why the text mentions the final sentence?",
+ opts:["To identify the single cause of the fall in traffic.","To suggest that the fall in traffic cannot be attributed to public transport alone.","To argue that the fee was set too low.","To question whether traffic fell at all."],
+ ans:1,exp:"The last sentence lists several changes alongside the rise in public transport, which prevents the reader from concluding that transport absorbed all the displaced journeys. B states that function. The other options attribute claims the text does not make."},
+
+{phase:"Reading and Writing",sub:"Information and Ideas",diff:"medium",
+ pas:"Two soil samples were tested for nitrogen. Plot A, left fallow for three years, measured 42 units. Plot B, planted with clover for the same period, measured 78 units. Both plots had measured 40 units at the start of the period.",
+ q:"Which choice most effectively uses data from the text to support the claim that clover raises soil nitrogen?",
+ opts:["Plot B measured 78 units, while Plot A, which was left fallow, measured 42.","Both plots began the period at 40 units.","Plot A rose by 2 units over three years.","The plots were tested after three years."],
+ ans:0,exp:"Support requires the comparison. Identical starting values and a far larger rise in the clover plot is the evidence. B and C give one half each and prove nothing alone. D states procedure rather than data."},
+
+{phase:"Reading and Writing",sub:"Information and Ideas",diff:"hard",
+ pas:"A linguist argues that a language's word for a colour appears only after that colour becomes economically important to its speakers. Critics note that several languages developed distinct terms for shades of blue centuries before blue dyes were traded in the regions where those languages were spoken.",
+ q:"The critics' observation functions primarily to",
+ opts:["confirm the linguist's argument with additional evidence.","present a counterexample that the linguist's argument does not account for.","suggest the linguist studied too few languages.","propose an alternative explanation for how colour terms spread."],
+ ans:1,exp:"If terms appeared before the economic importance did, the ordering the argument requires is reversed. That is a counterexample. The critics do not offer an alternative mechanism, so D overstates. C names a different flaw the text does not raise."},
+
+{phase:"Reading and Writing",sub:"Information and Ideas",diff:"hard",
+ pas:"In a long-running study, participants who reported the strongest sense of purpose showed lower rates of a particular illness two decades later. The researchers were careful to note that participants with early, undiagnosed symptoms of that illness might already have reported a diminished sense of purpose at the study's start.",
+ q:"Which choice best describes the concern the researchers raise?",
+ opts:["The sample may have been too small to detect an effect.","The illness may have influenced the reported sense of purpose rather than the reverse.","Participants may have misremembered their sense of purpose.","The two decades may have been too short an interval."],
+ ans:1,exp:"The concern is directional. If early illness already lowered reported purpose, the association could run from illness to purpose rather than purpose to illness. That is reverse causation, which B states. The other choices name unrelated limitations."},
+
+{phase:"Reading and Writing",sub:"Information and Ideas",diff:"easy",
+ pas:"A museum replaced its printed labels with short audio descriptions. Visitors spent, on average, ninety seconds longer in each gallery. Survey responses showed that visitors also reported remembering more of what they had seen a week later.",
+ q:"Based on the text, which statement is best supported?",
+ opts:["Printed labels prevent visitors from remembering exhibits.","Audio descriptions were associated with longer visits and better recall.","Visitors preferred audio to printed labels in every gallery.","The museum increased its visitor numbers after the change."],
+ ans:1,exp:"The text reports two associated outcomes and nothing more. B stays inside them. A overstates into causation about printed labels, C claims a universality the text never gives, and D introduces visitor numbers, which are not mentioned."},
+
+{phase:"Reading and Writing",sub:"Information and Ideas",diff:"medium",
+ pas:"An economist claims that removing a tariff lowered domestic prices for a certain good. Over the same period, the currency strengthened considerably and a new competitor entered the domestic market.",
+ q:"The information in the second sentence most directly suggests that",
+ opts:["the tariff removal had no effect on prices.","other factors could also account for the price fall.","prices would have fallen further without the tariff.","the economist measured prices incorrectly."],
+ ans:1,exp:"Two additional plausible causes appeared at the same time, which makes the fall difficult to attribute to the tariff alone. That is confounding, not disproof, so B is right and A is too strong. C and D introduce claims the text does not support."},
+
+{phase:"Reading and Writing",sub:"Information and Ideas",diff:"medium",
+ pas:"Records from a nineteenth-century shipping company list cargo weights but not cargo values. A historian wishing to estimate the trade's profitability has combined those weights with price series drawn from a separate set of market records kept in the destination port.",
+ q:"Which choice best identifies an assumption the historian's method requires?",
+ opts:["The shipping company kept accurate weight records.","Prices in the destination port applied to the goods that particular company shipped.","The company operated for more than one year.","Market records were kept continuously."],
+ ans:1,exp:"Joining two sources requires that they describe the same goods. If destination prices did not apply to this company's cargo, the multiplication is meaningless. A is necessary for accuracy but is not the assumption created by combining the sources. C and D are incidental."},
+
+{phase:"Reading and Writing",sub:"Information and Ideas",diff:"hard",
+ pas:"A team tested whether a plant species could be identified from soil samples alone by detecting fragments of its genetic material. The method found the species in every plot where it was known to grow. It also reported the species in eleven plots where repeated physical searches found none.",
+ q:"Which choice best states a limitation of the method suggested by the text?",
+ opts:["It fails to detect the species where the species is present.","It may report the species where the species is not currently growing.","It cannot distinguish between plant species.","It requires more soil than physical searching does."],
+ ans:1,exp:"The method missed nothing, so A is wrong. The eleven extra plots indicate possible false positives, which B states. Genetic material can persist after a plant is gone. C and D concern properties the text does not test."},
+
+{phase:"Reading and Writing",sub:"Information and Ideas",diff:"easy",
+ pas:"A carpenter's notebook from 1780 lists the cost of timber, nails, and labour for each commission, but records the final price charged only occasionally. Historians studying it have therefore learned far more about the cost of building than about the profit in it.",
+ q:"Which choice best explains the situation described?",
+ opts:["The notebook contains no financial information.","The notebook records inputs more consistently than outcomes.","The carpenter charged unusually low prices.","Historians have ignored the notebook's pricing entries."],
+ ans:1,exp:"Costs are listed for every commission, prices only occasionally, so the record is consistent on inputs and patchy on what came out. B states that. A contradicts the text and C and D add claims it does not make."},
+
+{phase:"Reading and Writing",sub:"Information and Ideas",diff:"medium",
+ pas:"A trial compared two teaching methods across forty classrooms. Method one produced higher test scores overall. When results were separated by class size, however, method two produced higher scores in both small classes and large classes.",
+ q:"Which choice best accounts for the pattern described?",
+ opts:["The overall result was calculated incorrectly.","Method two was used disproportionately in the class size where scores were lower overall.","Class size has no effect on test scores.","Method one works better only in medium-sized classes."],
+ ans:1,exp:"A result that reverses when a group is split usually means the groups were unevenly distributed between conditions. If method two was concentrated where scores were lower for everyone, it can win within each group and lose overall. B names that. A assumes an error the text does not report."},
+
+{phase:"Reading and Writing",sub:"Information and Ideas",diff:"medium",
+ pas:"An author writes that the invention of cheap glass mirrors changed European portraiture, because painters could for the first time study their own faces closely enough to render subtle expression. Art historians point out that polished metal mirrors had been available for centuries.",
+ q:"The art historians' point most directly challenges the author's",
+ opts:["conclusion about how portraiture changed.","assumption that close self-study was newly possible.","claim that glass mirrors were cheap.","interest in European rather than other painting."],
+ ans:1,exp:"The argument rests on for the first time. If usable mirrors already existed, that premise fails. B names the assumption under attack. The historians do not dispute how portraiture changed, only why, so A misses."},
+
+{phase:"Reading and Writing",sub:"Information and Ideas",diff:"hard",
+ pas:"Two towns adopted the same water conservation programme. In the first, household use fell by 14 percent. In the second, use rose by 3 percent. The second town had introduced a new metering system in the same month, replacing estimated bills with measured ones.",
+ q:"Which choice best explains the difference between the two results?",
+ opts:["The programme was ineffective in the second town.","Measured use in the second town may not be comparable to the estimates it replaced.","Households in the second town were larger.","The first town began with lower water use."],
+ ans:1,exp:"A rise measured against an estimate is not the same comparison as a fall measured against a measurement. The change in method makes the two figures unlike, which B states. A concludes ineffectiveness from a figure that cannot support it."}
+];
+
+BANK.push.apply(BANK,[
+/* ---------- Craft and Structure ---------- */
+{phase:"Reading and Writing",sub:"Craft and Structure",diff:"easy",
+ pas:"The committee's report was measured in tone, but its recommendations were anything but tentative: it called for the immediate closure of three facilities and the redistribution of their entire budget.",
+ q:"As used in the text, what does the word tentative most nearly mean?",
+ opts:["Temporary","Hesitant","Experimental","Preliminary"],
+ ans:1,exp:"The contrast is between a measured tone and forceful recommendations, so tentative must mean the opposite of forceful. Hesitant fits. Temporary, experimental, and preliminary describe duration or stage rather than force, and none contrasts with immediate closure."},
+
+{phase:"Reading and Writing",sub:"Craft and Structure",diff:"easy",
+ pas:"Early reviewers found the novel's structure bewildering. Later critics, working with the author's notebooks, showed that what had seemed arbitrary was in fact rigorously planned.",
+ q:"As used in the text, what does the word arbitrary most nearly mean?",
+ opts:["Cruel","Random","Powerful","Traditional"],
+ ans:1,exp:"Arbitrary is set directly against rigorously planned, so it must mean unplanned. Random fits. Cruel is a different sense of the word that the contrast does not support here, and powerful and traditional have no relation to planning."},
+
+{phase:"Reading and Writing",sub:"Craft and Structure",diff:"medium",
+ pas:"Whereas her earlier essays had ranged widely across politics, art, and travel, the later collection is austere, returning again and again to a single question about obligation.",
+ q:"As used in the text, what does the word austere most nearly mean?",
+ opts:["Severe in manner","Restricted in scope","Plainly written","Morally strict"],
+ ans:1,exp:"The contrast is ranged widely against returning to a single question, so the relevant sense is narrowness of range. Restricted in scope fits. The other options are real senses of austere but none of them is what the sentence contrasts with breadth."},
+
+{phase:"Reading and Writing",sub:"Craft and Structure",diff:"medium",
+ pas:"The first two paragraphs describe the machine's mechanism in detail. The third abandons that description entirely and asks what its inventor believed a machine was for.",
+ q:"Which choice best describes the function of the third paragraph in the text as a whole?",
+ opts:["It provides evidence for the mechanism described earlier.","It shifts from how the machine works to why it was made.","It corrects an error in the earlier description.","It compares the machine with a later invention."],
+ ans:1,exp:"The text signals a change of question rather than of content, from mechanism to purpose. B names that shift. Nothing indicates correction or comparison, and a question about intent is not evidence for a mechanism."},
+
+{phase:"Reading and Writing",sub:"Craft and Structure",diff:"medium",
+ pas:"Text 1: A biographer argues that the composer's late style, with its abrupt silences and unresolved endings, reflects the isolation of his final years.\nText 2: A musicologist notes that the same devices appear throughout the composer's earliest surviving sketches, written when he was surrounded by collaborators.",
+ q:"Based on the texts, the musicologist would most likely respond to the biographer's argument by",
+ opts:["agreeing that isolation shaped the late style.","pointing out that the devices predate the isolation.","arguing that the sketches were misdated.","suggesting the composer had no collaborators."],
+ ans:1,exp:"Text 2 places the same devices in a period of company rather than isolation, which undercuts the biographer's link. B states that response. The musicologist raises no dating dispute and asserts the collaborators rather than denying them."},
+
+{phase:"Reading and Writing",sub:"Craft and Structure",diff:"hard",
+ pas:"Text 1: An ecologist argues that reintroducing a top predator restored a river valley, because vegetation recovered along the banks after the predator returned.\nText 2: A hydrologist records that a dam upstream was decommissioned in the same decade, restoring the seasonal flooding on which that vegetation depends.",
+ q:"Based on the texts, how would the hydrologist most likely characterise the ecologist's conclusion?",
+ opts:["As correct but incomplete, since flooding also changed.","As entirely mistaken, since predators cannot affect vegetation.","As unsupported, since vegetation did not in fact recover.","As too cautious, since the recovery was larger than reported."],
+ ans:0,exp:"Text 2 adds a second sufficient cause operating at the same time without denying the recovery or the predator's return. That makes the conclusion incomplete rather than wrong, which is A. B overstates and C contradicts both texts."},
+
+{phase:"Reading and Writing",sub:"Craft and Structure",diff:"medium",
+ pas:"The poem opens with four lines of near-silence: a shuttered house, a stopped clock, snow that has not been walked on. Only in the fifth line does a figure appear, and even then only as a shadow crossing a window.",
+ q:"Which choice best describes the overall structure of the passage?",
+ opts:["It moves from a general claim to a specific example.","It withholds human presence before admitting it partially.","It contrasts two different houses.","It presents a sequence of events in reverse order."],
+ ans:1,exp:"The description delays any person until the fifth line and then gives only a shadow, so presence is withheld and then granted incompletely. B describes that movement. There is no general claim, second house, or reversal of sequence."},
+
+{phase:"Reading and Writing",sub:"Craft and Structure",diff:"easy",
+ pas:"Although the technique is often described as new, potters were using it a thousand years ago; the recent development is not the method itself but the ability to identify it in fragments too small to have been recognised before.",
+ q:"Which choice best states the main purpose of the text?",
+ opts:["To explain how a technique is performed.","To correct a misunderstanding about what is actually new.","To argue that the technique should be revived.","To compare ancient and modern pottery."],
+ ans:1,exp:"The sentence sets often described as new against a precise statement of what is actually recent, which is a correction. B names it. The text does not explain the method, advocate revival, or draw a general comparison."},
+
+{phase:"Reading and Writing",sub:"Craft and Structure",diff:"medium",
+ pas:"The report is exhaustive on procedure and reticent on outcome: forty pages describe how the survey was conducted and two describe what it found.",
+ q:"As used in the text, what does the word reticent most nearly mean?",
+ opts:["Reluctant to disclose","Uncertain","Poorly written","Disorganised"],
+ ans:0,exp:"Reticent is set against exhaustive and the page counts show a great deal on method and very little on findings. Reluctant to disclose fits. The other options describe quality or clarity rather than how much is said."},
+
+{phase:"Reading and Writing",sub:"Craft and Structure",diff:"hard",
+ pas:"The essay begins by praising a rival's method at unusual length. Only in its final paragraph does the author note, almost in passing, that applying the method to her own data produced results the rival's theory cannot accommodate.",
+ q:"Which choice best describes the rhetorical effect of the essay's structure?",
+ opts:["The extended praise makes the closing objection harder to dismiss as hostility.","The delay suggests the author is uncertain of the objection.","The praise contradicts the objection that follows.","The structure conceals the author's own data."],
+ ans:0,exp:"Establishing generosity first removes the easiest response, which is to accuse the critic of bias. A names that effect. Delay is a rhetorical choice rather than evidence of doubt, and praising a method while finding a result it cannot handle is not a contradiction."},
+
+{phase:"Reading and Writing",sub:"Craft and Structure",diff:"easy",
+ pas:"The lamp was not merely bright; it was punitive, flooding every corner of the small room so completely that closing one's eyes gave no relief.",
+ q:"As used in the text, what does the word punitive most nearly mean?",
+ opts:["Expensive","Legally enforced","Harsh to the point of punishment","Efficient"],
+ ans:2,exp:"The description that follows, flooding every corner and giving no relief, defines the intended sense as harshness experienced as punishment. C fits. The legal sense is the word's other common meaning but nothing here is legal."},
+
+{phase:"Reading and Writing",sub:"Craft and Structure",diff:"medium",
+ pas:"Text 1: A curator argues that the sculpture was intended to be seen from below, since its proportions correct themselves when viewed at a steep angle.\nText 2: An archaeologist reports that the sculpture's original base, recently excavated, stood only forty centimetres high.",
+ q:"Based on the texts, the archaeologist's finding most directly",
+ opts:["supports the curator's claim about proportions.","weakens the curator's inference about viewing position.","confirms that the sculpture was moved.","establishes the sculpture's date."],
+ ans:1,exp:"A low base means the work was near eye level, so the steep viewing angle the curator's inference requires was not available. B states that. The proportional observation itself is untouched, and nothing in Text 2 addresses movement or date."},
+
+{phase:"Reading and Writing",sub:"Craft and Structure",diff:"medium",
+ pas:"Two paragraphs of statistics on rainfall are followed by a single sentence: the well, nonetheless, was dry.",
+ q:"Which choice best describes the function of the final sentence?",
+ opts:["It summarises the statistics presented.","It sets a concrete fact against the aggregate data.","It questions the accuracy of the rainfall figures.","It introduces a new topic unrelated to the data."],
+ ans:1,exp:"Nonetheless marks a contrast, and a dry well is a specific physical fact placed against pages of averages. B names that function. It neither summarises the data nor disputes its accuracy, and the well is plainly related to rainfall."},
+
+{phase:"Reading and Writing",sub:"Craft and Structure",diff:"hard",
+ pas:"The chapter's argument is presented entirely through the objections it anticipates. Each section opens with a position the author does not hold, states it in its strongest form, and only then explains what remains standing afterwards.",
+ q:"Which choice best describes the author's method as characterised in the text?",
+ opts:["Building a case by first strengthening opposing views.","Avoiding controversy by not stating a position.","Refuting objections without describing them.","Presenting evidence before making any claim."],
+ ans:0,exp:"The method described is stating opposing positions in their strongest form and arguing through them, which is A. B is wrong because a position emerges from what remains. C reverses the described procedure and D describes something else entirely."},
+
+{phase:"Reading and Writing",sub:"Craft and Structure",diff:"easy",
+ pas:"Her prose is spare, but the spareness is not simplicity. Every clause has been cut back to what will bear weight, and what remains carries more than it would in a longer sentence.",
+ q:"As used in the text, what does the word spare most nearly mean?",
+ opts:["Extra","Stripped down","Occasional","Generous"],
+ ans:1,exp:"The following sentences explain the word directly as cutting clauses back to what will bear weight. Stripped down fits. Extra and occasional are other senses of spare that the explanation rules out, and generous is the opposite."}
+]);
+
+BANK.push.apply(BANK,[
+{phase:"Reading and Writing",sub:"Expression of Ideas",diff:"easy",
+ pas:"The town council approved the new footbridge in March. Construction did not begin until the following November. ______ the delay, the bridge opened on its original target date.",
+ q:"Which choice completes the text with the most logical transition?",
+ opts:["In addition to","Despite","Because of","As a result of"],
+ ans:1,exp:"The sentence sets an eight-month delay against an on-time opening, which is a contrast. Despite marks it. Because of and as a result of assert the delay caused the on-time opening, and in addition to joins two like ideas rather than opposing ones."},
+
+{phase:"Reading and Writing",sub:"Expression of Ideas",diff:"easy",
+ pas:"Most desert plants reduce water loss by shrinking their leaves. ______ the ocotillo drops its leaves entirely during dry spells and regrows them within days of rain.",
+ q:"Which choice completes the text with the most logical transition?",
+ opts:["Similarly,","For example,","However,","Therefore,"],
+ ans:2,exp:"Dropping leaves entirely is a different strategy from shrinking them, so the relationship is contrast. However fits. For example would require the ocotillo to illustrate shrinking, which it does not, and similarly and therefore assert likeness or consequence."},
+
+{phase:"Reading and Writing",sub:"Expression of Ideas",diff:"medium",
+ pas:"The survey found that 62 percent of respondents used the library weekly. ______ only 9 percent had borrowed a physical book in the previous year.",
+ q:"Which choice completes the text with the most logical transition?",
+ opts:["Consequently,","Of these,","In fact,","Likewise,"],
+ ans:1,exp:"The second figure is a subset of the first group, so a transition marking that relationship is needed. Of these does it. Consequently claims causation, in fact suggests reinforcement of the same point, and likewise claims similarity, none of which holds between a whole and a much smaller part of it."},
+
+{phase:"Reading and Writing",sub:"Expression of Ideas",diff:"medium",
+ pas:"While researching a paper on urban beekeeping, a student has taken the following notes:\n- Rooftop hives in the city rose from 40 in one year to 310 six years later.\n- Nectar availability in the city did not increase over the same period.\n- Average honey yield per hive fell by roughly a third across the six years.\n- Researchers attribute the fall to competition between hives for a fixed food supply.",
+ q:"The student wants to explain why honey yields fell. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+ opts:["Rooftop hives in the city rose from 40 to 310 over six years.","Average honey yield per hive fell by roughly a third over six years.","Because hive numbers grew sharply while nectar availability did not, competition for a fixed food supply cut yields by about a third.","Researchers have studied honey yields in cities for six years."],
+ ans:2,exp:"The goal is explanation, which requires the cause and the effect together. C supplies the growth in hives, the unchanged food supply, the mechanism, and the outcome. A and B each give one fact without explaining anything, and D describes the research rather than the finding."},
+
+{phase:"Reading and Writing",sub:"Expression of Ideas",diff:"medium",
+ pas:"While researching a paper on a nineteenth-century cartographer, a student has taken the following notes:\n- She produced 47 maps between 1856 and 1879.\n- Her maps were the first to mark seasonal wells in the region.\n- Later surveys confirmed the position of 44 of the 47 wells she recorded.\n- Her name appeared on none of the maps during her lifetime.",
+ q:"The student wants to emphasise the accuracy of the cartographer's work. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+ opts:["The cartographer produced 47 maps between 1856 and 1879.","Later surveys confirmed the positions of 44 of the 47 seasonal wells she had recorded.","Her name appeared on none of the maps published in her lifetime.","She was the first to mark seasonal wells in the region."],
+ ans:1,exp:"Accuracy requires a check against an independent standard, and the confirmation rate supplies one. B gives it. A counts output, C concerns attribution, and D establishes priority rather than correctness."},
+
+{phase:"Reading and Writing",sub:"Expression of Ideas",diff:"hard",
+ pas:"While researching a paper on soil carbon, a student has taken the following notes:\n- Field A was ploughed annually and held 28 tonnes of carbon per hectare.\n- Field B was left untilled for twelve years and held 46 tonnes per hectare.\n- Both fields have the same soil type and rainfall.\n- Field B had been ploughed annually before the twelve-year period began.",
+ q:"The student wants to present the findings as evidence that ceasing tillage increases soil carbon. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+ opts:["Field B, untilled for twelve years, held 46 tonnes of carbon per hectare.","On matched soil and rainfall, the field left untilled for twelve years held 46 tonnes per hectare against 28 in the annually ploughed field.","Field A was ploughed annually and held 28 tonnes per hectare.","Both fields share the same soil type and rainfall."],
+ ans:1,exp:"Evidence for a causal claim needs the comparison and the control together. B states both values and the matched conditions that make them comparable. A and C give one side each, and D gives the control without any measurement."},
+
+{phase:"Reading and Writing",sub:"Expression of Ideas",diff:"medium",
+ pas:"The new alloy resists corrosion far better than the material it replaces. ______ it costs roughly nine times as much per kilogram, which has limited its use to components where failure would be catastrophic.",
+ q:"Which choice completes the text with the most logical transition?",
+ opts:["Moreover,","Nevertheless,","In particular,","For instance,"],
+ ans:1,exp:"An advantage is followed by a disadvantage that constrains its use, so the transition must signal contrast. Nevertheless fits. Moreover would add a further advantage, and in particular and for instance introduce specification or example rather than opposition."},
+
+{phase:"Reading and Writing",sub:"Expression of Ideas",diff:"easy",
+ pas:"Migrating birds navigate using several cues at once: the position of the sun, the pattern of polarised light, and the earth's magnetic field. ______ removing any single cue rarely prevents a bird from reaching its destination.",
+ q:"Which choice completes the text with the most logical transition?",
+ opts:["Consequently,","In contrast,","Nevertheless,","Instead,"],
+ ans:0,exp:"Using several cues at once is precisely why losing one does not stop the bird, so the second sentence follows from the first. Consequently marks that. The other three signal opposition or substitution, and there is none here."},
+
+{phase:"Reading and Writing",sub:"Expression of Ideas",diff:"hard",
+ pas:"While researching a paper on a theatre company, a student has taken the following notes:\n- The company staged 12 productions in its first decade.\n- Ten of the twelve were written by members of the company.\n- Both of the remaining two were revivals of works then out of copyright.\n- The company had no budget for performance rights.",
+ q:"The student wants to explain the company's choice of repertoire. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+ opts:["The company staged twelve productions in its first decade.","With no budget for performance rights, the company staged only its members' own work and out-of-copyright revivals.","Ten of the twelve productions were written by members of the company.","Two of the productions were revivals."],
+ ans:1,exp:"Explaining a choice means naming the constraint and showing how the repertoire follows from it. B does both. A counts productions, and C and D each report one half of a pattern without the reason behind it."},
+
+{phase:"Reading and Writing",sub:"Expression of Ideas",diff:"medium",
+ pas:"The first vaccine trial enrolled participants only from a single city. The second recruited across eleven countries. ______ its results are far more likely to hold across the populations that will actually receive the vaccine.",
+ q:"Which choice completes the text with the most logical transition?",
+ opts:["Even so,","Accordingly,","By contrast,","Regardless,"],
+ ans:1,exp:"Broader recruitment is the reason the second trial generalises better, so the final sentence is a consequence of the one before it. Accordingly fits. Even so and regardless would signal that the conclusion holds despite the recruitment, and by contrast would compare rather than conclude."},
+
+{phase:"Reading and Writing",sub:"Expression of Ideas",diff:"easy",
+ pas:"Sourdough bread requires no commercial yeast. ______ it relies on wild yeasts and bacteria already present in the flour and in the air of the room where it is mixed.",
+ q:"Which choice completes the text with the most logical transition?",
+ opts:["However,","Instead,","Similarly,","Therefore,"],
+ ans:1,exp:"The second sentence names what is used in place of commercial yeast, which is substitution. Instead marks it. However would signal contradiction where there is none, similarly claims likeness, and therefore claims consequence."},
+
+{phase:"Reading and Writing",sub:"Expression of Ideas",diff:"medium",
+ pas:"While researching a paper on tidal energy, a student has taken the following notes:\n- A tidal barrage generates power on both the incoming and outgoing tide.\n- Its output is fully predictable years in advance.\n- Output is zero for roughly four periods each day, at slack water.\n- Wind output is not predictable more than a few days ahead.",
+ q:"The student wants to compare the predictability of tidal and wind power. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+ opts:["Tidal output can be predicted years ahead, whereas wind output cannot be forecast beyond a few days.","A tidal barrage generates power on both the incoming and outgoing tide.","Tidal output falls to zero roughly four times each day.","Wind output is not predictable more than a few days ahead."],
+ ans:0,exp:"A comparison needs both sides stated against each other, which only A does. B describes a mechanism, C notes a limitation of tidal power alone, and D gives the wind half with nothing to compare it to."},
+
+{phase:"Reading and Writing",sub:"Expression of Ideas",diff:"hard",
+ pas:"Researchers expected the treated group to show a larger effect than the control group. The measured difference was in the predicted direction but well within the range that chance alone would produce. ______ the study cannot be described as having demonstrated an effect.",
+ q:"Which choice completes the text with the most logical transition?",
+ opts:["Nonetheless,","In other words,","For this reason,","In addition,"],
+ ans:2,exp:"A difference indistinguishable from chance is exactly the reason the study cannot claim a demonstrated effect, so the last sentence is a conclusion drawn from the one before. For this reason fits. In other words would signal restatement rather than inference, and nonetheless would reverse the logic."},
+
+{phase:"Reading and Writing",sub:"Expression of Ideas",diff:"medium",
+ pas:"Glass recycling saves substantial energy compared with making glass from raw materials. ______ the saving disappears if the glass must be transported more than a few hundred kilometres to reach a facility.",
+ q:"Which choice completes the text with the most logical transition?",
+ opts:["Likewise,","However,","Consequently,","Specifically,"],
+ ans:1,exp:"A benefit is followed by the condition under which it vanishes, which is a qualification. However marks it. Consequently would make the loss follow from the saving, and likewise and specifically signal similarity or detail rather than limitation."},
+
+{phase:"Reading and Writing",sub:"Expression of Ideas",diff:"easy",
+ pas:"While researching a paper on a river restoration project, a student has taken the following notes:\n- The channel was straightened in 1962 to speed drainage.\n- Meanders were reinstated along a 4 km stretch in 2011.\n- Fish species recorded in the stretch rose from 6 to 14 by 2019.\n- Downstream flood peaks fell by 11 percent over the same period.",
+ q:"The student wants to present the outcomes of the restoration. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+ opts:["The channel was straightened in 1962 to speed drainage.","Meanders were reinstated along a four-kilometre stretch in 2011.","After meanders were reinstated, recorded fish species more than doubled and downstream flood peaks fell by 11 percent.","The restoration project covered four kilometres of river."],
+ ans:2,exp:"Outcomes are what changed after the intervention, and C reports both measured results. A describes the original alteration, and B and D describe the intervention itself rather than what it produced."}
+]);
+
+BANK.push.apply(BANK,[
+{phase:"Reading and Writing",sub:"Standard English Conventions",diff:"easy",
+ q:"The archivist catalogued the letters, photographs, and ledgers ______ had been stored in the attic for forty years.",
+ opts:["they","that","which they","and that"],
+ ans:1,exp:"A relative pronoun is needed to attach the clause to the list of items. That works with no comma before it and no added subject. They creates a comma splice, which they doubles the subject, and and that leaves the sentence without a main verb for the second clause."},
+
+{phase:"Reading and Writing",sub:"Standard English Conventions",diff:"easy",
+ q:"Because the bridge was closed for repairs ______ the delivery took an additional ninety minutes.",
+ opts:["so","and","-","therefore"],
+ ans:2,exp:"A subordinating conjunction already introduces the first clause, so the second clause needs nothing but a comma, represented here by the plain dash option meaning no added word. Adding so, and, or therefore creates a second connector where only one is grammatical."},
+
+{phase:"Reading and Writing",sub:"Standard English Conventions",diff:"medium",
+ q:"The report, along with its three appendices, ______ due before the end of the month.",
+ opts:["are","were","is","have been"],
+ ans:2,exp:"The subject is the report, singular. A phrase beginning with along with does not change the number of the subject, so a singular verb is required. Are, were, and have been are all plural and are pulled in by the intervening appendices."},
+
+{phase:"Reading and Writing",sub:"Standard English Conventions",diff:"medium",
+ q:"Neither the supervisor nor the technicians ______ able to explain the fluctuation in the readings.",
+ opts:["was","is","were","has been"],
+ ans:2,exp:"With neither and nor, the verb agrees with the nearer subject, which here is technicians, plural. Were is correct. Was, is, and has been would be right only if the singular supervisor came second."},
+
+{phase:"Reading and Writing",sub:"Standard English Conventions",diff:"medium",
+ q:"The committee published its findings in June ______ the recommendations were not adopted until the following spring.",
+ opts:[", but","but",";","-"],
+ ans:0,exp:"Two independent clauses joined by a coordinating conjunction need a comma before it. Comma plus but is correct. But alone omits the required comma, and a semicolon or a dash placed where the conjunction also appears would leave the conjunction stranded."},
+
+{phase:"Reading and Writing",sub:"Standard English Conventions",diff:"hard",
+ q:"The technique was developed by Hodgkin ______ crystallographic work later earned her a Nobel Prize.",
+ opts:["who's","whose","whom","which"],
+ ans:1,exp:"A possessive relative pronoun is needed before the noun work. Whose is the possessive form. Who's is the contraction of who is, whom is an object pronoun and cannot show possession, and which cannot refer to a person."},
+
+{phase:"Reading and Writing",sub:"Standard English Conventions",diff:"easy",
+ q:"Having examined the sediment cores for eleven months ______ concluded that the layer had formed within a single season.",
+ opts:["the conclusion of the team was that","it was concluded that","the team","there was a conclusion that"],
+ ans:2,exp:"The opening participial phrase must describe the subject that follows. Only the team can have examined the cores. Each of the other options makes a conclusion or an expletive the subject, which leaves the modifier dangling."},
+
+{phase:"Reading and Writing",sub:"Standard English Conventions",diff:"medium",
+ q:"The museum acquired three works in a single year: a bronze from Benin, a screen from Kyoto ______ a manuscript page from Isfahan.",
+ opts:[", and",";","and",", and,"],
+ ans:0,exp:"A three-item list requires a comma before the final and. Comma plus and is correct. A semicolon is wrong because the items contain no internal commas, and and without the comma or with a comma after it breaks the list punctuation."},
+
+{phase:"Reading and Writing",sub:"Standard English Conventions",diff:"medium",
+ q:"Each of the samples ______ tested twice, once on arrival and once after a week in storage.",
+ opts:["were","have been","was","are"],
+ ans:2,exp:"Each is singular regardless of the plural noun that follows it in the prepositional phrase. Was is correct. Were, have been, and are all agree with samples rather than with the true subject."},
+
+{phase:"Reading and Writing",sub:"Standard English Conventions",diff:"hard",
+ q:"The engineer explained that the failure was caused not by the material ______ by the way the joint had been loaded.",
+ opts:["and","but","or","yet"],
+ ans:1,exp:"The correlative pair is not by X but by Y. But is the required second half. And, or, and yet do not complete the not construction and leave the contrast ungrammatical."},
+
+{phase:"Reading and Writing",sub:"Standard English Conventions",diff:"easy",
+ q:"By the time the survey team reached the summit, the cloud ______ so thick that visibility was under ten metres.",
+ opts:["becomes","has become","had become","will become"],
+ ans:2,exp:"The cloud thickened before the team arrived, and the arrival is itself in the past, so the earlier event takes the past perfect. Had become is correct. The other options place the thickening in the present or the future."},
+
+{phase:"Reading and Writing",sub:"Standard English Conventions",diff:"medium",
+ q:"The two proposals differ in cost, in timescale, and ______ the number of staff each would require.",
+ opts:["in","with","by","for"],
+ ans:0,exp:"Parallel structure requires the third item to repeat the preposition used by the first two. In cost, in timescale, and in the number keeps the series parallel. With, by, and for break the pattern."},
+
+{phase:"Reading and Writing",sub:"Standard English Conventions",diff:"medium",
+ q:"The novel ______ published in 1931, was out of print for six decades before its rediscovery.",
+ opts:["originally","which was originally","that was originally","was originally"],
+ ans:1,exp:"The sentence has a comma after the blank, so a non-restrictive clause is needed and it must be introduced by which. Which was originally is correct. That cannot introduce a non-restrictive clause, and the other options leave the sentence with two main verbs or none."},
+
+{phase:"Reading and Writing",sub:"Standard English Conventions",diff:"hard",
+ q:"The results were consistent across all four sites ______ the one where equipment failed midway through the trial.",
+ opts:["accept","except","excepting of","accepting"],
+ ans:1,exp:"Except is the preposition meaning other than. Accept is a verb meaning to receive and is a spelling confusion rather than a grammatical option. Excepting of is not idiomatic and accepting reverses the meaning."},
+
+{phase:"Reading and Writing",sub:"Standard English Conventions",diff:"medium",
+ q:"Although fewer people attended the second lecture, the room felt busier because it was considerably ______ than the first.",
+ opts:["more small","smaller","smallest","most small"],
+ ans:1,exp:"A comparison between two rooms takes the comparative form, and a one-syllable adjective forms it with the suffix. Smaller is correct. Smallest is superlative and requires three or more, and more small and most small are not standard forms."}
+]);
+
+BANK.push.apply(BANK,[
+{phase:"Math",sub:"Algebra",diff:"easy",
+ q:"If 5x - 8 = 27, what is the value of 3x?",
+ opts:["7","21","35","12"],
+ ans:1,exp:"Add 8 to both sides to get 5x = 35, so x = 7. The question asks for 3x, which is 21. Choosing 7 answers a question that was not asked, which is the most common error on this item type."},
+
+{phase:"Math",sub:"Algebra",diff:"easy",
+ q:"The function f is defined by f(x) = 4x + 9. What is the value of f(-3)?",
+ opts:["-3","21","-21","3"],
+ ans:0,exp:"Substitute: 4 times -3 is -12, and -12 plus 9 is -3. The sign error that produces -21 comes from subtracting 9 rather than adding it."},
+
+{phase:"Math",sub:"Algebra",diff:"easy",
+ q:"A line passes through the points (2, 5) and (6, 17). What is the slope of the line?",
+ opts:["2","3","4","12"],
+ ans:1,exp:"Slope is the change in y over the change in x. That is 17 minus 5, which is 12, divided by 6 minus 2, which is 4. So the slope is 3. Choosing 12 stops after the numerator."},
+
+{phase:"Math",sub:"Algebra",diff:"medium",
+ q:"If 3(x + 4) = 2(x - 1) + 20, what is the value of x?",
+ opts:["6","2","-6","10"],
+ ans:0,exp:"Expand both sides: 3x + 12 = 2x - 2 + 20, so 3x + 12 = 2x + 18. Subtract 2x and 12 from both sides to get x = 6. Checking, the left side is 30 and the right side is 10 plus 20, also 30."},
+
+{phase:"Math",sub:"Algebra",diff:"medium",
+ q:"The system 2x + y = 11 and x - y = 1 has solution (x, y). What is the value of x + y?",
+ opts:["4","7","11","9"],
+ ans:1,exp:"Adding the two equations eliminates y: 3x = 12, so x = 4. Then y = x - 1 = 3. The sum x + y is 7. Confirm in the first equation: 8 plus 3 is 11."},
+
+{phase:"Math",sub:"Algebra",diff:"medium",
+ q:"A car rental costs a fixed fee of 45 dollars plus 0.30 dollars per mile driven. Which equation gives the total cost C in dollars for m miles?",
+ opts:["C = 45m + 0.30","C = 0.30m + 45","C = 45.30m","C = 45(m + 0.30)"],
+ ans:1,exp:"The per-mile charge multiplies the mileage and the fixed fee is added once. That is C = 0.30m + 45. Option A reverses which quantity varies, and the other two multiply the fixed fee by the mileage."},
+
+{phase:"Math",sub:"Algebra",diff:"medium",
+ q:"If 7 - 2x is greater than 1, which of the following describes all possible values of x?",
+ opts:["x is greater than 3","x is less than 3","x is greater than 4","x is less than 4"],
+ ans:1,exp:"Subtract 7 from both sides to get -2x greater than -6, then divide by -2 and reverse the inequality, giving x less than 3. Forgetting to reverse the sign when dividing by a negative produces the wrong direction."},
+
+{phase:"Math",sub:"Algebra",diff:"hard",
+ q:"The equation kx + 6y = 18 represents a line parallel to the line 2x + 3y = 12. What is the value of k?",
+ opts:["2","3","4","6"],
+ ans:2,exp:"Parallel lines have equal slopes. For 2x + 3y = 12 the slope is -2/3. For kx + 6y = 18 the slope is -k/6. Setting -k/6 equal to -2/3 gives k = 4."},
+
+{phase:"Math",sub:"Algebra",diff:"hard",
+ q:"For what value of c does the system 4x + 6y = 10 and 2x + 3y = c have infinitely many solutions?",
+ opts:["5","10","20","2"],
+ ans:0,exp:"Infinitely many solutions require the two equations to be multiples of each other. Dividing the first by 2 gives 2x + 3y = 5, so c must equal 5. Any other value makes the lines parallel and distinct, giving no solution."},
+
+{phase:"Math",sub:"Algebra",diff:"medium",
+ q:"A linear function g satisfies g(0) = 7 and g(4) = 19. What is g(10)?",
+ opts:["31","34","37","25"],
+ ans:2,exp:"The slope is 19 minus 7 over 4 minus 0, which is 3. With intercept 7 the function is g(x) = 3x + 7, so g(10) = 30 plus 7 = 37."},
+
+{phase:"Math",sub:"Algebra",diff:"easy",
+ q:"If 2(x - 5) = 14, what is the value of x?",
+ opts:["12","7","9","2"],
+ ans:0,exp:"Divide both sides by 2 to get x - 5 = 7, then add 5 to get x = 12. Checking, 2 times 7 is 14."},
+
+{phase:"Math",sub:"Algebra",diff:"medium",
+ q:"A plumber charges 60 dollars for a call-out plus 40 dollars per hour. If a job cost 220 dollars, how many hours did it take?",
+ opts:["3","4","5","5.5"],
+ ans:1,exp:"Subtract the call-out: 220 minus 60 is 160. Divide by the hourly rate: 160 divided by 40 is 4 hours. Dividing 220 by 40 without removing the fixed fee gives 5.5, which is the trap."},
+
+{phase:"Math",sub:"Algebra",diff:"hard",
+ q:"If 3x - 2y = 14 and x + 2y = 10, what is the value of x?",
+ opts:["4","6","8","2"],
+ ans:1,exp:"Adding the two equations eliminates y: 4x = 24, so x = 6. Substituting back, 2y = 10 minus 6 = 4 so y = 2, and 18 minus 4 is 14 as required."},
+
+{phase:"Math",sub:"Algebra",diff:"medium",
+ q:"Which expression is equivalent to 5(2x - 3) - 3(x - 4)?",
+ opts:["7x - 3","7x - 27","13x - 3","7x + 3"],
+ ans:0,exp:"Expand: 10x - 15 minus 3x plus 12. Combine like terms to get 7x - 3. The common error is failing to distribute the negative sign across the second bracket, which turns plus 12 into minus 12."},
+
+{phase:"Math",sub:"Algebra",diff:"hard",
+ q:"A line has equation y = mx + 4 and passes through the point (3, 19). What is the value of m?",
+ opts:["5","4","6","15"],
+ ans:0,exp:"Substitute the point: 19 = 3m + 4. Subtract 4 to get 15 = 3m, so m = 5. Choosing 15 stops before dividing by 3."}
+]);
+
+BANK.push.apply(BANK,[
+{phase:"Math",sub:"Advanced Math",diff:"easy",
+ q:"What are the solutions to x squared - 7x + 12 = 0?",
+ opts:["x = 3 and x = 4","x = -3 and x = -4","x = 2 and x = 6","x = 1 and x = 12"],
+ ans:0,exp:"Factor into (x - 3)(x - 4) = 0, giving x = 3 and x = 4. Their sum is 7 and their product is 12, which matches the coefficients. The negative pair would give a middle term of plus 7x."},
+
+{phase:"Math",sub:"Advanced Math",diff:"medium",
+ q:"If f(x) = x squared - 4x + 1, what is the value of f(5)?",
+ opts:["6","46","-4","21"],
+ ans:0,exp:"Substitute: 25 minus 20 plus 1 equals 6. The error that gives 46 comes from squaring after multiplying rather than before."},
+
+{phase:"Math",sub:"Advanced Math",diff:"medium",
+ q:"Which expression is equivalent to (2x + 3)(x - 5)?",
+ opts:["2x squared - 7x - 15","2x squared + 7x - 15","2x squared - 13x - 15","2x squared - 7x + 15"],
+ ans:0,exp:"Expand term by term: 2x squared minus 10x plus 3x minus 15, which simplifies to 2x squared minus 7x minus 15. The sign on the constant is negative because positive 3 multiplies negative 5."},
+
+{phase:"Math",sub:"Advanced Math",diff:"medium",
+ q:"The graph of y = (x - 4) squared + 3 has its vertex at which point?",
+ opts:["(4, 3)","(-4, 3)","(4, -3)","(3, 4)"],
+ ans:0,exp:"In vertex form the vertex is at (h, k) where the expression reads (x - h) squared plus k. Here h is 4 and k is 3. The sign inside the bracket is subtracted, so the x-coordinate is positive 4."},
+
+{phase:"Math",sub:"Advanced Math",diff:"hard",
+ q:"If x squared + kx + 25 is a perfect square trinomial and k is positive, what is the value of k?",
+ opts:["5","10","25","20"],
+ ans:1,exp:"A perfect square has the form (x + a) squared, which expands to x squared plus 2ax plus a squared. Since a squared is 25, a is 5, so k equals 2 times 5, which is 10."},
+
+{phase:"Math",sub:"Advanced Math",diff:"medium",
+ q:"What is the value of x if 2 raised to the power (x + 1) equals 32?",
+ opts:["3","4","5","16"],
+ ans:1,exp:"32 is 2 to the fifth power, so x plus 1 equals 5 and x equals 4. Choosing 5 forgets to subtract the 1."},
+
+{phase:"Math",sub:"Advanced Math",diff:"hard",
+ q:"The equation x squared - 6x + c = 0 has exactly one real solution. What is the value of c?",
+ opts:["6","9","3","36"],
+ ans:1,exp:"Exactly one solution means the discriminant is zero. Here that is 36 minus 4c equals 0, so c equals 9. The equation then factors as (x - 3) squared."},
+
+{phase:"Math",sub:"Advanced Math",diff:"medium",
+ q:"Which expression is equivalent to (x squared - 9) divided by (x + 3), for x not equal to -3?",
+ opts:["x - 3","x + 3","x squared - 3","1"],
+ ans:0,exp:"The numerator is a difference of squares and factors as (x - 3)(x + 3). Cancelling the common factor leaves x - 3. The restriction on x is stated because the original expression is undefined at -3."},
+
+{phase:"Math",sub:"Advanced Math",diff:"hard",
+ q:"If g(x) = 3x squared and h(x) = x - 2, what is g(h(4))?",
+ opts:["12","36","10","48"],
+ ans:0,exp:"Work from the inside out. h(4) is 4 minus 2, which is 2. Then g(2) is 3 times 2 squared, which is 3 times 4, or 12. Applying the functions in the other order gives 46 and is the usual error."},
+
+{phase:"Math",sub:"Advanced Math",diff:"medium",
+ q:"What is the sum of the solutions to x squared - 11x + 24 = 0?",
+ opts:["11","24","-11","5"],
+ ans:0,exp:"For a quadratic with leading coefficient 1, the sum of the solutions is the negative of the middle coefficient, which is 11. Factoring confirms it, since the roots are 3 and 8."},
+
+{phase:"Math",sub:"Advanced Math",diff:"easy",
+ q:"Which expression is equivalent to x to the fifth power divided by x squared?",
+ opts:["x cubed","x to the seventh","x to the tenth","x squared and a half"],
+ ans:0,exp:"Dividing powers with the same base subtracts the exponents, so 5 minus 2 gives x cubed. Adding the exponents would apply to multiplication rather than division."},
+
+{phase:"Math",sub:"Advanced Math",diff:"hard",
+ q:"The function p is defined by p(x) = 2x squared - 8x + 3. For what value of x does p reach its minimum?",
+ opts:["2","4","-2","1.5"],
+ ans:0,exp:"For a parabola in standard form the vertex sits at x equals negative b over 2a. Here that is 8 divided by 4, which is 2. The coefficient of x squared is positive, so this vertex is a minimum."},
+
+{phase:"Math",sub:"Advanced Math",diff:"medium",
+ q:"If the square root of (x + 7) equals 5, what is the value of x?",
+ opts:["18","32","25","-2"],
+ ans:0,exp:"Square both sides to get x plus 7 equals 25, so x equals 18. Checking, the square root of 25 is 5, so the solution is valid rather than extraneous."},
+
+{phase:"Math",sub:"Advanced Math",diff:"medium",
+ q:"Which expression is equivalent to 3x(x - 2) + 4(x - 2)?",
+ opts:["(3x + 4)(x - 2)","(3x - 4)(x - 2)","(3x + 4)(x + 2)","3x squared + 4x - 2"],
+ ans:0,exp:"Both terms share the factor (x - 2), so factoring it out leaves (3x + 4)(x - 2). Expanding the answer returns 3x squared minus 2x minus 8, which matches the original."},
+
+{phase:"Math",sub:"Advanced Math",diff:"hard",
+ q:"If f(x) = x squared + 1, for how many real values of x does f(x) = 0?",
+ opts:["Zero","One","Two","Infinitely many"],
+ ans:0,exp:"x squared is never negative for real x, so x squared plus 1 is always at least 1 and never reaches zero. The equation has no real solutions, though it does have two complex ones."}
+]);
+
+BANK.push.apply(BANK,[
+{phase:"Math",sub:"Problem-Solving and Data Analysis",diff:"easy",
+ q:"A jacket priced at 80 dollars is reduced by 25 percent. What is the sale price?",
+ opts:["55 dollars","60 dollars","65 dollars","20 dollars"],
+ ans:1,exp:"A 25 percent reduction leaves 75 percent of the price. 0.75 times 80 is 60 dollars. Choosing 20 gives the size of the discount rather than the price after it."},
+
+{phase:"Math",sub:"Problem-Solving and Data Analysis",diff:"easy",
+ q:"The ratio of cats to dogs at a shelter is 3 to 5. If there are 40 dogs, how many cats are there?",
+ opts:["24","15","66","8"],
+ ans:0,exp:"Each part equals 40 divided by 5, which is 8. Cats take 3 parts, so 3 times 8 is 24. Reversing the ratio gives 66 and is the common error."},
+
+{phase:"Math",sub:"Problem-Solving and Data Analysis",diff:"medium",
+ q:"A value increases from 250 to 320. What is the percentage increase, to the nearest whole percent?",
+ opts:["22 percent","28 percent","70 percent","128 percent"],
+ ans:1,exp:"The increase is 70. Divide by the original value: 70 divided by 250 is 0.28, which is 28 percent. Dividing by the new value instead gives about 22 percent and is the standard trap."},
+
+{phase:"Math",sub:"Problem-Solving and Data Analysis",diff:"medium",
+ q:"The mean of five numbers is 18. If four of them are 12, 15, 20, and 23, what is the fifth?",
+ opts:["20","18","90","22"],
+ ans:0,exp:"The total must be 5 times 18, which is 90. The four given numbers sum to 70, so the fifth is 20. Choosing 90 stops at the total rather than the missing value."},
+
+{phase:"Math",sub:"Problem-Solving and Data Analysis",diff:"medium",
+ q:"A bag holds 4 red, 6 blue, and 10 green marbles. One marble is drawn at random. What is the probability it is not green?",
+ opts:["0.5","0.4","0.6","0.3"],
+ ans:0,exp:"There are 20 marbles in total and 10 are green, so 10 are not. The probability is 10 over 20, which is 0.5. Working out the green probability and forgetting to subtract is the usual slip."},
+
+{phase:"Math",sub:"Problem-Solving and Data Analysis",diff:"medium",
+ q:"A car travels 180 kilometres in 2.5 hours. At the same rate, how far will it travel in 4 hours?",
+ opts:["288 kilometres","270 kilometres","240 kilometres","300 kilometres"],
+ ans:0,exp:"The rate is 180 divided by 2.5, which is 72 kilometres per hour. Over 4 hours that is 288 kilometres. Setting up the proportion directly gives the same result."},
+
+{phase:"Math",sub:"Problem-Solving and Data Analysis",diff:"hard",
+ q:"In a sample of 200 residents, 46 supported a proposal. If the sample was randomly selected from a town of 15,000, roughly how many residents would be expected to support it?",
+ opts:["3,450","4,600","2,300","6,900"],
+ ans:0,exp:"The sample proportion is 46 divided by 200, which is 0.23. Applying that to 15,000 gives 3,450. Choosing 4,600 multiplies by the wrong power of ten."},
+
+{phase:"Math",sub:"Problem-Solving and Data Analysis",diff:"medium",
+ q:"The median of the data set 4, 9, 11, 15, 15, 22, 30 is which value?",
+ opts:["11","15","14.9","22"],
+ ans:1,exp:"There are seven values already in order, so the median is the fourth, which is 15. The mean is about 15.1 and the mode is also 15, but the question asks specifically for the median."},
+
+{phase:"Math",sub:"Problem-Solving and Data Analysis",diff:"medium",
+ q:"A recipe uses 3 cups of flour for 24 biscuits. How many cups are needed for 40 biscuits?",
+ opts:["5","4.5","6","4"],
+ ans:0,exp:"The rate is 3 cups per 24 biscuits, or 0.125 cups each. For 40 biscuits that is 5 cups. Setting 3 over 24 equal to x over 40 gives the same answer."},
+
+{phase:"Math",sub:"Problem-Solving and Data Analysis",diff:"hard",
+ q:"A survey reported that 38 percent of respondents cycle weekly, with a margin of error of 4 percentage points. Which conclusion is best supported?",
+ opts:["Exactly 38 percent of the population cycles weekly.","The population figure is plausibly between 34 and 42 percent.","More than half the population cycles weekly.","The survey was conducted incorrectly."],
+ ans:1,exp:"A margin of error defines an interval around the estimate, here 34 to 42 percent. B states that. A treats the estimate as exact, C is outside the interval entirely, and D draws a conclusion about method that the figures do not support."},
+
+{phase:"Math",sub:"Problem-Solving and Data Analysis",diff:"easy",
+ q:"A phone plan costs 25 dollars per month. What is the total cost over 18 months?",
+ opts:["430 dollars","450 dollars","475 dollars","400 dollars"],
+ ans:1,exp:"25 multiplied by 18 is 450 dollars. Splitting it as 25 times 20 minus 25 times 2, that is 500 minus 50, confirms the result."},
+
+{phase:"Math",sub:"Problem-Solving and Data Analysis",diff:"medium",
+ q:"An investment of 2,000 dollars grows by 6 percent in the first year. What is its value after that year?",
+ opts:["2,060 dollars","2,120 dollars","2,600 dollars","2,006 dollars"],
+ ans:1,exp:"Six percent of 2,000 is 120, so the value becomes 2,120 dollars. Multiplying by 1.06 gives the same figure directly."},
+
+{phase:"Math",sub:"Problem-Solving and Data Analysis",diff:"hard",
+ q:"Two groups were compared. Group A had a mean score of 70 with a standard deviation of 3. Group B had the same mean with a standard deviation of 12. Which statement is best supported?",
+ opts:["Group B scored higher on average.","Group B's scores were more spread out.","Group A had more participants.","Group A's scores were more spread out."],
+ ans:1,exp:"Standard deviation measures spread, and the means are identical. A larger standard deviation means wider spread, so Group B is more variable. Nothing in the figures speaks to sample size or to a difference in average."},
+
+{phase:"Math",sub:"Problem-Solving and Data Analysis",diff:"medium",
+ q:"A map uses a scale of 1 centimetre to 8 kilometres. Two towns are 5.5 centimetres apart on the map. How far apart are they in reality?",
+ opts:["44 kilometres","40 kilometres","13.5 kilometres","48 kilometres"],
+ ans:0,exp:"Multiply the map distance by the scale factor: 5.5 times 8 is 44 kilometres. Adding rather than multiplying gives 13.5 and is the error to avoid."},
+
+{phase:"Math",sub:"Problem-Solving and Data Analysis",diff:"medium",
+ q:"Of 60 students, 45 study Spanish and 25 study French. If every student studies at least one of the two, how many study both?",
+ opts:["10","15","20","5"],
+ ans:0,exp:"By inclusion and exclusion, the total equals Spanish plus French minus both. So 60 equals 45 plus 25 minus both, giving both equals 10. Checking, 35 study only Spanish, 15 only French, and 10 study both, which sums to 60."}
+]);
+
+BANK.push.apply(BANK,[
+{phase:"Math",sub:"Geometry and Trigonometry",diff:"easy",
+ q:"A right triangle has legs of length 6 and 8. What is the length of the hypotenuse?",
+ opts:["10","14","12","48"],
+ ans:0,exp:"By the Pythagorean theorem the hypotenuse squared is 36 plus 64, which is 100, so the hypotenuse is 10. This is the 3-4-5 triangle scaled by 2 and is worth recognising on sight."},
+
+{phase:"Math",sub:"Geometry and Trigonometry",diff:"easy",
+ q:"Two angles of a triangle measure 47 degrees and 68 degrees. What is the third angle?",
+ opts:["65 degrees","115 degrees","55 degrees","45 degrees"],
+ ans:0,exp:"Angles in a triangle sum to 180 degrees. 47 plus 68 is 115, and 180 minus 115 is 65 degrees. Choosing 115 stops at the sum of the two given angles."},
+
+{phase:"Math",sub:"Geometry and Trigonometry",diff:"medium",
+ q:"A circle has a radius of 5. What is its area, in terms of pi?",
+ opts:["10 pi","25 pi","50 pi","5 pi"],
+ ans:1,exp:"Area equals pi times the radius squared, so 25 pi. Choosing 10 pi computes the circumference instead, which is 2 pi r."},
+
+{phase:"Math",sub:"Geometry and Trigonometry",diff:"medium",
+ q:"A rectangle has a perimeter of 34 and a length of 11. What is its area?",
+ opts:["66","44","121","33"],
+ ans:0,exp:"The perimeter is twice the sum of length and width, so length plus width is 17 and the width is 6. Area is 11 times 6, which is 66."},
+
+{phase:"Math",sub:"Geometry and Trigonometry",diff:"medium",
+ q:"In a right triangle, the angle A has an opposite side of 7 and a hypotenuse of 25. What is the sine of A?",
+ opts:["7/25","24/25","7/24","25/7"],
+ ans:0,exp:"Sine equals the opposite side over the hypotenuse, which is 7 over 25. The adjacent side is 24, so 24 over 25 would be the cosine and 7 over 24 the tangent."},
+
+{phase:"Math",sub:"Geometry and Trigonometry",diff:"hard",
+ q:"A cylinder has radius 3 and height 10. What is its volume, in terms of pi?",
+ opts:["30 pi","90 pi","60 pi","900 pi"],
+ ans:1,exp:"Volume equals pi times radius squared times height, so pi times 9 times 10, which is 90 pi. Choosing 30 pi forgets to square the radius."},
+
+{phase:"Math",sub:"Geometry and Trigonometry",diff:"medium",
+ q:"Two similar triangles have corresponding sides in the ratio 2 to 5. If the smaller has area 12, what is the area of the larger?",
+ opts:["30","75","60","120"],
+ ans:1,exp:"Areas of similar figures scale as the square of the side ratio. The ratio of areas is 4 to 25, so the larger area is 12 times 25 divided by 4, which is 75. Using the side ratio directly gives 30 and is the classic error."},
+
+{phase:"Math",sub:"Geometry and Trigonometry",diff:"easy",
+ q:"An angle measures 130 degrees. What is the measure of its supplement?",
+ opts:["50 degrees","40 degrees","230 degrees","60 degrees"],
+ ans:0,exp:"Supplementary angles sum to 180 degrees, so the supplement is 180 minus 130, which is 50 degrees. The complement would sum to 90 and does not exist for an angle this large."},
+
+{phase:"Math",sub:"Geometry and Trigonometry",diff:"hard",
+ q:"A circle has centre (2, -1) and radius 6. Which equation describes it?",
+ opts:["(x - 2) squared + (y + 1) squared = 36","(x + 2) squared + (y - 1) squared = 36","(x - 2) squared + (y + 1) squared = 6","(x - 2) squared + (y - 1) squared = 36"],
+ ans:0,exp:"The standard form is (x - h) squared plus (y - k) squared equals r squared. With h equal to 2 and k equal to -1 the second bracket becomes y plus 1, and the radius squared is 36."},
+
+{phase:"Math",sub:"Geometry and Trigonometry",diff:"medium",
+ q:"A triangle has a base of 14 and a height of 9. What is its area?",
+ opts:["126","63","23","46"],
+ ans:1,exp:"Area equals one half base times height, so 0.5 times 14 times 9, which is 63. Choosing 126 forgets the factor of one half."},
+
+{phase:"Math",sub:"Geometry and Trigonometry",diff:"medium",
+ q:"In a right triangle the two acute angles are in the ratio 1 to 4. What is the larger acute angle?",
+ opts:["72 degrees","18 degrees","36 degrees","144 degrees"],
+ ans:0,exp:"The two acute angles sum to 90 degrees. With a ratio of 1 to 4 the parts total 5, so each part is 18 degrees and the larger angle is 4 times 18, which is 72 degrees."},
+
+{phase:"Math",sub:"Geometry and Trigonometry",diff:"hard",
+ q:"A cube has a surface area of 150 square units. What is its volume?",
+ opts:["125","216","100","25"],
+ ans:0,exp:"A cube has six equal faces, so each face has area 25 and each edge is 5. Volume is 5 cubed, which is 125 cubic units."},
+
+{phase:"Math",sub:"Geometry and Trigonometry",diff:"medium",
+ q:"A line segment has endpoints (1, 3) and (7, 11). What is its length?",
+ opts:["10","14","8","6"],
+ ans:0,exp:"The horizontal change is 6 and the vertical change is 8. By the distance formula the length is the square root of 36 plus 64, which is the square root of 100, or 10."},
+
+{phase:"Math",sub:"Geometry and Trigonometry",diff:"medium",
+ q:"In a circle of radius 9, what is the length of an arc subtending a central angle of 40 degrees, in terms of pi?",
+ opts:["2 pi","4 pi","9 pi","18 pi"],
+ ans:0,exp:"The full circumference is 18 pi. An angle of 40 degrees is 40 over 360, or one ninth, of the circle, so the arc is 18 pi divided by 9, which is 2 pi."},
+
+{phase:"Math",sub:"Geometry and Trigonometry",diff:"hard",
+ q:"In a right triangle, the sine of angle B equals the cosine of angle C, and both are acute. What is the sum of angles B and C?",
+ opts:["90 degrees","45 degrees","180 degrees","60 degrees"],
+ ans:0,exp:"Sine and cosine are cofunctions, so the sine of an angle equals the cosine of its complement. In a right triangle the two acute angles are already complementary, and their sum is 90 degrees."}
+]);
+
+const SUBJECTS=['Information and Ideas','Craft and Structure','Expression of Ideas','Standard English Conventions','Algebra','Advanced Math','Problem-Solving and Data Analysis','Geometry and Trigonometry'];
+const SUBJ_ICON={'Information and Ideas':'ID','Craft and Structure':'CS','Expression of Ideas':'EI','Standard English Conventions':'SC','Algebra':'AL','Advanced Math':'AM','Problem-Solving and Data Analysis':'PD','Geometry and Trigonometry':'GT'};
+const SUBJ_PHASE={'Information and Ideas':'Reading and Writing','Craft and Structure':'Reading and Writing','Expression of Ideas':'Reading and Writing','Standard English Conventions':'Reading and Writing','Algebra':'Math','Advanced Math':'Math','Problem-Solving and Data Analysis':'Math','Geometry and Trigonometry':'Math'};
+
+const LOSSES=[
+{t:"Answering a question you were not asked",b:"Solving for x when the question asks for 3x is the single most common avoidable error in the Math section. Underline what the question actually wants before you start, and check it again before you select."},
+{t:"Rushing the first ten questions",b:"Early questions carry the same weight as late ones and are usually easier. Losing one to carelessness costs exactly as much as failing a hard question at the end, and it takes a fraction of the time to avoid."},
+{t:"Reading past the answer in a passage",b:"For a text-based question the evidence is almost always in the sentence containing the keyword or the one immediately after. Reading the whole passage again wastes the time you will need later."},
+{t:"Choosing an option that is true but not the answer",b:"Wrong choices in Reading and Writing are frequently accurate statements that do not answer the question asked. Check each candidate against the question stem rather than against the passage alone."},
+{t:"Leaving anything blank",b:"There is no penalty for a wrong answer. A blank is a certain zero and a guess is worth a quarter of a point in expectation. In the last thirty seconds, fill everything."},
+{t:"Not eliminating before guessing",b:"Removing one option lifts a guess from one in four to one in three, and removing two lifts it to a coin flip. Even under time pressure, one crossed-out option is worth the two seconds it costs."},
+{t:"Ignoring the answer choices in algebra",b:"When the choices are numbers, substituting them into the equation is often faster than solving it. This is a legitimate method rather than a shortcut, and it removes the risk of an algebra slip."},
+{t:"Treating every question as equally hard",b:"Questions are worth the same regardless of difficulty. Two easy questions answered carefully are worth more than one hard question solved slowly, so bank the easy marks and return to the rest."}
+];
+
+/* ---------- storage ---------- */
+const KEY='rm_sat_practice';
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){ return {}; } }
+function save(d){ try{ localStorage.setItem(KEY,JSON.stringify(d)); }catch(e){} }
+let DB=load();
+if(!DB.sessions) DB.sessions=[];
+if(!DB.subStats) DB.subStats={};
+if(!DB.diffStats) DB.diffStats={easy:{c:0,t:0},medium:{c:0,t:0},hard:{c:0,t:0}};
+if(!DB.seen) DB.seen={};
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function todayKey(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+/* Deterministic daily selection so the set is the same all day */
+function seedFromString(s){ var h=2166136261; for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+function seededPick(arr,n,seed){
+  var idx=arr.map(function(_,i){return i;});
+  var s=seed;
+  for(var i=idx.length-1;i>0;i--){
+    s=(Math.imul(s,1103515245)+12345)>>>0;
+    var j=s%(i+1);
+    var t=idx[i]; idx[i]=idx[j]; idx[j]=t;
+  }
+  return idx.slice(0,n).map(function(i){return arr[i];});
+}
+function shuffle(a){ var r=a.slice(); for(var i=r.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=r[i]; r[i]=r[j]; r[j]=t; } return r; }
+
+/* ---------- quiz engine ---------- */
+let Q={list:[],i:0,correct:0,answered:false,mode:'daily',sub:null,startedAt:0,marks:[]};
+
+function startQuiz(list,mode,sub,mount){
+  Q={list:list,i:0,correct:0,answered:false,mode:mode,sub:sub||null,startedAt:Date.now(),marks:[]};
+  renderQ(mount);
+}
+
+function renderQ(mount){
+  var el=document.getElementById(mount);
+  if(Q.i>=Q.list.length){ renderResult(mount); return; }
+  var q=Q.list[Q.i];
+  var pips='';
+  for(var p=0;p<Q.list.length;p++){
+    var cls = p<Q.i ? (Q.marks[p]?'done':'wrong') : (p===Q.i?'current':'');
+    pips+='<div class="pip '+cls+'"></div>';
+  }
+  var opts='';
+  var letters=['A','B','C','D'];
+  for(var o=0;o<q.opts.length;o++){
+    opts+='<div class="qo" data-o="'+o+'"><div class="letter">'+letters[o]+'</div><div>'+esc(q.opts[o])+'</div></div>';
+  }
+  el.innerHTML='<div class="quiz-panel">'+
+    '<div class="quiz-progress">'+pips+'</div>'+
+    '<div class="quiz-meta">'+
+      '<span class="qnum">Q'+(Q.i+1)+' of '+Q.list.length+'</span>'+
+      '<span class="qsub">'+esc(q.sub)+'</span>'+
+      '<span class="qphase">'+esc(q.phase)+'</span>'+
+      '<span class="qdiff '+q.diff+'">'+q.diff+'</span>'+
+    '</div>'+
+    (q.pas?'<div class="quiz-passage">'+esc(q.pas).replace(/\n/g,'<br>')+'</div>':'')+
+    '<div class="quiz-question">'+esc(q.q)+'</div>'+
+    '<div class="quiz-opts">'+opts+'</div>'+
+    '<div class="quiz-explain" id="qExp"></div>'+
+    '<div class="quiz-actions"><button class="qa-btn primary" id="qNext" style="display:none">'+
+      (Q.i===Q.list.length-1?'See results':'Next question')+'</button>'+
+      '<button class="qa-btn ghost" id="qSkip">Skip</button></div>'+
+    '</div>';
+
+  el.querySelectorAll('.qo').forEach(function(node){
+    node.addEventListener('click',function(){ answer(parseInt(node.getAttribute('data-o'),10),mount); });
+  });
+  document.getElementById('qSkip').addEventListener('click',function(){ answer(-1,mount); });
+  document.getElementById('qNext').addEventListener('click',function(){ Q.i++; renderQ(mount); });
+}
+
+function answer(choice,mount){
+  if(Q.answered) return;
+  Q.answered=true;
+  var q=Q.list[Q.i];
+  var ok = choice===q.ans;
+  Q.marks[Q.i]=ok;
+  if(ok) Q.correct++;
+
+  if(!DB.subStats[q.sub]) DB.subStats[q.sub]={c:0,t:0};
+  DB.subStats[q.sub].t++; if(ok) DB.subStats[q.sub].c++;
+  DB.diffStats[q.diff].t++; if(ok) DB.diffStats[q.diff].c++;
+  DB.seen[q.q]=true;
+  save(DB);
+
+  document.querySelectorAll('#'+mount+' .qo').forEach(function(node){
+    var o=parseInt(node.getAttribute('data-o'),10);
+    node.classList.add('disabled');
+    if(o===q.ans) node.classList.add('correct');
+    else if(o===choice) node.classList.add('wrong');
+  });
+  var exp=document.getElementById('qExp');
+  exp.innerHTML='<strong>'+(ok?'Correct.':(choice===-1?'Skipped.':'Not quite.'))+'</strong> '+esc(q.exp);
+  exp.classList.add('show');
+  document.getElementById('qNext').style.display='inline-block';
+  document.getElementById('qSkip').style.display='none';
+  Q.answered=false;
+  Q.locked=true;
+  document.querySelectorAll('#'+mount+' .qo').forEach(function(n){ n.style.pointerEvents='none'; });
+}
+
+function renderResult(mount){
+  var pct=Math.round(Q.correct/Q.list.length*100);
+  var cls = pct>=80?'great':(pct>=50?'ok':'poor');
+  var mins=Math.max(1,Math.round((Date.now()-Q.startedAt)/60000));
+  var wrongSubs={};
+  Q.list.forEach(function(q,i){ if(!Q.marks[i]) wrongSubs[q.sub]=(wrongSubs[q.sub]||0)+1; });
+
+  DB.sessions.push({d:todayKey(),mode:Q.mode,sub:Q.sub,n:Q.list.length,c:Q.correct,pct:pct,ts:Date.now()});
+  if(Q.mode==='daily'){
+    DB.lastDaily=todayKey();
+    DB.dailyScore=Q.correct+'/'+Q.list.length;
+    DB.streak=computeStreak();
+  }
+  save(DB);
+
+  var rows=Object.keys(wrongSubs).sort(function(a,b){return wrongSubs[b]-wrongSubs[a];})
+    .map(function(k){ return '<div class="sm-row"><span class="sm-icon">'+SUBJ_ICON[k]+'</span><span class="sm-name" style="width:auto;flex:1">'+esc(k)+'</span><span class="sm-pct">'+wrongSubs[k]+'</span></div>'; }).join('');
+
+  document.getElementById(mount).innerHTML='<div class="quiz-panel"><div class="result-card">'+
+    '<div class="big-score '+cls+'">'+pct+'%</div>'+
+    '<div class="rlabel">'+Q.correct+' of '+Q.list.length+' correct</div>'+
+    '<div class="result-mini">'+
+      '<div class="rm"><div class="rv">'+Q.correct+'</div><div class="rl">Correct</div></div>'+
+      '<div class="rm"><div class="rv">'+(Q.list.length-Q.correct)+'</div><div class="rl">Missed</div></div>'+
+      '<div class="rm"><div class="rv">'+mins+'m</div><div class="rl">Time</div></div>'+
+    '</div>'+
+    (rows?'<div class="subj-mastery" style="text-align:left"><div class="sm-title">Missed by domain</div>'+rows+'</div>':'')+
+    '<div class="quiz-actions" style="justify-content:center;margin-top:18px">'+
+      '<button class="qa-btn primary" id="qAgain">Try another set</button>'+
+      '<button class="qa-btn ghost" id="qStats">See analytics</button>'+
+    '</div></div></div>';
+
+  document.getElementById('qAgain').addEventListener('click',function(){
+    if(Q.mode==='daily') buildDaily(); else buildPractice(Q.sub);
+  });
+  document.getElementById('qStats').addEventListener('click',function(){ switchTab('analytics'); });
+  renderStreak();
+}
+
+function computeStreak(){
+  var days={}; DB.sessions.filter(function(s){return s.mode==='daily';}).forEach(function(s){ days[s.d]=true; });
+  var n=0, d=new Date();
+  for(var i=0;i<400;i++){
+    var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(days[k]) n++; else if(i>0) break; else { d.setDate(d.getDate()-1); continue; }
+    d.setDate(d.getDate()-1);
+  }
+  return n;
+}
+
+/* ---------- daily ---------- */
+function buildDaily(){
+  var seed=seedFromString(todayKey());
+  var perDomain=[];
+  SUBJECTS.forEach(function(s,ix){
+    var pool=BANK.filter(function(q){return q.sub===s;});
+    perDomain=perDomain.concat(seededPick(pool,2,seed+ix*7919).slice(0,2));
+  });
+  var list=seededPick(perDomain,10,seed);
+  startQuiz(list,'daily',null,'quizArea');
+}
+
+function renderStreak(){
+  document.getElementById('streakVal').textContent=DB.streak||0;
+  document.getElementById('todayScore').textContent=(DB.lastDaily===todayKey()&&DB.dailyScore)?DB.dailyScore:'-';
+  var dots='', d=new Date();
+  var done={}; DB.sessions.filter(function(s){return s.mode==='daily';}).forEach(function(s){ done[s.d]=true; });
+  var labels=['S','M','T','W','T','F','S'];
+  for(var i=6;i>=0;i--){
+    var dd=new Date(); dd.setDate(d.getDate()-i);
+    var k=dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0');
+    var cls='dot'+(done[k]?' done':'')+(i===0?' today':'');
+    dots+='<div class="'+cls+'">'+labels[dd.getDay()]+'</div>';
+  }
+  document.getElementById('streakDots').innerHTML=dots;
+}
+
+/* ---------- practice ---------- */
+function renderSubjGrid(phase){
+  var grid=document.getElementById('subjGrid');
+  var html='';
+  SUBJECTS.forEach(function(s){
+    if(phase&&phase!=='All'&&SUBJ_PHASE[s]!==phase) return;
+    var total=BANK.filter(function(q){return q.sub===s;}).length;
+    var st=DB.subStats[s]||{c:0,t:0};
+    var pct=st.t?Math.round(st.c/st.t*100):0;
+    html+='<div class="subj-card" data-sub="'+esc(s)+'">'+
+      '<div class="sc-icon">'+SUBJ_ICON[s]+'</div>'+
+      '<div class="sc-name">'+esc(s)+'</div>'+
+      '<div class="sc-count">'+total+' questions'+(st.t?' . '+pct+'% accuracy':'')+'</div>'+
+      '<div class="sc-bar"><div class="sc-fill" style="width:'+pct+'%"></div></div>'+
+      '</div>';
+  });
+  grid.innerHTML=html;
+  grid.querySelectorAll('.subj-card').forEach(function(c){
+    c.addEventListener('click',function(){ buildPractice(c.getAttribute('data-sub')); });
+  });
+}
+
+function buildPractice(sub){
+  var pool=BANK.filter(function(q){return q.sub===sub;});
+  var fresh=pool.filter(function(q){return !DB.seen[q.q];});
+  var use=fresh.length>=10?fresh:pool;
+  var list=shuffle(use).slice(0,Math.min(10,use.length));
+  startQuiz(list,'practice',sub,'practiceQuizArea');
+  document.getElementById('practiceQuizArea').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ---------- strategy ---------- */
+function renderStrategy(){
+  function calc(){
+    var q=Math.max(1,parseInt(document.getElementById('pcQ').value,10)||1);
+    var m=Math.max(1,parseInt(document.getElementById('pcM').value,10)||1);
+    var s=m*60/q;
+    document.getElementById('pcOut').textContent=Math.round(s)+'s';
+    var note='At '+Math.round(s)+' seconds per question you can afford roughly '+
+      Math.floor(s/15)+' quarter-minute checks per item. ';
+    note+= s<45 ? 'That is tight. Answer what you know first and return to the rest rather than working in order.'
+      : (s<75 ? 'That is workable if you do not linger. Set a personal limit and move on when you hit it.'
+      : 'That is comfortable. Use the margin to re-read the question stem before selecting, which is where most avoidable marks are lost.');
+    document.getElementById('pcNote').textContent=note;
+  }
+  document.getElementById('pcQ').addEventListener('input',calc);
+  document.getElementById('pcM').addEventListener('input',calc);
+  calc();
+  document.getElementById('lossList').innerHTML=LOSSES.map(function(l){
+    return '<div class="hist-row" style="align-items:flex-start;flex-direction:column;gap:4px">'+
+      '<div style="font-weight:700;font-size:13.5px">'+esc(l.t)+'</div>'+
+      '<div class="hist-detail" style="line-height:1.7">'+esc(l.b)+'</div></div>';
+  }).join('');
+}
+
+/* ---------- analytics ---------- */
+function drawRing(pct){
+  var c=document.getElementById('ringCanvas'); if(!c||!c.getContext) return;
+  var x=c.getContext('2d'); x.clearRect(0,0,100,100);
+  x.lineWidth=9; x.lineCap='round';
+  x.strokeStyle='rgba(255,255,255,.07)';
+  x.beginPath(); x.arc(50,50,40,0,Math.PI*2); x.stroke();
+  if(pct>0){
+    var g=x.createLinearGradient(0,0,100,100);
+    g.addColorStop(0,'#6ea8ff'); g.addColorStop(1,'#7cf7d4');
+    x.strokeStyle=g;
+    x.beginPath(); x.arc(50,50,40,-Math.PI/2,-Math.PI/2+Math.PI*2*(pct/100)); x.stroke();
+  }
+}
+
+function renderAnalytics(){
+  var tot=0,cor=0;
+  Object.keys(DB.subStats).forEach(function(k){ tot+=DB.subStats[k].t; cor+=DB.subStats[k].c; });
+  var pct=tot?Math.round(cor/tot*100):0;
+  document.getElementById('ringVal').textContent=tot?pct+'%':'-';
+  drawRing(pct);
+
+  document.getElementById('quickStats').innerHTML=
+    '<div class="ov-stat"><div class="os-val">'+tot+'</div><div class="os-label">Answered</div></div>'+
+    '<div class="ov-stat"><div class="os-val">'+cor+'</div><div class="os-label">Correct</div></div>'+
+    '<div class="ov-stat"><div class="os-val">'+DB.sessions.length+'</div><div class="os-label">Sessions</div></div>';
+
+  document.getElementById('subBars').innerHTML=SUBJECTS.map(function(s){
+    var st=DB.subStats[s]||{c:0,t:0};
+    var p=st.t?Math.round(st.c/st.t*100):0;
+    var col=p>=75?'#34d399':(p>=50?'#fbbf24':'#f87171');
+    return '<div class="sb-row"><div class="sb-label">'+esc(s)+'</div>'+
+      '<div class="sb-track"><div class="sb-fill" style="width:'+(st.t?Math.max(p,8):0)+'%;background:'+col+'">'+(st.t?p+'%':'')+'</div></div>'+
+      '<div class="sb-val">'+(st.t?st.c+'/'+st.t:'-')+'</div></div>';
+  }).join('');
+
+  var last=DB.sessions.slice(-10);
+  if(!last.length){
+    document.getElementById('trendWrap').innerHTML='<div class="trend-empty"><div class="te-icon">-</div>'+
+      '<div class="te-msg">No sessions yet. Complete a daily set or a section drill and your trend appears here.</div></div>';
+  } else {
+    document.getElementById('trendWrap').innerHTML='<div class="trend-bar-chart">'+last.map(function(s){
+      var col=s.pct>=75?'#34d399':(s.pct>=50?'#fbbf24':'#f87171');
+      return '<div class="trend-col"><div class="trend-bar-outer">'+
+        '<div class="trend-bar" style="height:'+Math.max(s.pct,4)+'%;background:'+col+'">'+
+        '<span class="tb-val">'+s.pct+'%</span></div></div>'+
+        '<div class="trend-mode-label '+s.mode+'">'+s.mode+'</div>'+
+        '<div class="trend-label">'+s.d.slice(5)+'</div></div>';
+    }).join('')+'</div>';
+  }
+
+  var hist=DB.sessions.slice().reverse().slice(0,12);
+  document.getElementById('histList').innerHTML = hist.length ? hist.map(function(s){
+    return '<div class="hist-row"><span class="hist-date">'+esc(s.d)+'</span>'+
+      '<span class="hist-mode '+s.mode+'">'+s.mode+'</span>'+
+      '<span class="hist-detail">'+esc(s.sub||'mixed')+'</span>'+
+      '<span class="hist-score">'+s.c+'/'+s.n+'</span></div>';
+  }).join('') : '<div class="trend-empty"><div class="te-msg">No sessions recorded yet.</div></div>';
+
+  var d=DB.diffStats;
+  var mastered=0,shaky=0,weak=0;
+  SUBJECTS.forEach(function(s){
+    var st=DB.subStats[s]; if(!st||!st.t) return;
+    var p=st.c/st.t;
+    if(p>=0.8) mastered++; else if(p>=0.5) shaky++; else weak++;
+  });
+  var covered=SUBJECTS.filter(function(s){ return DB.subStats[s]&&DB.subStats[s].t; }).length;
+  document.getElementById('diffDist').innerHTML=
+    '<div class="mastery-stats">'+
+      '<div class="m-stat green"><div class="ms-val">'+mastered+'</div><div class="ms-lbl">Mastered</div></div>'+
+      '<div class="m-stat yellow"><div class="ms-val">'+shaky+'</div><div class="ms-lbl">Shaky</div></div>'+
+      '<div class="m-stat red"><div class="ms-val">'+weak+'</div><div class="ms-lbl">Weak</div></div>'+
+    '</div>'+
+    '<div class="diff-dist">'+['easy','medium','hard'].map(function(k){
+      var s=d[k]; var p=s.t?Math.round(s.c/s.t*100):0;
+      return '<div class="diff-chip '+k+'"><div class="dc-val">'+(s.t?p+'%':'-')+'</div><div class="dc-label">'+k+'</div></div>';
+    }).join('')+'</div>'+
+    '<div class="cov-info" style="margin-top:12px"><div class="cov-sub">Domains attempted: '+covered+' of '+SUBJECTS.length+'</div></div>';
+
+  var weakList=SUBJECTS.map(function(s){
+    var st=DB.subStats[s]; if(!st||st.t<3) return null;
+    return {s:s,p:st.c/st.t,t:st.t};
+  }).filter(Boolean).filter(function(x){return x.p<0.75;}).sort(function(a,b){return a.p-b.p;});
+
+  document.getElementById('weakAreas').innerHTML = weakList.length ? weakList.map(function(x){
+    return '<div class="sm-row"><span class="sm-icon">'+SUBJ_ICON[x.s]+'</span>'+
+      '<span class="sm-name" style="width:auto;flex:1">'+esc(x.s)+'</span>'+
+      '<div class="sm-bar"><div class="sm-fill" style="width:'+Math.round(x.p*100)+'%;background:#f87171"></div></div>'+
+      '<span class="sm-pct">'+Math.round(x.p*100)+'%</span></div>';
+  }).join('') : '<div class="cov-sub">Answer at least three questions in a domain and any weak areas will be listed here.</div>';
+}
+
+/* ---------- tabs ---------- */
+function switchTab(name){
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.toggle('active',b.getAttribute('data-tab')===name); });
+  var map={daily:'viewDaily',practice:'viewPractice',strategy:'viewStrategy',analytics:'viewAnalytics'};
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  var el=document.getElementById(map[name]); if(el) el.classList.add('active');
+  if(name==='analytics') renderAnalytics();
+  if(name==='practice') renderSubjGrid(document.querySelector('.pf-btn.active').getAttribute('data-phase'));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelector('.tab-nav').addEventListener('click',function(e){
+    var btn=e.target.closest('.tab-btn'); if(!btn) return;
+    switchTab(btn.getAttribute('data-tab'));
+  });
+  document.querySelectorAll('.pf-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.pf-btn').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active');
+      renderSubjGrid(b.getAttribute('data-phase'));
+    });
+  });
+  DB.streak=computeStreak();
+  renderStreak();
+  buildDaily();
+  renderSubjGrid('All');
+  renderStrategy();
+  renderAnalytics();
+});
+</script>
+
+</body>
+</html>
