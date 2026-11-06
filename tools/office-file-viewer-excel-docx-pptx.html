@@ -132,6 +132,16 @@
     border:1px solid rgba(255,255,255,.15);
     color:#fff; font-size:13px;
     backdrop-filter: blur(8px);
+    opacity:1;
+    transition: opacity .45s ease;
+  }
+  /* Present mode: the bar fades out after a few idle seconds and returns on
+     any pointer move, tap, or key press. Only opacity changes, so tab order
+     and screen reader output stay intact while it is faded. */
+  .rm-present.is-idle{cursor:none}
+  .rm-present.is-idle .rm-present-bar{opacity:0; pointer-events:none}
+  @media (prefers-reduced-motion: reduce){
+    .rm-present-bar{transition:none}
   }
   .rm-present-bar button{
     background:rgba(255,255,255,.08); color:#fff;
@@ -1688,6 +1698,8 @@
       if(ps) ps.innerHTML = deck.slides[i];
       const c2 = $('rmCounterP');
       if(c2) c2.textContent = `${i+1} / ${deck.slides.length}`;
+      // Changing slide counts as activity: surface the bar again.
+      wakePresentBar();
     }
     // Scroll active thumb into view
     const active = document.querySelector('.rm-thumb.is-active');
@@ -1710,12 +1722,16 @@
       if(overlay.requestFullscreen) overlay.requestFullscreen().catch(()=>{});
       else if(overlay.webkitRequestFullscreen) overlay.webkitRequestFullscreen();
     }catch(_){ /* ignore */ }
+    // Bar opens visible, then fades itself out after the idle delay.
+    wakePresentBar();
   }
   function closePresent(){
     const overlay = $('rmPresent');
     overlay.classList.remove('is-open');
+    overlay.classList.remove('is-idle');
     overlay.setAttribute('aria-hidden','true');
     presentOpen = false;
+    clearPresentIdle();
     try{
       if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(()=>{});
     }catch(_){ /* ignore */ }
@@ -1723,6 +1739,62 @@
   $('rmPrevP').onclick = ()=>goTo(deck.index-1);
   $('rmNextP').onclick = ()=>goTo(deck.index+1);
   $('rmExitP').onclick = closePresent;
+
+  // === Present mode: auto-fading navigation bar ===
+  // The bar shows on any input and fades out after a short idle period so the
+  // slide is unobstructed while presenting. It never fades while the pointer
+  // rests on it or one of its buttons holds keyboard focus.
+  const PRESENT_IDLE_MS = 2600;
+  const PRESENT_WAKE_THROTTLE_MS = 120;
+  let presentIdleTimer = null;
+  let presentBarHot = false;
+  let lastPresentWake = 0;
+
+  function clearPresentIdle(){
+    if(presentIdleTimer){ clearTimeout(presentIdleTimer); presentIdleTimer = null; }
+  }
+
+  function schedulePresentIdle(){
+    clearPresentIdle();
+    presentIdleTimer = setTimeout(()=>{
+      presentIdleTimer = null;
+      if(!presentOpen) return;
+      // Pointer parked on the bar, or a button focused: look again later
+      // rather than hiding a control that is about to be used.
+      if(presentBarHot){ schedulePresentIdle(); return; }
+      const overlay = $('rmPresent');
+      if(overlay) overlay.classList.add('is-idle');
+    }, PRESENT_IDLE_MS);
+  }
+
+  function wakePresentBar(){
+    if(!presentOpen) return;
+    const overlay = $('rmPresent');
+    if(!overlay) return;
+    const wasIdle = overlay.classList.contains('is-idle');
+    const now = Date.now();
+    // Pointer moves arrive in bursts; skip the timer churn unless the bar is
+    // actually hidden or enough time has passed for it to matter.
+    if(!wasIdle && now - lastPresentWake < PRESENT_WAKE_THROTTLE_MS) return;
+    lastPresentWake = now;
+    if(wasIdle) overlay.classList.remove('is-idle');
+    schedulePresentIdle();
+  }
+
+  (function bindPresentBarFade(){
+    const overlay = $('rmPresent');
+    if(!overlay) return;
+    ['pointermove','pointerdown','mousemove','touchstart','wheel'].forEach(ev=>{
+      overlay.addEventListener(ev, wakePresentBar, {passive:true});
+    });
+    const bar = overlay.querySelector('.rm-present-bar');
+    if(bar){
+      bar.addEventListener('pointerenter', ()=>{ presentBarHot = true; wakePresentBar(); });
+      bar.addEventListener('pointerleave', ()=>{ presentBarHot = false; });
+      bar.addEventListener('focusin', ()=>{ presentBarHot = true; wakePresentBar(); });
+      bar.addEventListener('focusout', ()=>{ presentBarHot = false; });
+    }
+  })();
 
   // Keyboard shortcuts (deck only when PPTX tab active or in present mode)
   document.addEventListener('keydown', (e)=>{
@@ -1749,6 +1821,7 @@
       handled = false;
     }
     if(handled) e.preventDefault();
+    if(presentOpen) wakePresentBar();
   });
 
   // Browser fullscreen change: when the user exits OS fullscreen via Esc,
