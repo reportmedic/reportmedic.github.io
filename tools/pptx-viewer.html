@@ -1189,7 +1189,9 @@
         let bold = false, italic=false, underline=false;
         let sz = defaultPhSize(phType);
         let color = defaultColor || '#000000';
+        let colorExplicit = false;
         let font = 'Calibri';
+        let link = null;
         if(rPr){
           if(rPr.getAttribute('b')==='1') bold=true;
           if(rPr.getAttribute('i')==='1') italic=true;
@@ -1200,12 +1202,19 @@
           const sf = childByName(rPr, NS_A, 'solidFill');
           if(sf){
             const c = resolveColor(sf);
-            if(c) color = c;
+            if(c){ color = c; colorExplicit = true; }
           }
           const latin = childByName(rPr, NS_A, 'latin');
           if(latin && latin.getAttribute('typeface')) font = latin.getAttribute('typeface');
+          // <a:hlinkClick> marks the run as a hyperlink. An empty r:id means
+          // the link was cleared, so only a real id counts.
+          const hlink = childByName(rPr, NS_A, 'hlinkClick');
+          if(hlink){
+            const rid = hlink.getAttributeNS(NS_R, 'id');
+            if(rid && slideCtx.hyperlinks[rid]) link = slideCtx.hyperlinks[rid];
+          }
         }
-        runs.push({ text, sz, color, bold, italic, underline, font });
+        runs.push({ text, sz, color, colorExplicit, bold, italic, underline, font, link });
       } else if(node.localName === 'br'){
         runs.push({ linebreak:true });
       }
@@ -1242,7 +1251,8 @@
         const last = cur[cur.length-1];
         if(last && !last.linebreak && last.font===run.font && last.sz===run.sz
             && last.color===run.color && last.bold===run.bold
-            && last.italic===run.italic && last.underline===run.underline){
+            && last.italic===run.italic && last.underline===run.underline
+            && last.link===run.link){
           last.text += tok;
         } else {
           cur.push({...run, text: tok});
@@ -1356,29 +1366,53 @@
         xStart = innerX + line.indent;
       }
 
-      // Emit one <text> per visual line, with multiple <tspan> children for
-      // each run. All coordinates and font sizes are scaled from EMU to
-      // CSS pixels at emit time so the final SVG is in a normal pixel range.
-      const tspans = [];
-      let runX = xStart;
+      // Emit a <tspan> per run, grouped into one <text> per stretch of runs
+      // that share a hyperlink target. Every tspan carries its own absolute
+      // x/y, so splitting a line across several <text> elements moves
+      // nothing on screen; it just lets a linked run sit inside a real <a>
+      // while the rest of the line stays plain text. All coordinates and
+      // font sizes are scaled from EMU to CSS pixels at emit time so the
+      // final SVG is in a normal pixel range.
+      const segs = [];
       for(const r of line.runs){
         if(r.linebreak) continue;
-        const fontFamily = (r.font ? r.font + ',' : '') + 'Calibri,Carlito,Segoe UI,Helvetica,Arial,sans-serif';
-        const attrs = [
-          `x="${px(runX)}"`,
-          `y="${px(baselineY)}"`,
-          `fill="${r.color}"`,
-          `font-size="${px(r.sz)}"`,
-          `font-family="${escapeHtml(fontFamily)}"`
-        ];
-        if(r.bold) attrs.push('font-weight="700"');
-        if(r.italic) attrs.push('font-style="italic"');
-        if(r.underline) attrs.push('text-decoration="underline"');
-        tspans.push(`<tspan ${attrs.join(' ')}>${escapeHtml(r.text)}</tspan>`);
-        runX += approxRunWidth(r.text, r.sz, r.bold, r.italic, r.font);
+        const key = r.link ? (r.link.url || '\u0000internal') : null;
+        const last = segs[segs.length-1];
+        if(last && last.key === key) last.runs.push(r);
+        else segs.push({ key: key, link: r.link || null, runs: [r] });
       }
-      if(tspans.length){
-        parts.push(`<text>${tspans.join('')}</text>`);
+      let runX = xStart;
+      for(const seg of segs){
+        const tspans = [];
+        for(const r of seg.runs){
+          const fontFamily = (r.font ? r.font + ',' : '') + 'Calibri,Carlito,Segoe UI,Helvetica,Arial,sans-serif';
+          // A hyperlink is shown the way PowerPoint shows one: the theme link
+          // colour and an underline, unless the run sets its own colour.
+          const color = (r.link && !r.colorExplicit) ? ('#' + SCHEME_FALLBACK.hlink) : r.color;
+          const underline = r.underline || !!r.link;
+          const attrs = [
+            `x="${px(runX)}"`,
+            `y="${px(baselineY)}"`,
+            `fill="${color}"`,
+            `font-size="${px(r.sz)}"`,
+            `font-family="${escapeHtml(fontFamily)}"`
+          ];
+          if(r.bold) attrs.push('font-weight="700"');
+          if(r.italic) attrs.push('font-style="italic"');
+          if(underline) attrs.push('text-decoration="underline"');
+          tspans.push(`<tspan ${attrs.join(' ')}>${escapeHtml(r.text)}</tspan>`);
+          runX += approxRunWidth(r.text, r.sz, r.bold, r.italic, r.font);
+        }
+        if(!tspans.length) continue;
+        // xml:space stops a run's leading or trailing space being collapsed
+        // away. Splitting a line into one <text> per link segment turns what
+        // used to be interior whitespace into edge whitespace, and without
+        // this the word after a link would butt straight up against it.
+        let el = `<text xml:space="preserve">${tspans.join('')}</text>`;
+        if(seg.link && seg.link.external && seg.link.url){
+          el = `<a href="${escapeAttr(seg.link.url)}" target="_blank" rel="noopener noreferrer">${el}</a>`;
+        }
+        parts.push(el);
       }
     }
 
