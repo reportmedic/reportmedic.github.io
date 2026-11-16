@@ -21,6 +21,14 @@
   .rm-tabs .btn.is-active{outline:2px solid rgba(124,247,212,.35)}
   .rm-hidden{display:none !important}
   .rm-view{max-height:70vh; overflow:auto; border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:12px; background:rgba(255,255,255,.03)}
+  /* Notice shown for a legacy binary .ppt, which this viewer cannot render. */
+  .rm-legacy{
+    border:1px solid rgba(234,179,8,.45); border-radius:12px;
+    background:rgba(234,179,8,.08); padding:14px 16px;
+  }
+  .rm-legacy h3{margin:0 0 8px; font-size:15px}
+  .rm-legacy p{margin:0 0 8px; font-size:13px; line-height:1.6}
+  .rm-legacy ol{margin:6px 0 0 18px; font-size:13px; line-height:1.7}
   .rm-table{border-collapse:collapse; width:100%; font-size:13px}
   .rm-table th,.rm-table td{border:1px solid rgba(255,255,255,.12); padding:6px 8px; vertical-align:top}
   .rm-table th{position:sticky; top:0; background:rgba(10,16,24,.92); backdrop-filter: blur(6px)}
@@ -3773,6 +3781,44 @@
     renderDeckUI();
   }
 
+  // The legacy binary .ppt container (PowerPoint 97-2003) is an OLE2
+  // compound file, not an Open XML zip, and this viewer has no parser for
+  // it. Detecting the signature lets the page say exactly what the file is
+  // and what to do with it, rather than failing with a generic message.
+  function isLegacyOle2(buf){
+    try{
+      const b = new Uint8Array(buf, 0, 8);
+      const sig = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
+      for(let i=0;i<8;i++){ if(b[i] !== sig[i]) return false; }
+      return true;
+    }catch(e){ return false; }
+  }
+
+  function showLegacyPptNotice(fileName, buf){
+    const view = $('pptxView');
+    if(!view) return;
+    const ole = isLegacyOle2(buf);
+    view.innerHTML =
+      '<div class="rm-legacy">' +
+        '<h3>' + escapeHtml(fileName || 'This file') +
+          ' is in the legacy binary PowerPoint format</h3>' +
+        '<p>' +
+          (ole
+            ? 'The file is in the old PowerPoint 97&ndash;2003 binary format.'
+            : 'The file name ends in .ppt, so it is being read as the old PowerPoint 97&ndash;2003 format.') +
+          ' That format stores slides in a different kind of container from the' +
+          ' modern .pptx, and this viewer renders the modern format. Nothing was' +
+          ' uploaded: the file was read inside your browser and never left this page.' +
+        '</p>' +
+        '<p><b>To view it here, save it as .pptx first:</b></p>' +
+        '<ol>' +
+          '<li>Open the file in PowerPoint, LibreOffice Impress or Google Slides.</li>' +
+          '<li>Choose Save As (or Download) and pick <b>PowerPoint Presentation (.pptx)</b>.</li>' +
+          '<li>Open that .pptx file here.</li>' +
+        '</ol>' +
+      '</div>';
+  }
+
   async function handleFile(f){
     if(!f){ clearAll(); return; }
     setMeta(f.name);
@@ -3792,6 +3838,11 @@
         setTab('pptx');
         setStatus('Rendering slides…','');
         await handlePptx(buf, f.name);
+      } else if(name.endsWith('.ppt') || name.endsWith('.pps')){
+        setTab('pptx');
+        showLegacyPptNotice(f.name, buf);
+        setStatus('Legacy binary PowerPoint file - see the note in the slide area.','rm-warn');
+        return;
       } else {
         setStatus('Unsupported file type.','rm-warn');
         return;
