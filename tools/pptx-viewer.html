@@ -1175,7 +1175,9 @@
   }
 
   // Collect runs from a paragraph element into normalized records.
-  function collectRuns(p, phType){
+  // `defaultColor` lets a caller (a table cell sitting on a dark header fill)
+  // choose the colour used when a run does not specify one of its own.
+  function collectRuns(p, phType, defaultColor){
     const runs = [];
     for(const node of p.children){
       if(node.namespaceURI !== NS_A) continue;
@@ -1186,7 +1188,7 @@
         if(!text) continue;
         let bold = false, italic=false, underline=false;
         let sz = defaultPhSize(phType);
-        let color = '#000000';
+        let color = defaultColor || '#000000';
         let font = 'Calibri';
         if(rPr){
           if(rPr.getAttribute('b')==='1') bold=true;
@@ -1255,14 +1257,23 @@
 
   // Render a text body element (<p:txBody>) directly as SVG <text> elements
   // positioned within the shape's transform box. Returns an SVG fragment.
-  function renderTextBody(txBody, phType, xfrm){
+  // `opts` lets a caller override the frame insets, the vertical anchor and
+  // the fallback text colour. Table cells use it; shapes pass nothing and
+  // keep reading everything from the body properties as before.
+  function renderTextBody(txBody, phType, xfrm, opts){
     if(!txBody || !xfrm) return '';
+    opts = opts || {};
     const bodyPr = childByName(txBody, NS_A, 'bodyPr');
-    const anchor = bodyPr ? (bodyPr.getAttribute('anchor') || 't') : 't';
-    const lIns = bodyPr && bodyPr.getAttribute('lIns')!==null ? parseInt(bodyPr.getAttribute('lIns'),10) : 91440;
-    const tIns = bodyPr && bodyPr.getAttribute('tIns')!==null ? parseInt(bodyPr.getAttribute('tIns'),10) : 45720;
-    const rIns = bodyPr && bodyPr.getAttribute('rIns')!==null ? parseInt(bodyPr.getAttribute('rIns'),10) : 91440;
-    const bIns = bodyPr && bodyPr.getAttribute('bIns')!==null ? parseInt(bodyPr.getAttribute('bIns'),10) : 45720;
+    const anchor = opts.anchor || (bodyPr ? (bodyPr.getAttribute('anchor') || 't') : 't');
+    const ins = (name, dflt)=>{
+      if(opts[name] !== undefined && opts[name] !== null) return opts[name];
+      return (bodyPr && bodyPr.getAttribute(name) !== null)
+        ? parseInt(bodyPr.getAttribute(name), 10) : dflt;
+    };
+    const lIns = ins('lIns', 91440);
+    const tIns = ins('tIns', 45720);
+    const rIns = ins('rIns', 91440);
+    const bIns = ins('bIns', 45720);
     const wrap = bodyPr ? (bodyPr.getAttribute('wrap') !== 'none') : true;
 
     const innerX = xfrm.x + lIns;
@@ -1281,7 +1292,7 @@
       const algn = pPr ? (pPr.getAttribute('algn') || 'l') : 'l';
       const lvl = pPr ? parseInt(pPr.getAttribute('lvl')||'0', 10) : 0;
       const indent = lvl * 365760; // ~0.4in per level
-      const runs = collectRuns(p, phType);
+      const runs = collectRuns(p, phType, opts.defaultColor);
 
       if(!runs.length){
         // Empty paragraph still occupies a line of default size
@@ -1401,6 +1412,771 @@
       if(r) return r;
     }
     return null;
+  }
+
+
+  // ============================================================
+  // === Graphic frames: tables, charts and visible placeholders ===
+  // ============================================================
+  // Everything a slide can hold that is not a shape, a picture or a group
+  // arrives as <p:graphicFrame>: tables, charts, SmartArt, embedded objects.
+  // The shape walk used to ignore that element entirely, so a slide's table
+  // or chart vanished without a trace. The rule now is that nothing is
+  // dropped silently. A frame is either drawn (tables, and bar, column, line
+  // and pie charts) or replaced by a labelled placeholder box at the frame's
+  // own position and size, so a reader can always tell something is there.
+
+  const NS_C  = 'http://schemas.openxmlformats.org/drawingml/2006/chart';
+  const NS_MC = 'http://schemas.openxmlformats.org/markup-compatibility/2006';
+
+  const GD_CHART   = 'http://schemas.openxmlformats.org/drawingml/2006/chart';
+  const GD_TABLE   = 'http://schemas.openxmlformats.org/drawingml/2006/table';
+  const GD_DIAGRAM = 'http://schemas.openxmlformats.org/drawingml/2006/diagram';
+  const GD_PICTURE = 'http://schemas.openxmlformats.org/drawingml/2006/picture';
+
+  const CHART_FONT = 'Calibri,Carlito,Segoe UI,Helvetica,Arial,sans-serif';
+  // Office's default series palette, used when a series carries no fill.
+  const CHART_PALETTE = ['#4472C4','#ED7D31','#A5A5A5','#FFC000','#5B9BD5',
+                         '#70AD47','#264478','#9E480E','#636363','#997300'];
+
+  // Per-slide data that has to be read out of the zip before the synchronous
+  // shape walk can use it: parsed chart parts and resolved hyperlink targets.
+  // renderSlideToSvg fills this in immediately before walking the tree and
+  // clears it afterwards. The walk never awaits, so no two slides can ever
+  // be in flight against this at once.
+  let slideCtx = { charts:{}, hyperlinks:{} };
+
+  // Only ever turn these schemes into a real link. A deck is untrusted input
+  // and the rendered SVG goes through innerHTML, so javascript:, data: and
+  // friends must never reach an href.
+  function safeLinkUrl(u){
+    const s = String(u == null ? '' : u).trim();
+    if(!s) return null;
+    return /^(https?:\/\/|mailto:|tel:)/i.test(s) ? s : null;
+  }
+
+  // <p:graphicFrame> carries its box in <p:xfrm> (the p: namespace) rather
+  // than the <a:xfrm> that shapes use, so getXfrm cannot read it.
+  function getFrameXfrm(frame){
+    const xfrm = childByName(frame, NS_P, 'xfrm');
+    if(!xfrm) return null;
+    const off = childByName(xfrm, NS_A, 'off');
+    const ext = childByName(xfrm, NS_A, 'ext');
+    if(!off || !ext) return null;
+    return {
+      x: parseInt(off.getAttribute('x')||'0', 10),
+      y: parseInt(off.getAttribute('y')||'0', 10),
+      cx: parseInt(ext.getAttribute('cx')||'0', 10),
+      cy: parseInt(ext.getAttribute('cy')||'0', 10),
+      rot: parseInt(xfrm.getAttribute('rot')||'0', 10) / 60000,
+      flipH: xfrm.getAttribute('flipH')==='1',
+      flipV: xfrm.getAttribute('flipV')==='1',
+      chOffX:0, chOffY:0, chExtX:0, chExtY:0, hasChildXfrm:false
+    };
+  }
+
+  function frameName(frame){
+    const nv = childByName(frame, NS_P, 'nvGraphicFramePr');
+    const cNv = nv ? childByName(nv, NS_P, 'cNvPr') : null;
+    const nm = cNv ? (cNv.getAttribute('name') || '') : '';
+    return nm.trim();
+  }
+
+  // The "nothing is dropped" rule, in one function: a dashed box exactly
+  // where the element sits, labelled with what it is.
+  function renderPlaceholderBox(xfrm, label, sublabel){
+    if(!xfrm || xfrm.cx <= 0 || xfrm.cy <= 0) return '';
+    const pad = Math.min(xfrm.cx, xfrm.cy) * 0.06;
+    const avail = Math.max(xfrm.cx - pad*2, 1);
+    // Scale the label with the box but keep it inside a legible range, then
+    // shrink further if it would still overrun the width.
+    let sz = Math.max(Math.min(xfrm.cy * 0.11, 15 * 12700), 8 * 12700);
+    const w = approxRunWidth(label, sz, true, false, 'Calibri');
+    if(w > avail) sz = Math.max(sz * (avail / w), 5 * 12700);
+    const midX = xfrm.x + xfrm.cx/2;
+    const midY = xfrm.y + xfrm.cy/2;
+    const dash = px(Math.max(Math.min(xfrm.cx, xfrm.cy) * 0.03, 28575));
+    const parts = [];
+    parts.push('<rect x="'+px(xfrm.x)+'" y="'+px(xfrm.y)+'" width="'+px(xfrm.cx)+
+               '" height="'+px(xfrm.cy)+'" fill="#F3F4F6" stroke="#9CA3AF" stroke-width="'+
+               px(9525)+'" stroke-dasharray="'+dash+' '+dash+'"/>');
+    const hasSub = !!sublabel;
+    const y1 = hasSub ? midY - sz*0.12 : midY + sz*0.32;
+    parts.push('<text x="'+px(midX)+'" y="'+px(y1)+'" text-anchor="middle" fill="#4B5563" font-size="'+
+               px(sz)+'" font-family="'+CHART_FONT+'" font-weight="700">'+escapeHtml(label)+'</text>');
+    if(hasSub){
+      parts.push('<text x="'+px(midX)+'" y="'+px(midY + sz*1.0)+'" text-anchor="middle" fill="#6B7280" font-size="'+
+                 px(sz*0.76)+'" font-family="'+CHART_FONT+'">'+escapeHtml(sublabel)+'</text>');
+    }
+    return '<g data-rm="placeholder">' + parts.join('') + '</g>';
+  }
+
+  // --- Slide tables (<a:tbl>) ---------------------------------------------
+  // Column widths come from <a:tblGrid> and row heights from each <a:tr h>,
+  // both scaled onto the frame's own box so the table lands exactly where
+  // the frame says it does. Merged cells are honoured through gridSpan and
+  // rowSpan, with the continuation cells (hMerge/vMerge) drawing nothing.
+  function tcLine(tcPr, name){
+    if(!tcPr) return null;
+    const ln = childByName(tcPr, NS_A, name);
+    if(!ln) return null;
+    if(childByName(ln, NS_A, 'noFill')) return { none:true };
+    const sf = childByName(ln, NS_A, 'solidFill');
+    const color = sf ? resolveColor(sf) : null;
+    const wAttrV = ln.getAttribute('w');
+    if(!color && !wAttrV) return null;
+    return { none:false, color: color || '#000000',
+             w: wAttrV ? parseInt(wAttrV, 10) : 12700 };
+  }
+
+  function renderTable(frame){
+    const xfrm = getFrameXfrm(frame);
+    const graphic = childByName(frame, NS_A, 'graphic');
+    const gd = graphic ? childByName(graphic, NS_A, 'graphicData') : null;
+    const tbl = gd ? childByName(gd, NS_A, 'tbl') : null;
+    if(!xfrm) return '';
+    if(!tbl) return renderPlaceholderBox(xfrm, 'Table', 'preview not available');
+
+    const tblPr = childByName(tbl, NS_A, 'tblPr');
+    const bFirstRow = !!(tblPr && tblPr.getAttribute('firstRow') === '1');
+    const bBandRow  = !!(tblPr && tblPr.getAttribute('bandRow') === '1');
+    const bFirstCol = !!(tblPr && tblPr.getAttribute('firstCol') === '1');
+
+    const gridEl = childByName(tbl, NS_A, 'tblGrid');
+    const colW = (gridEl ? childrenByName(gridEl, NS_A, 'gridCol') : [])
+                   .map(g=>parseInt(g.getAttribute('w')||'0', 10) || 0);
+    const trs = childrenByName(tbl, NS_A, 'tr');
+    if(!colW.length || !trs.length){
+      return renderPlaceholderBox(xfrm, 'Table', 'no rows to show');
+    }
+    const rowH = trs.map(tr=>parseInt(tr.getAttribute('h')||'0', 10) || 0);
+
+    const sumW = colW.reduce((a,b)=>a+b, 0);
+    const sumH = rowH.reduce((a,b)=>a+b, 0);
+    const scaleX = (sumW > 0 && xfrm.cx > 0) ? xfrm.cx / sumW : 1;
+    const scaleY = (sumH > 0 && xfrm.cy > 0) ? xfrm.cy / sumH : 1;
+
+    // Running edges, so adjacent cells share a boundary exactly and the grid
+    // has no hairline gaps from independent rounding.
+    const xEdge = [xfrm.x];
+    for(const w of colW) xEdge.push(xEdge[xEdge.length-1] + w * scaleX);
+    const yEdge = [xfrm.y];
+    for(const h of rowH) yEdge.push(yEdge[yEdge.length-1] + h * scaleY);
+
+    const fills = [], strokes = [], texts = [];
+
+    for(let r=0; r<trs.length; r++){
+      const tcs = childrenByName(trs[r], NS_A, 'tc');
+      for(let c=0; c<tcs.length && c<colW.length; c++){
+        const tc = tcs[c];
+        if(tc.getAttribute('hMerge') === '1' || tc.getAttribute('vMerge') === '1') continue;
+        const gridSpan = Math.max(parseInt(tc.getAttribute('gridSpan')||'1', 10) || 1, 1);
+        const rowSpan  = Math.max(parseInt(tc.getAttribute('rowSpan')||'1', 10) || 1, 1);
+        const c2 = Math.min(c + gridSpan, colW.length);
+        const r2 = Math.min(r + rowSpan, trs.length);
+        const x0 = xEdge[c], x1 = xEdge[c2];
+        const y0 = yEdge[r], y1 = yEdge[r2];
+        const cw = x1 - x0, ch = y1 - y0;
+        if(!(cw > 0) || !(ch > 0)) continue;
+
+        const tcPr = childByName(tc, NS_A, 'tcPr');
+
+        // An explicit cell fill always wins. Without one, approximate the
+        // banded look PowerPoint's default table styles produce, which is
+        // what makes the grid readable against a white slide.
+        let fill = tcPr ? getSolidFill(tcPr) : null;
+        let headerCell = false;
+        if(!fill){
+          if(bFirstRow && r === 0){ fill = '#4472C4'; headerCell = true; }
+          else if(bFirstCol && c === 0){ fill = '#D9E2F3'; }
+          else if(bBandRow && ((r - (bFirstRow ? 1 : 0)) % 2 === 1)){ fill = '#D9E2F3'; }
+          else { fill = '#FFFFFF'; }
+        }
+        fills.push('<rect x="'+px(x0)+'" y="'+px(y0)+'" width="'+px(cw)+
+                   '" height="'+px(ch)+'" fill="'+fill+'"/>');
+
+        const edges = [['lnT',x0,y0,x1,y0], ['lnB',x0,y1,x1,y1],
+                       ['lnL',x0,y0,x0,y1], ['lnR',x1,y0,x1,y1]];
+        for(const e of edges){
+          const ln = tcLine(tcPr, e[0]);
+          if(ln && ln.none) continue;
+          const col = ln ? ln.color : '#8EA9DB';
+          const wid = Math.max(ln ? ln.w : 12700, 6350);
+          strokes.push('<line x1="'+px(e[1])+'" y1="'+px(e[2])+'" x2="'+px(e[3])+
+                       '" y2="'+px(e[4])+'" stroke="'+col+'" stroke-width="'+px(wid)+'"/>');
+        }
+
+        const txBody = childByName(tc, NS_A, 'txBody');
+        if(txBody){
+          const num = (n, d)=> (tcPr && tcPr.getAttribute(n) !== null)
+                                 ? parseInt(tcPr.getAttribute(n), 10) : d;
+          const inner = renderTextBody(txBody, null,
+            { x:x0, y:y0, cx:cw, cy:ch, rot:0, flipH:false, flipV:false }, {
+              lIns: num('marL', 91440), rIns: num('marR', 91440),
+              tIns: num('marT', 45720), bIns: num('marB', 45720),
+              // Table cell text is vertically centred by PowerPoint's default
+              // table styles, which is what a reader is comparing against.
+              anchor: (tcPr && tcPr.getAttribute('anchor')) || 'ctr',
+              defaultColor: headerCell ? '#FFFFFF' : '#000000'
+            });
+          if(inner) texts.push(inner);
+        }
+      }
+    }
+    // Fills, then grid lines, then text, so nothing paints over anything.
+    return '<g data-rm="tbl">' + fills.join('') + strokes.join('') + texts.join('') + '</g>';
+  }
+
+  // --- Charts -------------------------------------------------------------
+  // A chart lives in its own part (ppt/charts/chartN.xml) referenced from the
+  // frame by relationship id. Everything needed to draw it is already cached
+  // in that XML (<c:strCache> / <c:numCache>), so nothing is recalculated and
+  // the embedded workbook is never touched.
+  const CHART_PLOTS = [
+    ['barChart','bar'], ['bar3DChart','bar'],
+    ['lineChart','line'], ['line3DChart','line'],
+    ['pieChart','pie'], ['pie3DChart','pie'],
+    ['doughnutChart','doughnut'], ['areaChart','area'], ['area3DChart','area'],
+    ['scatterChart','scatter'], ['radarChart','radar'], ['stockChart','stock'],
+    ['bubbleChart','bubble'], ['surfaceChart','surface'], ['surface3DChart','surface'],
+    ['ofPieChart','ofPie']
+  ];
+  const CHART_KIND_NAMES = {
+    bar:'Bar chart', line:'Line chart', pie:'Pie chart',
+    doughnut:'Doughnut chart', area:'Area chart', scatter:'Scatter chart',
+    radar:'Radar chart', stock:'Stock chart', bubble:'Bubble chart',
+    surface:'Surface chart', ofPie:'Pie-of-pie chart'
+  };
+
+  // Cached points for a <c:cat>, <c:val>, <c:tx> or <c:xVal> holder, in index
+  // order, with gaps preserved as null.
+  function chartCachedPoints(holder){
+    if(!holder) return [];
+    const ptCountEl = descendantsByName(holder, NS_C, 'ptCount')[0];
+    const n = ptCountEl ? (parseInt(ptCountEl.getAttribute('val')||'0', 10) || 0) : 0;
+    const out = [];
+    for(let i=0;i<n;i++) out.push(null);
+    for(const pt of descendantsByName(holder, NS_C, 'pt')){
+      const i = parseInt(pt.getAttribute('idx')||'-1', 10);
+      if(!Number.isFinite(i) || i < 0 || i > 100000) continue;
+      while(out.length <= i) out.push(null);
+      const v = childByName(pt, NS_C, 'v');
+      out[i] = v ? v.textContent : '';
+    }
+    return out;
+  }
+
+  function parseChartXml(xmlText){
+    let doc;
+    try{ doc = new DOMParser().parseFromString(xmlText, 'application/xml'); }
+    catch(e){ return null; }
+    if(!doc || !doc.documentElement) return null;
+    if(doc.getElementsByTagName('parsererror').length) return null;
+    const chart = doc.getElementsByTagNameNS(NS_C, 'chart')[0];
+    const plotArea = chart ? childByName(chart, NS_C, 'plotArea') : null;
+
+    let title = '';
+    const titleEl = chart ? childByName(chart, NS_C, 'title') : null;
+    if(titleEl){
+      const del = childByName(titleEl, NS_C, 'overlay');
+      void del;
+      title = descendantsByName(titleEl, NS_A, 't').map(t=>t.textContent).join('').trim();
+    }
+    if(chart){
+      const auto = childByName(chart, NS_C, 'autoTitleDeleted');
+      if(auto && auto.getAttribute('val') === '1') title = '';
+    }
+    if(!plotArea) return { kind:null, title:title, barDir:'col', series:[], cats:[] };
+
+    let kind = null, plotEl = null, barDir = 'col', grouping = '';
+    for(const pair of CHART_PLOTS){
+      const el = childByName(plotArea, NS_C, pair[0]);
+      if(!el) continue;
+      kind = pair[1]; plotEl = el;
+      const bd = childByName(el, NS_C, 'barDir');
+      if(bd) barDir = bd.getAttribute('val') || 'col';
+      const gr = childByName(el, NS_C, 'grouping');
+      if(gr) grouping = gr.getAttribute('val') || '';
+      break;
+    }
+    if(!plotEl) return { kind:null, title:title, barDir:barDir, series:[], cats:[] };
+
+    const series = [];
+    let cats = [];
+    const sers = childrenByName(plotEl, NS_C, 'ser');
+    for(let si=0; si<sers.length; si++){
+      const ser = sers[si];
+      let name = '';
+      const txEl = childByName(ser, NS_C, 'tx');
+      if(txEl){
+        const pts = chartCachedPoints(txEl).filter(v=>v !== null && v !== '');
+        if(pts.length) name = String(pts[0]);
+        if(!name){
+          const vEl = descendantsByName(txEl, NS_C, 'v')[0];
+          name = vEl ? vEl.textContent : '';
+        }
+      }
+      if(!name) name = 'Series ' + (si + 1);
+
+      const catEl = childByName(ser, NS_C, 'cat') || childByName(ser, NS_C, 'xVal');
+      const cp = chartCachedPoints(catEl);
+      if(cp.length > cats.length) cats = cp;
+
+      const valEl = childByName(ser, NS_C, 'val') || childByName(ser, NS_C, 'yVal');
+      const values = chartCachedPoints(valEl).map(function(v){
+        if(v === null || v === '') return null;
+        const n = parseFloat(v);
+        return Number.isFinite(n) ? n : null;
+      });
+
+      const spPr = childByName(ser, NS_C, 'spPr');
+      let color = spPr ? getSolidFill(spPr) : null;
+      if(!color) color = CHART_PALETTE[si % CHART_PALETTE.length];
+
+      // Per-point colours; pie charts normally carry one per slice.
+      const ptColors = {};
+      for(const dPt of childrenByName(ser, NS_C, 'dPt')){
+        const idxEl = childByName(dPt, NS_C, 'idx');
+        const i = idxEl ? parseInt(idxEl.getAttribute('val')||'-1', 10) : -1;
+        const sp = childByName(dPt, NS_C, 'spPr');
+        const col = sp ? getSolidFill(sp) : null;
+        if(i >= 0 && col) ptColors[i] = col;
+      }
+      series.push({ name:name, color:color, values:values, ptColors:ptColors });
+    }
+    return { kind:kind, title:title, barDir:barDir, grouping:grouping,
+             series:series, cats:cats };
+  }
+
+  function fmtNum(n){
+    if(!Number.isFinite(n)) return '';
+    return String(Math.round(n * 1000) / 1000);
+  }
+
+  function niceAxisMax(v){
+    if(!(v > 0)) return 1;
+    const mag = Math.pow(10, Math.floor(Math.log10(v)));
+    const steps = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
+    for(const m of steps){ if(v <= mag * m) return mag * m; }
+    return mag * 10;
+  }
+
+  function chartAxisInfo(spec){
+    let maxV = 0, minV = 0, any = false;
+    for(const s of spec.series){
+      for(const v of s.values){
+        if(v === null) continue;
+        any = true;
+        if(v > maxV) maxV = v;
+        if(v < minV) minV = v;
+      }
+    }
+    if(!any) return { top:1, bot:0, span:1 };
+    const top = maxV > 0 ? niceAxisMax(maxV) : 0;
+    const bot = minV < 0 ? -niceAxisMax(-minV) : 0;
+    return { top:top, bot:bot, span:(top - bot) || 1 };
+  }
+
+  function chartCatCount(spec){
+    let n = spec.cats ? spec.cats.length : 0;
+    for(const s of spec.series) if(s.values.length > n) n = s.values.length;
+    return n;
+  }
+  function chartCatLabel(spec, i){
+    const c = spec.cats ? spec.cats[i] : null;
+    return (c === null || c === undefined || c === '') ? String(i+1) : String(c);
+  }
+
+  function chartPlotBox(xfrm, lblSz, titleH, legendH, leftAxis){
+    const padL = leftAxis ? Math.max(xfrm.cx * 0.09, lblSz * 3.2) : xfrm.cx * 0.05;
+    const padR = xfrm.cx * 0.035;
+    const padT = titleH + xfrm.cy * 0.05;
+    const padB = legendH + lblSz * 2.3;
+    return {
+      x: xfrm.x + padL,
+      y: xfrm.y + padT,
+      w: Math.max(xfrm.cx - padL - padR, 1),
+      h: Math.max(xfrm.cy - padT - padB, 1)
+    };
+  }
+
+  function axisLabel(x, y, text, lblSz, anchor){
+    return '<text x="'+px(x)+'" y="'+px(y)+'" text-anchor="'+anchor+'" fill="#4B5563" font-size="'+
+           px(lblSz)+'" font-family="'+CHART_FONT+'">'+escapeHtml(text)+'</text>';
+  }
+
+  function renderBarsVertical(spec, xfrm, lblSz, titleH, legendH){
+    const ax = chartAxisInfo(spec);
+    const box = chartPlotBox(xfrm, lblSz, titleH, legendH, true);
+    const yFor = (v)=> box.y + box.h * (1 - (v - ax.bot) / ax.span);
+    const o = [];
+    const steps = 4;
+    for(let i=0;i<=steps;i++){
+      const v = ax.bot + ax.span * i / steps;
+      const y = yFor(v);
+      o.push('<line x1="'+px(box.x)+'" y1="'+px(y)+'" x2="'+px(box.x+box.w)+'" y2="'+px(y)+
+             '" stroke="#E5E7EB" stroke-width="'+px(9525)+'"/>');
+      o.push(axisLabel(box.x - lblSz*0.5, y + lblSz*0.35, fmtNum(v), lblSz, 'end'));
+    }
+    const yBase = yFor(ax.bot < 0 && ax.top > 0 ? 0 : ax.bot);
+    o.push('<line x1="'+px(box.x)+'" y1="'+px(yBase)+'" x2="'+px(box.x+box.w)+'" y2="'+px(yBase)+
+           '" stroke="#9CA3AF" stroke-width="'+px(12700)+'"/>');
+    o.push('<line x1="'+px(box.x)+'" y1="'+px(box.y)+'" x2="'+px(box.x)+'" y2="'+px(box.y+box.h)+
+           '" stroke="#9CA3AF" stroke-width="'+px(12700)+'"/>');
+
+    const n = chartCatCount(spec);
+    const nSer = spec.series.length;
+    const groupW = box.w / Math.max(n, 1);
+    const inner = groupW * 0.78;
+    const barW = Math.max(inner / Math.max(nSer, 1), 1);
+    const showVals = n * nSer <= 24;
+
+    for(let si=0; si<nSer; si++){
+      const s = spec.series[si];
+      for(let i=0;i<n;i++){
+        const v = s.values[i];
+        if(v === null || v === undefined) continue;
+        const bx = box.x + groupW*i + (groupW - inner)/2 + barW*si;
+        const y0 = yBase, y1 = yFor(v);
+        const top = Math.min(y0, y1);
+        const h = Math.max(Math.abs(y1 - y0), 1);
+        const col = s.ptColors[i] || s.color;
+        o.push('<rect data-rm-bar="1" x="'+px(bx)+'" y="'+px(top)+'" width="'+px(barW*0.9)+
+               '" height="'+px(h)+'" fill="'+col+'"/>');
+        if(showVals){
+          o.push('<text x="'+px(bx + barW*0.45)+'" y="'+px(top - lblSz*0.3)+
+                 '" text-anchor="middle" fill="#374151" font-size="'+px(lblSz*0.9)+
+                 '" font-family="'+CHART_FONT+'">'+escapeHtml(fmtNum(v))+'</text>');
+        }
+      }
+    }
+    for(let i=0;i<n;i++){
+      o.push(axisLabel(box.x + groupW*i + groupW/2, box.y + box.h + lblSz*1.5,
+                       chartCatLabel(spec, i), lblSz, 'middle'));
+    }
+    return o.join('');
+  }
+
+  function renderBarsHorizontal(spec, xfrm, lblSz, titleH, legendH){
+    const ax = chartAxisInfo(spec);
+    // Category names sit on the left, so give that axis the wider gutter.
+    const padL = Math.max(xfrm.cx * 0.18, lblSz * 4.0);
+    const padR = xfrm.cx * 0.05;
+    const padT = titleH + xfrm.cy * 0.05;
+    const padB = legendH + lblSz * 2.2;
+    const box = { x: xfrm.x + padL, y: xfrm.y + padT,
+                  w: Math.max(xfrm.cx - padL - padR, 1),
+                  h: Math.max(xfrm.cy - padT - padB, 1) };
+    const xFor = (v)=> box.x + box.w * ((v - ax.bot) / ax.span);
+    const o = [];
+    const steps = 4;
+    for(let i=0;i<=steps;i++){
+      const v = ax.bot + ax.span * i / steps;
+      const x = xFor(v);
+      o.push('<line x1="'+px(x)+'" y1="'+px(box.y)+'" x2="'+px(x)+'" y2="'+px(box.y+box.h)+
+             '" stroke="#E5E7EB" stroke-width="'+px(9525)+'"/>');
+      o.push(axisLabel(x, box.y + box.h + lblSz*1.5, fmtNum(v), lblSz, 'middle'));
+    }
+    const xBase = xFor(ax.bot < 0 && ax.top > 0 ? 0 : ax.bot);
+    o.push('<line x1="'+px(xBase)+'" y1="'+px(box.y)+'" x2="'+px(xBase)+'" y2="'+px(box.y+box.h)+
+           '" stroke="#9CA3AF" stroke-width="'+px(12700)+'"/>');
+
+    const n = chartCatCount(spec);
+    const nSer = spec.series.length;
+    const groupH = box.h / Math.max(n, 1);
+    const inner = groupH * 0.78;
+    const barH = Math.max(inner / Math.max(nSer, 1), 1);
+    const showVals = n * nSer <= 24;
+
+    for(let si=0; si<nSer; si++){
+      const s = spec.series[si];
+      for(let i=0;i<n;i++){
+        const v = s.values[i];
+        if(v === null || v === undefined) continue;
+        const by = box.y + groupH*i + (groupH - inner)/2 + barH*si;
+        const x0 = xBase, x1 = xFor(v);
+        const left = Math.min(x0, x1);
+        const w = Math.max(Math.abs(x1 - x0), 1);
+        const col = s.ptColors[i] || s.color;
+        o.push('<rect data-rm-bar="1" x="'+px(left)+'" y="'+px(by)+'" width="'+px(w)+
+               '" height="'+px(barH*0.9)+'" fill="'+col+'"/>');
+        if(showVals){
+          o.push('<text x="'+px(left + w + lblSz*0.3)+'" y="'+px(by + barH*0.62)+
+                 '" fill="#374151" font-size="'+px(lblSz*0.9)+'" font-family="'+CHART_FONT+
+                 '">'+escapeHtml(fmtNum(v))+'</text>');
+        }
+      }
+    }
+    for(let i=0;i<n;i++){
+      o.push(axisLabel(box.x - lblSz*0.5, box.y + groupH*i + groupH/2 + lblSz*0.35,
+                       chartCatLabel(spec, i), lblSz, 'end'));
+    }
+    return o.join('');
+  }
+
+  function renderLineBody(spec, xfrm, lblSz, titleH, legendH){
+    const ax = chartAxisInfo(spec);
+    const box = chartPlotBox(xfrm, lblSz, titleH, legendH, true);
+    const yFor = (v)=> box.y + box.h * (1 - (v - ax.bot) / ax.span);
+    const n = chartCatCount(spec);
+    const stepX = box.w / Math.max(n, 1);
+    const xFor = (i)=> box.x + stepX*i + stepX/2;
+    const o = [];
+    const steps = 4;
+    for(let i=0;i<=steps;i++){
+      const v = ax.bot + ax.span * i / steps;
+      const y = yFor(v);
+      o.push('<line x1="'+px(box.x)+'" y1="'+px(y)+'" x2="'+px(box.x+box.w)+'" y2="'+px(y)+
+             '" stroke="#E5E7EB" stroke-width="'+px(9525)+'"/>');
+      o.push(axisLabel(box.x - lblSz*0.5, y + lblSz*0.35, fmtNum(v), lblSz, 'end'));
+    }
+    o.push('<line x1="'+px(box.x)+'" y1="'+px(box.y)+'" x2="'+px(box.x)+'" y2="'+px(box.y+box.h)+
+           '" stroke="#9CA3AF" stroke-width="'+px(12700)+'"/>');
+    o.push('<line x1="'+px(box.x)+'" y1="'+px(box.y+box.h)+'" x2="'+px(box.x+box.w)+
+           '" y2="'+px(box.y+box.h)+'" stroke="#9CA3AF" stroke-width="'+px(12700)+'"/>');
+
+    const showVals = n * spec.series.length <= 16;
+    for(const s of spec.series){
+      // Gaps in the data break the line rather than inventing a segment.
+      let run = [];
+      const flush = ()=>{
+        if(run.length > 1){
+          o.push('<polyline points="'+run.join(' ')+'" fill="none" stroke="'+s.color+
+                 '" stroke-width="'+px(28575)+'" stroke-linejoin="round" stroke-linecap="round"/>');
+        }
+        run = [];
+      };
+      for(let i=0;i<n;i++){
+        const v = s.values[i];
+        if(v === null || v === undefined){ flush(); continue; }
+        run.push(px(xFor(i)) + ',' + px(yFor(v)));
+      }
+      flush();
+      for(let i=0;i<n;i++){
+        const v = s.values[i];
+        if(v === null || v === undefined) continue;
+        o.push('<circle cx="'+px(xFor(i))+'" cy="'+px(yFor(v))+'" r="'+px(38100)+
+               '" fill="'+s.color+'"/>');
+        if(showVals){
+          o.push('<text x="'+px(xFor(i))+'" y="'+px(yFor(v) - lblSz*0.65)+
+                 '" text-anchor="middle" fill="#374151" font-size="'+px(lblSz*0.9)+
+                 '" font-family="'+CHART_FONT+'">'+escapeHtml(fmtNum(v))+'</text>');
+        }
+      }
+    }
+    for(let i=0;i<n;i++){
+      o.push(axisLabel(xFor(i), box.y + box.h + lblSz*1.5,
+                       chartCatLabel(spec, i), lblSz, 'middle'));
+    }
+    return o.join('');
+  }
+
+  function renderPieBody(spec, xfrm, lblSz, titleH, legendH){
+    const s = spec.series[0];
+    if(!s) return '';
+    const n = chartCatCount(spec);
+    const vals = [];
+    let total = 0;
+    for(let i=0;i<n;i++){
+      const v = s.values[i];
+      const a = (v === null || v === undefined) ? 0 : Math.abs(v);
+      vals.push(a);
+      total += a;
+    }
+    if(!(total > 0)) return '';
+    const availH = Math.max(xfrm.cy - titleH - legendH - xfrm.cy*0.08, 1);
+    const availW = Math.max(xfrm.cx * 0.88, 1);
+    const R = Math.max(Math.min(availW, availH) / 2, 1);
+    const cxp = xfrm.x + xfrm.cx/2;
+    const cyp = xfrm.y + titleH + xfrm.cy*0.04 + availH/2;
+    const o = [];
+    let a0 = -Math.PI/2;
+    for(let i=0;i<vals.length;i++){
+      if(!(vals[i] > 0)) continue;
+      const frac = vals[i] / total;
+      const a1 = a0 + frac * Math.PI * 2;
+      const col = s.ptColors[i] || CHART_PALETTE[i % CHART_PALETTE.length];
+      if(frac >= 0.9999){
+        o.push('<circle cx="'+px(cxp)+'" cy="'+px(cyp)+'" r="'+px(R)+'" fill="'+col+'"/>');
+      } else {
+        const x0 = cxp + R*Math.cos(a0), y0 = cyp + R*Math.sin(a0);
+        const x1 = cxp + R*Math.cos(a1), y1 = cyp + R*Math.sin(a1);
+        const large = (a1 - a0) > Math.PI ? 1 : 0;
+        o.push('<path d="M '+px(cxp)+' '+px(cyp)+' L '+px(x0)+' '+px(y0)+
+               ' A '+px(R)+' '+px(R)+' 0 '+large+' 1 '+px(x1)+' '+px(y1)+
+               ' Z" fill="'+col+'" stroke="#FFFFFF" stroke-width="'+px(9525)+'"/>');
+      }
+      if(frac > 0.055){
+        const am = (a0 + a1) / 2;
+        o.push('<text x="'+px(cxp + R*0.62*Math.cos(am))+'" y="'+
+               px(cyp + R*0.62*Math.sin(am) + lblSz*0.35)+
+               '" text-anchor="middle" fill="#FFFFFF" font-size="'+px(lblSz)+
+               '" font-family="'+CHART_FONT+'" font-weight="700">'+
+               escapeHtml(Math.round(frac*100) + '%')+'</text>');
+      }
+      a0 = a1;
+    }
+    return o.join('');
+  }
+
+  function renderChartLegend(spec, xfrm, lblSz){
+    const items = [];
+    if(spec.kind === 'pie'){
+      const s = spec.series[0];
+      if(!s) return '';
+      const n = chartCatCount(spec);
+      for(let i=0;i<n;i++){
+        const v = s.values[i];
+        if(v === null || v === undefined) continue;
+        items.push({ label: chartCatLabel(spec, i) + ' (' + fmtNum(v) + ')',
+                     color: s.ptColors[i] || CHART_PALETTE[i % CHART_PALETTE.length] });
+      }
+    } else {
+      for(const s of spec.series) items.push({ label:s.name, color:s.color });
+    }
+    if(!items.length) return '';
+    const sw = lblSz * 0.95;
+    const gap = lblSz * 0.65;
+    const widths = items.map(it => sw + gap*0.5 +
+                     approxRunWidth(it.label, lblSz, false, false, 'Calibri') + gap);
+    const totalW = widths.reduce((a,b)=>a+b, 0);
+    const scale = totalW > xfrm.cx*0.94 ? (xfrm.cx*0.94) / totalW : 1;
+    let x = xfrm.x + (xfrm.cx - totalW*scale) / 2;
+    const y = xfrm.y + xfrm.cy - lblSz*0.85;
+    const o = [];
+    for(let i=0;i<items.length;i++){
+      o.push('<rect x="'+px(x)+'" y="'+px(y - sw*0.78)+'" width="'+px(sw*scale)+
+             '" height="'+px(sw*0.78)+'" fill="'+items[i].color+'"/>');
+      o.push('<text x="'+px(x + (sw + gap*0.5)*scale)+'" y="'+px(y)+
+             '" fill="#374151" font-size="'+px(lblSz*scale)+'" font-family="'+CHART_FONT+
+             '">'+escapeHtml(items[i].label)+'</text>');
+      x += widths[i]*scale;
+    }
+    return o.join('');
+  }
+
+  function renderChartSpec(spec, xfrm){
+    if(!xfrm || xfrm.cx <= 0 || xfrm.cy <= 0) return '';
+    if(!spec) return renderPlaceholderBox(xfrm, 'Chart', 'preview not available');
+    const drawable = spec.kind === 'bar' || spec.kind === 'line' || spec.kind === 'pie';
+    const hasData = spec.series && spec.series.some(s=>s.values.some(v=>v !== null));
+    if(!drawable || !hasData){
+      const nm = CHART_KIND_NAMES[spec.kind] || 'Chart';
+      return renderPlaceholderBox(xfrm, nm, 'preview not available');
+    }
+    const lblSz = Math.max(Math.min(xfrm.cy * 0.048, 13 * 12700), 7 * 12700);
+    const showLegend = spec.series.length > 1 || spec.kind === 'pie';
+    const titleH  = spec.title ? lblSz * 2.1 : 0;
+    const legendH = showLegend ? lblSz * 2.0 : 0;
+
+    const o = [];
+    o.push('<g data-rm="chart">');
+    o.push('<rect x="'+px(xfrm.x)+'" y="'+px(xfrm.y)+'" width="'+px(xfrm.cx)+
+           '" height="'+px(xfrm.cy)+'" fill="#FFFFFF" stroke="#D1D5DB" stroke-width="'+
+           px(9525)+'"/>');
+    if(spec.title){
+      o.push('<text x="'+px(xfrm.x + xfrm.cx/2)+'" y="'+px(xfrm.y + lblSz*1.45)+
+             '" text-anchor="middle" fill="#1F2937" font-size="'+px(lblSz*1.25)+
+             '" font-family="'+CHART_FONT+'" font-weight="700">'+
+             escapeHtml(spec.title)+'</text>');
+    }
+    if(spec.kind === 'pie'){
+      o.push(renderPieBody(spec, xfrm, lblSz, titleH, legendH));
+    } else if(spec.kind === 'line'){
+      o.push(renderLineBody(spec, xfrm, lblSz, titleH, legendH));
+    } else if(spec.barDir === 'bar'){
+      o.push(renderBarsHorizontal(spec, xfrm, lblSz, titleH, legendH));
+    } else {
+      o.push(renderBarsVertical(spec, xfrm, lblSz, titleH, legendH));
+    }
+    if(showLegend) o.push(renderChartLegend(spec, xfrm, lblSz));
+    o.push('</g>');
+    return o.join('');
+  }
+
+  // Dispatch one graphic frame. Every branch returns something visible.
+  function renderGraphicFrame(frame){
+    const graphic = childByName(frame, NS_A, 'graphic');
+    const gd = graphic ? childByName(graphic, NS_A, 'graphicData') : null;
+    const uri = gd ? (gd.getAttribute('uri') || '') : '';
+
+    if(uri === GD_TABLE || (gd && childByName(gd, NS_A, 'tbl'))){
+      return renderTable(frame);
+    }
+    const xfrm = getFrameXfrm(frame);
+    if(!xfrm) return '';
+
+    if(uri === GD_CHART || uri.indexOf('/chart') !== -1){
+      const cEl = gd ? descendantsByName(gd, NS_C, 'chart')[0] : null;
+      const rid = cEl ? cEl.getAttributeNS(NS_R, 'id') : null;
+      const spec = rid ? slideCtx.charts[rid] : null;
+      // A newer chart namespace (cx:) resolves to no spec here, so it lands
+      // on the labelled placeholder rather than disappearing.
+      return renderChartSpec(spec || null, xfrm);
+    }
+    if(uri === GD_DIAGRAM){
+      return renderPlaceholderBox(xfrm, 'SmartArt diagram', 'preview not available');
+    }
+    if(uri.indexOf('/ole') !== -1 || uri.indexOf('oleObject') !== -1){
+      return renderPlaceholderBox(xfrm, 'Embedded object', 'preview not available');
+    }
+    if(uri === GD_PICTURE){
+      return renderPlaceholderBox(xfrm, 'Image', 'preview not available');
+    }
+    const nm = frameName(frame);
+    return renderPlaceholderBox(xfrm, nm || 'Slide element', 'preview not available');
+  }
+
+  // --- Per-slide read cache ------------------------------------------------
+  // Within one slide's processing the same few zip entries are read more than
+  // once: the slide XML by the renderer, the background reader and the extras
+  // reader, and the slide rels by the media, placeholder and chart passes.
+  // Decompressing each of them once instead of three times is most of the
+  // per-slide cost on a large deck. The cache is cleared at the start of
+  // every slide, so it never holds more than one slide's worth of text and
+  // memory stays flat however many slides the deck has.
+  let _zipTextCache = new Map();
+  function resetSlideCaches(){ _zipTextCache = new Map(); }
+  async function readZipText(zip, path){
+    if(_zipTextCache.has(path)) return _zipTextCache.get(path);
+    const f = zip.file(path);
+    const text = f ? await f.async('text') : null;
+    _zipTextCache.set(path, text);
+    return text;
+  }
+
+  // Charts and hyperlink targets for one slide, resolved from its rels before
+  // the synchronous shape walk runs.
+  async function buildSlideCtx(zip, slidePath){
+    const ctx = { charts:{}, hyperlinks:{} };
+    const relsPath = slidePath.replace('/slides/', '/slides/_rels/') + '.rels';
+    let doc;
+    try{
+      const relsXml = await readZipText(zip, relsPath);
+      if(!relsXml) return ctx;
+      doc = new DOMParser().parseFromString(relsXml, 'application/xml');
+    }catch(e){ return ctx; }
+    for(const rel of Array.from(doc.getElementsByTagName('Relationship'))){
+      const type = rel.getAttribute('Type') || '';
+      const id = rel.getAttribute('Id');
+      const target = rel.getAttribute('Target') || '';
+      if(!id) continue;
+      if(type.endsWith('/hyperlink')){
+        const external = (rel.getAttribute('TargetMode') || '') === 'External';
+        const url = external ? safeLinkUrl(target) : null;
+        ctx.hyperlinks[id] = { url:url, external:!!url };
+      } else if(type.endsWith('/slide')){
+        // A jump to another slide in the same deck. Styled as a link so the
+        // reader can see it is one, but not turned into an href.
+        ctx.hyperlinks[id] = { url:null, external:false };
+      } else if(type.endsWith('/chart')){
+        try{
+          const cxml = await readZipText(zip, resolvePath(slidePath, target));
+          ctx.charts[id] = cxml ? parseChartXml(cxml) : null;
+        }catch(e){ ctx.charts[id] = null; }
+      }
+    }
+    return ctx;
   }
 
   // Render a shape (<p:sp> or <p:cxnSp>) into an SVG fragment.
@@ -1572,18 +2348,44 @@
     return `<g transform="${transform}">` + walkSpTreeChildren(grp, mediaUrls, placeholders) + `</g>`;
   }
 
-  // Walk the children of a spTree or grpSp and emit SVG fragments
+  // Walk the children of a spTree or grpSp and emit SVG fragments.
+  // Every child that occupies space on the slide leaves something behind:
+  // drawn if the renderer can draw it, a labelled placeholder if not. The
+  // one thing this must never do is skip an element in silence.
   function walkSpTreeChildren(parent, mediaUrls, placeholders){
     const parts = [];
     for(const child of parent.children){
-      if(child.namespaceURI !== NS_P) continue;
       const tag = child.localName;
+      if(child.namespaceURI === NS_MC){
+        // <mc:AlternateContent> holds a modern representation plus a
+        // fallback; SmartArt and newer chart types arrive this way. The
+        // fallback is plain DrawingML, so prefer it over the Choice branch.
+        if(tag === 'AlternateContent'){
+          const alt = childByName(child, NS_MC, 'Fallback')
+                   || childByName(child, NS_MC, 'Choice');
+          if(alt) parts.push(walkSpTreeChildren(alt, mediaUrls, placeholders));
+        }
+        continue;
+      }
+      if(child.namespaceURI !== NS_P) continue;
       if(tag==='sp' || tag==='cxnSp'){
         parts.push(renderShape(child, placeholders));
       } else if(tag==='pic'){
         parts.push(renderPicture(child, mediaUrls));
       } else if(tag==='grpSp'){
         parts.push(renderGroup(child, mediaUrls, placeholders));
+      } else if(tag==='graphicFrame'){
+        parts.push(renderGraphicFrame(child));
+      } else if(tag==='nvGrpSpPr' || tag==='grpSpPr' || tag==='extLst'){
+        // Structural only; nothing to draw.
+      } else {
+        // Something unrecognised that still claims a box on the slide.
+        let xf = getFrameXfrm(child);
+        if(!xf){
+          const sp = childByName(child, NS_P, 'spPr');
+          if(sp) xf = getXfrm(sp);
+        }
+        if(xf) parts.push(renderPlaceholderBox(xf, 'Slide element', 'preview not available'));
       }
     }
     return parts.join('');
@@ -1620,9 +2422,8 @@
   async function buildMediaUrls(zip, slidePath){
     const out = {};
     const relsPath = slidePath.replace('/slides/', '/slides/_rels/') + '.rels';
-    const relsFile = zip.file(relsPath);
-    if(!relsFile) return out;
-    const xml = await relsFile.async('text');
+    const xml = await readZipText(zip, relsPath);
+    if(!xml) return out;
     const doc = new DOMParser().parseFromString(xml, 'application/xml');
     const rels = doc.getElementsByTagName('Relationship');
     for(const rel of rels){
@@ -1647,7 +2448,8 @@
   async function getSlideBackground(zip, slidePath){
     // Slide-level background only. (Layout/master inheritance is approximated as white.)
     try{
-      const xml = await zip.file(slidePath).async('text');
+      const xml = await readZipText(zip, slidePath);
+      if(!xml) return '#FFFFFF';
       const doc = new DOMParser().parseFromString(xml, 'application/xml');
       const cSld = doc.getElementsByTagNameNS(NS_P, 'cSld')[0];
       if(!cSld) return '#FFFFFF';
@@ -1663,9 +2465,8 @@
   }
 
   async function findRelTarget(zip, relsPath, typeEnding){
-    const f = zip.file(relsPath);
-    if(!f) return null;
-    const xml = await f.async('text');
+    const xml = await readZipText(zip, relsPath);
+    if(!xml) return null;
     const doc = new DOMParser().parseFromString(xml, 'application/xml');
     for(const r of doc.getElementsByTagName('Relationship')){
       const t = r.getAttribute('Type') || '';
@@ -1679,9 +2480,8 @@
   // Read placeholder records (with positions) from a layout or master XML file.
   async function readPlaceholdersFromXmlPath(zip, xmlPath){
     const out = [];
-    const f = zip.file(xmlPath);
-    if(!f) return out;
-    const xml = await f.async('text');
+    const xml = await readZipText(zip, xmlPath);
+    if(!xml) return out;
     const doc = new DOMParser().parseFromString(xml, 'application/xml');
     const cSld = doc.getElementsByTagNameNS(NS_P, 'cSld')[0];
     const spTree = cSld ? childByName(cSld, NS_P, 'spTree') : null;
@@ -1727,11 +2527,14 @@
   }
 
   async function renderSlideToSvg(zip, slidePath, slideW, slideH){
-    const xml = await zip.file(slidePath).async('text');
-    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    // New slide: drop the previous slide's cached parts so memory stays flat.
+    resetSlideCaches();
+    const xml = await readZipText(zip, slidePath);
+    const doc = new DOMParser().parseFromString(xml || '<x/>', 'application/xml');
     const mediaUrls = await buildMediaUrls(zip, slidePath);
     const bg = await getSlideBackground(zip, slidePath);
     const placeholders = await loadPlaceholders(zip, slidePath);
+    const ctx = await buildSlideCtx(zip, slidePath);
 
     const cSld = doc.getElementsByTagNameNS(NS_P, 'cSld')[0];
     const spTree = cSld ? childByName(cSld, NS_P, 'spTree') : null;
@@ -1745,8 +2548,16 @@
     const parts = [];
     parts.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vbW} ${vbH}" preserveAspectRatio="xMidYMid meet">`);
     parts.push(`<rect x="0" y="0" width="${vbW}" height="${vbH}" fill="${bg}"/>`);
-    if(spTree){
-      parts.push(walkSpTreeChildren(spTree, mediaUrls, placeholders));
+    // Hand the walk this slide's charts and hyperlink targets. Everything
+    // from here to the finally block is synchronous, so no other slide can
+    // be mid-render against the same variable.
+    slideCtx = ctx;
+    try{
+      if(spTree){
+        parts.push(walkSpTreeChildren(spTree, mediaUrls, placeholders));
+      }
+    } finally {
+      slideCtx = { charts:{}, hyperlinks:{} };
     }
     parts.push(`</svg>`);
     return parts.join('');
