@@ -513,3 +513,41 @@ textarea{min-height:120px; resize:vertical;}
   .rm-lm-body ul{margin:6px 0 10px 18px;}
   .rm-lm-body li{margin:5px 0;}
   .rm-lm-body p{margin:.55rem 0;}
+
+/* ── A-Ads banner slot ──────────────────────────────────────────── */
+.rm-ad{
+  max-width:1100px;
+  margin:28px auto 0;
+  padding:12px 16px 14px;
+  text-align:center;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  background:var(--card-2);
+}
+.rm-ad-label{
+  display:block;
+  margin-bottom:8px;
+  font-size:10px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--muted);
+  opacity:.75;
+}
+/* Fixed box reserves the space, so nothing shifts when the ad loads.
+   A-Ads Adaptive fills whatever box it is given. No z-index here, so
+   the slot never competes with the Tawk.to chat bubble. */
+.rm-ad-frame{
+  display:block;
+  margin:0 auto;
+  border:0;
+  padding:0;
+  width:100%;
+  max-width:468px;
+  height:60px;
+  overflow:hidden;
+}
+@media (max-width:760px){
+  .rm-ad{margin:20px 12px 0; padding:10px 12px 12px;}
+  .rm-ad-frame{max-width:320px; height:50px;}
+}
+@media print{ .rm-ad{display:none !important;} }
