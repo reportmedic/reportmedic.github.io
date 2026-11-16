@@ -404,6 +404,13 @@
   .rm-table th{position:sticky; top:0; background:rgba(10,16,24,.92); backdrop-filter: blur(6px)}
   .rm-doc p{margin:0 0 10px}
   .rm-doc h1,.rm-doc h2,.rm-doc h3{margin:14px 0 10px}
+  /* Word tables: mammoth emits a bare <table> with no border information, so
+     a visible grid is the stylesheet default here. Borders and cell shading
+     the document actually specifies are applied inline on top of this. */
+  .rm-doc table{border-collapse:collapse; margin:12px 0; font-size:13px; width:auto; max-width:100%}
+  .rm-doc table td,.rm-doc table th{border:1px solid rgba(255,255,255,.28); padding:6px 9px; vertical-align:top}
+  .rm-doc table th{font-weight:700; text-align:left}
+  .rm-doc table td p,.rm-doc table th p{margin:0}
 
   /* === PPTX deck === */
   .rm-deck{
@@ -1458,9 +1465,107 @@
   async function handleDocx(buf){
     const res = await mammoth.convertToHtml({arrayBuffer: buf}, {styleMap: []});
     $('docxView').innerHTML = res.value || '<div class="tiny muted">No content.</div>';
+    // Put the document's own table borders and cell shading back on top of
+    // mammoth's output, which carries neither.
+    try{ await styleDocxTables(buf); }
+    catch(e){ /* leave the plain tables; the stylesheet still draws a grid */ }
     if(res.messages && res.messages.length){
       const warn = res.messages.slice(0,5).map(m=>escapeHtml(m.message)).join('<br>');
       $('docxView').innerHTML += '<div class="tiny muted" style="margin-top:12px">Preview notes:<br>'+warn+'</div>';
+    }
+  }
+
+
+  // === Word tables: borders and cell shading =============================
+  // mammoth returns table structure and cell text but drops every border
+  // and shading instruction, so the grid disappears. The table properties
+  // are read back out of word/document.xml here and applied to the tables
+  // mammoth produced. Tables, rows and cells come out in document order, so
+  // they line up index for index; when the counts disagree the work is
+  // abandoned for that table and the stylesheet's default grid stands.
+  const NS_W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+
+  function wAttr(el, name){
+    return el ? el.getAttributeNS(NS_W, name) : null;
+  }
+
+  function wBorderCss(el){
+    if(!el) return null;
+    const val = wAttr(el, 'val') || 'single';
+    if(val === 'nil' || val === 'none') return 'none';
+    // w:sz is in eighths of a point.
+    const eighths = parseFloat(wAttr(el, 'sz') || '4');
+    const width = Math.max(Number.isFinite(eighths) ? eighths / 8 : 0.5, 0.5);
+    const raw = wAttr(el, 'color') || 'auto';
+    const color = /^[0-9A-Fa-f]{6}$/.test(raw) ? '#' + raw : 'currentColor';
+    const style = val === 'double' ? 'double'
+                : val === 'dashed' || val === 'dashSmallGap' ? 'dashed'
+                : val === 'dotted' ? 'dotted'
+                : 'solid';
+    return width + 'px ' + style + ' ' + color;
+  }
+
+  async function styleDocxTables(buf){
+    const host = $('docxView');
+    if(!host) return;
+    const domTables = Array.from(host.querySelectorAll('table'));
+    if(!domTables.length) return;
+
+    const zip = await JSZip.loadAsync(buf);
+    const f = zip.file('word/document.xml');
+    if(!f) return;
+    const doc = new DOMParser().parseFromString(await f.async('text'), 'application/xml');
+    // Only top-level tables, matched against mammoth's own output order.
+    const xmlTables = Array.from(doc.getElementsByTagNameNS(NS_W, 'tbl'));
+    if(xmlTables.length !== domTables.length) return;
+
+    for(let ti=0; ti<xmlTables.length; ti++){
+      const xt = xmlTables[ti], dt = domTables[ti];
+      const tblPr = childByName(xt, NS_W, 'tblPr');
+      const tb = tblPr ? childByName(tblPr, NS_W, 'tblBorders') : null;
+      const edgeFromTable = {
+        top:     tb ? wBorderCss(childByName(tb, NS_W, 'top')) : null,
+        bottom:  tb ? wBorderCss(childByName(tb, NS_W, 'bottom')) : null,
+        left:    tb ? wBorderCss(childByName(tb, NS_W, 'left')) : null,
+        right:   tb ? wBorderCss(childByName(tb, NS_W, 'right')) : null,
+        insideH: tb ? wBorderCss(childByName(tb, NS_W, 'insideH')) : null,
+        insideV: tb ? wBorderCss(childByName(tb, NS_W, 'insideV')) : null
+      };
+
+      const xmlRows = childrenByName(xt, NS_W, 'tr');
+      const domRows = Array.from(dt.rows);
+      if(!xmlRows.length || xmlRows.length !== domRows.length) continue;
+
+      dt.style.borderCollapse = 'collapse';
+      for(let ri=0; ri<xmlRows.length; ri++){
+        const xcs = childrenByName(xmlRows[ri], NS_W, 'tc');
+        const dcs = Array.from(domRows[ri].cells);
+        if(xcs.length !== dcs.length) continue;
+        for(let ci=0; ci<xcs.length; ci++){
+          const tc = xcs[ci], td = dcs[ci];
+          const tcPr = childByName(tc, NS_W, 'tcPr');
+          const tcB = tcPr ? childByName(tcPr, NS_W, 'tcBorders') : null;
+          const own = (edge)=> tcB ? wBorderCss(childByName(tcB, NS_W, edge)) : null;
+
+          const top    = own('top')    || (ri === 0 ? edgeFromTable.top : edgeFromTable.insideH);
+          const bottom = own('bottom') || (ri === xmlRows.length-1 ? edgeFromTable.bottom : edgeFromTable.insideH);
+          const left   = own('left')   || (ci === 0 ? edgeFromTable.left : edgeFromTable.insideV);
+          const right  = own('right')  || (ci === xcs.length-1 ? edgeFromTable.right : edgeFromTable.insideV);
+          if(top)    td.style.borderTop = top;
+          if(bottom) td.style.borderBottom = bottom;
+          if(left)   td.style.borderLeft = left;
+          if(right)  td.style.borderRight = right;
+
+          const shd = tcPr ? childByName(tcPr, NS_W, 'shd') : null;
+          const fill = shd ? wAttr(shd, 'fill') : null;
+          if(fill && /^[0-9A-Fa-f]{6}$/.test(fill) && fill.toUpperCase() !== 'FFFFFF'){
+            td.style.backgroundColor = '#' + fill;
+            // Shading is authored against a white page; keep the text legible
+            // instead of letting it inherit this page's light-on-dark colour.
+            td.style.color = '#111827';
+          }
+        }
+      }
     }
   }
 
