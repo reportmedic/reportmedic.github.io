@@ -448,6 +448,23 @@
     position:relative;
   }
   .rm-thumb.is-active{border-color: var(--brand2, #7cf7d4); box-shadow:0 0 0 2px rgba(124,247,212,.25)}
+  /* Hidden slides: PowerPoint keeps them in the file but skips them while
+     presenting, so they are marked here and skipped there unless the reader
+     turns that off. */
+  .rm-thumb.is-hidden{opacity:.5}
+  .rm-thumb.is-hidden svg{filter:grayscale(.5)}
+  .rm-thumb-hidden{
+    position:absolute; right:4px; bottom:3px;
+    font-size:9px; font-weight:700; letter-spacing:.4px; text-transform:uppercase;
+    padding:1px 5px; border-radius:8px;
+    background:rgba(234,179,8,.95); color:#1a1205;
+  }
+  .rm-skip-hidden{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:12px; white-space:nowrap; cursor:pointer;
+    color:var(--muted,#9fb0c0);
+  }
+  .rm-skip-hidden input{accent-color:var(--brand2,#7cf7d4); cursor:pointer}
   .rm-thumb svg{width:100%; height:100%; display:block; pointer-events:none}
   .rm-thumb-label{
     position:absolute; left:4px; bottom:3px;
@@ -530,6 +547,18 @@
   }
   .rm-present-bar button:hover{background:rgba(255,255,255,.16)}
   .rm-present-counter{font-variant-numeric:tabular-nums; min-width:60px; text-align:center}
+
+  /* Speaker notes sit under the slide in the normal view only. */
+  .rm-notes-wrap{
+    border:1px solid rgba(255,255,255,.12); border-radius:12px;
+    background:rgba(0,0,0,.18); padding:8px 10px;
+  }
+  .rm-notes-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+  .rm-notes{
+    font-size:13px; line-height:1.55; white-space:pre-wrap;
+    max-height:22vh; overflow:auto; margin-top:7px;
+  }
+  .rm-notes.is-empty{opacity:.55; font-style:italic}
 
   :root{
     --lm-radius: 18px;
@@ -991,6 +1020,8 @@
     setTab('pptx');
     deck.slides = [];
     deck.slidePaths = [];
+    deck.notes = [];
+    deck.hidden = [];
     deck.rIdByPath = {};
     deck.zip = null;
     deck.fileName = 'presentation.pptx';
@@ -2272,6 +2303,55 @@
     return text;
   }
 
+  // --- Slide extras: hidden flag and speaker notes ------------------------
+  // Neither travels in the rendered SVG, so they are read separately and
+  // kept in arrays parallel to deck.slides.
+  function extractNotesText(ndoc){
+    const cSld = ndoc.getElementsByTagNameNS(NS_P, 'cSld')[0];
+    const spTree = cSld ? childByName(cSld, NS_P, 'spTree') : null;
+    if(!spTree) return '';
+    const chunks = [];
+    for(const sp of childrenByName(spTree, NS_P, 'sp')){
+      const nvSpPr = childByName(sp, NS_P, 'nvSpPr');
+      const nvPr = nvSpPr ? childByName(nvSpPr, NS_P, 'nvPr') : null;
+      const ph = nvPr ? childByName(nvPr, NS_P, 'ph') : null;
+      // Take the notes body only, so the slide-image and slide-number
+      // placeholders from the notes master do not leak into the panel.
+      if(!ph || (ph.getAttribute('type') || '') !== 'body') continue;
+      const txBody = childByName(sp, NS_P, 'txBody');
+      if(!txBody) continue;
+      for(const p of childrenByName(txBody, NS_A, 'p')){
+        chunks.push(descendantsByName(p, NS_A, 't').map(t=>t.textContent).join(''));
+      }
+    }
+    return chunks.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  async function loadSlideExtras(zip, slidePath){
+    const out = { hidden:false, notes:'' };
+    try{
+      const xml = await readZipText(zip, slidePath);
+      if(xml){
+        const doc = new DOMParser().parseFromString(xml, 'application/xml');
+        const root = doc.documentElement;
+        // <p:sld show="0"> is PowerPoint's hidden-slide flag.
+        if(root && root.getAttribute('show') === '0') out.hidden = true;
+      }
+    }catch(e){ /* leave the default */ }
+    try{
+      const relsPath = slidePath.replace('/slides/', '/slides/_rels/') + '.rels';
+      const target = await findRelTarget(zip, relsPath, '/notesSlide');
+      if(target){
+        const nxml = await readZipText(zip, resolvePath(slidePath, target));
+        if(nxml){
+          out.notes = extractNotesText(
+            new DOMParser().parseFromString(nxml, 'application/xml'));
+        }
+      }
+    }catch(e){ /* leave the default */ }
+    return out;
+  }
+
   // Charts and hyperlink targets for one slide, resolved from its rels before
   // the synchronous shape walk runs.
   async function buildSlideCtx(zip, slidePath){
@@ -2751,6 +2831,10 @@
   const deck = {
     slides: [],
     slidePaths: [],
+    // Parallel to slides/slidePaths and spliced by every reorder and delete,
+    // so a slide can never end up showing another slide's notes.
+    notes: [],
+    hidden: [],
     rIdByPath: {},
     zip: null,
     fileName: 'presentation.pptx',
@@ -2782,10 +2866,20 @@
             <button class="btn primary" type="button" id="rmExport" title="Download a new .pptx with your reordered/deleted slides">⬇ Download .pptx</button>
           </div>
           <span class="rm-spacer"></span>
+          <label class="rm-skip-hidden" id="rmSkipHiddenWrap" title="PowerPoint skips hidden slides when presenting. Untick to show them.">
+            <input type="checkbox" id="rmSkipHidden" checked/> Skip hidden slides in Present
+          </label>
           <button class="btn primary" type="button" id="rmPresentBtn">▶ Present</button>
         </div>
         <div class="rm-stage-wrap">
           <div class="rm-stage" id="rmStage"></div>
+        </div>
+        <div class="rm-notes-wrap" id="rmNotesWrap">
+          <div class="rm-notes-head">
+            <button class="btn" type="button" id="rmNotesToggle" aria-expanded="true" aria-controls="rmNotes">Hide speaker notes</button>
+            <span class="tiny muted" id="rmNotesState"></span>
+          </div>
+          <div class="rm-notes" id="rmNotes" aria-live="polite"></div>
         </div>
         <div class="tiny muted" style="margin:6px 2px 4px; padding:0 2px;">
           Drag thumbnails to reorder. Hover a thumbnail and click × to delete. Then click Download .pptx.
@@ -2802,6 +2896,12 @@
     $('rmPresentBtn').onclick = openPresent;
     $('rmReset').onclick = onResetClick;
     $('rmExport').onclick = onExportClick;
+    $('rmNotesToggle').onclick = ()=>{ notesVisible = !notesVisible; updateNotes(); };
+
+    // The skip-hidden option only means anything when the deck actually has
+    // a hidden slide, so it stays out of the way otherwise.
+    const skipWrap = $('rmSkipHiddenWrap');
+    if(skipWrap) skipWrap.style.display = deck.hidden.some(Boolean) ? '' : 'none';
 
     rebuildThumbs();
     refreshDirtyUI();
@@ -2815,13 +2915,17 @@
     if(!thumbs) return;
     thumbs.innerHTML = '';
     for(let i=0;i<deck.slides.length;i++){
+      const isHidden = !!deck.hidden[i];
       const t = document.createElement('div');
-      t.className = 'rm-thumb' + (i===deck.index ? ' is-active' : '');
+      t.className = 'rm-thumb' + (i===deck.index ? ' is-active' : '')
+                                + (isHidden ? ' is-hidden' : '');
       t.dataset.idx = String(i);
       t.setAttribute('draggable','true');
+      if(isHidden) t.title = `Slide ${i+1} is hidden in PowerPoint`;
       t.innerHTML =
         deck.slides[i] +
         `<span class="rm-thumb-label">${i+1}</span>` +
+        (isHidden ? `<span class="rm-thumb-hidden">Hidden</span>` : '') +
         `<button class="rm-thumb-del" type="button" title="Delete this slide" aria-label="Delete slide ${i+1}">×</button>`;
       t.addEventListener('click', (e)=>{
         if(e.target && e.target.classList.contains('rm-thumb-del')) return;
@@ -2887,6 +2991,8 @@
     }
     deck.slides.splice(i, 1);
     deck.slidePaths.splice(i, 1);
+    deck.notes.splice(i, 1);
+    deck.hidden.splice(i, 1);
     if(deck.index >= deck.slides.length) deck.index = deck.slides.length - 1;
     markDirty();
     rebuildThumbs();
@@ -2896,10 +3002,14 @@
 
   function onReorderSlide(from, to){
     if(from < 0 || to < 0 || from >= deck.slides.length || to >= deck.slides.length) return;
-    const [movedSvg]  = deck.slides.splice(from, 1);
-    const [movedPath] = deck.slidePaths.splice(from, 1);
+    const [movedSvg]   = deck.slides.splice(from, 1);
+    const [movedPath]  = deck.slidePaths.splice(from, 1);
+    const [movedNote]  = deck.notes.splice(from, 1);
+    const [movedHide]  = deck.hidden.splice(from, 1);
     deck.slides.splice(to, 0, movedSvg);
     deck.slidePaths.splice(to, 0, movedPath);
+    deck.notes.splice(to, 0, movedNote);
+    deck.hidden.splice(to, 0, movedHide);
     // Keep current view on the slide the user just moved
     deck.index = to;
     markDirty();
@@ -2923,12 +3033,22 @@
       deck.slidePaths = meta.slidePaths.slice();
       deck.rIdByPath = meta.rIdByPath || {};
       deck.slides = [];
+      deck.notes = [];
+      deck.hidden = [];
       for(const sp of meta.slidePaths){
         try{
           const svg = await renderSlideToSvg(deck.zip, sp, meta.slideW, meta.slideH);
           deck.slides.push(svg);
         }catch(_){
           deck.slides.push('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+        }
+        try{
+          const ex = await loadSlideExtras(deck.zip, sp);
+          deck.notes.push(ex.notes);
+          deck.hidden.push(ex.hidden);
+        }catch(_){
+          deck.notes.push('');
+          deck.hidden.push(false);
         }
       }
       deck.dirty = false;
@@ -3083,6 +3203,56 @@
     // Scroll active thumb into view
     const active = document.querySelector('.rm-thumb.is-active');
     if(active && active.scrollIntoView) active.scrollIntoView({block:'nearest', inline:'center', behavior:'smooth'});
+    updateNotes();
+  }
+
+  // === Speaker notes ======================================================
+  // Shown under the slide in the normal view only. Present mode has no notes
+  // panel on purpose: that overlay is what an audience is looking at.
+  let notesVisible = true;
+  function updateNotes(){
+    const box = $('rmNotes');
+    if(!box) return;
+    const txt = (deck.notes && deck.notes[deck.index]) || '';
+    box.textContent = txt || 'No speaker notes on this slide.';
+    box.classList.toggle('is-empty', !txt);
+    box.classList.toggle('rm-hidden', !notesVisible);
+    const btn = $('rmNotesToggle');
+    if(btn){
+      btn.textContent = notesVisible ? 'Hide speaker notes' : 'Show speaker notes';
+      btn.setAttribute('aria-expanded', notesVisible ? 'true' : 'false');
+    }
+    const state = $('rmNotesState');
+    if(state){
+      const n = (deck.notes || []).filter(Boolean).length;
+      state.textContent = n
+        ? `${n} of ${deck.slides.length} slides have notes`
+        : 'This deck has no speaker notes';
+    }
+  }
+
+  // === Hidden slides ======================================================
+  function skipHiddenOn(){
+    const cb = $('rmSkipHidden');
+    return !cb || cb.checked;
+  }
+  // Step one slide while presenting, passing over hidden slides when the
+  // option is on, and stopping at the ends rather than wrapping around.
+  function stepPresent(dir){
+    if(!deck.slides.length) return;
+    const skip = skipHiddenOn();
+    let i = deck.index;
+    for(let guard=0; guard<=deck.slides.length; guard++){
+      i += dir;
+      if(i < 0 || i >= deck.slides.length) return;
+      if(!skip || !deck.hidden[i]){ goTo(i); return; }
+    }
+  }
+  function firstVisibleFrom(start){
+    if(!skipHiddenOn()) return start;
+    for(let i=start; i<deck.slides.length; i++) if(!deck.hidden[i]) return i;
+    for(let i=0; i<start; i++) if(!deck.hidden[i]) return i;
+    return start;
   }
 
   // === Fullscreen presentation overlay ===
@@ -3093,9 +3263,13 @@
     overlay.classList.add('is-open');
     overlay.setAttribute('aria-hidden','false');
     presentOpen = true;
+    // Never open on a hidden slide while hidden slides are being skipped.
+    deck.index = firstVisibleFrom(deck.index);
     const ps = $('rmPresentStage');
     ps.innerHTML = deck.slides[deck.index];
     $('rmCounterP').textContent = `${deck.index+1} / ${deck.slides.length}`;
+    // Keep the normal view and the filmstrip on the same slide.
+    goTo(deck.index);
     // Try real OS fullscreen
     try{
       if(overlay.requestFullscreen) overlay.requestFullscreen().catch(()=>{});
@@ -3115,8 +3289,8 @@
       if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(()=>{});
     }catch(_){ /* ignore */ }
   }
-  $('rmPrevP').onclick = ()=>goTo(deck.index-1);
-  $('rmNextP').onclick = ()=>goTo(deck.index+1);
+  $('rmPrevP').onclick = ()=>stepPresent(-1);
+  $('rmNextP').onclick = ()=>stepPresent(1);
   $('rmExitP').onclick = closePresent;
 
   // === Present mode: auto-fading navigation bar ===
@@ -3185,9 +3359,9 @@
     if(/INPUT|TEXTAREA|SELECT/.test(tag) && !presentOpen) return;
     let handled = true;
     if(e.key==='ArrowRight' || e.key==='PageDown' || e.key===' ' || e.key==='Spacebar'){
-      goTo(deck.index+1);
+      if(presentOpen) stepPresent(1); else goTo(deck.index+1);
     } else if(e.key==='ArrowLeft' || e.key==='PageUp'){
-      goTo(deck.index-1);
+      if(presentOpen) stepPresent(-1); else goTo(deck.index-1);
     } else if(e.key==='Home'){
       goTo(0);
     } else if(e.key==='End'){
@@ -3224,6 +3398,8 @@
     deck.slideW = meta.slideW;
     deck.slideH = meta.slideH;
     deck.slides = [];
+    deck.notes = [];
+    deck.hidden = [];
     deck.slidePaths = meta.slidePaths.slice();
     deck.rIdByPath = meta.rIdByPath || {};
     deck.zip = zip;
@@ -3266,6 +3442,16 @@
             escapeHtml('Could not render this slide')+
           `</text></svg>`
         );
+      }
+      // Pushed unconditionally so these stay index-aligned with deck.slides
+      // even when a slide fails to render above.
+      try{
+        const ex = await loadSlideExtras(zip, sp);
+        deck.notes.push(ex.notes);
+        deck.hidden.push(ex.hidden);
+      }catch(_){
+        deck.notes.push('');
+        deck.hidden.push(false);
       }
     }
 
