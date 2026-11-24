@@ -204,6 +204,11 @@
   .lz-tonebadge{display:inline-block; font-size:11px; padding:2px 8px; border-radius:999px;
     border:1px solid var(--border); background:rgba(255,255,255,.06); opacity:.9}
 
+  /* .grid2 is used across the toolbox but is defined nowhere, so its children
+     stacked as plain blocks with no gap and the second card touched the first.
+     Defined here, scoped to this page so no other tool is affected. */
+  .wrap .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:start}
+  @media (max-width:860px){ .wrap .grid2{grid-template-columns:1fr} }
   .lz-ex{margin-top:12px; border:1px solid var(--border); border-radius:12px;
     padding:12px 14px; background:rgba(124,247,212,.06)}
   .lz-ex-label{font-size:10.5px; text-transform:uppercase; letter-spacing:.3px;
