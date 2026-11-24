@@ -295,7 +295,6 @@
       <button class="btn" id="charsBtn" type="button">Characters: off</button>
       <div class="lz-spacer"></div>
       <span class="pill tiny"><b>SAVED:</b><span class="muted" id="savedMeta">local only</span></span>
-      <span class="pill tiny"><b>BUILD:</b><span class="muted" id="buildStamp">-</span></span>
     </div>
 
     <div id="voiceWarn" class="lz-warn lz-hidden" style="margin-top:10px">
@@ -1139,7 +1138,6 @@ const RUNGS = [
 (function(){
   "use strict";
 
-  const BUILD = "24 Nov, r6";
   const KEY = "rmLazyChinese.v1";
   const BOX_DAYS = [1,2,4,8,16];
   const $ = id => document.getElementById(id);
@@ -2086,7 +2084,6 @@ const RUNGS = [
     $("toneRight").textContent=String(S.tone.r); $("toneTried").textContent=String(S.tone.t);
     $("earRight").textContent=String(S.ear.r); $("earTried").textContent=String(S.ear.t);
     $("signRight").textContent=String(S.sign.r); $("signTried").textContent=String(S.sign.t);
-    $("buildStamp").textContent = BUILD;
     deckNav(); toneNav(); earNav(); signNav();
     applyChars();
     silent = false;
