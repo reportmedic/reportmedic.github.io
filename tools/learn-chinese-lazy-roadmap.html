@@ -328,6 +328,11 @@
           <button class="btn" id="deckReveal" type="button">Show answer</button>
           <button class="btn" id="deckLazy" type="button">Lazy mode: 3 cards</button>
         </div>
+        <div class="lz-btnrow lz-noprint">
+          <button class="btn" id="deckPrev" type="button" aria-label="Previous card">&laquo; Previous</button>
+          <button class="btn" id="deckNext" type="button" aria-label="Next card">Next &raquo;</button>
+          <span class="tiny muted" id="deckPos" style="align-self:center"></span>
+        </div>
         <div class="lz-btnrow lz-hidden lz-noprint" id="deckGrade">
           <button class="btn" id="gradeAgain" type="button">Again</button>
           <button class="btn" id="gradeGood" type="button">Got it</button>
@@ -369,6 +374,11 @@
           <button class="btn" id="toneNew" type="button">New syllable</button>
         </div>
         <div class="lz-grid-opts" id="toneOpts"></div>
+        <div class="lz-btnrow lz-noprint">
+          <button class="btn" id="tonePrev" type="button">&laquo; Previous</button>
+          <button class="btn" id="toneNext" type="button">Next &raquo;</button>
+          <span class="tiny muted" id="tonePos" style="align-self:center"></span>
+        </div>
         <div class="hr2"></div>
         <div class="lz-stat"><span>Correct <b id="toneRight">0</b></span><span>Tried <b id="toneTried">0</b></span></div>
       </div>
@@ -396,6 +406,11 @@
         <button class="btn" id="earNext" type="button">Next sentence</button>
       </div>
       <div class="lz-grid-opts" id="earOpts"></div>
+      <div class="lz-btnrow lz-noprint">
+        <button class="btn" id="earPrev" type="button">&laquo; Previous</button>
+        <button class="btn" id="earFwd" type="button">Next &raquo;</button>
+        <span class="tiny muted" id="earPos" style="align-self:center"></span>
+      </div>
       <div class="hr2"></div>
       <div class="lz-stat"><span>Correct <b id="earRight">0</b></span><span>Tried <b id="earTried">0</b></span></div>
     </div>
@@ -455,6 +470,11 @@
       </div>
       <div class="lz-card-face lz-hidden" id="signFace" style="margin-top:12px"></div>
       <div class="lz-grid-opts lz-hidden" id="signOpts"></div>
+      <div class="lz-btnrow lz-noprint">
+        <button class="btn" id="signPrev" type="button">&laquo; Previous</button>
+        <button class="btn" id="signNext" type="button">Next &raquo;</button>
+        <span class="tiny muted" id="signPos" style="align-self:center"></span>
+      </div>
       <div class="hr2"></div>
       <div class="lz-glyphs lz-hidden" id="signList"></div>
       <div class="lz-stat" style="margin-top:10px"><span>Correct <b id="signRight">0</b></span><span>Tried <b id="signTried">0</b></span></div>
@@ -1250,6 +1270,37 @@ const RUNGS = [
     })();
   }
 
+  /* ---------- history ----------
+     Any panel that swaps a word keeps a trail, so something just seen can be
+     walked back to instead of being gone for good. */
+  function History(limit){ this.items=[]; this.i=-1; this.limit=limit||80; }
+  History.prototype.push=function(v){
+    this.items = this.items.slice(0, this.i+1);
+    this.items.push(v);
+    if(this.items.length>this.limit) this.items.shift();
+    this.i = this.items.length-1;
+  };
+  History.prototype.back=function(){ if(this.i>0){ this.i--; return true; } return false; };
+  History.prototype.fwd =function(){ if(this.i<this.items.length-1){ this.i++; return true; } return false; };
+  History.prototype.cur =function(){ return this.items[this.i]; };
+  History.prototype.atEnd=function(){ return this.i>=this.items.length-1; };
+  History.prototype.pos =function(){ return (this.i+1)+" of "+this.items.length; };
+  History.prototype.has =function(){ return this.items.length>0; };
+
+  function navLabel(noun, hist, browsing){
+    if(!hist.has()) return "";
+    const back = browsing && !hist.atEnd();
+    return (back ? "Looking back at "+noun+" " : noun.charAt(0).toUpperCase()+noun.slice(1)+" ") + hist.pos();
+  }
+  function navState(prevId, nextId, hist){
+    const p=$(prevId), n=$(nextId);
+    if(!p||!n) return;
+    p.disabled = !(hist.has() && hist.i>0);
+    n.disabled = !(hist.has() && hist.i<hist.items.length-1);
+    p.style.opacity = p.disabled ? ".45" : "";
+    n.style.opacity = n.disabled ? ".45" : "";
+  }
+
   /* ---------- helpers ---------- */
   const rnd = n => Math.floor(Math.random()*n);
   const pick = a => a[rnd(a.length)];
@@ -1298,11 +1349,11 @@ const RUNGS = [
     if(ahead.length) return {locked:true, missing:ahead.length};
     return {h:e[0], p:e[1], en:e[2]};
   }
-  function renderExample(){
+  function renderExample(w){
     const box = $("deckExample");
     if(!box) return;
-    if(!current || !revealed){ box.classList.add("lz-hidden"); box.innerHTML=""; return; }
-    const ex = exampleFor(current);
+    if(!w){ box.classList.add("lz-hidden"); box.innerHTML=""; return; }
+    const ex = exampleFor(w);
     if(!ex){ box.classList.add("lz-hidden"); box.innerHTML=""; return; }
     box.classList.remove("lz-hidden");
     if(ex.locked){
@@ -1372,6 +1423,8 @@ const RUNGS = [
 
   /* ---------- deck ---------- */
   let queue = [], current = null, revealed = false;
+  const deckHist = new History(80);
+  let browseMode = false;
 
   function dueCards(){
     const t = today();
@@ -1428,7 +1481,8 @@ const RUNGS = [
   function showCard(){
     const face = $("deckFace");
     if(!current){
-      renderExample();
+      renderExample(null);
+      deckNav();
       face.innerHTML = '<div class="lz-gloss">Session done for today. Come back tomorrow, or press Start session again for extra cards.</div>';
       $("deckGrade").classList.add("lz-hidden");
       return;
@@ -1438,7 +1492,8 @@ const RUNGS = [
       '<div class="lz-pinyin">'+esc(current.p)+'</div>' +
       '<div class="lz-note">What does this mean? Say it aloud, then show the answer.</div>';
     $("deckGrade").classList.add("lz-hidden");
-    renderExample();
+    renderExample(null);
+    deckNav();
     speak(current.h);
   }
 
@@ -1450,11 +1505,12 @@ const RUNGS = [
       '<div class="lz-gloss"><b>'+esc(current.e)+'</b></div>' +
       (current.n ? '<div class="lz-note">'+esc(current.n)+'</div>' : "");
     $("deckGrade").classList.remove("lz-hidden");
-    renderExample();
+    renderExample(current);
+    deckNav();
   }
 
   function grade(ok){
-    if(!current) return;
+    if(!current || browseMode) return;
     const k = current.h;
     const c = S.cards[k] || {box:0,due:today()};
     c.box = ok ? Math.min(5, c.box+1) : 1;
@@ -1468,16 +1524,74 @@ const RUNGS = [
 
   function nextCard(){
     current = queue.shift() || null;
+    browseMode = false;
+    if(current) deckHist.push(current.h);
     $("deckLeft").textContent = String(queue.length);
     showCard();
   }
 
+  function deckNav(){
+    navState("deckPrev","deckNext",deckHist);
+    const pos = $("deckPos");
+    if(!pos) return;
+    pos.textContent = navLabel("card", deckHist, browseMode) +
+      (deckHist.has() && !browseMode ? ". Press Previous to revisit one." : "");
+  }
+
+  /* An earlier card, shown in full with its example, and with grading switched
+     off so that looking back never disturbs the schedule. */
+  function showBrowsed(){
+    wordIndex();
+    const w = BY_H[deckHist.cur()];
+    if(!w){ browseMode=false; showCard(); return; }
+    $("deckFace").innerHTML =
+      '<div class="lz-tonebadge">Looking back</div>' +
+      hanzi(w.h) +
+      '<div class="lz-pinyin">'+esc(w.p)+'</div>' +
+      '<div class="lz-gloss"><b>'+esc(w.e)+'</b></div>' +
+      (w.n ? '<div class="lz-note">'+esc(w.n)+'</div>' : '') +
+      '<div class="lz-note">Revisiting only. Your schedule is untouched.</div>';
+    $("deckGrade").classList.add("lz-hidden");
+    renderExample(w);
+    deckNav();
+  }
+
+  function deckBack(){
+    if(!deckHist.has()) return;
+    if(!browseMode){ browseMode = true; if(current) deckHist.back(); }
+    else deckHist.back();
+    showBrowsed();
+    sayNow(deckHist.cur(), null, $("deckPrev"));
+  }
+
+  function deckForward(){
+    if(!browseMode) return;
+    const toLive = function(){
+      browseMode = false;
+      if(revealed){ revealed = false; reveal(); } else { showCard(); }
+      deckNav();
+    };
+    if(deckHist.fwd()){
+      if(deckHist.atEnd() && current){ toLive(); return; }
+      showBrowsed();
+      sayNow(deckHist.cur(), null, $("deckNext"));
+      return;
+    }
+    /* Already at the newest card. Return to the live one if a session is
+       running; with nothing live, stay here rather than blanking the card. */
+    if(current) toLive(); else deckNav();
+  }
+
   /* ---------- tone gym ---------- */
   let tonePair = null, toneAnswer = null;
+  const toneHist = new History(40);
+  let toneBrowse = false;
 
   function newTone(){
     const g = pick(TONEPAIRS);
     const two = shuffle(g.set).slice(0,2);
+    toneBrowse = false;
+    toneHist.push({base:g.base, a:two[0], b:two[1], set:g.set});
     tonePair = {base:g.base, a:two[0], b:two[1]};
     toneAnswer = two[1];
     $("toneFace").innerHTML =
@@ -1504,12 +1618,39 @@ const RUNGS = [
           '<div class="lz-gloss">'+esc(toneAnswer[0])+' means <b>'+esc(toneAnswer[2])+'</b></div>' +
           '<div class="lz-note">Tone '+toneAnswer[3]+". "+esc((TONES[toneAnswer[3]-1]||{}).desc||"")+'</div>';
         save(); $("toneRight").textContent=String(S.tone.r); $("toneTried").textContent=String(S.tone.t);
-        renderRungs(); renderCan();
+        renderRungs(); renderCan(); toneNav();
       });
       opts.appendChild(b);
     });
+    toneNav();
   }
 
+  function toneNav(){
+    navState("tonePrev","toneNext",toneHist);
+    const p=$("tonePos"); if(!p) return;
+    p.textContent = navLabel("pair", toneHist, toneBrowse);
+  }
+  /* An earlier pair, with the answer shown and the buttons inert. */
+  function showToneBack(){
+    const it = toneHist.cur();
+    if(!it){ toneNav(); return; }
+    toneBrowse = true;
+    tonePair = it; toneAnswer = it.b;
+    $("toneFace").innerHTML =
+      '<div class="lz-tonebadge">'+esc(navLabel("pair", toneHist, true))+'</div>' +
+      '<div class="lz-pinyin">'+esc(it.a[0])+' &nbsp;then&nbsp; '+esc(it.b[0])+'</div>' +
+      '<div class="lz-gloss">'+esc(it.b[0])+' means <b>'+esc(it.b[2])+'</b></div>' +
+      '<div class="lz-note">Tone '+it.b[3]+". "+esc((TONES[it.b[3]-1]||{}).desc||"")+' Press Play pair to hear it again.</div>';
+    const opts=$("toneOpts"); opts.innerHTML="";
+    (it.set||[]).forEach(function(o){
+      const b=document.createElement("button");
+      b.type="button"; b.className="lz-opt"+(o[0]===it.b[0]?" is-right":"");
+      b.disabled=true; b.style.opacity=".75";
+      b.innerHTML = "<b>"+esc(o[0])+"</b><br><span style=\"font-size:11.5px;opacity:.78\">"+esc(o[2])+"</span>";
+      opts.appendChild(b);
+    });
+    toneNav();
+  }
   function playTonePair(){
     if(!tonePair) newTone();
     sayNowSeq([tonePair.a[1], tonePair.b[1]], 0.6, 600, $("tonePair"));
@@ -1542,11 +1683,15 @@ const RUNGS = [
 
   /* ---------- ear check ---------- */
   let ear = null;
+  const earHist = new History(40);
+  let earBrowse = false;
 
   function newEar(){
     const met = metWords().length;
     const pool = met >= 40 ? EARS : EARS.slice(0, Math.max(5, Math.ceil(met/2)+4));
     ear = pick(pool);
+    earBrowse = false;
+    earHist.push(ear);
     $("earFace").innerHTML =
       (S.chars ? '<div class="lz-hanzi">'+esc(ear[0])+'</div>' : "") +
       '<div class="lz-pinyin" style="font-size:20px">'+esc(ear[1])+'</div>' +
@@ -1566,7 +1711,33 @@ const RUNGS = [
       });
       opts.appendChild(b);
     });
+    earNav();
     speak(ear[0]);
+  }
+
+  function earNav(){
+    navState("earPrev","earFwd",earHist);
+    const p=$("earPos"); if(!p) return;
+    p.textContent = navLabel("sentence", earHist, earBrowse);
+  }
+  function showEarBack(){
+    const it = earHist.cur();
+    if(!it){ earNav(); return; }
+    earBrowse = true; ear = it;
+    $("earFace").innerHTML =
+      '<div class="lz-tonebadge">'+esc(navLabel("sentence", earHist, true))+'</div>' +
+      (S.chars ? '<div class="lz-hanzi">'+esc(it[0])+'</div>' : "") +
+      '<div class="lz-pinyin" style="font-size:20px">'+esc(it[1])+'</div>' +
+      '<div class="lz-gloss"><b>'+esc(it[2])+'</b></div>' +
+      '<div class="lz-note">Press Play sentence to hear it again.</div>';
+    const opts=$("earOpts"); opts.innerHTML="";
+    [it[2]].concat(it[3]).forEach(function(txt){
+      const b=document.createElement("button");
+      b.type="button"; b.className="lz-opt"+(txt===it[2]?" is-right":"");
+      b.disabled=true; b.style.opacity=".75"; b.textContent=txt;
+      opts.appendChild(b);
+    });
+    earNav();
   }
 
   /* ---------- phrase lab ---------- */
@@ -1686,11 +1857,15 @@ const RUNGS = [
 
   /* ---------- sign reader ---------- */
   let signAnswer = null;
+  const signHist = new History(40);
+  let signBrowse = false;
 
   function signQuiz(){
     $("signFace").classList.remove("lz-hidden");
     $("signOpts").classList.remove("lz-hidden");
     signAnswer = pick(SIGNS);
+    signBrowse = false;
+    signHist.push(signAnswer);
     $("signFace").innerHTML =
       '<div class="lz-hanzi" style="font-size:52px">'+esc(signAnswer[0])+'</div>' +
       '<div class="lz-note">Which sign is this? Identify it by shape, the way you would a road sign.</div>';
@@ -1712,10 +1887,31 @@ const RUNGS = [
           '<div class="lz-gloss"><b>'+esc(signAnswer[2])+'</b></div>';
         sayNow(signAnswer[0], null, null);
         save(); $("signRight").textContent=String(S.sign.r); $("signTried").textContent=String(S.sign.t);
-        renderRungs(); renderCan();
+        renderRungs(); renderCan(); signNav();
       });
       opts.appendChild(b);
     });
+    signNav();
+  }
+
+  function signNav(){
+    navState("signPrev","signNext",signHist);
+    const p=$("signPos"); if(!p) return;
+    p.textContent = navLabel("sign", signHist, signBrowse);
+  }
+  function showSignBack(){
+    const it = signHist.cur();
+    if(!it){ signNav(); return; }
+    signBrowse = true; signAnswer = it;
+    $("signFace").classList.remove("lz-hidden");
+    $("signOpts").classList.remove("lz-hidden");
+    $("signFace").innerHTML =
+      '<div class="lz-tonebadge">'+esc(navLabel("sign", signHist, true))+'</div>' +
+      '<div class="lz-hanzi" style="font-size:52px">'+esc(it[0])+'</div>' +
+      '<div class="lz-pinyin" style="font-size:20px">'+esc(it[1])+'</div>' +
+      '<div class="lz-gloss"><b>'+esc(it[2])+'</b></div>';
+    $("signOpts").innerHTML="";
+    signNav();
   }
 
   function showAllSigns(){
@@ -1772,7 +1968,8 @@ const RUNGS = [
   function applyChars(){
     $("charsBtn").textContent = "Characters: " + (S.chars ? "on" : "off");
     renderPocket();
-    if(current){ if(revealed){ revealed=false; reveal(); } else { showCard(); } }
+    if(browseMode) showBrowsed();
+    else if(current){ if(revealed){ revealed=false; reveal(); } else { showCard(); } }
     renderPhrase();
   }
 
@@ -1794,8 +1991,13 @@ const RUNGS = [
       S.sessions++; save(); renderStats();
       nextCard();
     });
-    $("deckSpeak").addEventListener("click", function(){ if(current) sayNow(current.h, null, this); });
-    $("deckReveal").addEventListener("click", reveal);
+    $("deckPrev").addEventListener("click", deckBack);
+    $("deckNext").addEventListener("click", deckForward);
+    $("deckSpeak").addEventListener("click", function(){
+      if(browseMode) sayNow(deckHist.cur(), null, this);
+      else if(current) sayNow(current.h, null, this);
+    });
+    $("deckReveal").addEventListener("click", function(){ if(!browseMode) reveal(); });
     $("gradeAgain").addEventListener("click", function(){ grade(false); });
     $("gradeGood").addEventListener("click", function(){ grade(true); });
     $("deckLazy").addEventListener("click", function(){
@@ -1806,11 +2008,15 @@ const RUNGS = [
 
     $("tonePair").addEventListener("click", function(){ newTone(); playTonePair(); });
     $("toneReplay").addEventListener("click", playTonePair);
+    $("tonePrev").addEventListener("click", function(){ if(toneHist.back()||!toneBrowse) showToneBack(); });
+    $("toneNext").addEventListener("click", function(){ if(toneHist.fwd()) showToneBack(); });
     $("toneNew").addEventListener("click", function(){ newTone(); playTonePair(); });
 
     $("earPlay").addEventListener("click", function(){ if(!ear) newEar(); sayNow(ear[0], null, this); });
     $("earSlow").addEventListener("click", function(){ if(ear) sayNow(ear[0], 0.6, this); });
     $("earNext").addEventListener("click", newEar);
+    $("earPrev").addEventListener("click", function(){ if(earHist.back()||!earBrowse) showEarBack(); });
+    $("earFwd").addEventListener("click", function(){ if(earHist.fwd()) showEarBack(); });
 
     $("frameSel").addEventListener("change", fillSlots);
     $("slotSel").addEventListener("change", renderPhrase);
@@ -1838,6 +2044,8 @@ const RUNGS = [
     $("shadowCompare").addEventListener("click", hearBoth);
 
     $("signQuiz").addEventListener("click", signQuiz);
+    $("signPrev").addEventListener("click", function(){ if(signHist.back()||!signBrowse) showSignBack(); });
+    $("signNext").addEventListener("click", function(){ if(signHist.fwd()) showSignBack(); });
     $("signAll").addEventListener("click", showAllSigns);
 
     $("pocketPrint").addEventListener("click", function(){ window.print(); });
@@ -1848,7 +2056,8 @@ const RUNGS = [
       S = Object.assign({}, defaults);
       current=null; queue=[]; revealed=false;
       renderRungs(); renderCan(); renderPocket(); renderStats(); applyChars();
-      $("deckFace").innerHTML = '<div class="lz-gloss">Progress cleared. Press Start session to begin again.</div>';
+      deckHist.items=[]; deckHist.i=-1; browseMode=false; deckNav();
+    $("deckFace").innerHTML = '<div class="lz-gloss">Progress cleared. Press Start session to begin again.</div>';
       $("deckLeft").textContent="0";
       $("toneRight").textContent="0"; $("toneTried").textContent="0";
       $("earRight").textContent="0"; $("earTried").textContent="0";
@@ -1859,8 +2068,10 @@ const RUNGS = [
       if(/^(INPUT|SELECT|TEXTAREA)$/.test((e.target&&e.target.tagName)||"")) return;
       if(e.key===" "){ e.preventDefault(); if(current) sayNow(current.h, null, $("deckSpeak")); }
       else if(e.key==="Enter"){ if(current && !revealed) reveal(); }
-      else if(e.key==="1"){ if(revealed) grade(false); }
-      else if(e.key==="2"){ if(revealed) grade(true); }
+      else if(e.key==="1"){ if(revealed && !browseMode) grade(false); }
+      else if(e.key==="2"){ if(revealed && !browseMode) grade(true); }
+      else if(e.key==="ArrowLeft"){ e.preventDefault(); deckBack(); }
+      else if(e.key==="ArrowRight"){ e.preventDefault(); deckForward(); }
     });
   }
 
@@ -1876,6 +2087,7 @@ const RUNGS = [
     $("earRight").textContent=String(S.ear.r); $("earTried").textContent=String(S.ear.t);
     $("signRight").textContent=String(S.sign.r); $("signTried").textContent=String(S.sign.t);
     $("buildStamp").textContent = BUILD;
+    deckNav(); toneNav(); earNav(); signNav();
     applyChars();
     silent = false;
   }
