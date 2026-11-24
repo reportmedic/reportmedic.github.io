@@ -239,6 +239,7 @@
   .lz-warn{border:1px solid rgba(234,179,8,.45); border-radius:12px;
     background:rgba(234,179,8,.08); padding:12px 14px; font-size:13px; line-height:1.6}
   .lz-warn b{display:block; margin-bottom:4px}
+  .lz-warn.lz-flash{box-shadow:0 0 0 3px rgba(234,179,8,.5); border-color:rgba(234,179,8,.9)}
 
   .lz-pocket{border:1px solid var(--border); border-radius:12px; padding:12px;
     background:rgba(0,0,0,.2); font-size:13px; max-height:280px; overflow:auto}
@@ -289,6 +290,7 @@
       <button class="btn" id="charsBtn" type="button">Characters: off</button>
       <div class="lz-spacer"></div>
       <span class="pill tiny"><b>SAVED:</b><span class="muted" id="savedMeta">local only</span></span>
+      <span class="pill tiny"><b>BUILD:</b><span class="muted" id="buildStamp">-</span></span>
     </div>
 
     <div id="voiceWarn" class="lz-warn lz-hidden" style="margin-top:10px">
@@ -307,7 +309,7 @@
         <div class="row" style="display:flex; justify-content:space-between; align-items:flex-start">
           <div>
             <div style="font-weight:700">Today's deck</div>
-            <div class="tiny muted">Capped at 2 new plus 5 reviews. It cannot grow on you.</div>
+            <div class="tiny muted">Capped at 2 new plus 5 reviews. It cannot grow on you. Press <b>Show answer</b> on any card to see that word used in a real sentence.</div>
           </div>
           <span class="pill tiny"><b>LEFT:</b><span class="muted" id="deckLeft">0</span></span>
         </div>
@@ -555,6 +557,7 @@
         <li>Hear a native-trained model voice on every word, at two speeds</li>
         <li>Train tones in contrasting pairs, the only way the ear separates them</li>
         <li>Generate hundreds of correct sentences from twelve reusable frames</li>
+        <li>See every word used in a real sentence, built only from words you know</li>
         <li>Recognise forty street signs without ever writing a character</li>
         <li>Keep sessions to seven minutes with a deck that cannot grow</li>
       </ul>
@@ -563,6 +566,7 @@
         <li>Pick a Mandarin voice at the top, then set the speed to slow while learning tones</li>
         <li>Spend ten minutes once on the tones and the eight hard sounds</li>
         <li>Press <b>Start session</b> daily, two new items plus five reviews</li>
+        <li>Press <b>Show answer</b> to reveal the meaning and an example sentence</li>
         <li>Use <b>Ear check</b> before speaking, then <b>Shadow mode</b> to hear yourself against the model</li>
         <li>Flip <b>Characters</b> on only if and when you want them</li>
         <li>Print the pocket card for the batch you are on</li>
@@ -1110,6 +1114,7 @@ const RUNGS = [
 (function(){
   "use strict";
 
+  const BUILD = "24 Nov, r6";
   const KEY = "rmLazyChinese.v1";
   const BOX_DAYS = [1,2,4,8,16];
   const $ = id => document.getElementById(id);
@@ -1206,6 +1211,31 @@ const RUNGS = [
     }catch(e){ speaking=false; if(done) done(); }
   }
 
+  /* A press that produces no sound has to explain itself. Automatic speech
+     stays quiet, but anything the reader actually clicks says what is wrong. */
+  function noVoice(btn){
+    const w = $("voiceWarn");
+    if(w){
+      w.classList.remove("lz-hidden");
+      w.classList.add("lz-flash");
+      clearTimeout(noVoice._t);
+      noVoice._t = setTimeout(function(){ w.classList.remove("lz-flash"); }, 1800);
+    }
+    if(btn && !btn.__restore){
+      const old = btn.textContent;
+      btn.textContent = "No Mandarin voice";
+      btn.__restore = setTimeout(function(){ btn.textContent = old; btn.__restore = null; }, 2000);
+    }
+  }
+  function sayNow(text, r, btn){
+    if(!("speechSynthesis" in window) || !voice){ noVoice(btn); return; }
+    speak(text, r);
+  }
+  function sayNowSeq(list, r, gap, btn){
+    if(!("speechSynthesis" in window) || !voice){ noVoice(btn); return; }
+    speakSeq(list, r, gap);
+  }
+
   function speakSeq(list, r, gap){
     let i = 0;
     (function next(){
@@ -1226,10 +1256,12 @@ const RUNGS = [
      sentence is split into the words it is made of, and it is only shown once
      every one of those words has already come up in the deck, so an example
      never introduces vocabulary the reader has not met. */
-  let SORTED_H = null;
+  let SORTED_H = null, BY_H = null;
   function wordIndex(){
     if(SORTED_H) return;
     SORTED_H = WORDS.map(w=>w.h).sort((a,b)=>b.length-a.length);
+    BY_H = Object.create(null);
+    WORDS.forEach(function(w){ BY_H[w.h] = w; });
   }
   function tokenize(sentence){
     wordIndex();
@@ -1253,8 +1285,12 @@ const RUNGS = [
     if(!e) return null;
     const toks = tokenize(e[0]);
     if(!toks) return null;
-    const missing = toks.filter(t => t!==w.h && !S.cards[t]);
-    if(missing.length) return {locked:true, missing:missing.length};
+    const ahead = toks.filter(function(t){
+      if(t===w.h || S.cards[t]) return false;
+      const tw = BY_H[t];
+      return !tw || tw.b > w.b;
+    });
+    if(ahead.length) return {locked:true, missing:ahead.length};
     return {h:e[0], p:e[1], en:e[2]};
   }
   function renderExample(){
@@ -1266,9 +1302,9 @@ const RUNGS = [
     box.classList.remove("lz-hidden");
     if(ex.locked){
       box.innerHTML = '<div class="lz-ex-label">Seen in real use</div>' +
-        '<div class="lz-ex-wait">An example sentence appears here once ' +
-        (ex.missing===1 ? "one more word in it has" : ex.missing+" more words in it have") +
-        ' come up in your deck. Nothing to do, it unlocks on its own.</div>';
+        '<div class="lz-ex-wait">An example for this word uses ' +
+        (ex.missing===1 ? "one word" : ex.missing+" words") +
+        ' from a later step, so it appears once you get there. Nothing to do, it unlocks on its own.</div>';
       return;
     }
     box.innerHTML = '<div class="lz-ex-label">Seen in real use</div>' +
@@ -1277,8 +1313,8 @@ const RUNGS = [
       '<div class="lz-ex-e">'+esc(ex.en)+'</div>' +
       '<div class="lz-btnrow lz-noprint"><button class="btn" type="button" id="exSpeak">Hear example</button>' +
       '<button class="btn" type="button" id="exSlow">Hear it slower</button></div>';
-    $("exSpeak").addEventListener("click", function(){ speak(ex.h); });
-    $("exSlow").addEventListener("click", function(){ speak(ex.h, 0.6); });
+    $("exSpeak").addEventListener("click", function(){ sayNow(ex.h, null, this); });
+    $("exSlow").addEventListener("click", function(){ sayNow(ex.h, 0.6, this); });
   }
   function known(){ return WORDS.filter(w=>S.cards[w.h] && S.cards[w.h].box>=3); }
   function metWords(){ return WORDS.filter(w=>S.cards[w.h]); }
@@ -1471,7 +1507,7 @@ const RUNGS = [
 
   function playTonePair(){
     if(!tonePair) newTone();
-    speakSeq([tonePair.a[1], tonePair.b[1]], 0.6, 600);
+    sayNowSeq([tonePair.a[1], tonePair.b[1]], 0.6, 600, $("tonePair"));
   }
 
   function renderToneRef(){
@@ -1484,7 +1520,7 @@ const RUNGS = [
     });
     html += '<div class="lz-btnrow lz-noprint"><button class="btn" id="toneDemo" type="button">Hear all four on ma</button></div>';
     box.innerHTML = html;
-    $("toneDemo").addEventListener("click", function(){ speakSeq(["妈","麻","马","骂"], 0.6, 520); });
+    $("toneDemo").addEventListener("click", function(){ sayNowSeq(["妈","麻","马","骂"], 0.6, 520, this); });
 
     const sb = $("soundRef");
     let h2 = '<div style="font-weight:700;font-size:13px;margin-bottom:6px">The eight sounds English speakers get wrong, plus one vowel</div>';
@@ -1495,7 +1531,7 @@ const RUNGS = [
     });
     sb.innerHTML = h2;
     Array.prototype.forEach.call(sb.querySelectorAll("button[data-say]"), function(b){
-      b.addEventListener("click", function(){ speak(b.getAttribute("data-say"), 0.6); });
+      b.addEventListener("click", function(){ sayNow(b.getAttribute("data-say"), 0.6, b); });
     });
   }
 
@@ -1628,6 +1664,7 @@ const RUNGS = [
 
   function hearBoth(){
     if(!shadowPhrase){ loadShadow(); return; }
+    if(!("speechSynthesis" in window) || !voice){ noVoice($("shadowCompare")); return; }
     if(!myUrl){
       $("shadowStatus").textContent = "Record yourself first, then this plays the model and your attempt back to back.";
       speak(shadowPhrase.h);
@@ -1668,7 +1705,7 @@ const RUNGS = [
           '<div class="lz-hanzi" style="font-size:52px">'+esc(signAnswer[0])+'</div>' +
           '<div class="lz-pinyin" style="font-size:20px">'+esc(signAnswer[1])+'</div>' +
           '<div class="lz-gloss"><b>'+esc(signAnswer[2])+'</b></div>';
-        speak(signAnswer[0]);
+        sayNow(signAnswer[0], null, null);
         save(); $("signRight").textContent=String(S.sign.r); $("signTried").textContent=String(S.sign.t);
         renderRungs(); renderCan();
       });
@@ -1687,7 +1724,7 @@ const RUNGS = [
       d.className="lz-glyph";
       d.innerHTML = "<b>"+esc(s[0])+"</b><i>"+esc(s[1])+"</i><i>"+esc(s[2])+"</i>";
       d.style.cursor="pointer";
-      d.addEventListener("click", function(){ speak(s[0], 0.7); });
+      d.addEventListener("click", function(){ sayNow(s[0], 0.7, null); });
       box.appendChild(d);
     });
   }
@@ -1752,7 +1789,7 @@ const RUNGS = [
       S.sessions++; save(); renderStats();
       nextCard();
     });
-    $("deckSpeak").addEventListener("click", function(){ if(current) speak(current.h); });
+    $("deckSpeak").addEventListener("click", function(){ if(current) sayNow(current.h, null, this); });
     $("deckReveal").addEventListener("click", reveal);
     $("gradeAgain").addEventListener("click", function(){ grade(false); });
     $("gradeGood").addEventListener("click", function(){ grade(true); });
@@ -1766,21 +1803,21 @@ const RUNGS = [
     $("toneReplay").addEventListener("click", playTonePair);
     $("toneNew").addEventListener("click", function(){ newTone(); playTonePair(); });
 
-    $("earPlay").addEventListener("click", function(){ if(!ear) newEar(); else speak(ear[0]); });
-    $("earSlow").addEventListener("click", function(){ if(ear) speak(ear[0], 0.6); });
+    $("earPlay").addEventListener("click", function(){ if(!ear) newEar(); sayNow(ear[0], null, this); });
+    $("earSlow").addEventListener("click", function(){ if(ear) sayNow(ear[0], 0.6, this); });
     $("earNext").addEventListener("click", newEar);
 
     $("frameSel").addEventListener("change", fillSlots);
     $("slotSel").addEventListener("change", renderPhrase);
-    $("phraseSpeak").addEventListener("click", function(){ speak(currentPhrase().h); });
-    $("phraseSlow").addEventListener("click", function(){ speak(currentPhrase().h, 0.6); });
+    $("phraseSpeak").addEventListener("click", function(){ sayNow(currentPhrase().h, null, this); });
+    $("phraseSlow").addEventListener("click", function(){ sayNow(currentPhrase().h, 0.6, this); });
     $("phraseRandom").addEventListener("click", function(){
       $("frameSel").value = String(rnd(FRAMES.length));
       fillSlots();
       const n = $("slotSel").options.length;
       $("slotSel").value = String(rnd(n));
       renderPhrase();
-      speak(currentPhrase().h);
+      sayNow(currentPhrase().h, null, this);
     });
     $("phraseCopy").addEventListener("click", function(){
       const ph = currentPhrase();
@@ -1790,7 +1827,7 @@ const RUNGS = [
     $("shadowLoad").addEventListener("click", loadShadow);
     $("shadowModel").addEventListener("click", function(){
       if(!shadowPhrase) loadShadow();
-      speak(shadowPhrase.h);
+      sayNow(shadowPhrase.h, null, this);
     });
     $("shadowRec").addEventListener("click", toggleRecord);
     $("shadowCompare").addEventListener("click", hearBoth);
@@ -1815,7 +1852,7 @@ const RUNGS = [
 
     document.addEventListener("keydown", function(e){
       if(/^(INPUT|SELECT|TEXTAREA)$/.test((e.target&&e.target.tagName)||"")) return;
-      if(e.key===" "){ e.preventDefault(); if(current) speak(current.h); }
+      if(e.key===" "){ e.preventDefault(); if(current) sayNow(current.h, null, $("deckSpeak")); }
       else if(e.key==="Enter"){ if(current && !revealed) reveal(); }
       else if(e.key==="1"){ if(revealed) grade(false); }
       else if(e.key==="2"){ if(revealed) grade(true); }
@@ -1833,6 +1870,7 @@ const RUNGS = [
     $("toneRight").textContent=String(S.tone.r); $("toneTried").textContent=String(S.tone.t);
     $("earRight").textContent=String(S.ear.r); $("earTried").textContent=String(S.ear.t);
     $("signRight").textContent=String(S.sign.r); $("signTried").textContent=String(S.sign.t);
+    $("buildStamp").textContent = BUILD;
     applyChars();
     silent = false;
   }
