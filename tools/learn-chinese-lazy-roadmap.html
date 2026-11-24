@@ -153,6 +153,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Carlito:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet"/>
 <style>
+  /* Safety net: no control in this tool may fall back to UA colours. */
+  .wrap button:not(.btn):not(.rm-lm-close), .wrap select{
+    color:var(--text); font-family:inherit;
+  }
   .lz-bar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; padding:10px;
     border:1px solid var(--border); border-radius:12px; background:rgba(0,0,0,.18)}
   .lz-bar label{font-size:12px; opacity:.85}
@@ -160,8 +164,8 @@
      popup to composite against whatever the OS picks, which turns the list
      unreadable. color-scheme keeps the popup and scrollbar dark to match. */
   .lz-sel{background:#101a2c; color:#eef6ff; border:1px solid var(--border);
-    border-radius:8px; padding:6px 8px; font-size:13px; max-width:230px;
-    color-scheme:dark}
+    border-radius:8px; padding:6px 8px; font-family:inherit; font-size:13px;
+    max-width:230px; color-scheme:dark}
   .lz-sel option{background:#101a2c; color:#eef6ff}
   .lz-sel option:checked,.lz-sel option:hover{background:#1d2d49; color:#ffffff}
   .lz-sel:focus{border-color:rgba(124,247,212,.55); outline:none}
@@ -170,7 +174,8 @@
 
   .lz-rungs{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
   .lz-rung{border:1px solid var(--border); border-radius:12px; padding:10px 12px;
-    background:rgba(255,255,255,.04); cursor:pointer; text-align:left}
+    background:rgba(255,255,255,.04); cursor:pointer; text-align:left;
+    color:var(--text); font-family:inherit; font-size:inherit}
   .lz-rung:hover{border-color:var(--border-strong); background:rgba(255,255,255,.07)}
   .lz-rung.is-active{border-color:var(--brand2); box-shadow:0 0 0 2px rgba(124,247,212,.18)}
   .lz-rung.is-done{opacity:.72}
@@ -192,7 +197,8 @@
   .lz-btnrow{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
   .lz-grid-opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; margin-top:10px}
   .lz-opt{border:1px solid var(--border); border-radius:10px; padding:10px;
-    background:rgba(255,255,255,.05); color:var(--text); cursor:pointer; font-size:13.5px; text-align:center}
+    background:rgba(255,255,255,.05); color:var(--text); cursor:pointer;
+    font-family:inherit; font-size:13.5px; text-align:center}
   .lz-opt:hover{border-color:var(--border-strong)}
   .lz-opt.is-right{border-color:#4ade80; background:rgba(74,222,128,.14)}
   .lz-opt.is-wrong{border-color:#f87171; background:rgba(248,113,113,.14)}
