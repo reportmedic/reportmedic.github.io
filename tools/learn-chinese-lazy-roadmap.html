@@ -29,7 +29,7 @@
         "url": "https://reportmedic.org/"
       },
       "featureList": [
-        "Six-rung roadmap from tones to 200 spoken words",
+        "Six-step roadmap from tones to 200 spoken words",
         "Audio on every word using the browser speech engine",
         "Two playback speeds for tone practice",
         "Tone gym with minimal pairs and pitch contours",
@@ -157,6 +157,11 @@
   .wrap button:not(.btn):not(.rm-lm-close), .wrap select{
     color:var(--text); font-family:inherit;
   }
+  /* The shared .tiny class sets margin:0, so these intro paragraphs had no
+     bottom margin and the block below them sat flush against the text. */
+  .lz-lead{margin:0 0 16px; line-height:1.6}
+  .lz-sec{margin:30px 0 8px}
+  .lz-rungs{margin-top:2px}
   .lz-bar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; padding:10px;
     border:1px solid var(--border); border-radius:12px; background:rgba(0,0,0,.18)}
   .lz-bar label{font-size:12px; opacity:.85}
@@ -175,10 +180,15 @@
   .lz-rungs{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
   .lz-rung{border:1px solid var(--border); border-radius:12px; padding:10px 12px;
     background:rgba(255,255,255,.04); cursor:pointer; text-align:left;
-    color:var(--text); font-family:inherit; font-size:inherit}
+    color:var(--text); font-family:inherit; font-size:inherit;
+    display:flex; flex-direction:column; min-height:132px}
+  .lz-rung .lz-meter{margin-top:auto}
   .lz-rung:hover{border-color:var(--border-strong); background:rgba(255,255,255,.07)}
   .lz-rung.is-active{border-color:var(--brand2); box-shadow:0 0 0 2px rgba(124,247,212,.18)}
   .lz-rung.is-done{opacity:.72}
+  .lz-rung-step{font-size:10.5px; letter-spacing:.3px; text-transform:uppercase;
+    opacity:.6; margin-bottom:4px}
+  .lz-rung.is-active .lz-rung-step{opacity:1; color:var(--brand2)}
   .lz-rung-name{font-weight:700; font-size:13px}
   .lz-rung-sub{font-size:11.5px; opacity:.78; margin-top:3px; line-height:1.4}
   .lz-meter{height:5px; border-radius:3px; background:rgba(255,255,255,.1); margin-top:8px; overflow:hidden}
@@ -280,8 +290,8 @@
 
     <div class="hr"></div>
 
-    <h2 style="margin-top:0">Your roadmap</h2>
-    <p class="tiny muted" style="margin-top:0">Six rungs. Each one ends in something you can actually do, not a score. Click a rung to make it the one you are working on.</p>
+    <h2 style="margin-top:0">Your plan, in six steps</h2>
+    <p class="tiny muted lz-lead">Each box below is one step of the plan, in order, and each ends in something you can actually do rather than a score. The highlighted box is the step you are on now, and it decides which words <b>Today's deck</b> hands you. You do not normally need to touch these, because finishing a step moves the highlight along by itself. Click one only to jump ahead or go back.</p>
     <div class="lz-rungs" id="rungs"></div>
 
     <div class="grid2" style="margin-top:14px">
@@ -318,7 +328,7 @@
 
       <div class="card">
         <div style="font-weight:700">What you can say right now</div>
-        <div class="tiny muted" style="margin-top:4px">This list unlocks as batches clear. It is the real measure of progress.</div>
+        <div class="tiny muted" style="margin-top:4px">Each line is one step of the plan. A line turns bright once that step is cleared, so this is the real measure of progress.</div>
         <div class="hr2"></div>
         <ul class="lz-can" id="canList"></ul>
         <div class="hr2"></div>
@@ -328,8 +338,8 @@
 
     <div class="hr"></div>
 
-    <h2>Tone gym</h2>
-    <p class="tiny muted" style="margin-top:0">Tones are only learnable in contrast, never in isolation. Hear two versions of the same syllable back to back, then pick the one you heard second.</p>
+    <h2 class="lz-sec">Tone gym</h2>
+    <p class="tiny muted lz-lead">Tones are only learnable in contrast, never in isolation. Hear two versions of the same syllable back to back, then pick the one you heard second.</p>
     <div class="grid2">
       <div class="card">
         <div style="font-weight:700">Hear the contrast</div>
@@ -358,8 +368,8 @@
 
     <div class="hr"></div>
 
-    <h2>Ear check</h2>
-    <p class="tiny muted" style="margin-top:0">Comprehension leads production. Every sentence here is built only from words you have already met, so this gets easier automatically as the deck advances.</p>
+    <h2 class="lz-sec">Ear check</h2>
+    <p class="tiny muted lz-lead">Comprehension leads production. Every sentence here is built only from words you have already met, so this gets easier automatically as the deck advances.</p>
     <div class="card">
       <div class="lz-card-face" id="earFace">
         <div class="lz-gloss">Press Play sentence, then pick the meaning.</div>
@@ -376,8 +386,8 @@
 
     <div class="hr"></div>
 
-    <h2>Phrase lab</h2>
-    <p class="tiny muted" style="margin-top:0">Mandarin verbs and nouns never change form, so a frame you learn once stays correct with anything dropped into it. Twelve frames and fifty nouns is several hundred correct sentences.</p>
+    <h2 class="lz-sec">Phrase lab</h2>
+    <p class="tiny muted lz-lead">Mandarin verbs and nouns never change form, so a frame you learn once stays correct with anything dropped into it. Twelve frames and fifty nouns is several hundred correct sentences.</p>
     <div class="card">
       <div class="lz-frames">
         <div>
@@ -402,8 +412,8 @@
 
     <div class="hr"></div>
 
-    <h2>Shadow mode</h2>
-    <p class="tiny muted" style="margin-top:0">Hear the model, say it aloud, then hear both back to back and fix exactly one thing. Your recording stays in this browser, is never uploaded, and disappears when the tab closes.</p>
+    <h2 class="lz-sec">Shadow mode</h2>
+    <p class="tiny muted lz-lead">Hear the model, say it aloud, then hear both back to back and fix exactly one thing. Your recording stays in this browser, is never uploaded, and disappears when the tab closes.</p>
     <div class="card">
       <div class="lz-out" id="shadowOut">
         <div class="lz-gloss">Press Load phrase to begin.</div>
@@ -420,8 +430,8 @@
 
     <div class="hr"></div>
 
-    <h2>Sign reader</h2>
-    <p class="tiny muted" style="margin-top:0">Forty items, recognition only. These are treated as shapes to identify, exactly like road signs, and you are never asked to produce one. This is the whole reading commitment on this roadmap.</p>
+    <h2 class="lz-sec">Sign reader</h2>
+    <p class="tiny muted lz-lead">Forty items, recognition only. These are treated as shapes to identify, exactly like road signs, and you are never asked to produce one. This is the whole reading commitment on this roadmap.</p>
     <div class="card">
       <div class="lz-btnrow lz-noprint" style="margin-top:0">
         <button class="btn primary" id="signQuiz" type="button">Quiz me on a sign</button>
@@ -436,8 +446,8 @@
 
     <div class="hr"></div>
 
-    <h2>Pocket card</h2>
-    <p class="tiny muted" style="margin-top:0">The batch you are on, as a printable cheat sheet for a pocket or a wallet. Useful on a plane, in a queue, or anywhere the audio is impractical.</p>
+    <h2 class="lz-sec">Pocket card</h2>
+    <p class="tiny muted lz-lead">The batch you are on, as a printable cheat sheet for a pocket or a wallet. Useful on a plane, in a queue, or anywhere the audio is impractical.</p>
     <div class="card">
       <div class="lz-btnrow lz-noprint" style="margin-top:0">
         <button class="btn primary" id="pocketPrint" type="button">Print this card</button>
@@ -467,7 +477,7 @@
     </ul>
 
     <h3>How the batches are sized</h3>
-    <p>Each rung is deliberately small enough to finish, because an unfinished plan teaches nothing. Ten words cover a complete purchase, which means a genuine success on the first afternoon rather than three weeks of groundwork. Fifty words plus twelve frames reach ordering food and asking directions. One hundred handle transport, lodging and polite small talk. Two hundred support short conversations where you understand the reply. Past that point, talking to people teaches faster than drilling does, which is exactly where a lazy plan should hand over.</p>
+    <p>Each step is deliberately small enough to finish, because an unfinished plan teaches nothing. Ten words cover a complete purchase, which means a genuine success on the first afternoon rather than three weeks of groundwork. Fifty words plus twelve frames reach ordering food and asking directions. One hundred handle transport, lodging and polite small talk. Two hundred support short conversations where you understand the reply. Past that point, talking to people teaches faster than drilling does, which is exactly where a lazy plan should hand over.</p>
 
     <h3>How the daily session stays short</h3>
     <p>A session is two new items and five reviews, scheduled at intervals of one, two, four, eight and sixteen days. The cap is deliberate: a deck that grows whenever you miss a day is the single most common reason people abandon spaced repetition. Here the deck cannot grow, there is no streak to protect, and a lazy button trims the session to three cards when that is all you have in you. Resuming after a gap simply brings back the items you were weakest on.</p>
@@ -488,7 +498,7 @@
     <h2>Questions people ask before starting Mandarin</h2>
 
     <h3>How many Chinese words do I need to start speaking?</h3>
-    <p>Far fewer than most courses imply. Ten are enough to complete a purchase: a pronoun, a verb meaning want, a word for this one, a way to ask the price, and a thank you. Fifty plus a dozen patterns cover meals and directions. Two hundred carry short conversations. Each rung here ends in a capability rather than a percentage.</p>
+    <p>Far fewer than most courses imply. Ten are enough to complete a purchase: a pronoun, a verb meaning want, a word for this one, a way to ask the price, and a thank you. Fifty plus a dozen patterns cover meals and directions. Two hundred carry short conversations. Each step here ends in a capability rather than a percentage.</p>
 
     <h3>Can I learn to speak without learning characters?</h3>
     <p>Yes, and for a beginner it is quicker. Pinyin maps sound to spelling in roughly half an hour, doing the job an alphabet does elsewhere. Characters are switched off by default on this page and available on a single toggle whenever you decide you want them.</p>
@@ -497,7 +507,7 @@
     <p>Pitch distinguishes meaning in Mandarin. One tone is high and level, another rises, another dips then rises, another falls sharply, and a light fifth is short and unstressed. The usual demonstration is the syllable ma, which shifts between mother, numb, horse and scold. A wrong tone normally produces a puzzled face rather than a problem, and context rescues you more often than beginners expect.</p>
 
     <h3>Do I need a tutor alongside this?</h3>
-    <p>Not for the rungs on this page, which are built to be self-checking through audio and recognition drills. A speaking partner becomes valuable around the two hundred word mark, when replies start arriving faster than you can decode them. That is the natural moment to add a human.</p>
+    <p>Not for the steps on this page, which are built to be self-checking through audio and recognition drills. A speaking partner becomes valuable around the two hundred word mark, when replies start arriving faster than you can decode them. That is the natural moment to add a human.</p>
 
     <h3>Is Mandarin harder than Spanish for an English speaker?</h3>
     <p>It divides neatly. Writing is harder, because literacy requires thousands of characters instead of a small alphabet. Grammar is easier, with no conjugation, no gender and no tense endings. The pronunciation sits in between, with a few consonants and the tone system needing deliberate attention early. That split is precisely what a speech-first ladder exploits.</p>
@@ -868,12 +878,12 @@ const SIGNS = [
 ];
 
 const RUNGS = [
- {id:0,name:"Sounds and tones",sub:"5 tones, 8 hard sounds",kind:"tones",unlock:"Be understood instead of guessed at"},
- {id:1,name:"Batch of 10",sub:"Day one survival kit",kind:"words",batch:1,unlock:"Point, buy, ask the price, say thanks"},
- {id:2,name:"Batch of 50",sub:"Plus 12 sentence frames",kind:"words",batch:2,unlock:"Order a meal, ask directions, say no politely"},
- {id:3,name:"Batch of 100",sub:"Numbers, time, transport",kind:"words",batch:3,unlock:"Taxi, hotel check-in, prices, polite small talk"},
- {id:4,name:"Batch of 200",sub:"Connectors and real nouns",kind:"words",batch:4,unlock:"Hold a short conversation and describe a problem"},
- {id:5,name:"40 street signs",sub:"Recognition only, optional",kind:"signs",unlock:"Read exits, toilets, metro, numbers and prices"}
+ {id:0,name:"Sounds and tones",sub:"5 tones, 8 hard sounds",kind:"tones",unit:"tone answers right",unlock:"Be understood instead of guessed at"},
+ {id:1,name:"Batch of 10",sub:"Day one survival kit",kind:"words",batch:1,unit:"words learned",unlock:"Point, buy, ask the price, say thanks"},
+ {id:2,name:"Batch of 50",sub:"Plus 12 sentence frames",kind:"words",batch:2,unit:"words learned",unlock:"Order a meal, ask directions, say no politely"},
+ {id:3,name:"Batch of 100",sub:"Numbers, time, transport",kind:"words",batch:3,unit:"words learned",unlock:"Taxi, hotel check-in, prices, polite small talk"},
+ {id:4,name:"Batch of 200",sub:"Connectors and real nouns",kind:"words",batch:4,unit:"words learned",unlock:"Hold a short conversation and describe a problem"},
+ {id:5,name:"40 street signs",sub:"Recognition only, optional",kind:"signs",unit:"signs identified",unlock:"Read exits, toilets, metro, numbers and prices"}
 ];
 </script>
 
@@ -1009,7 +1019,7 @@ const RUNGS = [
       return {done:done, total:set.length};
     }
     if(r.kind==="signs"){ return {done:Math.min(S.sign.r,SIGNS.length), total:SIGNS.length}; }
-    return {done:S.tone.r>=10?1:0, total:1};
+    return {done:Math.min(S.tone.r,10), total:10};
   }
 
   function renderRungs(){
@@ -1022,10 +1032,12 @@ const RUNGS = [
       b.type = "button";
       b.className = "lz-rung" + (S.rung===r.id ? " is-active" : "") + (pct>=100 ? " is-done" : "");
       b.innerHTML =
+        '<div class="lz-rung-step">Step '+(r.id+1)+' of '+RUNGS.length+(S.rung===r.id?' - you are here':'')+'</div>'+
         '<div class="lz-rung-name">'+esc(r.name)+'</div>'+
         '<div class="lz-rung-sub">'+esc(r.sub)+'</div>'+
         '<div class="lz-meter"><span style="width:'+pct+'%"></span></div>'+
-        '<div class="lz-rung-sub" style="margin-top:6px">'+pr.done+" of "+pr.total+(pct>=100?" - cleared":"")+'</div>';
+        '<div class="lz-rung-sub" style="margin-top:6px">'+
+          (pct>=100 ? "Done - "+pr.total+" "+esc(r.unit) : pr.done+" of "+pr.total+" "+esc(r.unit))+'</div>';
       b.addEventListener("click", function(){ S.rung=r.id; save(); renderRungs(); renderCan(); renderPocket(); buildQueue(); });
       box.appendChild(b);
     });
