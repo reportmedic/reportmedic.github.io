@@ -50,6 +50,7 @@
     { id:"tcs-nqt-preparation-guide",                name:"TCS NQT Preparation Guide",    icon:"💼",  cat:["Analyze"],             desc:"Comprehensive TCS NQT preparation guide with topic-wise practice, strategies, and performance tracking." },
     { id:"tcs-ilp-preparation-guide",                name:"TCS ILP Preparation Guide",    icon:"💼",  cat:["Analyze"],             desc:"Complete TCS ILP preparation guide covering all modules with practice questions and strategies." },
     { id:"gaokao-previous-year-question-papers",     name:"Gaokao PYQ Explorer",          icon:"📜",  cat:["Analyze"],             desc:"Explore Gaokao previous year questions across multiple years and subjects - search, filter, and practice offline." },
+    { id:"learn-chinese-lazy-roadmap",            name:"Learn Chinese (Lazy Roadmap)",icon:"中",  cat:["Analyze"],             desc:"Speech-first Mandarin roadmap for English speakers: tones, 200 spoken words, 12 sentence frames, audio on every item." },
 
     // ── Convert
     { id:"markdown-to-html",                         name:"Markdown → HTML",              icon:"⌁",  cat:["Convert"],             desc:"Convert Markdown into clean, preview-ready HTML." },
