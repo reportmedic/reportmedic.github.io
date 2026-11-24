@@ -204,6 +204,14 @@
   .lz-tonebadge{display:inline-block; font-size:11px; padding:2px 8px; border-radius:999px;
     border:1px solid var(--border); background:rgba(255,255,255,.06); opacity:.9}
 
+  .lz-ex{margin-top:12px; border:1px solid var(--border); border-radius:12px;
+    padding:12px 14px; background:rgba(124,247,212,.06)}
+  .lz-ex-label{font-size:10.5px; text-transform:uppercase; letter-spacing:.3px;
+    opacity:.7; margin-bottom:6px}
+  .lz-ex-h{font-size:22px; font-weight:700; line-height:1.3}
+  .lz-ex-p{font-size:17px; font-weight:700; margin-top:2px}
+  .lz-ex-e{font-size:13px; opacity:.88; margin-top:3px}
+  .lz-ex-wait{font-size:12.5px; opacity:.75; line-height:1.6}
   .lz-btnrow{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
   .lz-grid-opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; margin-top:10px}
   .lz-opt{border:1px solid var(--border); border-radius:10px; padding:10px;
@@ -317,6 +325,7 @@
           <button class="btn" id="gradeAgain" type="button">Again</button>
           <button class="btn" id="gradeGood" type="button">Got it</button>
         </div>
+        <div class="lz-ex lz-hidden" id="deckExample"></div>
         <div class="hr2"></div>
         <div class="lz-stat">
           <span>Known <b id="statKnown">0</b></span>
@@ -775,6 +784,211 @@ const WORDS = [
  {h:"我不懂",p:"wǒ bù dǒng",e:"I do not understand",b:4}
 ];
 
+/* Real-world example for each word. Every sentence is built only from words
+   that exist in WORDS above, so the engine can tokenize it and check whether
+   the learner has already met every piece. One is shown only when they have,
+   which keeps unknown vocabulary off the screen. */
+const EXAMPLES = {
+ "你好":["你好吗？","nǐ hǎo ma","Hello, how are you?"],
+ "谢谢":["好，谢谢。","hǎo, xiè xie","Good, thank you."],
+ "我":["我要这个。","wǒ yào zhè ge","I want this one."],
+ "要":["我不要。","wǒ bú yào","I don't want it."],
+ "这个":["这个多少钱？","zhè ge duō shao qián","How much is this one?"],
+ "多少钱":["这个多少钱？","zhè ge duō shao qián","How much is this one?"],
+ "好":["好，谢谢。","hǎo, xiè xie","Okay, thanks."],
+ "不":["我不要。","wǒ bú yào","I don't want it."],
+ "有":["有吗？","yǒu ma","Do you have any?"],
+ "吗":["你好吗？","nǐ hǎo ma","How are you?"],
+
+ "你":["你要什么？","nǐ yào shén me","What would you like?"],
+ "他":["他是谁？","tā shì shuí","Who is he?"],
+ "她":["她在哪里？","tā zài nǎ lǐ","Where is she?"],
+ "我们":["我们去这里。","wǒ men qù zhè lǐ","Let's go here."],
+ "是":["这个是什么？","zhè ge shì shén me","What is this?"],
+ "在":["他在这里。","tā zài zhè lǐ","He is here."],
+ "哪里":["厕所在哪里？","cè suǒ zài nǎ lǐ","Where is the toilet?"],
+ "什么":["这个是什么？","zhè ge shì shén me","What is this?"],
+ "谁":["他是谁？","tā shì shuí","Who is he?"],
+ "为什么":["你为什么不吃？","nǐ wèi shén me bù chī","Why aren't you eating?"],
+ "怎么":["这个怎么吃？","zhè ge zěn me chī","How do you eat this?"],
+ "几":["几个人？","jǐ ge rén","How many people?"],
+ "可以":["我可以看吗？","wǒ kě yǐ kàn ma","May I have a look?"],
+ "请":["请来这里。","qǐng lái zhè lǐ","Please come here."],
+ "对不起":["对不起，我不知道。","duì bu qǐ, wǒ bù zhī dào","Sorry, I don't know."],
+ "没关系":["没关系，谢谢。","méi guān xi, xiè xie","No problem, thanks."],
+ "再见":["再见，谢谢你。","zài jiàn, xiè xie nǐ","Goodbye, thank you."],
+ "一点点":["我要一点点。","wǒ yào yì diǎn diǎn","I want just a little."],
+ "太":["太好了。","tài hǎo le","That's great."],
+ "很":["这个很好。","zhè ge hěn hǎo","This one is very good."],
+ "喜欢":["我喜欢茶。","wǒ xǐ huan chá","I like tea."],
+ "去":["我要去。","wǒ yào qù","I want to go."],
+ "来":["请来这里。","qǐng lái zhè lǐ","Please come here."],
+ "吃":["我要吃饭。","wǒ yào chī fàn","I want to eat."],
+ "喝":["我要喝水。","wǒ yào hē shuǐ","I want to drink water."],
+ "买":["我要买这个。","wǒ yào mǎi zhè ge","I want to buy this one."],
+ "看":["我可以看吗？","wǒ kě yǐ kàn ma","May I have a look?"],
+ "说":["你说什么？","nǐ shuō shén me","What did you say?"],
+ "听":["请听我说。","qǐng tīng wǒ shuō","Please listen to me."],
+ "知道":["我不知道。","wǒ bù zhī dào","I don't know."],
+ "水":["我要喝水。","wǒ yào hē shuǐ","I want to drink water."],
+ "茶":["你有茶吗？","nǐ yǒu chá ma","Do you have tea?"],
+ "饭":["我要吃饭。","wǒ yào chī fàn","I want to have a meal."],
+ "钱":["钱在这里。","qián zài zhè lǐ","The money is here."],
+ "人":["那个人是谁？","nà ge rén shì shuí","Who is that person?"],
+ "厕所":["厕所在哪里？","cè suǒ zài nǎ lǐ","Where is the toilet?"],
+ "这里":["请来这里。","qǐng lái zhè lǐ","Please come here."],
+ "那个":["我要那个。","wǒ yào nà ge","I want that one."],
+ "和":["我要水和茶。","wǒ yào shuǐ hé chá","I want water and tea."],
+ "了":["太好了。","tài hǎo le","That's great."],
+
+ "大":["这个太大了。","zhè ge tài dà le","This one is too big."],
+ "小":["这个很小。","zhè ge hěn xiǎo","This one is very small."],
+ "多":["人很多。","rén hěn duō","There are a lot of people."],
+ "少":["钱很少。","qián hěn shǎo","There is very little money."],
+ "热":["水很热。","shuǐ hěn rè","The water is very hot."],
+ "冷":["今天很冷。","jīn tiān hěn lěng","Today is very cold."],
+ "快":["请快一点点。","qǐng kuài yì diǎn diǎn","A little faster, please."],
+ "慢":["这个很慢。","zhè ge hěn màn","This one is very slow."],
+ "新":["这个很新。","zhè ge hěn xīn","This one is brand new."],
+ "旧":["这个很旧。","zhè ge hěn jiù","This one is quite old."],
+ "贵":["太贵了。","tài guì le","That's too expensive."],
+ "便宜":["这个很便宜。","zhè ge hěn pián yi","This one is very cheap."],
+ "一":["一个人。","yí ge rén","One person."],
+ "二":["二十块。","èr shí kuài","Twenty yuan."],
+ "三":["三个人。","sān ge rén","Three people."],
+ "四":["四点。","sì diǎn","Four o'clock."],
+ "五":["五块钱。","wǔ kuài qián","Five yuan."],
+ "六":["六个。","liù ge","Six of them."],
+ "七":["七点。","qī diǎn","Seven o'clock."],
+ "八":["八块。","bā kuài","Eight yuan."],
+ "九":["九个人。","jiǔ ge rén","Nine people."],
+ "十":["十块钱。","shí kuài qián","Ten yuan."],
+ "百":["一百块。","yì bǎi kuài","One hundred yuan."],
+ "块":["五块钱。","wǔ kuài qián","Five yuan."],
+ "个":["三个人。","sān ge rén","Three people."],
+ "今天":["今天很热。","jīn tiān hěn rè","Today is very hot."],
+ "明天":["明天去机场。","míng tiān qù jī chǎng","Going to the airport tomorrow."],
+ "昨天":["昨天很冷。","zuó tiān hěn lěng","Yesterday was very cold."],
+ "现在":["现在几点？","xiàn zài jǐ diǎn","What time is it now?"],
+ "点":["现在几点？","xiàn zài jǐ diǎn","What time is it now?"],
+ "分钟":["五分钟。","wǔ fēn zhōng","Five minutes."],
+ "时间":["现在有时间吗？","xiàn zài yǒu shí jiān ma","Do you have time now?"],
+ "酒店":["酒店在哪里？","jiǔ diàn zài nǎ lǐ","Where is the hotel?"],
+ "机场":["我要去机场。","wǒ yào qù jī chǎng","I want to go to the airport."],
+ "地铁":["地铁在哪里？","dì tiě zài nǎ lǐ","Where is the metro?"],
+ "出租车":["我要出租车。","wǒ yào chū zū chē","I need a taxi."],
+ "火车":["火车很快。","huǒ chē hěn kuài","The train is very fast."],
+ "车站":["车站在哪里？","chē zhàn zài nǎ lǐ","Where is the station?"],
+ "医院":["医院在哪里？","yī yuàn zài nǎ lǐ","Where is the hospital?"],
+ "商店":["商店在哪里？","shāng diàn zài nǎ lǐ","Where is the shop?"],
+ "饭店":["这个饭店很好。","zhè ge fàn diàn hěn hǎo","This restaurant is very good."],
+ "名字":["名字是什么？","míng zi shì shén me","What is the name?"],
+ "中国":["我要去中国。","wǒ yào qù Zhōng guó","I want to go to China."],
+ "美国":["我是美国人。","wǒ shì Měi guó rén","I am American."],
+ "英文":["你会说英文吗？","nǐ huì shuō Yīng wén ma","Do you speak English?"],
+ "中文":["我会说一点点中文。","wǒ huì shuō yì diǎn diǎn Zhōng wén","I speak a little Chinese."],
+ "会":["你会说中文吗？","nǐ huì shuō Zhōng wén ma","Do you speak Chinese?"],
+ "想":["我想喝茶。","wǒ xiǎng hē chá","I would like to drink tea."],
+ "给":["请给我水。","qǐng gěi wǒ shuǐ","Please give me water."],
+ "等":["请等我。","qǐng děng wǒ","Please wait for me."],
+
+ "因为":["因为太贵了。","yīn wèi tài guì le","Because it is too expensive."],
+ "所以":["太贵了，所以我不买。","tài guì le, suǒ yǐ wǒ bù mǎi","It's too expensive, so I'm not buying it."],
+ "但是":["很好，但是太贵了。","hěn hǎo, dàn shì tài guì le","Very good, but too expensive."],
+ "还是":["茶还是咖啡？","chá hái shi kā fēi","Tea or coffee?"],
+ "或者":["茶或者水。","chá huò zhě shuǐ","Tea or water."],
+ "也":["我也要。","wǒ yě yào","I want one too."],
+ "都":["我们都去。","wǒ men dōu qù","We are all going."],
+ "只":["我只要一个。","wǒ zhǐ yào yí ge","I only want one."],
+ "就":["就这个。","jiù zhè ge","Just this one."],
+ "还":["我还要一个。","wǒ hái yào yí ge","I want one more."],
+ "已经":["我已经吃了。","wǒ yǐ jīng chī le","I have already eaten."],
+ "没有":["我没有钱。","wǒ méi yǒu qián","I don't have any money."],
+ "别":["别走。","bié zǒu","Don't go."],
+ "需要":["我需要时间。","wǒ xū yào shí jiān","I need time."],
+ "应该":["你应该去医院。","nǐ yīng gāi qù yī yuàn","You should go to the hospital."],
+ "必须":["我必须走了。","wǒ bì xū zǒu le","I have to go now."],
+ "帮":["请帮我。","qǐng bāng wǒ","Please help me."],
+ "找":["我找厕所。","wǒ zhǎo cè suǒ","I'm looking for the toilet."],
+ "带":["我带了钱。","wǒ dài le qián","I brought money."],
+ "用":["我可以用吗？","wǒ kě yǐ yòng ma","May I use it?"],
+ "做":["你在做什么？","nǐ zài zuò shén me","What are you doing?"],
+ "走":["我们走。","wǒ men zǒu","Let's go."],
+ "坐":["我要坐地铁。","wǒ yào zuò dì tiě","I want to take the metro."],
+ "开":["门开了。","mén kāi le","The door is open."],
+ "关":["门关了。","mén guān le","The door is closed."],
+ "进":["请进。","qǐng jìn","Please come in."],
+ "出":["他出去了。","tā chū qù le","He has gone out."],
+ "上":["请上来。","qǐng shàng lái","Please come up."],
+ "下":["请下来。","qǐng xià lái","Please come down."],
+ "远":["机场很远。","jī chǎng hěn yuǎn","The airport is very far."],
+ "近":["车站很近。","chē zhàn hěn jìn","The station is very close."],
+ "路":["路很远。","lù hěn yuǎn","It's a long way."],
+ "门":["门在哪里？","mén zài nǎ lǐ","Where is the door?"],
+ "房间":["房间很小。","fáng jiān hěn xiǎo","The room is very small."],
+ "手机":["手机在哪里？","shǒu jī zài nǎ lǐ","Where is the phone?"],
+ "包":["包在这里。","bāo zài zhè lǐ","The bag is here."],
+ "发票":["请给我发票。","qǐng gěi wǒ fā piào","Please give me the receipt."],
+ "菜":["这个菜很辣。","zhè ge cài hěn là","This dish is very spicy."],
+ "肉":["我不吃肉。","wǒ bù chī ròu","I don't eat meat."],
+ "鸡":["我要鸡。","wǒ yào jī","I'll have the chicken."],
+ "牛肉":["牛肉面很好吃。","niú ròu miàn hěn hǎo chī","Beef noodles are delicious."],
+ "羊肉":["我喜欢羊肉。","wǒ xǐ huan yáng ròu","I like lamb."],
+ "鱼":["这个鱼很好吃。","zhè ge yú hěn hǎo chī","This fish is delicious."],
+ "蛋":["我要一个蛋。","wǒ yào yí ge dàn","I'll have one egg."],
+ "面":["我要吃面。","wǒ yào chī miàn","I want to eat noodles."],
+ "汤":["汤很热。","tāng hěn rè","The soup is very hot."],
+ "辣":["这个太辣了。","zhè ge tài là le","This is too spicy."],
+ "甜":["这个很甜。","zhè ge hěn tián","This is very sweet."],
+ "好吃":["很好吃，谢谢。","hěn hǎo chī, xiè xie","Very tasty, thank you."],
+ "咖啡":["我要一个咖啡。","wǒ yào yí ge kā fēi","I'll have a coffee."],
+ "啤酒":["你有啤酒吗？","nǐ yǒu pí jiǔ ma","Do you have beer?"],
+ "冰":["我要冰水。","wǒ yào bīng shuǐ","I want iced water."],
+ "一起":["我们一起去。","wǒ men yì qǐ qù","Let's go together."],
+ "朋友":["他是我朋友。","tā shì wǒ péng you","He is my friend."],
+ "工作":["我在工作。","wǒ zài gōng zuò","I am working."],
+ "家":["家在哪里？","jiā zài nǎ lǐ","Where is home?"],
+ "问题":["没有问题。","méi yǒu wèn tí","No problem."],
+ "东西":["这个东西很贵。","zhè ge dōng xi hěn guì","This thing is very expensive."],
+ "容易":["中文很容易。","Zhōng wén hěn róng yì","Chinese is very easy."],
+ "难":["中文很难。","Zhōng wén hěn nán","Chinese is very hard."],
+ "累":["我很累。","wǒ hěn lèi","I am very tired."],
+ "高兴":["我很高兴。","wǒ hěn gāo xìng","I am very happy."],
+ "请问":["请问，厕所在哪里？","qǐng wèn, cè suǒ zài nǎ lǐ","Excuse me, where is the toilet?"],
+ "慢一点":["请慢一点。","qǐng màn yì diǎn","A bit slower, please."],
+ "再说一次":["请再说一次。","qǐng zài shuō yí cì","Please say that again."],
+ "我不懂":["对不起，我不懂。","duì bu qǐ, wǒ bù dǒng","Sorry, I don't understand."],
+ "床":["房间有床。","fáng jiān yǒu chuáng","The room has a bed."],
+ "桌子":["桌子很大。","zhuō zi hěn dà","The table is very big."],
+ "椅子":["椅子在这里。","yǐ zi zài zhè lǐ","The chair is here."],
+ "电话":["电话在哪里？","diàn huà zài nǎ lǐ","Where is the telephone?"],
+ "密码":["密码是什么？","mì mǎ shì shén me","What is the password?"],
+ "卡":["我可以用卡吗？","wǒ kě yǐ yòng kǎ ma","Can I use a card?"],
+ "现金":["我没有现金。","wǒ méi yǒu xiàn jīn","I don't have cash."],
+ "便利店":["便利店在哪里？","biàn lì diàn zài nǎ lǐ","Where is the convenience store?"],
+ "市场":["我去市场。","wǒ qù shì chǎng","I'm going to the market."],
+ "包子":["我要一个包子。","wǒ yào yí ge bāo zi","I'll have one steamed bun."],
+ "咸":["这个太咸了。","zhè ge tài xián le","This is too salty."],
+ "酸":["这个很酸。","zhè ge hěn suān","This is very sour."],
+ "老师":["他是老师。","tā shì lǎo shī","He is a teacher."],
+ "学生":["我是学生。","wǒ shì xué sheng","I am a student."],
+ "公司":["我在公司工作。","wǒ zài gōng sī gōng zuò","I work at a company."],
+ "妈妈":["我妈妈很好。","wǒ mā ma hěn hǎo","My mother is very well."],
+ "爸爸":["我爸爸在家。","wǒ bà ba zài jiā","My father is at home."],
+ "孩子":["孩子很小。","hái zi hěn xiǎo","The child is very small."],
+ "年":["我来中国一年了。","wǒ lái Zhōng guó yì nián le","I have been in China a year."],
+ "月":["一个月。","yí ge yuè","One month."],
+ "日":["今天是几日？","jīn tiān shì jǐ rì","What is today's date?"],
+ "星期":["一个星期。","yí ge xīng qī","One week."],
+ "早上":["早上好。","zǎo shang hǎo","Good morning."],
+ "晚上":["晚上好。","wǎn shang hǎo","Good evening."],
+ "一样":["这个和那个一样。","zhè ge hé nà ge yí yàng","This one and that one are the same."],
+ "不同":["这个和那个不同。","zhè ge hé nà ge bù tóng","This one and that one are different."],
+ "旁边":["车站在酒店旁边。","chē zhàn zài jiǔ diàn páng biān","The station is next to the hotel."],
+ "对面":["商店在对面。","shāng diàn zài duì miàn","The shop is opposite."],
+ "里":["在房间里。","zài fáng jiān lǐ","Inside the room."]
+};
+
 const FRAMES = [
  {t:"I want ___",            h:"我要",      p:"wǒ yào",            post:"", slot:"noun"},
  {t:"I don't want ___",      h:"我不要",    p:"wǒ bú yào",         post:"", slot:"noun"},
@@ -1007,6 +1221,65 @@ const RUNGS = [
   function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=rnd(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
   function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
   function wordsIn(b){ return WORDS.filter(w=>w.b===b); }
+
+  /* Example sentences are checked against the learner's own progress. A
+     sentence is split into the words it is made of, and it is only shown once
+     every one of those words has already come up in the deck, so an example
+     never introduces vocabulary the reader has not met. */
+  let SORTED_H = null;
+  function wordIndex(){
+    if(SORTED_H) return;
+    SORTED_H = WORDS.map(w=>w.h).sort((a,b)=>b.length-a.length);
+  }
+  function tokenize(sentence){
+    wordIndex();
+    const t = String(sentence).replace(/[\u3000-\u303F\uFF00-\uFFEF\s]/g,"");
+    const out = [];
+    let i = 0;
+    while(i < t.length){
+      let hit = null;
+      for(let k=0;k<SORTED_H.length;k++){
+        const h = SORTED_H[k];
+        if(h.length<=t.length-i && t.lastIndexOf(h,i)===i){ hit=h; break; }
+      }
+      if(!hit) return null;
+      out.push(hit);
+      i += hit.length;
+    }
+    return out;
+  }
+  function exampleFor(w){
+    const e = EXAMPLES[w.h];
+    if(!e) return null;
+    const toks = tokenize(e[0]);
+    if(!toks) return null;
+    const missing = toks.filter(t => t!==w.h && !S.cards[t]);
+    if(missing.length) return {locked:true, missing:missing.length};
+    return {h:e[0], p:e[1], en:e[2]};
+  }
+  function renderExample(){
+    const box = $("deckExample");
+    if(!box) return;
+    if(!current || !revealed){ box.classList.add("lz-hidden"); box.innerHTML=""; return; }
+    const ex = exampleFor(current);
+    if(!ex){ box.classList.add("lz-hidden"); box.innerHTML=""; return; }
+    box.classList.remove("lz-hidden");
+    if(ex.locked){
+      box.innerHTML = '<div class="lz-ex-label">Seen in real use</div>' +
+        '<div class="lz-ex-wait">An example sentence appears here once ' +
+        (ex.missing===1 ? "one more word in it has" : ex.missing+" more words in it have") +
+        ' come up in your deck. Nothing to do, it unlocks on its own.</div>';
+      return;
+    }
+    box.innerHTML = '<div class="lz-ex-label">Seen in real use</div>' +
+      (S.chars ? '<div class="lz-ex-h">'+esc(ex.h)+'</div>' : "") +
+      '<div class="lz-ex-p">'+esc(ex.p)+'</div>' +
+      '<div class="lz-ex-e">'+esc(ex.en)+'</div>' +
+      '<div class="lz-btnrow lz-noprint"><button class="btn" type="button" id="exSpeak">Hear example</button>' +
+      '<button class="btn" type="button" id="exSlow">Hear it slower</button></div>';
+    $("exSpeak").addEventListener("click", function(){ speak(ex.h); });
+    $("exSlow").addEventListener("click", function(){ speak(ex.h, 0.6); });
+  }
   function known(){ return WORDS.filter(w=>S.cards[w.h] && S.cards[w.h].box>=3); }
   function metWords(){ return WORDS.filter(w=>S.cards[w.h]); }
   function hanzi(h){ return S.chars ? '<div class="lz-hanzi">'+esc(h)+'</div>' : ""; }
@@ -1114,6 +1387,7 @@ const RUNGS = [
   function showCard(){
     const face = $("deckFace");
     if(!current){
+      renderExample();
       face.innerHTML = '<div class="lz-gloss">Session done for today. Come back tomorrow, or press Start session again for extra cards.</div>';
       $("deckGrade").classList.add("lz-hidden");
       return;
@@ -1123,6 +1397,7 @@ const RUNGS = [
       '<div class="lz-pinyin">'+esc(current.p)+'</div>' +
       '<div class="lz-note">What does this mean? Say it aloud, then show the answer.</div>';
     $("deckGrade").classList.add("lz-hidden");
+    renderExample();
     speak(current.h);
   }
 
@@ -1134,6 +1409,7 @@ const RUNGS = [
       '<div class="lz-gloss"><b>'+esc(current.e)+'</b></div>' +
       (current.n ? '<div class="lz-note">'+esc(current.n)+'</div>' : "");
     $("deckGrade").classList.remove("lz-hidden");
+    renderExample();
   }
 
   function grade(ok){
@@ -1454,7 +1730,7 @@ const RUNGS = [
   function applyChars(){
     $("charsBtn").textContent = "Characters: " + (S.chars ? "on" : "off");
     renderPocket();
-    if(current) (revealed ? reveal() : showCard());
+    if(current){ if(revealed){ revealed=false; reveal(); } else { showCard(); } }
     renderPhrase();
   }
 
