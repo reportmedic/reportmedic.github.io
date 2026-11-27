@@ -162,6 +162,20 @@
   .lz-lead{margin:0 0 16px; line-height:1.6}
   .lz-sec{margin:30px 0 8px}
   .lz-rungs{margin-top:2px}
+  .lz-grp{font-weight:700; font-size:13px; margin:14px 0 2px; opacity:.9}
+  .lz-grp:first-child{margin-top:0}
+  .lz-hit{display:flex; gap:10px; align-items:baseline; flex-wrap:wrap;
+    padding:7px 0; border-bottom:1px solid rgba(255,255,255,.07)}
+  .lz-hit-p{font-weight:700; font-size:15px}
+  .lz-hit-h{font-size:16px}
+  .lz-hit-e{opacity:.86; font-size:13px}
+  .lz-hit-x{opacity:.6; font-size:11.5px; width:100%; line-height:1.5}
+  .lz-hit-tag{font-size:10.5px; text-transform:uppercase; letter-spacing:.3px;
+    opacity:.55; margin-left:auto; white-space:nowrap}
+  .lz-say{background:none; border:1px solid var(--border); color:var(--text);
+    font-family:inherit; font-size:11.5px; border-radius:999px; padding:2px 9px;
+    cursor:pointer}
+  .lz-say:hover{border-color:var(--border-strong)}
   .lz-bar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; padding:10px;
     border:1px solid var(--border); border-radius:12px; background:rgba(0,0,0,.18)}
   .lz-bar label{font-size:12px; opacity:.85}
@@ -307,6 +321,19 @@
     <h2 style="margin-top:0">Your plan, in seven steps</h2>
     <p class="tiny muted lz-lead">Each box below is one step of the plan, in order, and each ends in something you can actually do rather than a score. The highlighted box is the step you are on now, and it decides which words <b>Today's deck</b> hands you. You do not normally need to touch these, because finishing a step moves the highlight along by itself. Click one only to jump ahead or go back.</p>
     <div class="lz-rungs" id="rungs"></div>
+
+    <div class="hr"></div>
+
+    <h2 class="lz-sec">Look anything up</h2>
+    <p class="tiny muted lz-lead">Type English, pinyin or a Chinese character. This searches every word, example sentence, sentence pattern, listening line, street sign, tone and tricky sound in the tool at once. Typing <b>thanks</b> finds 谢谢, 感谢, 不客气 and the sentences they appear in.</p>
+    <div class="card">
+      <div class="lz-btnrow" style="margin-top:0">
+        <input class="lz-sel" id="lookupBox" type="search" autocomplete="off" placeholder="thanks, water, xiexie, hao, 谢谢" style="flex:1; max-width:none; min-width:190px"/>
+        <button class="btn" id="lookupClear" type="button">Clear</button>
+      </div>
+      <div class="hr2"></div>
+      <div id="lookupOut"></div>
+    </div>
 
     <div class="grid2" style="margin-top:14px">
       <div class="card">
@@ -1427,6 +1454,117 @@ const RUNGS = [
   function metWords(){ return WORDS.filter(w=>S.cards[w.h]); }
   function hanzi(h){ return S.chars ? '<div class="lz-hanzi">'+esc(h)+'</div>' : ""; }
 
+  /* ---------- lookup ----------
+     One index over everything the page holds, searched on English, pinyin
+     with or without tone marks, and characters. */
+  const TONELESS = {"ā":"a","á":"a","ǎ":"a","à":"a","ē":"e","é":"e","ě":"e","è":"e",
+    "ī":"i","í":"i","ǐ":"i","ì":"i","ō":"o","ó":"o","ǒ":"o","ò":"o",
+    "ū":"u","ú":"u","ǔ":"u","ù":"u","ǖ":"u","ǘ":"u","ǚ":"u","ǜ":"u","ü":"u"};
+  /* Spaced form keeps word boundaries for English; compact form runs them
+     together so pinyin typed as "xiexie" still finds "xiè xie". */
+  function normSpaced(v){
+    return String(v==null?"":v).toLowerCase()
+      .replace(/[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜü]/g, function(c){ return TONELESS[c]||c; })
+      .replace(/v/g,"u")
+      .replace(/[^a-z0-9\u4e00-\u9fff]+/g," ")
+      .trim();
+  }
+  function norm(v){ return normSpaced(v).replace(/ /g,""); }
+
+  let INDEX = null;
+  function buildIndex(){
+    if(INDEX) return INDEX;
+    const ix = [];
+    const add = function(g,h,p,e,x,say){ ix.push({g:g,h:h||"",p:p||"",e:e||"",x:x||"",say:say||""}); };
+    WORDS.forEach(function(w){ add("Words", w.h, w.p, w.e, w.n ? w.n : "Step "+(w.b+1), w.h); });
+    wordIndex();
+    Object.keys(EXAMPLES).forEach(function(k){
+      const e = EXAMPLES[k], ow = BY_H[k];
+      add("Example sentences", e[0], e[1], e[2], "uses "+(ow ? ow.p : k), e[0]);
+    });
+    EARS.forEach(function(r){ add("Listening sentences", r[0], r[1], r[2], "", r[0]); });
+    FRAMES.forEach(function(f){
+      const h = f.pre ? ("___"+(f.post||"")) : ((f.h||"")+"___"+(f.post||""));
+      const p = f.pre ? ("___ "+(f.postp||"")) : ((f.p||"")+" ___ "+(f.postp||""));
+      add("Sentence patterns", h, p.replace(/\s+/g," ").trim(), f.t, "drop in any "+f.slot, "");
+    });
+    SIGNS.forEach(function(g){ add("Street signs", g[0], g[1], g[2], "", g[0]); });
+    TONEPAIRS.forEach(function(g){ g.set.forEach(function(o){
+      add("Tone pairs", o[1], o[0], o[2], "syllable "+g.base+", tone "+o[3], o[1]); }); });
+    SOUNDS.forEach(function(o){
+      const parts = o[1].split(" ");
+      add("Tricky sounds", parts[0], o[0], "as in "+(parts[1]||""), o[2], parts[0]);
+    });
+    TONES.forEach(function(t){ add("Tones", "", t.mark, t.label, t.desc, ""); });
+    ix.forEach(function(r){
+      r.c = norm(r.h)+norm(r.p)+norm(r.e)+norm(r.x);
+      r.t = normSpaced(r.e+" "+r.x+" "+r.p).split(" ").filter(Boolean);
+    });
+    INDEX = ix;
+    return ix;
+  }
+
+  /* A row matches when the whole query appears in it run together, or when
+     every word of the query matches one of its words. A query word matches
+     either as the start of an indexed word, or by being a longer form of one,
+     so "thanks" finds "thank you". */
+  function rowMatches(r, qt, qc){
+    if(r.c.indexOf(qc) >= 0) return true;
+    if(!qt.length) return false;
+    for(let i=0;i<qt.length;i++){
+      const q = qt[i];
+      let hit = r.c.indexOf(q) >= 0;
+      for(let j=0; !hit && j<r.t.length; j++){
+        const t = r.t[j];
+        if(t.indexOf(q) === 0) hit = true;
+        else if(q.length >= 4 && t.length >= 4 && q.indexOf(t) === 0) hit = true;
+      }
+      if(!hit) return false;
+    }
+    return true;
+  }
+
+  function runLookup(){
+    const box = $("lookupBox"), out = $("lookupOut");
+    if(!box || !out) return;
+    const qc = norm(box.value);
+    if(!qc){ out.innerHTML = '<div class="tiny muted">Start typing to search all '+buildIndex().length+' entries.</div>'; return; }
+    const qt = normSpaced(box.value).split(" ").filter(Boolean);
+    const hits = buildIndex().filter(function(r){ return rowMatches(r, qt, qc); });
+    if(!hits.length){
+      out.innerHTML = '<div class="tiny muted">Nothing matches that. Try an English word such as thanks, water or tired, or pinyin without tone marks such as xiexie.</div>';
+      return;
+    }
+    const order = ["Words","Example sentences","Sentence patterns","Listening sentences",
+                   "Street signs","Tone pairs","Tricky sounds","Tones"];
+    const byGroup = {};
+    hits.forEach(function(r){ (byGroup[r.g] = byGroup[r.g] || []).push(r); });
+    let html = '<div class="tiny muted" style="margin-bottom:6px">'+hits.length+' match'+(hits.length===1?"":"es")+'</div>';
+    order.forEach(function(g){
+      const rows = byGroup[g];
+      if(!rows || !rows.length) return;
+      const shown = rows.slice(0,10);
+      html += '<div class="lz-grp">'+esc(g)+'</div>';
+      shown.forEach(function(r){
+        html += '<div class="lz-hit">' +
+          (S.chars && r.h ? '<span class="lz-hit-h">'+esc(r.h)+'</span>' : '') +
+          (r.p ? '<span class="lz-hit-p">'+esc(r.p)+'</span>' : '') +
+          '<span class="lz-hit-e">'+esc(r.e)+'</span>' +
+          (r.say ? '<button class="lz-say" type="button" data-say="'+esc(r.say)+'">Hear</button>' : '') +
+          '<span class="lz-hit-tag">'+esc(g)+'</span>' +
+          (r.x ? '<span class="lz-hit-x">'+esc(r.x)+'</span>' : '') +
+          '</div>';
+      });
+      if(rows.length > shown.length){
+        html += '<div class="tiny muted" style="padding-top:6px">and '+(rows.length-shown.length)+' more in this group</div>';
+      }
+    });
+    out.innerHTML = html;
+    Array.prototype.forEach.call(out.querySelectorAll("button[data-say]"), function(b){
+      b.addEventListener("click", function(){ sayNow(b.getAttribute("data-say"), null, b); });
+    });
+  }
+
   /* ---------- rungs ---------- */
   function rungProgress(r){
     if(r.kind==="words"){
@@ -2067,6 +2205,7 @@ const RUNGS = [
   function applyChars(){
     $("charsBtn").textContent = "Characters: " + (S.chars ? "on" : "off");
     renderPocket();
+    runLookup();
     if(browseMode) showBrowsed();
     else if(current){ if(revealed){ revealed=false; reveal(); } else { showCard(); } }
     renderPhrase();
@@ -2079,6 +2218,8 @@ const RUNGS = [
       S.voice = voice ? voice.name : ""; save();
     });
     $("charsBtn").addEventListener("click", function(){ S.chars=!S.chars; save(); applyChars(); });
+    $("lookupBox").addEventListener("input", runLookup);
+    $("lookupClear").addEventListener("click", function(){ $("lookupBox").value=""; runLookup(); $("lookupBox").focus(); });
 
     $("deckStart").addEventListener("click", function(){
       if(!queue.length) buildQueue();
@@ -2204,6 +2345,7 @@ const RUNGS = [
     $("earRight").textContent=String(S.ear.r); $("earTried").textContent=String(S.ear.t);
     $("signRight").textContent=String(S.sign.r); $("signTried").textContent=String(S.sign.t);
     deckNav(); toneNav(); earNav(); signNav();
+    runLookup();
     applyChars();
     silent = false;
   }
