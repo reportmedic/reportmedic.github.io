@@ -325,6 +325,7 @@
           <button class="btn primary" id="deckStart" type="button">Start session</button>
           <button class="btn" id="deckSpeak" type="button">Hear it</button>
           <button class="btn" id="deckReveal" type="button">Show answer</button>
+          <button class="btn" id="deckAhead" type="button">Study ahead</button>
         </div>
         <div class="lz-btnrow lz-noprint">
           <label class="tiny muted" for="newPerDay" style="align-self:center">New words a day</label>
@@ -1151,20 +1152,22 @@ const RUNGS = [
      an evening session count as the next day. */
   const today = () => Math.floor((Date.now() - new Date().getTimezoneOffset()*60000)/DAY);
 
-  const defaults = {
-    rung:0, chars:false, sessions:0,
-    newPerDay:2, newDay:0, newCount:0, reviewsOnly:false,
-    cards:{}, tone:{r:0,t:0}, ear:{r:0,t:0}, sign:{r:0,t:0},
-    voice:""
-  };
+  function freshState(){
+    return {
+      rung:0, chars:false, sessions:0,
+      newPerDay:2, newDay:0, newCount:0, reviewsOnly:false,
+      cards:{}, tone:{r:0,t:0}, ear:{r:0,t:0}, sign:{r:0,t:0},
+      voice:""
+    };
+  }
   let S = load();
 
   function load(){
     try{
       const raw = localStorage.getItem(KEY);
-      if(!raw) return Object.assign({}, defaults);
-      return Object.assign({}, defaults, JSON.parse(raw));
-    }catch(e){ return Object.assign({}, defaults); }
+      if(!raw) return freshState();
+      return Object.assign(freshState(), JSON.parse(raw));
+    }catch(e){ return freshState(); }
   }
   function save(){
     try{ localStorage.setItem(KEY, JSON.stringify(S)); }
@@ -1479,6 +1482,26 @@ const RUNGS = [
     if(b) b.textContent = "Reviews only: " + (S.reviewsOnly ? "on" : "off");
     const i = $("newPerDay");
     if(i && document.activeElement!==i) i.value = String(S.newPerDay||0);
+  }
+
+  /* Why there is nothing to do, said accurately. */
+  function idleReason(){
+    const unseen = WORDS.filter(w=>!S.cards[w.h]).length;
+    const budget = S.newPerDay || 0;
+    if(!unseen) return "Every word on this roadmap has been seen and nothing is due for review. Come back tomorrow, or press Study ahead to pull the next reviews forward.";
+    if(S.reviewsOnly) return "Reviews only is on and nothing is due right now. Switch it off to take new words, or press Study ahead to pull the next reviews forward.";
+    if(budget === 0) return "New words a day is set to 0, and nothing is due for review. Raise it above to carry on, or press Study ahead.";
+    return "You have used today's new words, " + S.newCount + " of " + budget + ", and nothing is due for review. There are still " + unseen + " words you have not met. Raise New words a day to keep going now, press Study ahead to pull reviews forward, or come back tomorrow.";
+  }
+
+  /* Deliberately reviewing before a card is due. It works against the spacing,
+     so it is never automatic, only a button the reader chooses to press. */
+  function buildAhead(){
+    const soon = WORDS.filter(w=>S.cards[w.h] && S.cards[w.h].box<5)
+                      .sort(function(a,b){ return S.cards[a.h].due - S.cards[b.h].due; });
+    queue = soon.slice(0,5);
+    renderStats(); renderBudget();
+    $("deckLeft").textContent = String(queue.length);
   }
 
   function buildQueue(){
@@ -2018,7 +2041,18 @@ const RUNGS = [
     $("deckStart").addEventListener("click", function(){
       if(!queue.length) buildQueue();
       if(!queue.length){
-        $("deckFace").innerHTML = '<div class="lz-gloss">Nothing is due today and every word on this roadmap has been seen. Come back tomorrow, or use the tone gym, ear check and phrase lab meanwhile.</div>';
+        $("deckFace").innerHTML = '<div class="lz-gloss">'+esc(idleReason())+'</div>';
+        $("deckGrade").classList.add("lz-hidden");
+        renderExample(null);
+        return;
+      }
+      S.sessions++; save(); renderStats();
+      nextCard();
+    });
+    $("deckAhead").addEventListener("click", function(){
+      buildAhead();
+      if(!queue.length){
+        $("deckFace").innerHTML = '<div class="lz-gloss">There is nothing to bring forward. Every word you have met is fully retired.</div>';
         $("deckGrade").classList.add("lz-hidden");
         return;
       }
@@ -2094,9 +2128,9 @@ const RUNGS = [
     $("resetBtn").addEventListener("click", function(){
       if(!confirm("Clear all saved progress for this tool on this device?")) return;
       try{ localStorage.removeItem(KEY); }catch(e){}
-      S = Object.assign({}, defaults);
+      S = freshState();
       current=null; queue=[]; revealed=false;
-      renderRungs(); renderCan(); renderPocket(); renderStats(); applyChars();
+      renderRungs(); renderCan(); renderPocket(); renderStats(); renderBudget(); applyChars();
       deckHist.items=[]; deckHist.i=-1; browseMode=false; deckNav();
     $("deckFace").innerHTML = '<div class="lz-gloss">Progress cleared. Press Start session to begin again.</div>';
       $("deckLeft").textContent="0";
