@@ -172,6 +172,9 @@
   .lz-hit-x{opacity:.6; font-size:11.5px; width:100%; line-height:1.5}
   .lz-hit-tag{font-size:10.5px; text-transform:uppercase; letter-spacing:.3px;
     opacity:.55; margin-left:auto; white-space:nowrap}
+  .lz-practice{display:inline-block; font-size:10.5px; text-transform:uppercase;
+    letter-spacing:.3px; padding:2px 9px; border-radius:999px; margin-bottom:4px;
+    border:1px solid rgba(124,247,212,.45); background:rgba(124,247,212,.1)}
   .lz-score{display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:8px}
   .lz-score-n{font-size:30px; font-weight:700; line-height:1}
   .lz-score-l{font-size:13px; opacity:.88}
@@ -359,6 +362,7 @@
           <button class="btn" id="deckSpeak" type="button">Hear it</button>
           <button class="btn" id="deckReveal" type="button">Show answer</button>
           <button class="btn" id="deckAhead" type="button">Study ahead</button>
+          <button class="btn" id="deckPractice" type="button">Practise seen words</button>
         </div>
         <div class="lz-btnrow lz-noprint">
           <label class="tiny muted" for="newPerDay" style="align-self:center">New words a day</label>
@@ -1619,6 +1623,10 @@ const RUNGS = [
 
   /* ---------- deck ---------- */
   let queue = [], current = null, revealed = false;
+  /* A practice round runs the ordinary deck over everything already met.
+     It writes nothing: no boxes, no due dates, no counters. Missing a card
+     only brings it back later in the same round. */
+  let practice = false;
   const deckHist = new History(80);
   let browseMode = false;
 
@@ -1672,13 +1680,34 @@ const RUNGS = [
   }
 
   /* Why there is nothing to do, said accurately. */
+  /* When the next scheduled review comes back, so an empty deck is
+     information rather than a closed door. */
+  function nextDueIn(){
+    const t = today();
+    let soonest = null;
+    WORDS.forEach(function(w){
+      const c = S.cards[w.h];
+      if(c && c.box < 5 && (soonest === null || c.due < soonest)) soonest = c.due;
+    });
+    if(soonest === null) return "";
+    const days = soonest - t;
+    /* The longest real interval is 16 days, so anything beyond a couple of
+       months means the stored dates are off and a figure would mislead. */
+    if(days <= 0 || days > 60) return "";
+    return days === 1 ? " Your next reviews come back tomorrow."
+                      : " Your next reviews come back in " + days + " days.";
+  }
+
   function idleReason(){
     const unseen = WORDS.filter(w=>!S.cards[w.h]).length;
     const budget = S.newPerDay || 0;
-    if(!unseen) return "Every word on this roadmap has been seen and nothing is due for review. Come back tomorrow, or press Study ahead to pull the next reviews forward.";
-    if(S.reviewsOnly) return "Reviews only is on and nothing is due right now. Switch it off to take new words, or press Study ahead to pull the next reviews forward.";
-    if(budget === 0) return "New words a day is set to 0, and nothing is due for review. Raise it above to carry on, or press Study ahead.";
-    return "You have used today's new words, " + S.newCount + " of " + budget + ", and nothing is due for review. There are still " + unseen + " words you have not met. Raise New words a day to keep going now, press Study ahead to pull reviews forward, or come back tomorrow.";
+    const met = metWords().length;
+    const keep = met ? " Press Practise seen words to carry on with the " + met + " you have met, which changes nothing in your schedule." : "";
+    const when = nextDueIn();
+    if(!unseen) return "Every word on this roadmap has been seen and nothing is due for review." + keep + when;
+    if(S.reviewsOnly) return "Reviews only is on and nothing is due right now." + keep + when;
+    if(budget === 0) return "New words a day is set to 0, and nothing is due for review." + keep + when;
+    return "You have used today's new words, " + S.newCount + " of " + budget + ", and nothing is due for review. There are still " + unseen + " words you have not met." + keep + " Raise New words a day to take more now." + when;
   }
 
   /* Deliberately reviewing before a card is due. It works against the spacing,
@@ -1725,12 +1754,14 @@ const RUNGS = [
     if(!current){
       renderExample(null);
       deckNav();
-      face.innerHTML = '<div class="lz-gloss">Session done for today. Come back tomorrow, or press Start session again for extra cards.</div>';
+      face.innerHTML = practice
+        ? '<div class="lz-gloss">Practice round finished. Press Practise seen words for another, or Start session for your scheduled reviews. Nothing was scored.</div>'
+        : '<div class="lz-gloss">Session done for today. Come back tomorrow, or press Start session again for extra cards.</div>';
       $("deckGrade").classList.add("lz-hidden");
       return;
     }
     revealed = false;
-    face.innerHTML = hanzi(current.h) +
+    face.innerHTML = practiceBadge() + hanzi(current.h) +
       '<div class="lz-pinyin">'+esc(current.p)+'</div>' +
       '<div class="lz-note">What does this mean? Say it aloud, then show the answer.</div>';
     $("deckGrade").classList.add("lz-hidden");
@@ -1742,7 +1773,7 @@ const RUNGS = [
   function reveal(){
     if(!current || revealed) return;
     revealed = true;
-    $("deckFace").innerHTML = hanzi(current.h) +
+    $("deckFace").innerHTML = practiceBadge() + hanzi(current.h) +
       '<div class="lz-pinyin">'+esc(current.p)+'</div>' +
       '<div class="lz-gloss"><b>'+esc(current.e)+'</b></div>' +
       (current.n ? '<div class="lz-note">'+esc(current.n)+'</div>' : "") +
@@ -1752,8 +1783,30 @@ const RUNGS = [
     deckNav();
   }
 
+  function practiceBadge(){
+    return practice ? '<div class="lz-practice">Practice round, nothing is scored</div>' : "";
+  }
+
+  function buildPractice(){
+    practice = true;
+    queue = shuffle(WORDS.filter(function(w){ return S.cards[w.h]; }));
+    renderStats(); renderBudget();
+    $("deckLeft").textContent = String(queue.length);
+  }
+
+  /* Grading inside a practice round stays inside it. A card you miss is put
+     back a few places so it comes round again; a card you get is done. */
+  function practiceGrade(ok){
+    if(!ok && current){
+      queue.splice(Math.min(queue.length, 4 + rnd(4)), 0, current);
+    }
+    nextCard();
+    $("deckLeft").textContent = String(queue.length);
+  }
+
   function grade(ok){
     if(!current || browseMode) return;
+    if(practice){ practiceGrade(ok); return; }
     const k = current.h;
     const c = S.cards[k] || {box:0,due:today()};
     c.box = ok ? Math.min(5, c.box+1) : 1;
@@ -1778,6 +1831,10 @@ const RUNGS = [
     navState("deckPrev","deckNext",deckHist);
     const pos = $("deckPos");
     if(!pos) return;
+    if(practice && !browseMode){
+      pos.textContent = "Practice round, " + queue.length + " to go. Your schedule is untouched.";
+      return;
+    }
     pos.textContent = navLabel("card", deckHist, browseMode) +
       (deckHist.has() && !browseMode ? ". Press Previous to revisit one." : "");
   }
@@ -2447,6 +2504,7 @@ const RUNGS = [
     $("lookupClear").addEventListener("click", function(){ $("lookupBox").value=""; runLookup(); $("lookupBox").focus(); });
 
     $("deckStart").addEventListener("click", function(){
+      practice = false;
       if(!queue.length) buildQueue();
       if(!queue.length){
         $("deckFace").innerHTML = '<div class="lz-gloss">'+esc(idleReason())+'</div>';
@@ -2457,7 +2515,18 @@ const RUNGS = [
       S.sessions++; save(); renderStats();
       nextCard();
     });
+    $("deckPractice").addEventListener("click", function(){
+      buildPractice();
+      if(!queue.length){
+        practice = false;
+        $("deckFace").innerHTML = '<div class="lz-gloss">There is nothing to practise yet. Press Start session to meet your first words.</div>';
+        $("deckGrade").classList.add("lz-hidden");
+        return;
+      }
+      nextCard();
+    });
     $("deckAhead").addEventListener("click", function(){
+      practice = false;
       buildAhead();
       if(!queue.length){
         $("deckFace").innerHTML = '<div class="lz-gloss">There is nothing to bring forward. Every word you have met is fully retired.</div>';
