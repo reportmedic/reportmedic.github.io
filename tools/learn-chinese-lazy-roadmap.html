@@ -172,6 +172,10 @@
   .lz-hit-x{opacity:.6; font-size:11.5px; width:100%; line-height:1.5}
   .lz-hit-tag{font-size:10.5px; text-transform:uppercase; letter-spacing:.3px;
     opacity:.55; margin-left:auto; white-space:nowrap}
+  .lz-opp{font-size:13px; margin-top:6px; padding:6px 10px; border-radius:999px;
+    border:1px solid var(--border); background:rgba(255,255,255,.05);
+    display:inline-flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .lz-opp-tag{font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; opacity:.6}
   .lz-practice{display:inline-block; font-size:10.5px; text-transform:uppercase;
     letter-spacing:.3px; padding:2px 9px; border-radius:999px; margin-bottom:4px;
     border:1px solid rgba(124,247,212,.45); background:rgba(124,247,212,.1)}
@@ -1102,6 +1106,26 @@ const EXAMPLES = {
  "有意思":["这个很有意思。","zhè ge hěn yǒu yì si","This is really interesting."]
 };
 
+/* Opposites and natural counterparts inside the 220 words. Nearly all sit in
+   the same step as their partner, so they surface together. */
+const OPPOSITE_PAIRS = [
+ ["大","小"],["多","少"],["热","冷"],["快","慢"],["新","旧"],["贵","便宜"],
+ ["明天","昨天"],["来","去"],["这个","那个"],["远","近"],["开","关"],["进","出"],
+ ["上","下"],["前","后"],["左","右"],["里","外"],["容易","难"],["一样","不同"],
+ ["早上","晚上"],["有","没有"]
+];
+const COUNTERPART_PAIRS = [ ["老师","学生"], ["妈妈","爸爸"] ];
+
+const PARTNER = {};
+OPPOSITE_PAIRS.forEach(function(p){
+  PARTNER[p[0]] = {h:p[1], kind:"Opposite"};
+  PARTNER[p[1]] = {h:p[0], kind:"Opposite"};
+});
+COUNTERPART_PAIRS.forEach(function(p){
+  PARTNER[p[0]] = {h:p[1], kind:"Pairs with"};
+  PARTNER[p[1]] = {h:p[0], kind:"Pairs with"};
+});
+
 const FRAMES = [
  {t:"I want ___",            h:"我要",      p:"wǒ yào",            post:"", slot:"noun"},
  {t:"I don't want ___",      h:"我不要",    p:"wǒ bú yào",         post:"", slot:"noun"},
@@ -1777,10 +1801,31 @@ const RUNGS = [
       '<div class="lz-pinyin">'+esc(current.p)+'</div>' +
       '<div class="lz-gloss"><b>'+esc(current.e)+'</b></div>' +
       (current.n ? '<div class="lz-note">'+esc(current.n)+'</div>' : "") +
+      partnerLine(current) +
       '<div class="lz-note">Did you recall that <b>before</b> you looked?</div>';
+    wirePartner();
     $("deckGrade").classList.remove("lz-hidden");
     renderExample(current);
     deckNav();
+  }
+
+  /* The partner word, held back by the same rule as the examples: never a
+     word from a later step than the one being shown. */
+  function partnerLine(w){
+    wordIndex();
+    const p = PARTNER[w.h];
+    if(!p) return "";
+    const o = BY_H[p.h];
+    if(!o) return "";
+    if(!S.cards[o.h] && o.b > w.b) return "";
+    return '<div class="lz-opp"><span class="lz-opp-tag">'+esc(p.kind)+'</span>' +
+      (S.chars ? '<span>'+esc(o.h)+'</span>' : '') +
+      '<b>'+esc(o.p)+'</b><span style="opacity:.86">'+esc(o.e)+'</span>' +
+      '<button class="lz-say" type="button" data-opp="'+esc(o.h)+'">Hear</button></div>';
+  }
+  function wirePartner(){
+    const b = document.querySelector("#deckFace button[data-opp]");
+    if(b) b.addEventListener("click", function(){ sayNow(b.getAttribute("data-opp"), null, b); });
   }
 
   function practiceBadge(){
@@ -1851,7 +1896,9 @@ const RUNGS = [
       '<div class="lz-pinyin">'+esc(w.p)+'</div>' +
       '<div class="lz-gloss"><b>'+esc(w.e)+'</b></div>' +
       (w.n ? '<div class="lz-note">'+esc(w.n)+'</div>' : '') +
+      partnerLine(w) +
       '<div class="lz-note">Revisiting only. Your schedule is untouched.</div>';
+    wirePartner();
     $("deckGrade").classList.add("lz-hidden");
     renderExample(w);
     deckNav();
